@@ -78,7 +78,7 @@ public class LineamentModel extends AbstractModel
 
     private void loadModel() throws NumberFormatException, IOException
     {
-        InputStream is = getClass().getResourceAsStream("/edu/jhuapl/near/data/LinearFeatures.txt");
+        InputStream is = getClass().getResourceAsStream("/edu/jhuapl/sbmt/data/LinearFeatures.txt");
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader in = new BufferedReader(isr);
 

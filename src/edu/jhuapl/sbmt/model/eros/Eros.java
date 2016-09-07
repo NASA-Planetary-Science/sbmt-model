@@ -13,7 +13,7 @@ public class Eros extends SmallBodyModel
     };
 
     static private final String[] modelFiles = {
-            "/edu/jhuapl/near/data/Eros_ver64q.vtk",
+            "/edu/jhuapl/sbmt/data/Eros_ver64q.vtk",
             "/EROS/ver128q.vtk.gz",
             "/EROS/ver256q.vtk.gz",
             "/EROS/ver512q.vtk.gz"

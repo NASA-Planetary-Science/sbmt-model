@@ -9,6 +9,10 @@ import java.util.Date;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -23,10 +27,6 @@ import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.MetaField;
-
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 
 public class MSIImage extends PerspectiveImage
 {
@@ -43,7 +43,7 @@ public class MSIImage extends PerspectiveImage
     private static final int RIGHT_MASK = 14;
     private static final int TOP_MASK = 2;
     private static final int BOTTOM_MASK = 2;
-    private static final String xmlTemplate = "edu/jhuapl/near/model/eros/msiXmlTemplate.xml";
+    private static final String xmlTemplate = "edu/jhuapl/sbmt/model/eros/msiXmlTemplate.xml";
 
     public MSIImage(ImageKey key,
             SmallBodyModel smallBodyModel,
