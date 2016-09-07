@@ -8,7 +8,7 @@ import nom.tam.fits.FitsException;
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 

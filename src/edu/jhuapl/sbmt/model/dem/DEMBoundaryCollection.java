@@ -21,8 +21,8 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.app.SbmtModelFactory;
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SbmtModelFactory;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.dem.DEM.DEMKey;
 
 public class DEMBoundaryCollection extends AbstractModel implements PropertyChangeListener

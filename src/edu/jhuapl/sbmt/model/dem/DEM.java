@@ -28,7 +28,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 
 public class DEM extends SmallBodyModel implements PropertyChangeListener
 {

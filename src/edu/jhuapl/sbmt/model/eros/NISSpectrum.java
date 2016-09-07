@@ -34,7 +34,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 
 public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 {

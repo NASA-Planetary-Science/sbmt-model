@@ -1,7 +1,7 @@
 package edu.jhuapl.sbmt.model.rosetta;
 
-import edu.jhuapl.sbmt.app.SmallBodyModel;
-import edu.jhuapl.sbmt.app.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 
 public class Lutetia extends SmallBodyModel
 {

@@ -19,8 +19,8 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.app.BodyViewConfig;
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.BodyViewConfig;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 
 public class LidarBrowseDataCollection extends AbstractModel implements PropertyChangeListener
 {

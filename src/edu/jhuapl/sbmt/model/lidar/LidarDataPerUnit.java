@@ -32,7 +32,7 @@ import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
-import edu.jhuapl.sbmt.app.BodyViewConfig;
+import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class LidarDataPerUnit extends AbstractModel

@@ -6,7 +6,7 @@ import nom.tam.fits.FitsException;
 
 import vtk.vtkImageData;
 
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 public class CustomPerspectiveImage extends PerspectiveImage

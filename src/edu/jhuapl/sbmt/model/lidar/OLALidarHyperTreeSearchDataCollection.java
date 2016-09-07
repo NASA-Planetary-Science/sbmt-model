@@ -29,7 +29,7 @@ import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.hyperoctree.OlaFSHyperPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.OlaFSHyperTreeSkeleton;
 import edu.jhuapl.sbmt.lidar.test.LidarPoint;

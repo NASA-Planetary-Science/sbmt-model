@@ -6,7 +6,7 @@ import java.io.IOException;
 import nom.tam.fits.FitsException;
 
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 

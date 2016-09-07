@@ -1,7 +1,7 @@
 package edu.jhuapl.sbmt.model.vesta_old;
 
-import edu.jhuapl.sbmt.app.SmallBodyModel;
-import edu.jhuapl.sbmt.app.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 
 public class VestaOld extends SmallBodyModel
 {

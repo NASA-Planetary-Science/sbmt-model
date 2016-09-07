@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import nom.tam.fits.FitsException;
 
-import edu.jhuapl.sbmt.app.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 
 
 public class PolyCamImage extends MapCamImage

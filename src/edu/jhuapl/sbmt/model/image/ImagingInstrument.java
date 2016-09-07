@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.image;
 
-import edu.jhuapl.sbmt.app.SpectralMode;
+import edu.jhuapl.sbmt.client.SpectralMode;
 import edu.jhuapl.sbmt.query.QueryBase;
 
 public class ImagingInstrument
