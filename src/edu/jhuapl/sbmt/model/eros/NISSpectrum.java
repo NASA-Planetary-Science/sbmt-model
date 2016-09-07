@@ -64,12 +64,12 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     private double duration;
     private short polygon_type_flag;
     private double range;
-    private ArrayList<LatLon> latLons = new ArrayList<LatLon>();
+    private List<LatLon> latLons = new ArrayList<LatLon>();
     private vtkPolyData footprint;
     private vtkPolyData shiftedFootprint;
     private vtkActor footprintActor;
     private vtkActor frustumActor;
-    private ArrayList<vtkProp> footprintActors = new ArrayList<vtkProp>();
+    private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
     private SmallBodyModel erosModel;
     private static final int numberOfBands = 64;
     private double[] spectrum = new double[numberOfBands];
@@ -168,10 +168,10 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         "B52 - B36"
     };
 
-    static private ArrayList<vtkFunctionParser> userDefinedDerivedParameters = new ArrayList<vtkFunctionParser>();
+    static private List<vtkFunctionParser> userDefinedDerivedParameters = new ArrayList<vtkFunctionParser>();
 
     // A list of channels used in one of the user defined derived parameters
-    static private ArrayList< ArrayList<String>> bandsPerUserDefinedDerivedParameters = new ArrayList<ArrayList<String>>();
+    static private List< List<String>> bandsPerUserDefinedDerivedParameters = new ArrayList<List<String>>();
 
     static
     {
@@ -219,7 +219,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         String filename = nisFile.getAbsolutePath();
         this.fullpath = filename;
 
-        ArrayList<String> values = FileUtil.getFileWordsAsStringList(fullpath);
+        List<String> values = FileUtil.getFileWordsAsStringList(fullpath);
 
         dateTime = new DateTime(values.get(DATE_TIME_OFFSET), DateTimeZone.UTC);
 
@@ -625,7 +625,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 
     private double evaluateUserDefinedDerivedParameters(int userDefinedParameter)
     {
-        ArrayList<String> bands = bandsPerUserDefinedDerivedParameters.get(userDefinedParameter);
+        List<String> bands = bandsPerUserDefinedDerivedParameters.get(userDefinedParameter);
         for (String c : bands)
         {
             userDefinedDerivedParameters.get(userDefinedParameter).SetScalarVariableValue(
@@ -636,7 +636,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     }
 
     private static boolean setupUserDefinedDerivedParameter(
-            vtkFunctionParser functionParser, String function, ArrayList<String> bands)
+            vtkFunctionParser functionParser, String function, List<String> bands)
     {
         functionParser.RemoveAllVariables();
         functionParser.SetFunction(function);
@@ -678,7 +678,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     public static boolean testUserDefinedDerivedParameter(String function)
     {
         vtkFunctionParser functionParser = new vtkFunctionParser();
-        ArrayList<String> bands = new ArrayList<String>();
+        List<String> bands = new ArrayList<String>();
 
         return setupUserDefinedDerivedParameter(functionParser, function, bands);
     }
@@ -686,7 +686,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     public static boolean addUserDefinedDerivedParameter(String function)
     {
         vtkFunctionParser functionParser = new vtkFunctionParser();
-        ArrayList<String> bands = new ArrayList<String>();
+        List<String> bands = new ArrayList<String>();
 
         boolean success = setupUserDefinedDerivedParameter(functionParser, function, bands);
 
@@ -703,7 +703,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     public static boolean editUserDefinedDerivedParameter(int index, String function)
     {
         vtkFunctionParser functionParser = new vtkFunctionParser();
-        ArrayList<String> bands = new ArrayList<String>();
+        List<String> bands = new ArrayList<String>();
 
         boolean success = setupUserDefinedDerivedParameter(functionParser, function, bands);
 
@@ -724,7 +724,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         saveUserDefinedParametersToPreferences();
     }
 
-    public static ArrayList<vtkFunctionParser> getAllUserDefinedDerivedParameters()
+    public static List<vtkFunctionParser> getAllUserDefinedDerivedParameters()
     {
         return userDefinedDerivedParameters;
     }

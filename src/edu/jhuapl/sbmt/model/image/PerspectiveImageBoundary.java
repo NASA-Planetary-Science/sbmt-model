@@ -244,7 +244,7 @@ public class PerspectiveImageBoundary extends AbstractModel implements PropertyC
     @Override
     public List<vtkProp> getProps()
     {
-        ArrayList<vtkProp> props = new ArrayList<vtkProp>();
+        List<vtkProp> props = new ArrayList<vtkProp>();
         props.add(actor);
         return props;
     }

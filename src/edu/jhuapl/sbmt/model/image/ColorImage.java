@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import nom.tam.fits.FitsException;
+
 import vtk.vtkActor;
 import vtk.vtkGenericCell;
 import vtk.vtkImageCanvasSource2D;
@@ -32,8 +34,6 @@ import edu.jhuapl.sbmt.app.SbmtModelFactory;
 import edu.jhuapl.sbmt.app.SmallBodyModel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 
-import nom.tam.fits.FitsException;
-
 public class ColorImage extends Image implements PropertyChangeListener
 {
     private SmallBodyModel smallBodyModel;
@@ -49,7 +49,7 @@ public class ColorImage extends Image implements PropertyChangeListener
     private vtkPolyData footprint;
     private vtkPolyData shiftedFootprint;
     private vtkActor footprintActor;
-    private ArrayList<vtkProp> footprintActors = new ArrayList<vtkProp>();
+    private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
     private float[][] redPixelData;
     private float[][] greenPixelData;
     private float[][] bluePixelData;
@@ -240,7 +240,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         double bluemax = blueRange[0] + blueIntensityRange.max*bluedx;
         double bluestretchRange = bluemax - bluemin;
 
-        ArrayList<Frustum> frustums = new ArrayList<Frustum>();
+        List<Frustum> frustums = new ArrayList<Frustum>();
         frustums.add(redFrustum);
         frustums.add(greenFrustum);
         frustums.add(blueFrustum);

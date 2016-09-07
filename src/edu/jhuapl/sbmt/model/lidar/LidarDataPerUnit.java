@@ -41,7 +41,7 @@ public class LidarDataPerUnit extends AbstractModel
     private vtkPolyData polydataSc;
     private vtkPoints originalPoints;
     private vtkPoints originalPointsSc;
-    private ArrayList<vtkProp> actors = new ArrayList<vtkProp>();
+    private List<vtkProp> actors = new ArrayList<vtkProp>();
     private double startPercentage = 0.0;
     private double stopPercentage = 1.0;
     private vtkGeometryFilter geometryFilter;

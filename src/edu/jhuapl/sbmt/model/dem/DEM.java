@@ -206,9 +206,9 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         // First pass, figure out number of planes and grab size and scale information
         Header header = hdu.getHeader();
         HeaderCard headerCard;
-        ArrayList<Integer> backPlaneIndices = new ArrayList<Integer>();
-        ArrayList<String> unprocessedBackPlaneNames = new ArrayList<String>();
-        ArrayList<String> unprocessedBackPlaneUnits = new ArrayList<String>();
+        List<Integer> backPlaneIndices = new ArrayList<Integer>();
+        List<String> unprocessedBackPlaneNames = new ArrayList<String>();
+        List<String> unprocessedBackPlaneUnits = new ArrayList<String>();
         xIdx = -1;
         yIdx = -1;
         zIdx = -1;
@@ -325,7 +325,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
             coloringValuesPerPoint[i] = new vtkFloatArray();
             coloringValuesPerPoint[i].SetNumberOfComponents(1);
 
-            // Copy ArrayList element to array for faster lookup later
+            // Copy List element to array for faster lookup later
             backPlaneIdx[i] = backPlaneIndices.get(i);
         }
 
@@ -487,8 +487,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         return boundary;
     }
 
-    public void generateProfile(ArrayList<Point3D> xyzPointList,
-            ArrayList<Double> profileValues, ArrayList<Double> profileDistances, int coloringIndex)
+    public void generateProfile(List<Point3D> xyzPointList,
+            List<Double> profileValues, List<Double> profileDistances, int coloringIndex)
     {
         profileValues.clear();
         profileDistances.clear();

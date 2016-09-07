@@ -22,7 +22,7 @@ import edu.jhuapl.sbmt.model.image.Image.ImageKey;
 
 public class PerspectiveImageBoundaryCollection extends AbstractModel implements PropertyChangeListener
 {
-    private HashMap<PerspectiveImageBoundary, ArrayList<vtkProp>> boundaryToActorsMap = new HashMap<PerspectiveImageBoundary, ArrayList<vtkProp>>();
+    private HashMap<PerspectiveImageBoundary, List<vtkProp>> boundaryToActorsMap = new HashMap<PerspectiveImageBoundary, List<vtkProp>>();
     private HashMap<vtkProp, PerspectiveImageBoundary> actorToBoundaryMap = new HashMap<vtkProp, PerspectiveImageBoundary>();
     private SmallBodyModel smallBodyModel;
     // Create a buffer of initial boundary colors to use. We cycle through these colors when creating new boundaries
@@ -98,7 +98,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
 
         if(boundary != null)
         {
-            ArrayList<vtkProp> actors = boundaryToActorsMap.get(boundary);
+            List<vtkProp> actors = boundaryToActorsMap.get(boundary);
 
             if(actors != null)
             {
@@ -117,7 +117,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
 
     public void removeAllBoundaries()
     {
-        HashMap<PerspectiveImageBoundary, ArrayList<vtkProp>> map = (HashMap<PerspectiveImageBoundary, ArrayList<vtkProp>>)boundaryToActorsMap.clone();
+        HashMap<PerspectiveImageBoundary, List<vtkProp>> map = (HashMap<PerspectiveImageBoundary, List<vtkProp>>)boundaryToActorsMap.clone();
         for (PerspectiveImageBoundary boundary : map.keySet())
             removeBoundary(boundary.getKey());
     }

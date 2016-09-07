@@ -29,7 +29,7 @@ import edu.jhuapl.sbmt.app.SmallBodyModel;
 public class VectorField extends AbstractModel implements PropertyChangeListener
 {
     private PolyhedralModel smallBodyModel;
-    private ArrayList<vtkProp> actors = new ArrayList<vtkProp>();
+    private List<vtkProp> actors = new ArrayList<vtkProp>();
     private boolean generated = false;
     private vtkActor actor;
     private vtkPolyDataMapper mapper;

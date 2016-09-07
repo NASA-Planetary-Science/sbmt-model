@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
@@ -317,7 +318,7 @@ public class MSIImage extends PerspectiveImage
      */
     private BPMetaBuilder metaBfromPDS3(String pds3LblFname, String outXmlFname) {
         //load PDS3 label file into memory.
-        ArrayList<String> labelContents = new ArrayList<String>();
+        List<String> labelContents = new ArrayList<String>();
         try
         {
             labelContents = FileUtil.getFileLinesAsStringList(pds3LblFname);

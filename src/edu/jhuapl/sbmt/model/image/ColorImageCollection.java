@@ -25,7 +25,7 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
 
     private ModelManager modelManager;
 
-    private HashMap<ColorImage, ArrayList<vtkProp>> imageToActorsMap = new HashMap<ColorImage, ArrayList<vtkProp>>();
+    private HashMap<ColorImage, List<vtkProp>> imageToActorsMap = new HashMap<ColorImage, List<vtkProp>>();
 
     private HashMap<vtkProp, ColorImage> actorToImageMap = new HashMap<vtkProp, ColorImage>();
 
@@ -89,7 +89,7 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     {
         ColorImage image = getImageFromKey(key);
 
-        ArrayList<vtkProp> actors = imageToActorsMap.get(image);
+        List<vtkProp> actors = imageToActorsMap.get(image);
 
         for (vtkProp act : actors)
             actorToImageMap.remove(act);
@@ -106,7 +106,7 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
 
     public void removeAllImages()
     {
-        HashMap<ColorImage, ArrayList<vtkProp>> map = (HashMap<ColorImage, ArrayList<vtkProp>>)imageToActorsMap.clone();
+        HashMap<ColorImage, List<vtkProp>> map = (HashMap<ColorImage, List<vtkProp>>)imageToActorsMap.clone();
         for (ColorImage image : map.keySet())
             removeImage(image.getColorKey());
     }

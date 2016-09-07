@@ -75,8 +75,8 @@ public class LidarSearchDataCollection extends AbstractModel
     private PolyhedralModel smallBodyModel;
     private vtkPolyData polydata;   // target points
     private vtkPolyData selectedPointPolydata;
-    protected ArrayList<LidarPoint> originalPoints = new ArrayList<LidarPoint>();
-    private ArrayList<vtkProp> actors = new ArrayList<vtkProp>();
+    protected List<LidarPoint> originalPoints = new ArrayList<LidarPoint>();
+    private List<vtkProp> actors = new ArrayList<vtkProp>();
     private vtkPolyDataMapper pointsMapper;
     private vtkPolyDataMapper selectedPointMapper;
     private vtkActor actor;
@@ -97,11 +97,11 @@ public class LidarSearchDataCollection extends AbstractModel
 
     private int selectedPoint = -1;
 
-    protected ArrayList<Track> tracks = new ArrayList<Track>();
+    protected List<Track> tracks = new ArrayList<Track>();
     private double timeSeparationBetweenTracks = 10.0; // In seconds
     private int minTrackLength = 1;
     private int[] defaultColor = {0, 0, 255, 255};
-    private ArrayList<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
+    private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
     private boolean enableTrackErrorComputation = false;
     private double trackError;
 
@@ -1282,11 +1282,11 @@ public class LidarSearchDataCollection extends AbstractModel
      */
     public void getGravityDataForTrack(
             int trackId,
-            ArrayList<Double> potential,
-            ArrayList<Double> acceleration,
-            ArrayList<Double> elevation,
-            ArrayList<Double> distance,
-            ArrayList<Double> time) throws Exception
+            List<Double> potential,
+            List<Double> acceleration,
+            List<Double> elevation,
+            List<Double> distance,
+            List<Double> time) throws Exception
     {
         Track track = tracks.get(trackId);
 
@@ -1296,7 +1296,7 @@ public class LidarSearchDataCollection extends AbstractModel
         // Run the gravity program
         int startId = tracks.get(trackId).startId;
         int stopId = tracks.get(trackId).stopId;
-        ArrayList<double[]> xyzPointList = new ArrayList<double[]>();
+        List<double[]> xyzPointList = new ArrayList<double[]>();
         for (int i=startId; i<=stopId; ++i)
         {
             LidarPoint pt = originalPoints.get(i);
@@ -1304,7 +1304,7 @@ public class LidarSearchDataCollection extends AbstractModel
             target = transformLidarPoint(target);
             xyzPointList.add(target);
         }
-        ArrayList<Point3D> accelerationVector = new ArrayList<Point3D>();
+        List<Point3D> accelerationVector = new ArrayList<Point3D>();
         Gravity.getGravityAtPoints(
                 xyzPointList,
                 smallBodyModel.getDensity(),

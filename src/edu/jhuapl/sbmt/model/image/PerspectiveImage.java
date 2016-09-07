@@ -23,6 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -68,14 +72,10 @@ import edu.jhuapl.sbmt.app.SmallBodyModel;
 import edu.jhuapl.sbmt.util.BackPlanesPDS4XML;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
+import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackplaneInfo;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
-import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
-
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 
 /**
  * This class represents an abstract image of a spacecraft imager instrument.
@@ -126,7 +126,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
 
     private vtkActor footprintActor;
-    private ArrayList<vtkProp> footprintActors = new ArrayList<vtkProp>();
+    private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
 
     private vtkActor frustumActor;
 

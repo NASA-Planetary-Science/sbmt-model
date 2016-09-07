@@ -25,7 +25,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
 
     private ModelManager modelManager;
 
-    private HashMap<ImageCube, ArrayList<vtkProp>> imageToActorsMap = new HashMap<ImageCube, ArrayList<vtkProp>>();
+    private HashMap<ImageCube, List<vtkProp>> imageToActorsMap = new HashMap<ImageCube, List<vtkProp>>();
 
     private HashMap<vtkProp, ImageCube> actorToImageMap = new HashMap<vtkProp, ImageCube>();
 
@@ -89,7 +89,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     {
         ImageCube image = getImageFromKey(key);
 
-        ArrayList<vtkProp> actors = imageToActorsMap.get(image);
+        List<vtkProp> actors = imageToActorsMap.get(image);
 
         for (vtkProp act : actors)
             actorToImageMap.remove(act);
@@ -111,7 +111,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
 
     public void removeAllImages()
     {
-        HashMap<ImageCube, ArrayList<vtkProp>> map = (HashMap<ImageCube, ArrayList<vtkProp>>)imageToActorsMap.clone();
+        HashMap<ImageCube, List<vtkProp>> map = (HashMap<ImageCube, List<vtkProp>>)imageToActorsMap.clone();
         for (ImageCube image : map.keySet())
             removeImage(image.getImageCubeKey());
     }

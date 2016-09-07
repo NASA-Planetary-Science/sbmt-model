@@ -41,7 +41,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
     }
 
     private BodyViewConfig polyhedralModelConfig;
-    private ArrayList<vtkProp> lidarPerUnitActors = new ArrayList<vtkProp>();
+    private List<vtkProp> lidarPerUnitActors = new ArrayList<vtkProp>();
 
     private HashMap<String, LidarDataPerUnit> fileToLidarPerUnitMap = new HashMap<String, LidarDataPerUnit>();
     private HashMap<vtkProp, String> actorToFileMap = new HashMap<vtkProp, String>();
@@ -128,9 +128,9 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         return fileToLidarPerUnitMap.containsKey(file);
     }
 
-    public ArrayList<LidarDataFileSpec> getAllLidarPaths() throws FileNotFoundException
+    public List<LidarDataFileSpec> getAllLidarPaths() throws FileNotFoundException
     {
-        ArrayList<LidarDataFileSpec> lidarSpecs = new ArrayList<LidarDataFileSpec>();
+        List<LidarDataFileSpec> lidarSpecs = new ArrayList<LidarDataFileSpec>();
 
         InputStream is;
         if (polyhedralModelConfig.lidarBrowseFileListResourcePath.startsWith("/edu"))

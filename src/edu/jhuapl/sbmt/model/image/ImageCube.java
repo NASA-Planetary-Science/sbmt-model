@@ -49,7 +49,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
     private Frustum firstFrustum;
     private vtkPolyData shiftedFootprint;
     private vtkActor footprintActor;
-    private ArrayList<vtkProp> footprintActors = new ArrayList<vtkProp>();
+    private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
     private float[][][] pixelData;
     private float[][] firstPixelData;
 
@@ -314,7 +314,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 //        blueIntensityRange = new IntensityRange(0, 255);
 
         List<IntensityRange> intensityRanges = new ArrayList<IntensityRange>();
-        ArrayList<Frustum> frustums = new ArrayList<Frustum>();
+        List<Frustum> frustums = new ArrayList<Frustum>();
         nimages = images.size();
         double[] mins = new double[nimages];
         double[] maxes = new double[nimages];

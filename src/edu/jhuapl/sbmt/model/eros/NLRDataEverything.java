@@ -14,7 +14,7 @@ import edu.jhuapl.saavtk.util.FileCache;
 
 public class NLRDataEverything extends AbstractModel
 {
-    private ArrayList<vtkProp> actors = new ArrayList<vtkProp>();
+    private List<vtkProp> actors = new ArrayList<vtkProp>();
 
     public NLRDataEverything()
     {

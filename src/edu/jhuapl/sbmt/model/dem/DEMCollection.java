@@ -27,7 +27,7 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
     private SmallBodyModel smallBodyModel;
     private ModelManager modelManager;
 
-    private HashMap<DEM, ArrayList<vtkProp>> demToActorsMap = new HashMap<DEM, ArrayList<vtkProp>>();
+    private HashMap<DEM, List<vtkProp>> demToActorsMap = new HashMap<DEM, List<vtkProp>>();
 
     private HashMap<vtkProp, DEM> actorToDemMap = new HashMap<vtkProp, DEM>();
 
@@ -137,7 +137,7 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
 
         DEM dem = getDEMFromKey(key);
 
-        ArrayList<vtkProp> actors = demToActorsMap.get(dem);
+        List<vtkProp> actors = demToActorsMap.get(dem);
 
         for (vtkProp act : actors)
         {

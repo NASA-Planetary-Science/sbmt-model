@@ -22,9 +22,9 @@ import edu.jhuapl.sbmt.app.SmallBodyModel;
 
 public class NISSpectraCollection extends AbstractModel implements PropertyChangeListener
 {
-    private ArrayList<vtkProp> allActors = new ArrayList<vtkProp>();
+    private List<vtkProp> allActors = new ArrayList<vtkProp>();
 
-    private HashMap<NISSpectrum, ArrayList<vtkProp>> spectraActors = new HashMap<NISSpectrum, ArrayList<vtkProp>>();
+    private HashMap<NISSpectrum, List<vtkProp>> spectraActors = new HashMap<NISSpectrum, List<vtkProp>>();
 
     private HashMap<String, NISSpectrum> fileToSpectrumMap = new HashMap<String, NISSpectrum>();
 
@@ -140,7 +140,7 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
     {
         NISSpectrum spectrum = fileToSpectrumMap.get(path);
 
-        ArrayList<vtkProp> actors = spectraActors.get(spectrum);
+        List<vtkProp> actors = spectraActors.get(spectrum);
         allActors.removeAll(actors);
 
         for (vtkProp act : actors)

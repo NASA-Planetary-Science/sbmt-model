@@ -24,7 +24,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 {
     private SmallBodyModel smallBodyModel;
 
-    private HashMap<Image, ArrayList<vtkProp>> imageToActorsMap = new HashMap<Image, ArrayList<vtkProp>>();
+    private HashMap<Image, List<vtkProp>> imageToActorsMap = new HashMap<Image, List<vtkProp>>();
 
     private HashMap<vtkProp, Image> actorToImageMap = new HashMap<vtkProp, Image>();
 
@@ -94,7 +94,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 
         Image image = getImageFromKey(key);
 
-        ArrayList<vtkProp> actors = imageToActorsMap.get(image);
+        List<vtkProp> actors = imageToActorsMap.get(image);
 
         for (vtkProp act : actors)
             actorToImageMap.remove(act);
@@ -115,7 +115,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
      */
     public void removeImages(ImageSource source)
     {
-        HashMap<Image, ArrayList<vtkProp>> map = (HashMap<Image, ArrayList<vtkProp>>)imageToActorsMap.clone();
+        HashMap<Image, List<vtkProp>> map = (HashMap<Image, List<vtkProp>>)imageToActorsMap.clone();
         for (Image image : map.keySet())
             if (image.getKey().source == source)
                 removeImage(image.getKey());

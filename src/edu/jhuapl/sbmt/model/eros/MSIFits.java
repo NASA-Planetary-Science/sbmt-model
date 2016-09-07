@@ -9,15 +9,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import edu.jhuapl.sbmt.util.BackplaneInfo;
-
+import nom.tam.fits.FitsException;
+import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
 import altwg.Fits.HeaderTags;
 import altwg.util.FitsHeader;
 import altwg.util.FitsHeader.FitsHeaderBuilder;
 import altwg.util.FitsUtil;
-import nom.tam.fits.FitsException;
-import nom.tam.fits.HeaderCard;
-import nom.tam.fits.HeaderCardException;
+
+import edu.jhuapl.sbmt.util.BackplaneInfo;
 
 
 /**

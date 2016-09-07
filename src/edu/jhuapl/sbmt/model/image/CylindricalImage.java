@@ -47,7 +47,7 @@ public class CylindricalImage extends Image
     private vtkPolyData shiftedImagePolyData;
     private vtkActor smallBodyActor;
     private vtkPolyDataMapper smallBodyMapper;
-    private ArrayList<vtkProp> smallBodyActors = new ArrayList<vtkProp>();
+    private List<vtkProp> smallBodyActors = new ArrayList<vtkProp>();
     private double imageOpacity = 1.0;
     private SmallBodyModel smallBodyModel;
     private vtkTexture imageTexture;

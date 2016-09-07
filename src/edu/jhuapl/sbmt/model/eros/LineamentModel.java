@@ -26,7 +26,7 @@ public class LineamentModel extends AbstractModel
     private HashMap<Integer, Lineament> idToLineamentMap = new HashMap<Integer, Lineament>();
     private HashMap<Integer, Lineament> cellIdToLineamentMap = new HashMap<Integer, Lineament>();
     private vtkPolyData lineaments;
-    private ArrayList<vtkProp> lineamentActors = new ArrayList<vtkProp>();
+    private List<vtkProp> lineamentActors = new ArrayList<vtkProp>();
     private vtkActor lineamentActor;
     private int[] defaultColor = {255, 0, 255, 255}; // RGBA, default to purple
 
@@ -35,12 +35,12 @@ public class LineamentModel extends AbstractModel
         public int cellId;
         public String name = "";
         public int id;
-        public ArrayList<Double> lat = new ArrayList<Double>();
-        public ArrayList<Double> lon = new ArrayList<Double>();
-        public ArrayList<Double> rad = new ArrayList<Double>();
-        //public ArrayList<Double> x = new ArrayList<Double>();
-        //public ArrayList<Double> y = new ArrayList<Double>();
-        //public ArrayList<Double> z = new ArrayList<Double>();
+        public List<Double> lat = new ArrayList<Double>();
+        public List<Double> lon = new ArrayList<Double>();
+        public List<Double> rad = new ArrayList<Double>();
+        //public List<Double> x = new ArrayList<Double>();
+        //public List<Double> y = new ArrayList<Double>();
+        //public List<Double> z = new ArrayList<Double>();
         //public BoundingBox bb = new BoundingBox();
     }
 
@@ -132,7 +132,7 @@ public class LineamentModel extends AbstractModel
     /*
     public List<Lineament> getLineamentsWithinBox(BoundingBox box)
     {
-        ArrayList<Lineament> array = new ArrayList<Lineament>();
+        List<Lineament> array = new ArrayList<Lineament>();
         for (Integer id : this.idToLineamentMap.keySet())
         {
             Lineament lin =    this.idToLineamentMap.get(id);

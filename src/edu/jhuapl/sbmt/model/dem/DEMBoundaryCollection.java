@@ -83,7 +83,7 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
         @Override
         public List<vtkProp> getProps()
         {
-            ArrayList<vtkProp> props = new ArrayList<vtkProp>();
+            List<vtkProp> props = new ArrayList<vtkProp>();
             props.add(actor);
             return props;
         }
@@ -139,7 +139,7 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
         }
     }
 
-    private HashMap<DEMBoundary, ArrayList<vtkProp>> boundaryToActorsMap = new HashMap<DEMBoundary, ArrayList<vtkProp>>();
+    private HashMap<DEMBoundary, List<vtkProp>> boundaryToActorsMap = new HashMap<DEMBoundary, List<vtkProp>>();
     private HashMap<vtkProp, DEMBoundary> actorToBoundaryMap = new HashMap<vtkProp, DEMBoundary>();
     private SmallBodyModel smallBodyModel;
     private ModelManager modelManager;
@@ -274,7 +274,7 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
         boundary.removePropertyChangeListener(this);
         smallBodyModel.removePropertyChangeListener(boundary);
 
-        ArrayList<vtkProp> actors = boundaryToActorsMap.get(boundary);
+        List<vtkProp> actors = boundaryToActorsMap.get(boundary);
 
         for (vtkProp act : actors)
             actorToBoundaryMap.remove(act);
@@ -293,7 +293,7 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
             boundary.removePropertyChangeListener(this);
             smallBodyModel.removePropertyChangeListener(boundary);
 
-            ArrayList<vtkProp> actors = boundaryToActorsMap.get(boundary);
+            List<vtkProp> actors = boundaryToActorsMap.get(boundary);
 
             if(actors != null)
             {
