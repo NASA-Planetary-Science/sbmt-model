@@ -18,6 +18,7 @@ public enum Instrument
     MVIC("MVIC"),
     LEISA("LEISA"),
     LORRI("LORRI"),
+    MOLA("MOLA"),
     GENERIC("GENERIC");
 
     final private String str;

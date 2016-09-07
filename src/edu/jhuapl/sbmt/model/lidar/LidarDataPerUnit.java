@@ -56,11 +56,15 @@ public class LidarDataPerUnit extends AbstractModel
     {
         int[] xyzIndices = polyhedralModelConfig.lidarBrowseXYZIndices;
         int[] scXyzIndices = polyhedralModelConfig.lidarBrowseSpacecraftIndices;
+        boolean isLidarInSphericalCoordinates = polyhedralModelConfig.lidarBrowseIsLidarInSphericalCoordinates;
         boolean isSpacecraftInSphericalCoordinates = polyhedralModelConfig.lidarBrowseIsSpacecraftInSphericalCoordinates;
-        int timeindex = polyhedralModelConfig.lidarBrowseTimeIndex;
+        boolean isTimeInET = polyhedralModelConfig.lidarBrowseIsTimeInET;
+        int timeIndex = polyhedralModelConfig.lidarBrowseTimeIndex;
         int numberHeaderLines = polyhedralModelConfig.lidarBrowseNumberHeaderLines;
         boolean isInMeters = polyhedralModelConfig.lidarBrowseIsInMeters;
-        int noiseindex = polyhedralModelConfig.lidarBrowseNoiseIndex;
+        int rangeIndex = polyhedralModelConfig.lidarBrowseRangeIndex;
+        boolean isRangeExplicitInData = polyhedralModelConfig.lidarBrowseIsRangeExplicitInData;
+        int noiseIndex = polyhedralModelConfig.lidarBrowseNoiseIndex;
         boolean isBinary = polyhedralModelConfig.lidarBrowseIsBinary;
         int binaryRecordSize = polyhedralModelConfig.lidarBrowseBinaryRecordSize;
         int outgoingIntensityIndex = polyhedralModelConfig.lidarBrowseOutgoingIntensityIndex;
@@ -95,12 +99,12 @@ public class LidarDataPerUnit extends AbstractModel
         vtkIdList idList = new vtkIdList();
         idList.SetNumberOfIds(1);
 
-        int xindex = xyzIndices[0];
-        int yindex = xyzIndices[1];
-        int zindex = xyzIndices[2];
-        int scxindex = scXyzIndices[0];
-        int scyindex = scXyzIndices[1];
-        int sczindex = scXyzIndices[2];
+        int xIndex = xyzIndices[0];
+        int yIndex = xyzIndices[1];
+        int zIndex = xyzIndices[2];
+        int scxIndex = scXyzIndices[0];
+        int scyIndex = scXyzIndices[1];
+        int sczIndex = scXyzIndices[2];
 
         int count = 0;
 
@@ -140,12 +144,12 @@ public class LidarDataPerUnit extends AbstractModel
             int numRecords = (int) (file.length() / binaryRecordSize);
             for (count = 0; count < numRecords; ++count)
             {
-                int xoffset = count*binaryRecordSize + xindex;
-                int yoffset = count*binaryRecordSize + yindex;
-                int zoffset = count*binaryRecordSize + zindex;
-                int scxoffset = count*binaryRecordSize + scxindex;
-                int scyoffset = count*binaryRecordSize + scyindex;
-                int sczoffset = count*binaryRecordSize + sczindex;
+                int xoffset = count*binaryRecordSize + xIndex;
+                int yoffset = count*binaryRecordSize + yIndex;
+                int zoffset = count*binaryRecordSize + zIndex;
+                int scxoffset = count*binaryRecordSize + scxIndex;
+                int scyoffset = count*binaryRecordSize + scyIndex;
+                int sczoffset = count*binaryRecordSize + sczIndex;
 
                 // Add lidar (x,y,z) and spacecraft (scx,scy,scz) data
                 double x = bb.getDouble(xoffset);
@@ -189,7 +193,7 @@ public class LidarDataPerUnit extends AbstractModel
                 pointsSc.InsertNextPoint(scx, scy, scz);
                 vertSc.InsertNextCell(idList);
 
-                int timeoffset = count*binaryRecordSize + timeindex;
+                int timeoffset = count*binaryRecordSize + timeIndex;
 
                 bb.position(timeoffset);
                 bb.get(utcArray);
@@ -204,7 +208,7 @@ public class LidarDataPerUnit extends AbstractModel
             fs.close();
         }
         else
-        {
+        {   // ASCII-file
             InputStreamReader isr = new InputStreamReader(fs);
             BufferedReader in = new BufferedReader(isr);
 
@@ -218,18 +222,34 @@ public class LidarDataPerUnit extends AbstractModel
                 String[] vals = line.trim().split("\\s+");
 
                 // Don't include noise
-                if (noiseindex >=0 && vals[noiseindex].equals("1"))
+                if (noiseIndex >=0 && vals[noiseIndex].equals("1"))
                     continue;
 
-                double x = Double.parseDouble(vals[xindex]);
-                double y = Double.parseDouble(vals[yindex]);
-                double z = Double.parseDouble(vals[zindex]);
-                double scx = Double.parseDouble(vals[scxindex]);
-                double scy = Double.parseDouble(vals[scyindex]);
-                double scz = Double.parseDouble(vals[sczindex]);
+                // Parse lidar measured position
+                double x=0, y=0, z=0;
+                if(xIndex >= 0 && yIndex >= 0 && zIndex >= 0)
+                {
+                    x = Double.parseDouble(vals[xIndex]);
+                    y = Double.parseDouble(vals[yIndex]);
+                    z = Double.parseDouble(vals[zIndex]);
+                }
+                if(isLidarInSphericalCoordinates)
+                {
+                    // Convert from spherical to xyz
+                    double[] xyz = MathUtil.latrec(new LatLon(y*Math.PI/180.0, x*Math.PI/180.0, z));
+                    x = xyz[0];
+                    y = xyz[1];
+                    z = xyz[2];
+                }
 
-                // If spacecraft position is in spherical coordinates,
-                // do the conversion here.
+                // Parse spacecraft position
+                double scx=0, scy=0, scz=0;
+                if(scxIndex >= 0 && scyIndex >= 0 && sczIndex >= 0)
+                {
+                    scx = Double.parseDouble(vals[scxIndex]);
+                    scy = Double.parseDouble(vals[scyIndex]);
+                    scz = Double.parseDouble(vals[sczIndex]);
+                }
                 if (isSpacecraftInSphericalCoordinates)
                 {
                     double[] xyz = MathUtil.latrec(new LatLon(scy*Math.PI/180.0, scx*Math.PI/180.0, scz));
@@ -238,6 +258,7 @@ public class LidarDataPerUnit extends AbstractModel
                     scz = xyz[2];
                 }
 
+                // Convert distance units from m -> km
                 if (isInMeters)
                 {
                     x /= 1000.0;
@@ -247,15 +268,26 @@ public class LidarDataPerUnit extends AbstractModel
                     scy /= 1000.0;
                     scz /= 1000.0;
                 }
+
                 points.InsertNextPoint(x, y, z);
                 idList.SetId(0, count);
                 vert.InsertNextCell(idList);
-
                 pointsSc.InsertNextPoint(scx, scy, scz);
                 vertSc.InsertNextCell(idList);
 
                 // Save range data
-                ranges.InsertNextValue(Math.sqrt((x-scx)*(x-scx) + (y-scy)*(y-scy) + (z-scz)*(z-scz)));
+                double range;
+                if(isRangeExplicitInData)
+                {
+                    // Range is explicitly listed in data, get it
+                    range = Double.parseDouble(vals[rangeIndex]);
+                }
+                else
+                {
+                    // Range is not explicitly listed, derive it from lidar measurement and sc positions
+                    range = Math.sqrt((x-scx)*(x-scx) + (y-scy)*(y-scy) + (z-scz)*(z-scz));
+                }
+                ranges.InsertNextValue(range);
 
                 // Extract the received intensity
                 double irec = 0.0;
@@ -271,7 +303,17 @@ public class LidarDataPerUnit extends AbstractModel
 
                 // We store the times in a vtk array. By storing in a vtk array, we don't have to
                 // worry about java out of memory errors since java doesn't know about c++ memory.
-                double t = TimeUtil.str2et(vals[timeindex]);
+                double t = 0;
+                if(isTimeInET)
+                {
+                    // Read ET directly
+                    t = Double.parseDouble(vals[timeIndex]);
+                }
+                else
+                {
+                    // Convert from UTC string to ET
+                    t = TimeUtil.str2et(vals[timeIndex]);
+                }
                 times.InsertNextValue(t);
 
                 ++count;
