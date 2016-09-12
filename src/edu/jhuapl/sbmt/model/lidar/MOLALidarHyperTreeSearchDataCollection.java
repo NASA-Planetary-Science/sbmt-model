@@ -31,17 +31,15 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
-import edu.jhuapl.sbmt.lidar.hyperoctree.ola.OlaFSHyperPoint;
-import edu.jhuapl.sbmt.lidar.hyperoctree.ola.OlaFSHyperTreeSkeleton;
+import edu.jhuapl.sbmt.lidar.hyperoctree.mola.MolaFSHyperPoint;
+import edu.jhuapl.sbmt.lidar.hyperoctree.mola.MolaFSHyperTreeSkeleton;
 import edu.jhuapl.sbmt.lidar.test.LidarPoint;
 
-public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
+public class MOLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
 {
     public enum TrackFileType
     {
-        TEXT,
-        BINARY,
-        OLA_LEVEL_2
+        TEXT
     };
 
     private Map<String, FSHyperTreeSkeleton> skeletons = new HashMap<String, FSHyperTreeSkeleton>();
@@ -55,7 +53,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         return loading;
     }
 
-    public OLALidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
+    public MOLALidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
         super(smallBodyModel);
     }
@@ -79,7 +77,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
             {
-                skeleton = new OlaFSHyperTreeSkeleton(basePath);
+                skeleton = new MolaFSHyperTreeSkeleton(basePath);
                 skeletons.put(datasourceName, skeleton);
             }
         }
@@ -128,7 +126,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
         // Here it corresponds to the list of leaves of an octree that intersect the bounding box of the user selection area.
 
-        ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading OLA datapoints ("+cubeList.size()+" individual chunks)")
+        ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading MOLA datapoints ("+cubeList.size()+" individual chunks)")
         {
             @Override
             protected Void doInBackground() throws Exception
@@ -148,6 +146,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     if (!dataFile.exists())
                         dataFile=FileCache.getFileFromServer(FileCache.FILE_PREFIX+dataFilePath.toString());
                     originalPoints.addAll(readDataFile(dataFile,pointInRegionChecker,new double[]{startDate,stopDate}));
+                    System.out.println(originalPoints.size());
                     //
                     cnt++;
                     double progressPercentage=((double)cnt/(double)cubeList.size()*100);
@@ -156,6 +155,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                         break;
                 }
                 cancel(true);
+
 
                 System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
@@ -225,7 +225,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         try {
             DataInputStream stream=new DataInputStream(new FileInputStream(dataInputFile));
             while (true) {
-                OlaFSHyperPoint pt=new OlaFSHyperPoint(stream);                                         // TODO: this is OLA-specific
+                MolaFSHyperPoint pt=new MolaFSHyperPoint(stream);                                         // TODO: this is MOLA-specific
                 if (pt.getTime()<timeLimits[0] || pt.getTime()>timeLimits[1])   // throw away points outside time limits
                     continue;
                 if (pointInRegionChecker!=null)
@@ -268,7 +268,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         {
             Track track=tracks.get(i);
             for (int j=track.startId; j<=track.stopId; j++)
-                track.registerSourceFileIndex(((OlaFSHyperPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
+                track.registerSourceFileIndex(((MolaFSHyperPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
         }
     }
 
