@@ -1157,7 +1157,7 @@ public class LidarSearchDataCollection extends AbstractModel
                     (target[0]-scpos[0])*(target[0]-scpos[0]) +
                     (target[1]-scpos[1])*(target[1]-scpos[1]) +
                     (target[2]-scpos[2])*(target[2]-scpos[2]))*1000;*/
-            double range=originalPoints.get(cellId).getRange();
+            double range=originalPoints.get(cellId).getRange()*1000;    // m
             return String.format("Lidar point acquired at " + TimeUtil.et2str(et) +
                     ", ET = %f, unmodified range = %f m", et, range);
         }
