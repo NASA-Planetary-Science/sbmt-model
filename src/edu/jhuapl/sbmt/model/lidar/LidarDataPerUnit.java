@@ -281,6 +281,10 @@ public class LidarDataPerUnit extends AbstractModel
                 {
                     // Range is explicitly listed in data, get it
                     range = Double.parseDouble(vals[rangeIndex]);
+                    if(isInMeters)
+                    {
+                        range /= 1000.0;
+                    }
                 }
                 else
                 {
