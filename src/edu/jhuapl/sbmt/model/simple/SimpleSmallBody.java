@@ -61,4 +61,16 @@ public class SimpleSmallBody extends SmallBodyModel
                 ColoringValueType.CELLDATA,
                 false);
     }
+
+    @Override
+    public double getDensity()
+    {
+        return getSmallBodyConfig().density;
+    }
+
+    @Override
+    public double getRotationRate()
+    {
+        return getSmallBodyConfig().rotationRate;
+    }
 }
