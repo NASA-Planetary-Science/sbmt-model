@@ -18,6 +18,7 @@ import org.joda.time.DateTimeZone;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
+import vtk.vtkFeatureEdges;
 import vtk.vtkFunctionParser;
 import vtk.vtkIdList;
 import vtk.vtkPoints;
@@ -91,6 +92,11 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     static private double[] channelsColoringMaxValue = {0.05, 0.05, 0.05};
 
     private double[] frustumCenter;
+
+    private vtkActor selectionActor=new vtkActor();
+    private vtkPolyData selectionPolyData=new vtkPolyData();
+    boolean isSelected;
+    double footprintHeight;
 
     // These values were taken from Table 1 of "Spectral properties and geologic
     // processes on Eros from combined NEAR NIS and MSI data sets"
@@ -274,6 +280,9 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 
         footprint = new vtkPolyData();
         shiftedFootprint = new vtkPolyData();
+        double footprintHeight=0.001;
+
+        System.out.println(getSloppyIncidenceAngle());
     }
 
     public void generateFootprint()
@@ -293,12 +302,52 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
                 footprint.DeepCopy(tmp);
 
                 shiftedFootprint.DeepCopy(tmp);
-                PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, 0.001);
+                PolyDataUtil.shiftPolyDataInMeanNormalDirection(shiftedFootprint, footprintHeight);
+                createSelectionPolyData();
+                createSelectionActor();
             }
         }
     }
 
-//    private vtkPolyData loadFootprint()
+    private void createSelectionPolyData()
+    {
+        vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
+        edgeFilter.SetInputData(getShiftedFootprint());
+        edgeFilter.BoundaryEdgesOn();
+        edgeFilter.FeatureEdgesOff();
+        edgeFilter.ManifoldEdgesOff();
+        edgeFilter.NonManifoldEdgesOff();
+        edgeFilter.Update();
+        selectionPolyData.DeepCopy(edgeFilter.GetOutput());
+    }
+
+    private void createSelectionActor()
+    {
+        vtkPolyDataMapper mapper=new vtkPolyDataMapper();
+        mapper.SetInputData(selectionPolyData);
+        mapper.Update();
+        selectionActor.SetMapper(mapper);
+        selectionActor.VisibilityOff();
+        selectionActor.GetProperty().EdgeVisibilityOn();
+        selectionActor.GetProperty().SetColor(1,0,0);
+        selectionActor.GetProperty().SetLineWidth(3);
+    }
+
+    public void setSelected()
+    {
+        isSelected=true;
+        selectionActor.VisibilityOn();
+        selectionActor.Modified();
+    }
+
+    public void setUnselected()
+    {
+        isSelected=false;
+        selectionActor.VisibilityOff();
+        selectionActor.Modified();
+    }
+
+    //    private vtkPolyData loadFootprint()
 //    {
 //        String footprintFilename = serverpath.substring(0, serverpath.length()-4) + "_FOOTPRINT.VTK";
 //        File file = FileCache.getFileFromServer(footprintFilename);
@@ -323,9 +372,19 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         vtkPolyData tmp = erosModel.computeFrustumIntersection(spacecraftPosition,
                 frustum1, frustum2, frustum3, frustum4);
         shiftedFootprint.DeepCopy(tmp);
-        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint,h);
+        PolyDataUtil.shiftPolyDataInMeanNormalDirection(shiftedFootprint,h);
+        createSelectionPolyData();
+        //
+        if (isSelected)
+            selectionActor.VisibilityOn();
+        //
         ((vtkPolyDataMapper)footprintActor.GetMapper()).SetInputData(shiftedFootprint);
-        ((vtkPolyDataMapper)footprintActor.GetMapper()).Update();
+        footprintActor.GetMapper().Update();
+        ((vtkPolyDataMapper)selectionActor.GetMapper()).SetInputData(selectionPolyData);
+        selectionActor.GetMapper().Update();
+
+        //
+        footprintHeight=h;
     }
 
     public List<vtkProp> getProps()
@@ -429,6 +488,8 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
             footprintActors.add(frustumActor);
         }
 
+        footprintActors.add(selectionActor);
+
         return footprintActors;
     }
 
@@ -497,6 +558,11 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     public static String[] getDerivedParameters()
     {
         return derivedParameters;
+    }
+
+    public double getSloppyIncidenceAngle()
+    {
+         return (maxIncidence+minIncidence)/2.;  // min/max come directly from the .nis text files
     }
 
     public HashMap<String, String> getProperties() throws IOException
@@ -606,6 +672,27 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     public double[] getFrustumCenter()
     {
         return frustumCenter;
+    }
+
+    public double[] getFrustumCorner(int i)
+    {
+        switch (i)
+        {
+        case 0:
+            return frustum1;
+        case 1:
+            return frustum2;
+        case 2:
+            return frustum3;
+        case 3:
+            return frustum4;
+        }
+        return null;
+    }
+
+    public double[] getFrustumOrigin()
+    {
+        return spacecraftPosition;
     }
 
     private double evaluateDerivedParameters(int channel)

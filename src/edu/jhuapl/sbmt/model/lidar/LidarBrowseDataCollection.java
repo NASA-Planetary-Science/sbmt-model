@@ -99,6 +99,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         lidarPerUnitActors.clear();
         actorToFileMap.clear();
         fileToLidarPerUnitMap.clear();
+        System.out.println("LidarBrowseDataCollection.removeAllLidarData()");
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 

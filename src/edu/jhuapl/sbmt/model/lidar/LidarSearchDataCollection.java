@@ -727,7 +727,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
             if (currentTime - prevTime >= timeSeparationBetweenTracks)
             {
-                System.out.println(currentTime-prevTime);
+              //  System.out.println(currentTime-prevTime);
                 track.stopId = i-1;
                 double t0 = originalPoints.get(track.startId).getTime();
                 double t1 = originalPoints.get(track.stopId).getTime();
@@ -741,6 +741,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
             prevTime = currentTime;
         }
+        tracks.remove(tracks.size()-1); // last one is always empty so remove it
 
         track.stopId = size-1;
         /*double t0 = originalPoints.get(track.startId).getTime();

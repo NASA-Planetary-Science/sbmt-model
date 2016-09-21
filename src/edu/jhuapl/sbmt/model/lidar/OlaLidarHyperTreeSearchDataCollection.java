@@ -35,7 +35,7 @@ import edu.jhuapl.sbmt.lidar.hyperoctree.ola.OlaFSHyperPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.ola.OlaFSHyperTreeSkeleton;
 import edu.jhuapl.sbmt.lidar.test.LidarPoint;
 
-public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
+public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
 {
     public enum TrackFileType
     {
@@ -55,7 +55,7 @@ public class OLALidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         return loading;
     }
 
-    public OLALidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
+    public OlaLidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
         super(smallBodyModel);
     }
