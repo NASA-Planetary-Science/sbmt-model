@@ -1,10 +1,14 @@
 package edu.jhuapl.sbmt.model.eros;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import vtk.vtkPolyData;
 import vtk.vtkProp;
@@ -18,7 +22,6 @@ public class NISStatistics extends AbstractModel
     int nFaces;
     List<Sample> emergenceAngle;
 
-    List<vtkProp> props=Lists.newArrayList();
     List<NISSpectrum> spectra=Lists.newArrayList();
 
     public NISStatistics(List<Sample> emergenceAngle, List<NISSpectrum> spectra)
@@ -32,7 +35,7 @@ public class NISStatistics extends AbstractModel
     @Override
     public List<vtkProp> getProps()
     {
-        return props;
+        return null;    // props are stored by individual spectra
     }
 
     public int getNumberOfFaces()
@@ -50,10 +53,43 @@ public class NISStatistics extends AbstractModel
         return emergenceAngle;
     }
 
+    public Map<NISSpectrum, Integer> orderSpectraByMeanEmergenceAngle()
+    {
+        final List<Double> means=Lists.newArrayList();
+        for (int i=0; i<spectra.size(); i++)
+        {
+            NISSpectrum spectrum=spectra.get(i);
+            List<Sample> subSample=Lists.newArrayList();
+            for (Sample sample : emergenceAngle)
+                if (sample.parentSpectrum.equals(spectrum))
+                    subSample.add(sample);
+            means.add(getWeightedMean(subSample));
+        }
+
+        List<Integer> indices=Lists.newArrayList();
+        for (int i=0; i<spectra.size(); i++)
+            indices.add(i);
+        Collections.sort(indices, new Comparator<Integer>() // sort indices by value of corresponding means
+        {
+            @Override
+            public int compare(Integer o1, Integer o2)
+            {
+                return means.get(o1).compareTo(means.get(o2));
+            }
+        });
+
+        Map<NISSpectrum, Integer> stackingMap=Maps.newHashMap();
+        for (int i=0; i<indices.size(); i++)
+            stackingMap.put(spectra.get(i), indices.get(i));
+        return stackingMap;
+    }
+
+
     public static class Sample
     {
         double value;
         double weight;
+        NISSpectrum parentSpectrum;
     }
 
     public static double getMin(List<Sample> samples)
@@ -165,6 +201,7 @@ public class NISStatistics extends AbstractModel
             Sample sample=new Sample();
             sample.value=Math.acos(nmlVec.dotProduct(toScVec.normalize()));
             sample.weight=computeOverlapFraction(tri, frustum);
+            sample.parentSpectrum=spectrum;
             samples.add(sample);
         }
         return samples;

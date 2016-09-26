@@ -27,10 +27,11 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
     private SmallBodyModel erosModel;
 
     boolean selectAll=false;
+    final double minFootprintSeparation=0.001;
+    double footprintSeparation=0.001;
 
     Map<NISSpectrum,Integer> ordinals=Maps.newHashMap();
     final static int defaultOrdinal=0;
-    double totalShiftAmount=1;  // TODO: make this more meaningful
 
     public NISSpectraCollection(SmallBodyModel eros)
     {
@@ -39,47 +40,67 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
 
     public void reshiftFootprints()
     {
-        int minOrdinal=Integer.MAX_VALUE;
-        int maxOrdinal=Integer.MIN_VALUE;
-        for (int i :ordinals.values())
-        {
-            if (i<minOrdinal)
-                minOrdinal=i;
-            if (i>maxOrdinal)
-                maxOrdinal=i;
-        }
         for (NISSpectrum spectrum : ordinals.keySet())
         {
-            double unitShiftAmount=0;
-            if (maxOrdinal>minOrdinal)
-                unitShiftAmount=((double)ordinals.get(spectrum)-(double)minOrdinal)/((double)maxOrdinal-(double)minOrdinal);
-            spectrum.shiftFootprintToHeight(spectrum.getOffset()+unitShiftAmount*totalShiftAmount);
+            spectrum.shiftFootprintToHeight(footprintSeparation*(1+ordinals.get(spectrum)));
+            //System.out.println(ordinals.get(spectrum)+" "+spectrum.isSelected);
         }
+        //System.out.println();
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
     }
 
     public void setOrdinal(NISSpectrum spectrum, int ordinal)
     {
+        //System.out.println(spectrum);
         if (ordinals.containsKey(spectrum))
             ordinals.remove(spectrum);
         ordinals.put(spectrum, ordinal);
+        //System.out.println(ordinals);
+    }
+
+    public void clearOrdinals()
+    {
+        ordinals.clear();
+    }
+
+    public void setFootprintSeparation(double val)
+    {
+        footprintSeparation=val;
         reshiftFootprints();
     }
 
-    public void addSpectrum(String path) throws IOException
+    public void increaseFootprintSeparation(double val)
     {
-        addSpectrum(path,defaultOrdinal);
+        footprintSeparation+=val;
+        reshiftFootprints();
+    }
+
+    public void decreaseFootprintSeparation(double val)
+    {
+        footprintSeparation-=val;
+        if (footprintSeparation<minFootprintSeparation)
+            footprintSeparation=minFootprintSeparation;
+        reshiftFootprints();
+    }
+
+    public double getFootprintSeparation()
+    {
+        return footprintSeparation;
+    }
+
+    public double getMinFootprintSeparation()
+    {
+        return minFootprintSeparation;
     }
 
 
-    public void addSpectrum(String path, int ordinal) throws IOException
+    public void addSpectrum(String path) throws IOException
     {
         if (fileToSpectrumMap.containsKey(path))
             return;
 
         //NISSpectrum spectrum = NISSpectrum.NISSpectrumFactory.createSpectrum(path, erosModel);
         NISSpectrum spectrum = new NISSpectrum(path, erosModel);
-        ordinals.put(spectrum, ordinal);
 
         erosModel.addPropertyChangeListener(spectrum);
         spectrum.addPropertyChangeListener(this);

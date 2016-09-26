@@ -280,9 +280,8 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 
         footprint = new vtkPolyData();
         shiftedFootprint = new vtkPolyData();
-        double footprintHeight=0.001;
+        footprintHeight=eros.getMinShiftAmount();
 
-        System.out.println(getSloppyIncidenceAngle());
     }
 
     public void generateFootprint()
@@ -308,6 +307,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
             }
         }
     }
+
 
     private void createSelectionPolyData()
     {
@@ -560,10 +560,11 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         return derivedParameters;
     }
 
-    public double getSloppyIncidenceAngle()
+    public double getMinFootprintHeight()
     {
-         return (maxIncidence+minIncidence)/2.;  // min/max come directly from the .nis text files
+        return erosModel.getMinShiftAmount();
     }
+
 
     public HashMap<String, String> getProperties() throws IOException
     {
