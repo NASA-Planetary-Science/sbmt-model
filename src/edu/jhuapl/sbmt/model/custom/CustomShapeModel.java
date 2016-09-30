@@ -6,6 +6,7 @@ import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.model.dem.DEM;
 
 public class CustomShapeModel extends SmallBodyModel
 {
@@ -21,6 +22,23 @@ public class CustomShapeModel extends SmallBodyModel
                 null,
                 ColoringValueType.CELLDATA,
                 false);
+
+        // Check to see if this is an altwg FITs file, if so then extract the color and set it as well
+        String fitsPath = Configuration.getImportedShapeModelsDir() +
+                File.separator + config.customName + File.separator + "model.fit";
+        File fitsFile = new File(fitsPath);
+        if(fitsFile.exists())
+        {
+            // Load in the file's plate colorings
+            try
+            {
+                DEM.colorDEM(fitsPath, this);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean isBuiltIn()
