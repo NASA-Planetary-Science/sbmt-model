@@ -179,6 +179,14 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
                 removeTracksThatAreTooSmall();
 
+                // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
+                List<Track> tracksToRemove=Lists.newArrayList();
+                for (Track t : tracks)
+                    if (t.timeRange[0].length()==0 || t.timeRange[1].length()==0)
+                        tracksToRemove.add(t);
+                for (Track t : tracksToRemove)
+                    tracks.remove(t);
+
                 System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();

@@ -42,6 +42,7 @@ import vtk.vtkIdList;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkPolyDataWriter;
 import vtk.vtkProp;
 import vtk.vtkUnsignedCharArray;
 
@@ -535,8 +536,8 @@ public class LidarSearchDataCollection extends AbstractModel
     {
         DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
 
-        Track track = new Track();
-        track.startId = originalPoints.size();
+//        Track track = new Track();
+//        track.startId = originalPoints.size();
 
         while (true)
         {
@@ -584,8 +585,9 @@ public class LidarSearchDataCollection extends AbstractModel
 
         in.close();
 
-        track.stopId = originalPoints.size() - 1;
-        tracks.add(track);
+//        track.stopId = originalPoints.size() - 1;
+//        tracks.add(track);
+
 
     }
 
@@ -631,8 +633,11 @@ public class LidarSearchDataCollection extends AbstractModel
 
         //int startTrack=tracks.size();
         computeTracks();
+
+
         removeTracksThatAreTooSmall();
         //int endTrack=tracks.size();
+
 
         assignInitialColorToTrack();
 
@@ -649,6 +654,12 @@ public class LidarSearchDataCollection extends AbstractModel
         }
 
         updateTrackPolydata();
+
+        vtkPolyDataWriter writer=new vtkPolyDataWriter();
+        writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
+        writer.SetFileTypeToBinary();
+        writer.SetInputData(polydata);
+        writer.Write();
 
 
     }
@@ -724,7 +735,6 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=1; i<size; ++i)
         {
             double currentTime = originalPoints.get(i).getTime();
-
             if (currentTime - prevTime >= timeSeparationBetweenTracks)
             {
               //  System.out.println(currentTime-prevTime);
@@ -732,6 +742,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 double t0 = originalPoints.get(track.startId).getTime();
                 double t1 = originalPoints.get(track.stopId).getTime();
                 track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
+                System.out.println(Arrays.toString(track.timeRange));
 
                 track = new Track();
                 track.startId = i;
@@ -739,9 +750,11 @@ public class LidarSearchDataCollection extends AbstractModel
                 tracks.add(track);
             }
 
+
             prevTime = currentTime;
         }
-        tracks.remove(tracks.size()-1); // last one is always empty so remove it
+//        if (tracks.size()>1)
+//            tracks.remove(tracks.size()-1); // last one is always empty so remove it, at least for the lidar tree search
 
         track.stopId = size-1;
         /*double t0 = originalPoints.get(track.startId).getTime();
@@ -996,6 +1009,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
     protected void updateTrackPolydata()
     {
+
         // Place the points into polydata
         polydata.DeepCopy(emptyPolyData);
         scPosPolyData.DeepCopy(emptyPolyData);
@@ -1015,6 +1029,7 @@ public class LidarSearchDataCollection extends AbstractModel
         int count = 0;
 
         int numTracks = getNumberOfTracks();
+
         for (int j=0; j<numTracks; ++j)
         {
             Track track = getTrack(j);
@@ -1033,14 +1048,14 @@ public class LidarSearchDataCollection extends AbstractModel
 
                     double[] pt = originalPoints.get(i).getTargetPosition().toArray();
                     pt = transformLidarPoint(pt);
-                    points.InsertNextPoint(pt);
-                    idList.SetId(0, count);
+                    int id=points.InsertNextPoint(pt);
+                    idList.SetId(0, id);
                     vert.InsertNextCell(idList);
 
-                    pt=originalPoints.get(i).getSourcePosition().toArray();
-                    pt=transformLidarPoint(pt);
-                    scPoints.InsertNextPoint(pt);
-                    scVert.InsertNextCell(idList);
+                    //pt=originalPoints.get(i).getSourcePosition().toArray();
+                    //pt=transformLidarPoint(pt);
+                    //scPoints.InsertNextPoint(pt);
+                    //scVert.InsertNextCell(idList);
 
                     double intensityReceived = originalPoints.get(i).getIntensityReceived();
                     minIntensity = (intensityReceived < minIntensity) ? intensityReceived : minIntensity;
