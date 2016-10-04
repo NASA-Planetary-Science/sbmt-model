@@ -37,14 +37,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     public static final String DEM_MAP_PATHS = "DemMapPaths"; // For backwards compatibility, still read this in
     public static final String HALFSIZE = "HalfSize";
     private static final float INVALID_VALUE = -1.0e38f;
-    private vtkIdList idList;
     private vtkPolyData dem;
     private vtkPolyData boundary;
-    private int xIdx, yIdx, zIdx;
-    private int halfsize;
-    private double scale;
-    private double latitude;
-    private double longitude;
     private vtkFloatArray[] coloringValuesPerCell;
     private vtkFloatArray[] coloringValuesPerPoint;
     private float[] coloringValuesScale;
@@ -109,11 +103,6 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     // Copy constructor
     public DEM(DEM copyDEM)
     {
-        if(copyDEM.idList != null)
-        {
-            idList = new vtkIdList();
-            idList.DeepCopy(copyDEM.idList);
-        }
         if(copyDEM.dem != null)
         {
             dem = new vtkPolyData();
@@ -124,13 +113,6 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
             boundary = new vtkPolyData();
             boundary.DeepCopy(copyDEM.boundary);
         }
-        xIdx = copyDEM.xIdx;
-        yIdx = copyDEM.yIdx;
-        zIdx = copyDEM.zIdx;
-        halfsize = copyDEM.halfsize;
-        scale = copyDEM.scale;
-        latitude = copyDEM.latitude;
-        longitude = copyDEM.longitude;
         if(copyDEM.coloringValuesPerCell != null)
         {
             coloringValuesPerCell = new vtkFloatArray[copyDEM.coloringValuesPerCell.length];
@@ -178,7 +160,6 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         this.key = key;
 
         // Initialize data structures
-        idList = new vtkIdList();
         dem = new vtkPolyData();
         boundary = new vtkPolyData();
 
@@ -193,13 +174,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         return key;
     }
 
-    private vtkPolyData initializeDEM(String filename) throws IOException, FitsException
+    public static void colorDEM(String filename, SmallBodyModel smallBodyModel) throws IOException, FitsException
     {
-        vtkPoints points = new vtkPoints();
-        vtkCellArray polys = new vtkCellArray();
-        dem.SetPoints(points);
-        dem.SetPolys(polys);
-
         Fits f = new Fits(filename);
         BasicHDU hdu = f.getHDU(0);
 
@@ -209,9 +185,9 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         List<Integer> backPlaneIndices = new ArrayList<Integer>();
         List<String> unprocessedBackPlaneNames = new ArrayList<String>();
         List<String> unprocessedBackPlaneUnits = new ArrayList<String>();
-        xIdx = -1;
-        yIdx = -1;
-        zIdx = -1;
+        int xIdx = -1;
+        int yIdx = -1;
+        int zIdx = -1;
         int planeCount = 0;
         while((headerCard = header.nextCard()) != null)
         {
@@ -266,27 +242,168 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                 // Increment plane count
                 planeCount++;
             }
-            else
+        }
+
+        // Define arrays now that we know the number of backplanes
+        int numBackPlanes = backPlaneIndices.size();
+        vtkFloatArray[] coloringValuesPerCell = new vtkFloatArray[numBackPlanes];
+        vtkFloatArray[] coloringValuesPerPoint = new vtkFloatArray[numBackPlanes];
+        String[] coloringNames = new String[numBackPlanes];
+        String[] coloringUnits = new String[numBackPlanes];
+        float[] coloringValuesScale = new float[numBackPlanes];
+        int[] backPlaneIdx = new int[numBackPlanes];
+
+        // Go through each backplane
+        for(int i=0; i<numBackPlanes; i++)
+        {
+            // Get the name, unit, and scale factor to use
+            setBackplaneInfo(i, unprocessedBackPlaneNames.get(i), unprocessedBackPlaneUnits.get(i),
+                    coloringNames, coloringUnits, coloringValuesScale);
+
+            // Set number of components for each vtkFloatArray to 1
+            coloringValuesPerCell[i] = new vtkFloatArray();
+            coloringValuesPerCell[i].SetNumberOfComponents(1);
+            coloringValuesPerPoint[i] = new vtkFloatArray();
+            coloringValuesPerPoint[i].SetNumberOfComponents(1);
+
+            // Copy List element to array for faster lookup later
+            backPlaneIdx[i] = backPlaneIndices.get(i);
+        }
+
+        // Check dimensions of actual data
+        final int NUM_PLANES = numBackPlanes + 3;
+        int[] axes = hdu.getAxes();
+        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
+        {
+            throw new IOException("FITS file has incorrect dimensions");
+        }
+
+        int liveSize = axes[1];
+
+        float[][][] data = (float[][][])hdu.getData().getData();
+        f.getStream().close();
+
+        int[][] indices = new int[liveSize][liveSize];
+        int c = 0;
+        float x, y, z;
+        float d;
+
+        // First add points to the vtkPoints array
+        for (int m=0; m<liveSize; ++m)
+            for (int n=0; n<liveSize; ++n)
             {
-                // Parse and save DEM size and scale information
-                switch(headerKey)
+                indices[m][n] = -1;
+
+                // A pixel value of -1.0e38 means that pixel is invalid and should be skipped
+                x = data[xIdx][m][n];
+                y = data[yIdx][m][n];
+                z = data[zIdx][m][n];
+
+                // Check to see if x,y,z values are all valid
+                boolean valid = x != INVALID_VALUE && y != INVALID_VALUE && z != INVALID_VALUE;
+
+                // Check to see if data for all backplanes are also valid
+                for(int i=0; i<numBackPlanes; i++)
                 {
-                case "HALFSIZE":
-                    halfsize = Integer.parseInt(headerValue);
-                    break;
-                case "SCALE":
-                    scale = Double.parseDouble(headerValue);
-                    break;
-                case "LATITUDE":
-                    latitude = Double.parseDouble(headerValue);
-                    break;
-                case "LONGITUDE":
-                    longitude = Double.parseDouble(headerValue);
-                    break;
-                default:
-                    // Ignore all other keys
-                    break;
+                    d = data[backPlaneIdx[i]][m][n];
+                    valid = (valid && d != INVALID_VALUE);
                 }
+
+                // Only add point if everything is valid
+                if (valid)
+                {
+                    for(int i=0; i<numBackPlanes; i++)
+                    {
+                        d = data[backPlaneIdx[i]][m][n] * coloringValuesScale[i];
+                        coloringValuesPerCell[i].InsertNextTuple1(d);
+                    }
+
+                    indices[m][n] = c;
+                    ++c;
+                }
+            }
+
+        convertPointDataToCellData(smallBodyModel.getSmallBodyPolyData(), coloringValuesPerCell);
+
+        // Apply colors to the small body model
+        smallBodyModel.setSmallBodyPolyData(null,
+                coloringValuesPerCell, coloringNames,
+                coloringUnits, ColoringValueType.CELLDATA);
+    }
+
+    private vtkPolyData initializeDEM(String filename) throws IOException, FitsException
+    {
+        vtkPoints points = new vtkPoints();
+        vtkCellArray polys = new vtkCellArray();
+        vtkIdList idList = new vtkIdList();
+        dem.SetPoints(points);
+        dem.SetPolys(polys);
+
+        Fits f = new Fits(filename);
+        BasicHDU hdu = f.getHDU(0);
+
+        // First pass, figure out number of planes and grab size and scale information
+        Header header = hdu.getHeader();
+        HeaderCard headerCard;
+        List<Integer> backPlaneIndices = new ArrayList<Integer>();
+        List<String> unprocessedBackPlaneNames = new ArrayList<String>();
+        List<String> unprocessedBackPlaneUnits = new ArrayList<String>();
+        int xIdx = -1;
+        int yIdx = -1;
+        int zIdx = -1;
+        int planeCount = 0;
+        while((headerCard = header.nextCard()) != null)
+        {
+            String headerKey = headerCard.getKey();
+            String headerValue = headerCard.getValue();
+            String headerComment = headerCard.getComment();
+
+            if(headerKey.startsWith("PLANE"))
+            {
+                // Determine if we are looking at a coordinate or a backplane
+                if(headerValue.startsWith("X"))
+                {
+                    // This plane is the X coordinate, save the index
+                    xIdx = planeCount;
+                }
+                else if(headerValue.startsWith("Y"))
+                {
+                    // This plane is the Y coordinate, save the index
+                    yIdx = planeCount;
+                }
+                else if(headerValue.startsWith("Z"))
+                {
+                    // This plane is the Z coordinate, save the index
+                    zIdx = planeCount;
+                }
+                else
+                {
+                    // We are looking at a backplane, save the index in order of appearance
+                    backPlaneIndices.add(planeCount);
+
+                    // Try to break the value into name and unit components
+                    String[] valueSplitResults = headerValue.split("[\\(\\[\\)\\]]");
+                    String planeName = valueSplitResults[0];
+                    String planeUnits = "";
+                    if(valueSplitResults.length > 1)
+                    {
+                        planeUnits = valueSplitResults[1];
+                    }
+                    else if(headerComment != null)
+                    {
+                        // Couldn't find units in the value, try looking in comments instead
+                        String[] commentSplitResults = headerComment.split("[\\(\\[\\)\\]]");
+                        if(commentSplitResults.length > 1)
+                        {
+                            planeUnits = commentSplitResults[1];
+                        }
+                    }
+                    unprocessedBackPlaneNames.add(planeName);
+                    unprocessedBackPlaneUnits.add(planeUnits);
+                }
+
+                // Increment plane count
+                planeCount++;
             }
         }
 
@@ -317,7 +434,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         for(int i=0; i<numBackPlanes; i++)
         {
             // Get the name, unit, and scale factor to use
-            setBackplaneInfo(i, unprocessedBackPlaneNames.get(i), unprocessedBackPlaneUnits.get(i));
+            setBackplaneInfo(i, unprocessedBackPlaneNames.get(i), unprocessedBackPlaneUnits.get(i),
+                    coloringNames, coloringUnits, coloringValuesScale);
 
             // Set number of components for each vtkFloatArray to 1
             coloringValuesPerCell[i] = new vtkFloatArray();
@@ -344,7 +462,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 
         int[][] indices = new int[liveSize][liveSize];
         int c = 0;
-        float x, y, z, h, h2, s;
+        float x, y, z;
         float d;
 
         // First add points to the vtkPoints array
@@ -435,13 +553,16 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         {
             coloringValuesPerPoint[i].DeepCopy(coloringValuesPerCell[i]);
         }
-        convertPointDataToCellData();
+        convertPointDataToCellData(dem, coloringValuesPerCell);
 
         int centerIndex = liveSize / 2;
         centerOfDEM = new double[3];
         centerOfDEM[0] = data[xIdx][centerIndex][centerIndex];
         centerOfDEM[1] = data[yIdx][centerIndex][centerIndex];
         centerOfDEM[2] = data[zIdx][centerIndex][centerIndex];
+
+        // Delete data structures
+        idList.Delete();
 
         return dem;
     }
@@ -450,18 +571,18 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
      * Convert the point data (which is how they are stored in the Gaskell's cube file)
      * to cell data.
      */
-    private void convertPointDataToCellData()
+    private static void convertPointDataToCellData(vtkPolyData polyData, vtkFloatArray[] colorValuesPerCell)
     {
-        int numBackPlanes = coloringValuesPerCell.length;
+        int numBackPlanes = colorValuesPerCell.length;
         vtkFloatArray[] cellDataArrays = new vtkFloatArray[numBackPlanes];
 
         vtkPointDataToCellData pointToCell = new vtkPointDataToCellData();
-        pointToCell.SetInputData(dem);
+        pointToCell.SetInputData(polyData);
 
         for (int i=0; i<numBackPlanes; ++i)
         {
-            vtkFloatArray array = coloringValuesPerCell[i];
-            dem.GetPointData().SetScalars(array);
+            vtkFloatArray array = colorValuesPerCell[i];
+            polyData.GetPointData().SetScalars(array);
             pointToCell.Update();
             vtkFloatArray arrayCell = new vtkFloatArray();
             vtkDataArray outputScalars = ((vtkPolyData)pointToCell.GetOutput()).GetCellData().GetScalars();
@@ -469,15 +590,12 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
             cellDataArrays[i] = arrayCell;
         }
 
-        dem.GetPointData().SetScalars(null);
+        polyData.GetPointData().SetScalars(null);
 
         for(int i=0; i<numBackPlanes; i++)
         {
-            coloringValuesPerCell[i] = cellDataArrays[i];
+            colorValuesPerCell[i] = cellDataArrays[i];
         }
-        //slopes = cellDataArrays[0];
-        //heightsGravity = cellDataArrays[1];
-        //heightsPlane = cellDataArrays[2];
 
         pointToCell.Delete();
     }
@@ -636,7 +754,6 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 
     public void delete()
     {
-        idList.Delete();
         dem.Delete();
         boundary.Delete();
         for(int i=0; i<coloringValuesPerCell.length; i++)
@@ -676,7 +793,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         return coloringUnits;
     }
 
-    private void setBackplaneInfo(int colorIdx, String unprocessedName, String unprocessedUnits)
+    private static void setBackplaneInfo(int colorIdx, String unprocessedName, String unprocessedUnits,
+            String[] coloringNames, String[] coloringUnits, float[] coloringValuesScale)
     {
         // Keep as is by default
         String processedName = unprocessedName.trim();
