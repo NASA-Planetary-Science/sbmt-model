@@ -600,7 +600,7 @@ public class SimulationRun extends AbstractModel implements PropertyChangeListen
         monolithBody.SetBounds(monolithBodyBounds);
         monolithBody.SetCenter(monolithBodyOffset);
 
-        String spacecraftFileName = "/edu/jhuapl/near/data/cassini-9k.stl";
+        String spacecraftFileName = "/edu/jhuapl/sbmt/data/cassini-9k.stl";
         initializeSpacecraftBody(ConvertResourceToFile.convertResourceToRealFile(this, spacecraftFileName, Configuration.getApplicationDataDir()));
 
         spacecraftFov = new vtkConeSource();
