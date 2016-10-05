@@ -343,7 +343,7 @@ public class OsirisImage extends PerspectiveImage
         image.DeepCopy(getDisplayedImage());
         for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
             for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
-                image.SetScalarComponentFromDouble(i, j, 0, 3, 0.2*255);
+                image.SetScalarComponentFromDouble(i, j, 0, 3, 0.7*255);
         vtkTexture offLimbTexture = new vtkTexture();
         offLimbTexture.InterpolateOn();
         offLimbTexture.RepeatOff();
