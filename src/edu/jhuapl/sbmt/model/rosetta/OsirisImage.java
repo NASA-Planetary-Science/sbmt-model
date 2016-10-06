@@ -24,6 +24,7 @@ import vtk.vtkTexture;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
+import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
@@ -37,6 +38,7 @@ public class OsirisImage extends PerspectiveImage
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
+        loadOffLimbPlane();
     }
 
     @Override
@@ -231,6 +233,7 @@ public class OsirisImage extends PerspectiveImage
     }
 
     vtkPolyData offLimbPlane=null;
+    vtkActor offLimbActor;
 
     public void loadOffLimbPlane()
     {
@@ -326,18 +329,18 @@ public class OsirisImage extends PerspectiveImage
 
         offLimbPlane=imagePolyData;
         PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), offLimbPlane);
+
+        // XXX: Mike Z's default intensity range for testing plume visibility
+        setDisplayedImageRange(new IntensityRange(getDisplayedRange().min, getDisplayedRange().max/50));
+
     }
 
     @Override
     public List<vtkProp> getProps()
     {
         List<vtkProp> props=super.getProps();
-
-        if (offLimbPlane==null)
-            loadOffLimbPlane();
-
-        // XXX: Mike Z's default intensity range for testing plume visibility
-        setDisplayedImageRange(new IntensityRange(getDisplayedRange().min, getDisplayedRange().max/50));
+        if (props.contains(offLimbActor))
+            props.remove(offLimbActor);
 
         vtkImageData image=new vtkImageData();
         image.DeepCopy(getDisplayedImage());
@@ -351,14 +354,36 @@ public class OsirisImage extends PerspectiveImage
         //offLimbTexture.SetBlendingMode(3);
         offLimbTexture.SetInputData(image);
 
-        vtkPolyDataMapper mapper=new vtkPolyDataMapper();
-        mapper.SetInputData(offLimbPlane);
+        vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
+        offLimbMapper.SetInputData(offLimbPlane);
 
-        vtkActor actor=new vtkActor();
-        actor.SetMapper(mapper);
-        actor.SetTexture(offLimbTexture);
-        props.add(actor);
+        offLimbActor=new vtkActor();
+        offLimbActor.SetMapper(offLimbMapper);
+        offLimbActor.SetTexture(offLimbTexture);
+
+        props.add(offLimbActor);
 
         return props;
+    }
+
+    public boolean offLimbFootprintIsVisible()
+    {
+        if (offLimbActor==null)
+            return true;    // philosophically, it's not "hidden" if it doesn't exist
+        else
+            return offLimbActor.GetVisibility()==1;
+    }
+
+    public void setOffLimbFootprintVisibility(boolean visible)
+    {
+        if (offLimbActor!=null)
+        {
+            if (visible)
+                offLimbActor.VisibilityOn();
+            else
+                offLimbActor.VisibilityOff();
+        }
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
     }
 }
