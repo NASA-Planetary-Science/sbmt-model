@@ -38,7 +38,6 @@ public class OsirisImage extends PerspectiveImage
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
-        loadOffLimbPlane();
     }
 
     @Override
@@ -234,6 +233,7 @@ public class OsirisImage extends PerspectiveImage
 
     vtkPolyData offLimbPlane=null;
     vtkActor offLimbActor;
+    vtkTexture offLimbTexture;
 
     public void loadOffLimbPlane()
     {
@@ -330,39 +330,38 @@ public class OsirisImage extends PerspectiveImage
         offLimbPlane=imagePolyData;
         PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), offLimbPlane);
 
-        // XXX: Mike Z's default intensity range for testing plume visibility
-        setDisplayedImageRange(new IntensityRange(getDisplayedRange().min, getDisplayedRange().max/50));
+        if (getDisplayedImage()!=null)
+        {
+            //        for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
+            //            for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
+            //                image.SetScalarComponentFromDouble(i, j, 0, 3, 0.7*255);    // set alpha manually per pixel; is there a faster way to do this?
+            offLimbTexture = new vtkTexture();
+            offLimbTexture.InterpolateOn();
+            offLimbTexture.RepeatOff();
+            offLimbTexture.EdgeClampOn();
+            //offLimbTexture.SetBlendingMode(3);
+            this.setDisplayedImageRange(super.getDisplayedRange());
+
+            vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
+            offLimbMapper.SetInputData(offLimbPlane);
+
+            offLimbActor=new vtkActor();
+            offLimbActor.SetMapper(offLimbMapper);
+            offLimbActor.SetTexture(offLimbTexture);
+        }
 
     }
 
     @Override
     public List<vtkProp> getProps()
     {
+        if (offLimbActor==null)
+            loadOffLimbPlane();
+
         List<vtkProp> props=super.getProps();
         if (props.contains(offLimbActor))
             props.remove(offLimbActor);
-
-        vtkImageData image=new vtkImageData();
-        image.DeepCopy(getDisplayedImage());
-        for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
-            for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
-                image.SetScalarComponentFromDouble(i, j, 0, 3, 0.7*255);
-        vtkTexture offLimbTexture = new vtkTexture();
-        offLimbTexture.InterpolateOn();
-        offLimbTexture.RepeatOff();
-        offLimbTexture.EdgeClampOn();
-        //offLimbTexture.SetBlendingMode(3);
-        offLimbTexture.SetInputData(image);
-
-        vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
-        offLimbMapper.SetInputData(offLimbPlane);
-
-        offLimbActor=new vtkActor();
-        offLimbActor.SetMapper(offLimbMapper);
-        offLimbActor.SetTexture(offLimbTexture);
-
         props.add(offLimbActor);
-
         return props;
     }
 
@@ -384,6 +383,19 @@ public class OsirisImage extends PerspectiveImage
                 offLimbActor.VisibilityOff();
         }
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
+    }
+
+    @Override
+    public void setDisplayedImageRange(IntensityRange range)
+    {
+        super.setDisplayedImageRange(range);
+        if (offLimbTexture==null)
+            offLimbTexture=new vtkTexture();
+        vtkImageData image=new vtkImageData();
+        image.DeepCopy(getDisplayedImage());
+        offLimbTexture.SetInputData(image);
+        offLimbTexture.Modified();
 
     }
 }
