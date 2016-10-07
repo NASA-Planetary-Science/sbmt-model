@@ -59,8 +59,8 @@ public class SimulationRun extends AbstractModel implements PropertyChangeListen
 //  private double[] boresightOffset = {0.0, 100.0, 0.0};
     private double[] spacecraftFovOffset = {0.0, 0.0, 0.5};
     private double[] monolithBodyOffset = { 0.0, 0.0, 0.0 };
-    private double[] monolithBodyBounds = { -0.09, 0.09, -0.04, 0.04, -0.01, 0.01 };
-//    private double[] monolithBodyBounds = { -9.0, 9.0, -4.0, 4.0, -1.0, 1.0 };
+//    private double[] monolithBodyBounds = { -0.09, 0.09, -0.04, 0.04, -0.01, 0.01 };
+    private double[] monolithBodyBounds = { -9.0, 9.0, -4.0, 4.0, -1.0, 1.0 };
 //  private double[] monolithBodyOffset = { -3.0, 0.0, 0.0 };
 //    private double[] monolithBodyOffset = { 9.0, 4.0, 1.0 };
 
@@ -599,6 +599,7 @@ public class SimulationRun extends AbstractModel implements PropertyChangeListen
         monolithBody.SetCenter(zero);
         monolithBody.SetBounds(monolithBodyBounds);
         monolithBody.SetCenter(monolithBodyOffset);
+        monolithBody.Update();
 
         String spacecraftFileName = "/edu/jhuapl/sbmt/data/cassini-9k.stl";
         initializeSpacecraftBody(ConvertResourceToFile.convertResourceToRealFile(this, spacecraftFileName, Configuration.getApplicationDataDir()));
@@ -609,6 +610,7 @@ public class SimulationRun extends AbstractModel implements PropertyChangeListen
         spacecraftFov.SetCenter(spacecraftFovOffset);
         spacecraftFov.SetHeight(1.0);
         spacecraftFov.SetResolution(4);
+        spacecraftFov.Update();
     }
 
     public Trajectory getTrajectoryByCellId(int cellId)
@@ -837,7 +839,7 @@ public class SimulationRun extends AbstractModel implements PropertyChangeListen
             spacecraftLabelActor.SetCaption(speedText);
 
             spacecraftFovActor.SetUserMatrix(fovMatrix);
-//            spacecraftFovActor.SetUserMatrix(spacecraftRotateYMatrix);
+//            spacecraftFovActor.SetUserMatrix(spacecraftBodyMatrix);
 
 //            spacecraftBoresight.Modified();
             monolithBody.Modified();
@@ -868,22 +870,25 @@ public class SimulationRun extends AbstractModel implements PropertyChangeListen
     public void setShowSpacecraft(boolean show)
     {
         this.showSpacecraft = show;
-        if (show)
-        {
-//            simulationRunActors.add(spacecraftBoresightActor);
-            simulationRunActors.add(monolithBodyActor);
-            simulationRunActors.add(spacecraftBodyActor);
-            simulationRunActors.add(spacecraftLabelActor);
-            simulationRunActors.add(spacecraftFovActor);
-        }
-        else
-        {
-//            simulationRunActors.remove(spacecraftBoresightActor);
-            simulationRunActors.remove(monolithBodyActor);
-            simulationRunActors.remove(spacecraftBodyActor);
-            simulationRunActors.remove(spacecraftLabelActor);
-            simulationRunActors.remove(spacecraftFovActor);
-        }
+        updateActorVisibility();
+//        if (show)
+//        {
+////            simulationRunActors.add(spacecraftBoresightActor);
+//
+//            simulationRunActors.add(monolithBodyActor);
+//            simulationRunActors.add(spacecraftBodyActor);
+//            simulationRunActors.add(spacecraftLabelActor);
+//            simulationRunActors.add(spacecraftFovActor);
+//        }
+//        else
+//        {
+////            simulationRunActors.remove(spacecraftBoresightActor);
+//
+//            simulationRunActors.remove(monolithBodyActor);
+//            simulationRunActors.remove(spacecraftBodyActor);
+//            simulationRunActors.remove(spacecraftLabelActor);
+//            simulationRunActors.remove(spacecraftFovActor);
+//        }
     }
 
     public void updateActorVisibility()
