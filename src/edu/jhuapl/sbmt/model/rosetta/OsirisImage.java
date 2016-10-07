@@ -2,17 +2,34 @@ package edu.jhuapl.sbmt.model.rosetta;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-import nom.tam.fits.FitsException;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+import vtk.vtkActor;
+import vtk.vtkCell;
+import vtk.vtkCellArray;
+import vtk.vtkIdList;
+import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageConstantPad;
 import vtk.vtkImageData;
+import vtk.vtkImageToPolyDataFilter;
 import vtk.vtkImageTranslateExtent;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
+import vtk.vtkProp;
+import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.IntensityRange;
+import edu.jhuapl.saavtk.util.PolyDataUtil;
+import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class OsirisImage extends PerspectiveImage
 {
@@ -212,5 +229,173 @@ public class OsirisImage extends PerspectiveImage
         {
             return 2;
         }
+    }
+
+    vtkPolyData offLimbPlane=null;
+    vtkActor offLimbActor;
+    vtkTexture offLimbTexture;
+
+    public void loadOffLimbPlane()
+    {
+        double[] spacecraftPosition=new double[3];
+        double[] focalPoint=new double[3];
+        double[] upVector=new double[3];
+        this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
+        final double fov=this.getMaxFovAngle();
+
+        int res=(int)Math.sqrt(getFootprint(getDefaultSlice()).GetNumberOfPoints());
+        int[] resolution=new int[]{res,res};
+
+        int szMax=Math.max(resolution[0], resolution[1]);
+        int szW=szMax;//(int)(aspect*szMax);
+        int szH=szMax;
+
+        //
+        final double[] ul=frustum1Adjusted[getCurrentSlice()];
+        final double[] ur=frustum3Adjusted[getCurrentSlice()];
+        final double[] lr=frustum4Adjusted[getCurrentSlice()];
+        final double[] ll=frustum2Adjusted[getCurrentSlice()];
+        double footprintDepth=PolyDataUtil.computeFarthestFrustumPlaneDepth(getFootprint(getCurrentSlice()), spacecraftPosition, ul, ur, lr, ll);
+
+        Vector3D lookVec=new Vector3D(focalPoint).subtract(new Vector3D(spacecraftPosition));
+        // rotation to align points with camera view, given that camera is at spacecraft position
+        Vector3D upVec=new Vector3D(upVector);
+        Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());
+        Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
+        Vector3D scPos=new Vector3D(spacecraftPosition);
+        double sfac=footprintDepth*Math.tan(Math.toRadians(fov/2));
+
+        vtkImageCanvasSource2D imageSource=new vtkImageCanvasSource2D();
+        imageSource.SetScalarTypeToUnsignedChar();
+        imageSource.SetNumberOfScalarComponents(3);
+        imageSource.SetExtent(-szW/2, szW/2, -szH/2, szH/2, 0, 0);
+        for (int i=-szW/2; i<=szW/2; i++)
+            for (int j=-szH/2; j<=szH/2; j++)
+            {
+                Vector3D ray=new Vector3D((double)i/((double)szW/2)*sfac,(double)j/((double)szW/2)*sfac,-footprintDepth);
+                ray=upRot.applyTo(lookRot.applyTo(ray));//upRot.applyInverseTo(lookRot.applyInverseTo(ray.normalize()));
+                Vector3D rayEnd=ray.add(scPos);
+                //
+                vtkIdList ids=new vtkIdList();
+                getSmallBodyModel().getCellLocator().FindCellsAlongLine(scPos.toArray(), rayEnd.toArray(), 1e-12, ids);
+                if (ids.GetNumberOfIds()>0)
+                    imageSource.SetDrawColor(0,0,0);
+                else
+                    imageSource.SetDrawColor(255,255,255);
+                imageSource.DrawPoint(i, j);
+            }
+        imageSource.Update();
+        vtkImageData imageData=imageSource.GetOutput();
+
+        vtkImageToPolyDataFilter imageConverter=new vtkImageToPolyDataFilter();
+        imageConverter.SetInputData(imageData);
+        imageConverter.SetOutputStyleToPixelize();
+        imageConverter.Update();
+        vtkPolyData tempImagePolyData=imageConverter.GetOutput();
+
+        vtkCellArray cells=new vtkCellArray();
+        for (int c=0; c<tempImagePolyData.GetNumberOfCells(); c++)
+        {
+            double[] rgb=tempImagePolyData.GetCellData().GetScalars().GetTuple3(c);
+            if (rgb[0]>0 || rgb[1]>0 || rgb[2]>0)
+            {
+                vtkCell cell=tempImagePolyData.GetCell(c);
+                cells.InsertNextCell(cell.GetPointIds());
+            }
+        }
+        vtkPolyData imagePolyData=new vtkPolyData();
+        imagePolyData.SetPoints(tempImagePolyData.GetPoints());
+        imagePolyData.SetPolys(cells);
+
+        for (int i=0; i<imagePolyData.GetNumberOfPoints(); i++)
+        {
+            Vector3D pt=new Vector3D(imagePolyData.GetPoint(i));
+            pt=pt.subtract(new Vector3D((double)szW/2,(double)szH/2,0));
+            pt=new Vector3D(pt.getX()/((double)szW/2)*sfac,pt.getY()/((double)szH/2)*sfac,-footprintDepth);
+            pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));
+            imagePolyData.GetPoints().SetPoint(i, pt.toArray());
+        }
+
+/*        vtkAppendPolyData piAppendFilter=new vtkAppendPolyData();
+        piAppendFilter.AddInputData(imagePolyData);
+        piAppendFilter.AddInputData(getSmallBodyModel().getSmallBodyPolyData());
+        piAppendFilter.Update();
+
+        vtkPolyDataWriter piWriter=new vtkPolyDataWriter();
+        piWriter.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
+        piWriter.SetFileTypeToBinary();
+        piWriter.SetInputData(piAppendFilter.GetOutput());
+        piWriter.Write();*/
+
+        offLimbPlane=imagePolyData;
+        PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), offLimbPlane);
+
+        if (getDisplayedImage()!=null)
+        {
+            //        for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
+            //            for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
+            //                image.SetScalarComponentFromDouble(i, j, 0, 3, 0.7*255);    // set alpha manually per pixel; is there a faster way to do this?
+            offLimbTexture = new vtkTexture();
+            offLimbTexture.InterpolateOn();
+            offLimbTexture.RepeatOff();
+            offLimbTexture.EdgeClampOn();
+            //offLimbTexture.SetBlendingMode(3);
+            this.setDisplayedImageRange(super.getDisplayedRange());
+
+            vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
+            offLimbMapper.SetInputData(offLimbPlane);
+
+            offLimbActor=new vtkActor();
+            offLimbActor.SetMapper(offLimbMapper);
+            offLimbActor.SetTexture(offLimbTexture);
+        }
+
+    }
+
+    @Override
+    public List<vtkProp> getProps()
+    {
+        if (offLimbActor==null)
+            loadOffLimbPlane();
+
+        List<vtkProp> props=super.getProps();
+        if (props.contains(offLimbActor))
+            props.remove(offLimbActor);
+        props.add(offLimbActor);
+        return props;
+    }
+
+    public boolean offLimbFootprintIsVisible()
+    {
+        if (offLimbActor==null)
+            return true;    // philosophically, it's not "hidden" if it doesn't exist
+        else
+            return offLimbActor.GetVisibility()==1;
+    }
+
+    public void setOffLimbFootprintVisibility(boolean visible)
+    {
+        if (offLimbActor!=null)
+        {
+            if (visible)
+                offLimbActor.VisibilityOn();
+            else
+                offLimbActor.VisibilityOff();
+        }
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
+    }
+
+    @Override
+    public void setDisplayedImageRange(IntensityRange range)
+    {
+        super.setDisplayedImageRange(range);
+        if (offLimbTexture==null)
+            offLimbTexture=new vtkTexture();
+        vtkImageData image=new vtkImageData();
+        image.DeepCopy(getDisplayedImage());
+        offLimbTexture.SetInputData(image);
+        offLimbTexture.Modified();
+
     }
 }
