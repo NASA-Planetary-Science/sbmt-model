@@ -476,7 +476,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
                 while ((line = in.readLine()) != null)
                 {
                     // parse line of file
-                    State flybyState = new InstrumentStateAdaptor().parseStateString(line);
+                    State flybyState = new StateFIleDataConverter().parseStateString(line);
 
                     // add to history
                     history.put(flybyState);

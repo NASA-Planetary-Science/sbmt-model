@@ -1,14 +1,14 @@
 package edu.jhuapl.sbmt.model.time;
 
-public class InstrumentStateAdaptor extends InstrumentState implements State
+public class StateFIleDataConverter extends InstrumentState implements State
 {
 
-    public InstrumentStateAdaptor()
+    public StateFIleDataConverter()
     {
         // TODO Auto-generated constructor stub
     }
 
-    public InstrumentStateAdaptor(InstrumentState st)
+    public StateFIleDataConverter(InstrumentState st)
     {
         super(st);
         // TODO Auto-generated constructor stub
@@ -127,7 +127,7 @@ public class InstrumentStateAdaptor extends InstrumentState implements State
 
     public State parseStateString(String ststring)
     {
-        InstrumentStateAdaptor result = new InstrumentStateAdaptor();
+        StateFIleDataConverter result = new StateFIleDataConverter();
         InstrumentState.readStateString(result, ststring);
         return result;
     }
