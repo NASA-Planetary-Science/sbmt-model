@@ -466,7 +466,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
                 indexToTrajectory.put(itraj, trajectories[itraj]);
 
                 // create a new history instance and add it to the Map
-                StateHistory history = new StandardFlybyStateHistory();
+                StateHistory history = new StandardStateHistory();
                 this.nameToFlybyStateHistory.put(name, history);
 
                 // discard first line of column headings

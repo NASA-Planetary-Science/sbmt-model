@@ -4,7 +4,7 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-public class StandardFlybyStateHistory implements StateHistory, HasTime
+public class StandardStateHistory implements StateHistory, HasTime
 {
     private NavigableMap<Double, State> timeToFlybyState = new TreeMap<Double, State>();
 
@@ -47,7 +47,7 @@ public class StandardFlybyStateHistory implements StateHistory, HasTime
         setTime(time);
     }
 
-    public StandardFlybyStateHistory()
+    public StandardStateHistory()
     {
 
     }
