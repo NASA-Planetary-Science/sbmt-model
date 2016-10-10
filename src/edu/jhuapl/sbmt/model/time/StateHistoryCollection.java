@@ -13,23 +13,23 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 //import edu.jhuapl.sbmt.client.ModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.time.StateHistory.StateHistoryKey;
-import edu.jhuapl.sbmt.model.time.StateHistory.StateHistorySource;
+import edu.jhuapl.sbmt.model.time.StateHistoryModel.StateHistoryKey;
+import edu.jhuapl.sbmt.model.time.StateHistoryModel.StateHistorySource;
 
 public class StateHistoryCollection extends AbstractModel implements PropertyChangeListener, HasTime
 {
     private SmallBodyModel smallBodyModel;
 
-    private List<StateHistory> simRuns = new ArrayList<StateHistory>();
+    private List<StateHistoryModel> simRuns = new ArrayList<StateHistoryModel>();
 
-    private StateHistory currentRun = null;
+    private StateHistoryModel currentRun = null;
 
     public StateHistoryCollection(SmallBodyModel smallBodyModel)
     {
         this.smallBodyModel = smallBodyModel;
     }
 
-    protected StateHistory createRun(StateHistoryKey key, SmallBodyModel smallBodyModel) // throws FitsException, IOException
+    protected StateHistoryModel createRun(StateHistoryKey key, SmallBodyModel smallBodyModel) // throws FitsException, IOException
     {
         try {
             return SbmtModelFactory.createStateHistory(key, smallBodyModel, false);
@@ -41,7 +41,7 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
 
     private boolean containsKey(StateHistoryKey key)
     {
-        for (StateHistory run : simRuns)
+        for (StateHistoryModel run : simRuns)
         {
             if (run.getKey().equals(key))
                 return true;
@@ -50,9 +50,9 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
         return false;
     }
 
-    private StateHistory getRunFromKey(StateHistoryKey key)
+    private StateHistoryModel getRunFromKey(StateHistoryKey key)
     {
-        for (StateHistory run : simRuns)
+        for (StateHistoryModel run : simRuns)
         {
             if (run.getKey().equals(key))
                 return run;
@@ -61,14 +61,14 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
         return null;
     }
 
-    public StateHistory getCurrentRun()
+    public StateHistoryModel getCurrentRun()
     {
         return currentRun;
     }
 
     public void setCurrentRun(StateHistoryKey key)
     {
-        StateHistory run = getRunFromKey(key);
+        StateHistoryModel run = getRunFromKey(key);
         if (run != null && run != currentRun)
         {
             currentRun = run;
@@ -85,7 +85,7 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
             return;
         }
 
-        StateHistory run = createRun(key, smallBodyModel);
+        StateHistoryModel run = createRun(key, smallBodyModel);
 
         // set the current run
         this.currentRun = run;
@@ -102,7 +102,7 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
         if (!containsKey(key))
             return;
 
-        StateHistory run = getRunFromKey(key);
+        StateHistoryModel run = getRunFromKey(key);
         simRuns.remove(run);
 
         // change the current run to the first on the list
@@ -122,14 +122,14 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
      */
     public void removeRuns(StateHistorySource source)
     {
-        for (StateHistory run : simRuns)
+        for (StateHistoryModel run : simRuns)
             if (run.getKey().source == source)
                 removeRun(run.getKey());
     }
 
     public void setShowTrajectories(boolean show)
     {
-        for (StateHistory run : simRuns)
+        for (StateHistoryModel run : simRuns)
             run.setShowTrajectories(show);
     }
 
@@ -163,12 +163,12 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
             return "No simulation run selected";
     }
 
-    public StateHistory getRun(vtkActor actor)
+    public StateHistoryModel getRun(vtkActor actor)
     {
         return currentRun;
     }
 
-    public StateHistory getRun(StateHistoryKey key)
+    public StateHistoryModel getRun(StateHistoryKey key)
     {
         return getRunFromKey(key);
     }

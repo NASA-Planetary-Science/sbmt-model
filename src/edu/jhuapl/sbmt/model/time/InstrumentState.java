@@ -82,7 +82,7 @@ public class InstrumentState {
 		if (pixels != null)
 			pixels.clear();
 	}
-	public static InstrumentState addInstrumentState(Vector<FlybyData> fbVec, double t, double scanAngle, double ifov, int imageNumber, int frameNumber, InstrumentState lastState)
+	public static InstrumentState addInstrumentState(Vector<InstrumentData> fbVec, double t, double scanAngle, double ifov, int imageNumber, int frameNumber, InstrumentState lastState)
 	{
 		InstrumentState result = null;
 
@@ -93,12 +93,12 @@ public class InstrumentState {
 		InstrumentState st = new InstrumentState();
 		st.t = t;
 
-		V3 pos = FlybyData.interpolateSpacecraftPosition(fbVec, t);
-		V3 sunPos = FlybyData.interpolateSunPosition(fbVec, t);
+		V3 pos = InstrumentData.interpolateSpacecraftPosition(fbVec, t);
+		V3 sunPos = InstrumentData.interpolateSunPosition(fbVec, t);
 
 		//velocity calculation (RD)
-		V3 posp=FlybyData.interpolateSpacecraftPosition(fbVec, t + 0.5);
-		V3 posm=FlybyData.interpolateSpacecraftPosition(fbVec, t - 0.5);
+		V3 posp=InstrumentData.interpolateSpacecraftPosition(fbVec, t + 0.5);
+		V3 posm=InstrumentData.interpolateSpacecraftPosition(fbVec, t - 0.5);
 		V3 vel=VectorOps.Subtract(posp, posm);
 
 		st.scPos.copy(pos);
@@ -107,7 +107,7 @@ public class InstrumentState {
 
 		Ellipsoid.xyzToLatLong(st.scPos, st.subPt);
 
-		FlybyData.getAxes(fbVec, t, xAxis, yAxis, zAxis);
+		InstrumentData.getAxes(fbVec, t, xAxis, yAxis, zAxis);
 		st.xAxis.copy(xAxis);
 		st.yAxis.copy(yAxis);
 		st.zAxis.copy(zAxis);
@@ -160,11 +160,11 @@ public class InstrumentState {
 
 		return result;
 	}
-	public static String getStateString(Vector<FlybyData> fbVec, InstrumentState st, InstrumentState lastState)
+	public static String getStateString(Vector<InstrumentData> fbVec, InstrumentState st, InstrumentState lastState)
 	{
 		String result = "";
 
-		V3 sunPos = FlybyData.interpolateSunPosition(fbVec, st.t);
+		V3 sunPos = InstrumentData.interpolateSunPosition(fbVec, st.t);
 		UV sunUV = new UV();
 		Ellipsoid.xyzToLatLong(sunPos, sunUV);
 

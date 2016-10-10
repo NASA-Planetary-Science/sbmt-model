@@ -12,7 +12,7 @@ import edu.jhuapl.sbmt.model.europa.math.VectorOps;
 
 //import crucible.core.collections.CollectionUtilities;
 
-public class FlybyData {
+public class InstrumentData {
 	public String utc = "";
 	public double et = 0.0;
 	public V3 sc = null;
@@ -27,11 +27,11 @@ public class FlybyData {
 	public V3 ganySunVec = null;
 	public V3 callSunVec = null;
 
-	public FlybyData() {
+	public InstrumentData() {
 
 	}
 
-	public FlybyData(String timeStr, double t, V3 scPos, V3 europaPos,
+	public InstrumentData(String timeStr, double t, V3 scPos, V3 europaPos,
 			V3 ioPos, V3 ganymedePos, V3 callistoPos, V3 sunPos, V3 earthPos) {
 		create(timeStr, t, scPos, europaPos, ioPos, ganymedePos, callistoPos,
 				sunPos, earthPos);
@@ -82,8 +82,8 @@ public class FlybyData {
 		return sun;
 	}
 
-	public static FlybyData parseFlybyData(String line) {
-		FlybyData result = null;
+	public static InstrumentData parseFlybyData(String line) {
+		InstrumentData result = null;
 
 		Vector<String> parts = new Vector<String>();
 		FileUtils.splitOnChar(line, ',', parts);
@@ -121,7 +121,7 @@ public class FlybyData {
 						.parseDouble(parts.get(ndx++)), Double
 						.parseDouble(parts.get(ndx++))));
 
-				result = new FlybyData(timeStr, t, scPos, europaPos, ioPos,
+				result = new InstrumentData(timeStr, t, scPos, europaPos, ioPos,
 						ganymedePos, callistoPos, sunPos, earthPos);
 			} catch (Exception ex) {
 
@@ -131,9 +131,9 @@ public class FlybyData {
 		return result;
 	}
 
-	public static FlybyData parseFlybyData(String line, String jupLine,
+	public static InstrumentData parseFlybyData(String line, String jupLine,
 			String ioLine, String ganyLine, String callLine) {
-		FlybyData result = null;
+		InstrumentData result = null;
 
 		Vector<String> parts = new Vector<String>();
 		Vector<String> sunParts = new Vector<String>();
@@ -172,7 +172,7 @@ public class FlybyData {
 						.parseDouble(parts.get(ndx++)), Double
 						.parseDouble(parts.get(ndx++))));
 
-				result = new FlybyData(timeStr, t, scPos, europaPos, ioPos,
+				result = new InstrumentData(timeStr, t, scPos, europaPos, ioPos,
 						ganymedePos, callistoPos, sunPos, earthPos);
 
 				String sunLine = jupLine;
@@ -221,10 +221,10 @@ public class FlybyData {
 		return result;
 	}
 
-	public static Vector<FlybyData> getFlybyData(Vector<String> lines,
+	public static Vector<InstrumentData> getFlybyData(Vector<String> lines,
 			Vector<String> jupLines, Vector<String> ioLines,
 			Vector<String> ganyLines, Vector<String> callLines) {
-		Vector<FlybyData> results = new Vector<FlybyData>();
+		Vector<InstrumentData> results = new Vector<InstrumentData>();
 		int i, n;
 
 		n = lines.size();
@@ -242,7 +242,7 @@ public class FlybyData {
 			if (i < callLines.size())
 				callLine = callLines.get(i);
 
-			FlybyData fb = parseFlybyData(lines.get(i), jupLine, ioLine,
+			InstrumentData fb = parseFlybyData(lines.get(i), jupLine, ioLine,
 					ganyLine, callLine);
 			results.add(fb);
 		}
@@ -257,7 +257,7 @@ public class FlybyData {
 		for (int flyby = 1; flyby <= 45; flyby++){
 			String fileStr = folder + "Flyby" + FileUtils.formatInteger(flyby,4) + ".csv";
 			System.out.println("Working on: "+fileStr);
-			Vector<FlybyData> fbData = FlybyData.getFlybyData(fileStr);
+			Vector<InstrumentData> fbData = InstrumentData.getFlybyData(fileStr);
 			if (fbData.size() > 0)
 			{
 				String lblStr = FileUtils.getFilenameBeforeExtension(fileStr) + ".lbl";
@@ -274,8 +274,8 @@ public class FlybyData {
 			}
 		}
 	}
-	public static Vector<FlybyData> getFlybyData(String filename) {
-		Vector<FlybyData> results = null;
+	public static Vector<InstrumentData> getFlybyData(String filename) {
+		Vector<InstrumentData> results = null;
 
 		Vector<String> lines = FileUtils.readAsciiFile(filename);
 		String jupFile = FileUtils.getFilenameBeforeExtension(filename)
@@ -329,7 +329,7 @@ public class FlybyData {
 		return results;
 	}
 
-	public static V3 interpolateSpacecraftPosition(Vector<FlybyData> fbVec,
+	public static V3 interpolateSpacecraftPosition(Vector<InstrumentData> fbVec,
 			double t)
 	{
 		V3 result = null;
@@ -358,31 +358,31 @@ public class FlybyData {
 		return result;
 	}
 
-	public static double calculateGroundSpeed(Vector<FlybyData> fbVec,
+	public static double calculateGroundSpeed(Vector<InstrumentData> fbVec,
 			double t, double radius) {
 		double result = 0.0;
 
 		V3 v1 = interpolateSpacecraftPosition(fbVec, t - 1.0);
-		V3 v2 = FlybyData.interpolateSpacecraftPosition(fbVec, t + 1.0);
+		V3 v2 = InstrumentData.interpolateSpacecraftPosition(fbVec, t + 1.0);
 
 		result = VectorOps.AngularSep(v1, v2) * radius * 0.50;
 
 		return result;
 	}
 
-	public static V3 calculateVelocity(Vector<FlybyData> fbVec, double t)
+	public static V3 calculateVelocity(Vector<InstrumentData> fbVec, double t)
 	{
 		V3 result = null;
 
-		V3 v1 = FlybyData.interpolateSpacecraftPosition(fbVec, t-0.50);
-		V3 v2 = FlybyData.interpolateSpacecraftPosition(fbVec, t+0.50);
+		V3 v1 = InstrumentData.interpolateSpacecraftPosition(fbVec, t-0.50);
+		V3 v2 = InstrumentData.interpolateSpacecraftPosition(fbVec, t+0.50);
 
 		result = new V3(v2.X1() - v1.X1(), v2.X2() - v1.X2(), v2.X3() - v1.X3());
 
 		return result;
 	}
 
-	public static V3 interpolateSunPosition(Vector<FlybyData> fbVec, double t) {
+	public static V3 interpolateSunPosition(Vector<InstrumentData> fbVec, double t) {
 		V3 result = null;
 
 		int i = findIndex(fbVec, t);
@@ -412,18 +412,18 @@ public class FlybyData {
 		return result;
 	}
 
-	private static final Comparator<FlybyData> timeOrdering = new Comparator<FlybyData>() {
+	private static final Comparator<InstrumentData> timeOrdering = new Comparator<InstrumentData>() {
 
 		@Override
-		public int compare(FlybyData o1, FlybyData o2) {
+		public int compare(InstrumentData o1, InstrumentData o2) {
 			return Double.compare(o1.et, o2.et);
 		}
 
 	};
 
-	public static int findIndex(Vector<FlybyData> fbVec, double t) {
+	public static int findIndex(Vector<InstrumentData> fbVec, double t) {
 
-		FlybyData compareTo = new FlybyData();
+		InstrumentData compareTo = new InstrumentData();
 		compareTo.et = t;
 // comment out for now to avoid importing crucible -turnerj1
 //		return CollectionUtilities.lastLessThanOrEqualTo(fbVec, compareTo,
@@ -447,7 +447,7 @@ public class FlybyData {
 	// return result;
 	// }
 
-	public static int findClosestApproach(Vector<FlybyData> fbVec) {
+	public static int findClosestApproach(Vector<InstrumentData> fbVec) {
 		int result = -1;
 
 		int n = fbVec.size();
@@ -461,15 +461,15 @@ public class FlybyData {
 		return result;
 	}
 
-	public static V3 getAxes(Vector<FlybyData> fbVec, double t, V3 xAxis,
+	public static V3 getAxes(Vector<InstrumentData> fbVec, double t, V3 xAxis,
 			V3 yAxis, V3 zAxis) {
 		V3 result = null;
 
 		int i = findIndex(fbVec, t);
 
 		if ((i >= 0) && (i < (fbVec.size() - 1))) {
-			FlybyData fb1 = fbVec.get(i);
-			FlybyData fb2 = fbVec.get(i + 1);
+			InstrumentData fb1 = fbVec.get(i);
+			InstrumentData fb2 = fbVec.get(i + 1);
 
 			// zAxis.create(-fb1.sc.X1(), -fb1.sc.X2(), -fb1.sc.X3());
 			VectorOps.Negative(fb1.sc, zAxis);
@@ -485,7 +485,7 @@ public class FlybyData {
 		return result;
 	}
 
-	public static int findIncomingIndex(double radius, Vector<FlybyData> fbVec) {
+	public static int findIncomingIndex(double radius, Vector<InstrumentData> fbVec) {
 		int result = -1;
 
 		int i, n;
@@ -505,7 +505,7 @@ public class FlybyData {
 		return result;
 	}
 
-	public static int findOutgoingIndex(double radius, Vector<FlybyData> fbVec) {
+	public static int findOutgoingIndex(double radius, Vector<InstrumentData> fbVec) {
 		int result = -1;
 
 		int i, n;

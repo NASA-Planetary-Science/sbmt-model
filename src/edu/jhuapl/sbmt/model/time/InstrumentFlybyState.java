@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.time;
 
-public class InstrumentFlybyState extends InstrumentState implements FlybyState
+public class InstrumentFlybyState extends InstrumentState implements State
 {
 
     public InstrumentFlybyState()
@@ -125,7 +125,7 @@ public class InstrumentFlybyState extends InstrumentState implements FlybyState
         return frameNumber;
     }
 
-    public FlybyState parseStateString(String ststring)
+    public State parseStateString(String ststring)
     {
         InstrumentFlybyState result = new InstrumentFlybyState();
         InstrumentState.readStateString(result, ststring);

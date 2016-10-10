@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.time;
 
-public interface FlybyState
+public interface State
 {
     /** Image */
     public int getImageNumber();

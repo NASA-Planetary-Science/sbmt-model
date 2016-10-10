@@ -15,10 +15,10 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 public class StandardAreaCalculationCollection implements AreaCalculationCollection
 {
     private NavigableMap<Integer, AreaCalculation> indexToAreaCalculation = new TreeMap<Integer, AreaCalculation>();
-    private StateHistory simulationRun;
+    private StateHistoryModel simulationRun;
     private SmallBodyModel smallBodyModel;
 
-    public StandardAreaCalculationCollection(String runDirName, StateHistory simulationRun, SmallBodyModel torsoBodyModel)
+    public StandardAreaCalculationCollection(String runDirName, StateHistoryModel simulationRun, SmallBodyModel torsoBodyModel)
     {
         this.name = runDirName;
         this.simulationRun = simulationRun;

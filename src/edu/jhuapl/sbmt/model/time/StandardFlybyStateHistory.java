@@ -4,9 +4,9 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-public class StandardFlybyStateHistory implements FlybyStateHistory, HasTime
+public class StandardFlybyStateHistory implements StateHistory, HasTime
 {
-    private NavigableMap<Double, FlybyState> timeToFlybyState = new TreeMap<Double, FlybyState>();
+    private NavigableMap<Double, State> timeToFlybyState = new TreeMap<Double, State>();
 
     private Double time;
 
@@ -52,33 +52,33 @@ public class StandardFlybyStateHistory implements FlybyStateHistory, HasTime
 
     }
 
-    public void put(FlybyState flybyState)
+    public void put(State flybyState)
     {
         put(flybyState.getEphemerisTime(), flybyState);
     }
 
-    public void put(Double time, FlybyState flybyState)
+    public void put(Double time, State flybyState)
     {
         timeToFlybyState.put(time, flybyState);
     }
 
-    public Entry<Double, FlybyState> getFloorEntry(Double time)
+    public Entry<Double, State> getFloorEntry(Double time)
     {
         return timeToFlybyState.floorEntry(time);
     }
 
-    public Entry<Double, FlybyState> getCeilingEntry(Double time)
+    public Entry<Double, State> getCeilingEntry(Double time)
     {
         return timeToFlybyState.ceilingEntry(time);
     }
 
-    public FlybyState getValue(Double time)
+    public State getValue(Double time)
     {
         // for now, just return floor
         return getFloorEntry(time).getValue();
     }
 
-    public FlybyState getCurrentValue()
+    public State getCurrentValue()
     {
         // for now, just return floor
         return getValue(getTime());

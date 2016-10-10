@@ -502,7 +502,7 @@ public class StandardAreaCalculation implements AreaCalculation
     }
 
 
-    public StandardAreaCalculation(String directoryName, List<String> areaCalculationFiles, String name, Integer id, StateHistory simulationRun, SmallBodyModel smallBodyModel)
+    public StandardAreaCalculation(String directoryName, List<String> areaCalculationFiles, String name, Integer id, StateHistoryModel simulationRun, SmallBodyModel smallBodyModel)
     {
         this.directoryName = directoryName;
         this.areaCalculationFiles = areaCalculationFiles;
