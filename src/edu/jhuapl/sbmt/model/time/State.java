@@ -50,6 +50,9 @@ public interface State
     /** Spacecraft Velocity (km/s) */
     public double[] getSpacecraftVelocity();
 
+    /** Earth Position (km) */
+    public double[] getEarthPosition();
+
     /** Sun Position (km) */
     public double[] getSunPosition();
 

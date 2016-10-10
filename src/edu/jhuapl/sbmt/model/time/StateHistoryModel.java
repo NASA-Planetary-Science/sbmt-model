@@ -46,8 +46,6 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.europa.math.V3;
-import edu.jhuapl.sbmt.model.europa.math.VectorOps;
 import edu.jhuapl.sbmt.model.europa.time.TimeUtils;
 
 
@@ -424,18 +422,9 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         for (File file : runFiles)
         {
             String runName = file.getName();
-            String[] runNameTokens = runName.split("\\.");
-            if (runNameTokens.length == 2 && runName.endsWith(".csv") && (
-//                    runName.startsWith("TOPO-MONOPass") ||
-//                    runName.startsWith("TOPO-STEREOPass") ||
-                    runName.startsWith("SWIRS-HIPass") ||
-//                    runName.startsWith("SWIRS-LOPass") ||
-//                    runName.startsWith("ThermalImagerPass") ||
-                    runName.startsWith("RECONPass")
-                  )
-               )
+            if (runName.endsWith(".csv"))
             {
-                System.out.println("  pass " + runName);
+                System.out.println("  State History File: " + runName);
                 passFileNames.add(runName);
                 ntrajectories++;
             }
@@ -476,7 +465,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
                 while ((line = in.readLine()) != null)
                 {
                     // parse line of file
-                    State flybyState = new StateFIleDataConverter().parseStateString(line);
+                    State flybyState = new CsvState(line);
 
                     // add to history
                     history.put(flybyState);
@@ -722,40 +711,42 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             // get the current FlybyState
             State state = currentFlybyStateHistory.getCurrentValue();
             double[] spacecraftPosition = state.getSpacecraftPosition();
-            double spacecraftRotationX = state.getRollAngle();
-            double spacecraftRotationY = state.getViewingAngle();
+//            double spacecraftRotationX = state.getRollAngle();
+//            double spacecraftRotationY = state.getViewingAngle();
 
             double velocity[] = state.getSpacecraftVelocity();
             double speed = Math.sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2]);
+            double radius = Math.sqrt(spacecraftPosition[0]*spacecraftPosition[0] + spacecraftPosition[1]*spacecraftPosition[1] + spacecraftPosition[2]*spacecraftPosition[2]);
 
-            double[] p1 = { spacecraftPosition[0]-velocity[0], spacecraftPosition[1]-velocity[1], spacecraftPosition[2]-velocity[2] };
-            double[] p2 = { spacecraftPosition[0]+velocity[0], spacecraftPosition[1]+velocity[1], spacecraftPosition[2]+velocity[2] };
+//            double[] p1 = { spacecraftPosition[0]-velocity[0], spacecraftPosition[1]-velocity[1], spacecraftPosition[2]-velocity[2] };
+//            double[] p2 = { spacecraftPosition[0]+velocity[0], spacecraftPosition[1]+velocity[1], spacecraftPosition[2]+velocity[2] };
+//
+//            V3 v1 = new V3(p1);
+//            V3 v2 = new V3(p2);
+//            double groundSpeed = VectorOps.AngularSep(v1, v2) * europaRadius * 0.50;
+//
+//            double distance = Math.sqrt(spacecraftPosition[0]*spacecraftPosition[0] + spacecraftPosition[1]*spacecraftPosition[1] + spacecraftPosition[2]*spacecraftPosition[2]);
+//            double altitude = distance - europaRadius;
 
-            V3 v1 = new V3(p1);
-            V3 v2 = new V3(p2);
-            double groundSpeed = VectorOps.AngularSep(v1, v2) * europaRadius * 0.50;
-
-            double distance = Math.sqrt(spacecraftPosition[0]*spacecraftPosition[0] + spacecraftPosition[1]*spacecraftPosition[1] + spacecraftPosition[2]*spacecraftPosition[2]);
-            double altitude = distance - europaRadius;
-
-            String speedText = String.format("%7.1f km %7.3f km/sec   .", altitude, groundSpeed);
+//            String speedText = String.format("%7.1f km %7.3f km/sec   .", altitude, groundSpeed);
+            String speedText = String.format("%7.1f km %7.3f km/sec   .", radius, speed);
 
 //            System.out.println("Speed: " + speed + ", Ground Speed: " + groundSpeed);
 
             // hardcoded to RECON # pixels for now
 
-            double fovDepth = state.getSpacecraftAltitude() * fovDepthFudgeFactor;
+//            double fovDepth = state.getSpacecraftAltitude() * fovDepthFudgeFactor;
 
 //            double[] fovTargetPoint = state.getSurfaceIntercept();
 //            double[] fovTargetPoint = { 0.0, 0.0, 0.0 };
 //            double[] fovDelta = { fovTargetPoint[0] - spacecraftPosition[0],  fovTargetPoint[1] - spacecraftPosition[1], fovTargetPoint[2] - spacecraftPosition[2] };
 //            double fovDepth = Math.sqrt(fovDelta[0]*fovDelta[0] + fovDelta[1]*fovDelta[1] + fovDelta[2]*fovDelta[2]);
 
-            double fovWidth = fovDepth * instrumentIFovs[instrument] * instrumentLineSamples[instrument] * fovWidthFudge;
-            double fovHeight = fovDepth * instrumentIFovs[instrument] * instrumentLines[instrument];
+//            double fovWidth = fovDepth * instrumentIFovs[instrument] * instrumentLineSamples[instrument] * fovWidthFudge;
+//            double fovHeight = fovDepth * instrumentIFovs[instrument] * instrumentLines[instrument];
 
             // this is to make the FOV a rectangle shape rather than a diamond
-            double spacecraftRotationZ = Math.toRadians(45.0);
+//            double spacecraftRotationZ = Math.toRadians(45.0);
 
             // set the current orientation
             double[] xaxis = state.getSpacecraftXAxis();
@@ -794,32 +785,32 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             spacecraftIconMatrix.Multiply4x4(spacecraftIconMatrix, spacecraftBodyMatrix, spacecraftIconMatrix);
 
             // rotate the FOV about the Z axis
-            double sinRotZ = Math.sin(spacecraftRotationZ);
-            double cosRotZ = Math.cos(spacecraftRotationZ);
-            fovRotateZMatrix.SetElement(0, 0, cosRotZ);
-            fovRotateZMatrix.SetElement(1, 1, cosRotZ);
-            fovRotateZMatrix.SetElement(0, 1, sinRotZ);
-            fovRotateZMatrix.SetElement(1, 0, -sinRotZ);
+//            double sinRotZ = Math.sin(spacecraftRotationZ);
+//            double cosRotZ = Math.cos(spacecraftRotationZ);
+//            fovRotateZMatrix.SetElement(0, 0, cosRotZ);
+//            fovRotateZMatrix.SetElement(1, 1, cosRotZ);
+//            fovRotateZMatrix.SetElement(0, 1, sinRotZ);
+//            fovRotateZMatrix.SetElement(1, 0, -sinRotZ);
 
             // scale the FOV
-            fovScaleMatrix.SetElement(0, 0, fovHeight);
-            fovScaleMatrix.SetElement(1, 1, fovWidth);
-            fovScaleMatrix.SetElement(2, 2, fovDepth);
+//            fovScaleMatrix.SetElement(0, 0, fovHeight);
+//            fovScaleMatrix.SetElement(1, 1, fovWidth);
+//            fovScaleMatrix.SetElement(2, 2, fovDepth);
 
             // rotate the FOV about the Y axis
-            double sinRotY = Math.sin(spacecraftRotationY);
-            double cosRotY = Math.cos(spacecraftRotationY);
-            fovRotateYMatrix.SetElement(0, 0, cosRotY);
-            fovRotateYMatrix.SetElement(2, 2, cosRotY);
-            fovRotateYMatrix.SetElement(0, 2, sinRotY);
-            fovRotateYMatrix.SetElement(2, 0, -sinRotY);
-
-            fovMatrix.Multiply4x4(fovScaleMatrix, fovRotateZMatrix, spacecraftInstrumentMatrix);
-            fovMatrix.Multiply4x4(fovRotateYMatrix, spacecraftInstrumentMatrix, spacecraftInstrumentMatrix);
-
-//            spacecraftFovMatrix.Multiply4x4(fovRotateYMatrix, fovRotateZMatrix, spacecraftInstrumentMatrix);
-
-            fovMatrix.Multiply4x4(spacecraftBodyMatrix, spacecraftInstrumentMatrix, fovMatrix);
+//            double sinRotY = Math.sin(spacecraftRotationY);
+//            double cosRotY = Math.cos(spacecraftRotationY);
+//            fovRotateYMatrix.SetElement(0, 0, cosRotY);
+//            fovRotateYMatrix.SetElement(2, 2, cosRotY);
+//            fovRotateYMatrix.SetElement(0, 2, sinRotY);
+//            fovRotateYMatrix.SetElement(2, 0, -sinRotY);
+//
+//            fovMatrix.Multiply4x4(fovScaleMatrix, fovRotateZMatrix, spacecraftInstrumentMatrix);
+//            fovMatrix.Multiply4x4(fovRotateYMatrix, spacecraftInstrumentMatrix, spacecraftInstrumentMatrix);
+//
+////            spacecraftFovMatrix.Multiply4x4(fovRotateYMatrix, fovRotateZMatrix, spacecraftInstrumentMatrix);
+//
+//            fovMatrix.Multiply4x4(spacecraftBodyMatrix, spacecraftInstrumentMatrix, fovMatrix);
 
             // set translation
             for (int i=0; i<3; i++)
