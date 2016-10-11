@@ -43,6 +43,7 @@ import vtk.vtkUnsignedCharArray;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.ConvertResourceToFile;
+import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
@@ -65,7 +66,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     private double[] monolithBodyBounds = { -9.0, 9.0, -4.0, 4.0, -1.0, 1.0 };
 //  private double[] monolithBodyOffset = { -3.0, 0.0, 0.0 };
 //    private double[] monolithBodyOffset = { 9.0, 4.0, 1.0 };
-    private double markerRadius = 0.1;
+    private double markerRadius =1.0;
     private double[] markerOffset = { 0.0, 0.0, 0.0 };
 
     private double[] trajectoryColor = {0.0, 1.0, 1.0, 1.0};
@@ -79,8 +80,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 //    private double[] fovColor = {0.3, 0.3, 1.0, 1.0};
 
     private double iconScale = 10.0;
-  private double[] spacecraftColor = {1.0, 0.7, 0.4, 1.0};
-  private double[] fovColor = {0.3, 0.3, 1.0, 0.5};
+    private double[] spacecraftColor = {1.0, 0.7, 0.4, 1.0};
+    private double[] fovColor = {0.3, 0.3, 1.0, 0.5};
 
     private double[] white = {1.0, 1.0, 1.0, 1.0};
 
@@ -131,8 +132,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     private vtkPolyData spacecraftBody;
     private vtkCubeSource monolithBody;
     private vtkSphereSource spacecraftMarkerBody;
-    private vtkCubeSource earthMarkerBody;
-    private vtkCubeSource sunMarkerBody;
+    private vtkSphereSource earthMarkerBody;
+    private vtkSphereSource sunMarkerBody;
     private vtkConeSource spacecraftFov;
 
 //    private vtkActor spacecraftBoresightActor;
@@ -673,16 +674,18 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         spacecraftMarkerBody.SetThetaResolution(10);
         spacecraftMarkerBody.Update();
 
-        earthMarkerBody = new vtkCubeSource();
-        earthMarkerBody.SetCenter(zero);
-        earthMarkerBody.SetBounds(monolithBodyBounds);
-        earthMarkerBody.SetCenter(monolithBodyOffset);
+        earthMarkerBody = new vtkSphereSource();
+        earthMarkerBody.SetRadius(markerRadius);
+        earthMarkerBody.SetCenter(markerOffset);
+        earthMarkerBody.SetPhiResolution(10);
+        earthMarkerBody.SetThetaResolution(10);
         earthMarkerBody.Update();
 
-        sunMarkerBody = new vtkCubeSource();
-        sunMarkerBody.SetCenter(zero);
-        sunMarkerBody.SetBounds(monolithBodyBounds);
-        sunMarkerBody.SetCenter(monolithBodyOffset);
+        sunMarkerBody = new vtkSphereSource();
+        sunMarkerBody.SetRadius(markerRadius);
+        sunMarkerBody.SetCenter(markerOffset);
+        sunMarkerBody.SetPhiResolution(10);
+        sunMarkerBody.SetThetaResolution(10);
         sunMarkerBody.Update();
 }
 
@@ -798,6 +801,16 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 //            double spacecraftRotationX = state.getRollAngle();
 //            double spacecraftRotationY = state.getViewingAngle();
 
+            double[] sunPosition = state.getSunPosition();
+            double[] sunMarkerPosition = new double[3];
+            MathUtil.unorm(sunPosition, sunMarkerPosition);
+            MathUtil.vscl(10.0, sunMarkerPosition, sunMarkerPosition);
+
+            double[] earthPosition = state.getEarthPosition();
+            double[] earthMarkerPosition = new double[3];
+            MathUtil.unorm(earthPosition, earthMarkerPosition);
+            MathUtil.vscl(100.0, earthMarkerPosition, earthMarkerPosition);
+
             double velocity[] = state.getSpacecraftVelocity();
             double speed = Math.sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2]);
             double radius = Math.sqrt(spacecraftPosition[0]*spacecraftPosition[0] + spacecraftPosition[1]*spacecraftPosition[1] + spacecraftPosition[2]*spacecraftPosition[2]);
@@ -840,11 +853,16 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             // create spacecraft matrices
             vtkMatrix4x4 spacecraftBodyMatrix = new vtkMatrix4x4();
             vtkMatrix4x4 spacecraftIconMatrix = new vtkMatrix4x4();
+
             vtkMatrix4x4 fovMatrix = new vtkMatrix4x4();
             vtkMatrix4x4 fovRotateXMatrix = new vtkMatrix4x4();
             vtkMatrix4x4 fovRotateYMatrix = new vtkMatrix4x4();
             vtkMatrix4x4 fovRotateZMatrix = new vtkMatrix4x4();
             vtkMatrix4x4 fovScaleMatrix = new vtkMatrix4x4();
+
+            vtkMatrix4x4 sunMarkerMatrix = new vtkMatrix4x4();
+            vtkMatrix4x4 earthMarkerMatrix = new vtkMatrix4x4();
+
             vtkMatrix4x4 spacecraftInstrumentMatrix = new vtkMatrix4x4();
 
             // set to identity
@@ -854,6 +872,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             fovRotateXMatrix.Identity();
             fovRotateYMatrix.Identity();
             fovRotateZMatrix.Identity();
+            sunMarkerMatrix.Identity();
+            earthMarkerMatrix.Identity();
 
             // set body orientation matrix
             for (int i=0; i<3; i++)
@@ -902,6 +922,9 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
                 spacecraftBodyMatrix.SetElement(i, 3, spacecraftPosition[i]);
                 spacecraftIconMatrix.SetElement(i, 3, spacecraftPosition[i]);
                 fovMatrix.SetElement(i, 3, spacecraftPosition[i]);
+
+                sunMarkerMatrix.SetElement(i, 3, sunMarkerPosition[i]);
+                earthMarkerMatrix.SetElement(i, 3, earthMarkerPosition[i]);
             }
 
 //            spacecraftBoresightActor.SetUserMatrix(matrix);
@@ -916,9 +939,9 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             spacecraftFovActor.SetUserMatrix(fovMatrix);
 //            spacecraftFovActor.SetUserMatrix(spacecraftBodyMatrix);
 
-            spacecraftMarkerActor.SetUserMatrix(spacecraftIconMatrix);
-            earthMarkerActor.SetUserMatrix(spacecraftIconMatrix);
-            sunMarkerActor.SetUserMatrix(spacecraftIconMatrix);
+            spacecraftMarkerActor.SetUserMatrix(spacecraftBodyMatrix);
+            earthMarkerActor.SetUserMatrix(earthMarkerMatrix);
+            sunMarkerActor.SetUserMatrix(sunMarkerMatrix);
 
 //            spacecraftBoresight.Modified();
             monolithBody.Modified();
@@ -959,8 +982,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 //        this.showSpacecraftFov = show;
 
         this.showSpacecraftMarker = show;
-//        this.showEarthMarker = show;
-//        this.showSunMarker = show;
+        this.showEarthMarker = show;
+        this.showSunMarker = show;
 
         updateActorVisibility();
     }

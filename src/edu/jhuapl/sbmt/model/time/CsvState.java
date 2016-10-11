@@ -39,7 +39,7 @@ public class CsvState implements State
 
         if (ntokens > 3)
         {
-            spacecraftPosition = new double[]
+            sunPosition = new double[]
             {
                 Double.parseDouble(parts[1]),
                 Double.parseDouble(parts[2]),
@@ -49,7 +49,7 @@ public class CsvState implements State
 
         if (ntokens > 6)
         {
-            spacecraftPosition = new double[]
+            earthPosition = new double[]
             {
                 Double.parseDouble(parts[4]),
                 Double.parseDouble(parts[5]),
