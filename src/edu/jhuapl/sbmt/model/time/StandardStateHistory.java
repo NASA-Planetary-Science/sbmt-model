@@ -4,6 +4,8 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import altwg.util.MathUtil;
+
 public class StandardStateHistory implements StateHistory, HasTime
 {
     private NavigableMap<Double, State> timeToFlybyState = new TreeMap<Double, State>();
@@ -82,5 +84,62 @@ public class StandardStateHistory implements StateHistory, HasTime
     {
         // for now, just return floor
         return getValue(getTime());
+    }
+
+    public double[] getSpacecraftPosition()
+    {
+        State floor = getFloorEntry(time).getValue();
+        State ceiling = getCeilingEntry(time).getValue();
+        double[] floorPosition = floor.getSpacecraftPosition();
+        double[] ceilingPosition = ceiling.getSpacecraftPosition();
+        double floorTime = floor.getEphemerisTime();
+        double ceilingTime = ceiling.getEphemerisTime();
+        double timeDelta = ceilingTime - floorTime;
+        double timeFraction = (time - floorTime) / timeDelta;
+        double[] positionDelta = new double[3];
+        MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
+        double[] positionFraction = new double[3];
+        MathUtil.vscl(timeFraction, positionDelta, positionFraction);
+        double[] result = new double[3];
+        MathUtil.vadd(floorPosition, positionFraction, result);
+        return result;
+    }
+
+    public double[] getSunPosition()
+    {
+        State floor = getFloorEntry(time).getValue();
+        State ceiling = getCeilingEntry(time).getValue();
+        double[] floorPosition = floor.getSunPosition();
+        double[] ceilingPosition = ceiling.getSunPosition();
+        double floorTime = floor.getEphemerisTime();
+        double ceilingTime = ceiling.getEphemerisTime();
+        double timeDelta = ceilingTime - floorTime;
+        double timeFraction = (time - floorTime) / timeDelta;
+        double[] positionDelta = new double[3];
+        MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
+        double[] positionFraction = new double[3];
+        MathUtil.vscl(timeFraction, positionDelta, positionFraction);
+        double[] result = new double[3];
+        MathUtil.vadd(floorPosition, positionFraction, result);
+        return result;
+    }
+
+    public double[] getEarthPosition()
+    {
+        State floor = getFloorEntry(time).getValue();
+        State ceiling = getCeilingEntry(time).getValue();
+        double[] floorPosition = floor.getEarthPosition();
+        double[] ceilingPosition = ceiling.getEarthPosition();
+        double floorTime = floor.getEphemerisTime();
+        double ceilingTime = ceiling.getEphemerisTime();
+        double timeDelta = ceilingTime - floorTime;
+        double timeFraction = (time - floorTime) / timeDelta;
+        double[] positionDelta = new double[3];
+        MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
+        double[] positionFraction = new double[3];
+        MathUtil.vscl(timeFraction, positionDelta, positionFraction);
+        double[] result = new double[3];
+        MathUtil.vadd(floorPosition, positionFraction, result);
+        return result;
     }
 }

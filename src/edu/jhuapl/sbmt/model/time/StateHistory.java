@@ -26,4 +26,10 @@ public interface StateHistory
     public State getValue(Double time);
 
     public State getCurrentValue();
+
+    public double[] getSpacecraftPosition();
+
+    public double[] getSunPosition();
+
+    public double[] getEarthPosition();
 }

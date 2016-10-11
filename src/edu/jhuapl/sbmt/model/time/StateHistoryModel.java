@@ -804,11 +804,14 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
             // get the current FlybyState
             State state = currentFlybyStateHistory.getCurrentValue();
-            double[] spacecraftPosition = state.getSpacecraftPosition();
+//            double[] spacecraftPosition = state.getSpacecraftPosition();
+            double[] spacecraftPosition = currentFlybyStateHistory.getSpacecraftPosition();
+
+
 //            double spacecraftRotationX = state.getRollAngle();
 //            double spacecraftRotationY = state.getViewingAngle();
 
-            double[] sunPosition = state.getSunPosition();
+            double[] sunPosition = currentFlybyStateHistory.getSunPosition();
             double[] sunMarkerPosition = new double[3];
             sunDirection = new double[3];
             double[] sunViewpoint = new double[3];
@@ -821,7 +824,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             renderer.setFixedLightDirection(sunDirection);
             renderer.setLighting(LightingType.FIXEDLIGHT);
 
-            double[] earthPosition = state.getEarthPosition();
+            double[] earthPosition = currentFlybyStateHistory.getEarthPosition();
             double[] earthMarkerPosition = new double[3];
             double[] earthDirection = new double[3];
             double[] earthViewpoint = new double[3];
