@@ -8,6 +8,7 @@ import java.util.List;
 import vtk.vtkActor;
 import vtk.vtkProp;
 
+import edu.jhuapl.saavtk.gui.Renderer;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
@@ -29,10 +30,10 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
         this.smallBodyModel = smallBodyModel;
     }
 
-    protected StateHistoryModel createRun(StateHistoryKey key, SmallBodyModel smallBodyModel) // throws FitsException, IOException
+    protected StateHistoryModel createRun(StateHistoryKey key, SmallBodyModel smallBodyModel, Renderer renderer) // throws FitsException, IOException
     {
         try {
-            return SbmtModelFactory.createStateHistory(key, smallBodyModel, false);
+            return SbmtModelFactory.createStateHistory(key, smallBodyModel, renderer, false);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -76,7 +77,7 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
 
     }
 
-    public void addRun(StateHistoryKey key)//  throws FitsException, IOException
+    public void addRun(StateHistoryKey key, Renderer renderer)//  throws FitsException, IOException
     {
 
         if (containsKey(key))
@@ -85,7 +86,7 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
             return;
         }
 
-        StateHistoryModel run = createRun(key, smallBodyModel);
+        StateHistoryModel run = createRun(key, smallBodyModel, renderer);
 
         // set the current run
         this.currentRun = run;

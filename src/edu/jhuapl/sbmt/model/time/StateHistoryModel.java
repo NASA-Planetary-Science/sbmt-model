@@ -40,6 +40,8 @@ import vtk.vtkTextActor;
 import vtk.vtkTextProperty;
 import vtk.vtkUnsignedCharArray;
 
+import edu.jhuapl.saavtk.gui.Renderer;
+import edu.jhuapl.saavtk.gui.Renderer.LightingType;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.ConvertResourceToFile;
@@ -160,6 +162,9 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     private Set<String> visibleTrajectories;
     private double offset = offsetHeight;
 
+    private double[] sunDirection = { 0.0, 1.0, 0.0 };
+    public double[] getSunDirection() { return sunDirection; }
+
     private vtkCylinderSource testCylinder;
     private vtkActor testActor;
     private void createTestPolyData()
@@ -211,6 +216,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
     protected final StateHistoryKey key;
     private SmallBodyModel smallBodyModel;
+    private Renderer renderer;
 
     private String currentTrajectoryName;
     private Trajectory currentTrajectory;
@@ -249,15 +255,16 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
 
 
-    static public StateHistoryModel createStateHistory(StateHistoryKey key, SmallBodyModel smallBodyModel)
+    static public StateHistoryModel createStateHistory(StateHistoryKey key, SmallBodyModel smallBodyModel, Renderer renderer)
     {
-        return new StateHistoryModel(key, smallBodyModel);
+        return new StateHistoryModel(key, smallBodyModel, renderer);
     }
 
-    public StateHistoryModel(StateHistoryKey key, SmallBodyModel smallBodyModel)
+    public StateHistoryModel(StateHistoryKey key, SmallBodyModel smallBodyModel, Renderer renderer)
     {
         this.key = key;
         this.smallBodyModel = smallBodyModel;
+        this.renderer = renderer;
 
         initialize();
 
@@ -803,7 +810,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
             double[] sunPosition = state.getSunPosition();
             double[] sunMarkerPosition = new double[3];
-            double[] sunDirection = new double[3];
+            sunDirection = new double[3];
             double[] sunViewpoint = new double[3];
             double[] sunViewDirection = new double[3];
             MathUtil.unorm(sunPosition, sunDirection);
@@ -811,6 +818,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             MathUtil.vscl(-1.0, sunDirection, sunViewDirection);
             int result = smallBodyModel.computeRayIntersection(sunViewpoint, sunViewDirection, sunMarkerPosition);
 
+            renderer.setFixedLightDirection(sunDirection);
+            renderer.setLighting(LightingType.FIXEDLIGHT);
 
             double[] earthPosition = state.getEarthPosition();
             double[] earthMarkerPosition = new double[3];
