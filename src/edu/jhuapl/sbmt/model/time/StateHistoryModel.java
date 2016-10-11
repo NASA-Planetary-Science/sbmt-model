@@ -66,7 +66,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     private double[] monolithBodyBounds = { -9.0, 9.0, -4.0, 4.0, -1.0, 1.0 };
 //  private double[] monolithBodyOffset = { -3.0, 0.0, 0.0 };
 //    private double[] monolithBodyOffset = { 9.0, 4.0, 1.0 };
-    private double markerRadius =1.0;
+    private double markerRadius = 0.5;
     private double[] markerOffset = { 0.0, 0.0, 0.0 };
 
     private double[] trajectoryColor = {0.0, 1.0, 1.0, 1.0};
@@ -803,13 +803,25 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
             double[] sunPosition = state.getSunPosition();
             double[] sunMarkerPosition = new double[3];
-            MathUtil.unorm(sunPosition, sunMarkerPosition);
-            MathUtil.vscl(10.0, sunMarkerPosition, sunMarkerPosition);
+            double[] sunDirection = new double[3];
+            double[] sunViewpoint = new double[3];
+            double[] sunViewDirection = new double[3];
+            MathUtil.unorm(sunPosition, sunDirection);
+            MathUtil.vscl(1000.0, sunDirection, sunViewpoint);
+            MathUtil.vscl(-1.0, sunDirection, sunViewDirection);
+            int result = smallBodyModel.computeRayIntersection(sunViewpoint, sunViewDirection, sunMarkerPosition);
+
 
             double[] earthPosition = state.getEarthPosition();
             double[] earthMarkerPosition = new double[3];
-            MathUtil.unorm(earthPosition, earthMarkerPosition);
-            MathUtil.vscl(100.0, earthMarkerPosition, earthMarkerPosition);
+            double[] earthDirection = new double[3];
+            double[] earthViewpoint = new double[3];
+            double[] earthViewDirection = new double[3];
+            MathUtil.unorm(earthPosition, earthDirection);
+            MathUtil.vscl(1000.0, earthDirection, earthViewpoint);
+            MathUtil.vscl(-1.0, earthDirection, earthViewDirection);
+            result = smallBodyModel.computeRayIntersection(earthViewpoint, earthViewDirection, earthMarkerPosition);
+
 
             double velocity[] = state.getSpacecraftVelocity();
             double speed = Math.sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1] + velocity[2]*velocity[2]);
