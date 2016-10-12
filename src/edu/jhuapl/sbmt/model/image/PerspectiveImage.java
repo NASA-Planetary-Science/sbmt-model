@@ -53,6 +53,7 @@ import vtk.vtkTexture;
 import vtk.vtkXMLPolyDataReader;
 import vtk.vtksbCellLocator;
 
+import edu.jhuapl.near.util.BackplanesLabel;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.DateTimeUtil;
@@ -80,7 +81,7 @@ import nom.tam.fits.FitsException;
 /**
  * This class represents an abstract image of a spacecraft imager instrument.
  */
-abstract public class PerspectiveImage extends Image implements PropertyChangeListener,BackPlanesPDS4XML
+abstract public class PerspectiveImage extends Image implements PropertyChangeListener,BackPlanesPDS4XML, BackplanesLabel
 {
     public static final float PDS_NA = -1.e32f;
     public static final String FRUSTUM1 = "FRUSTUM1";
@@ -1468,10 +1469,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     }
 
     /**
-     * Generate PDS 3 format label.
+     * Generate PDS 3 format backplanes label file. This is the default
+     * implementation for classes extending PerspectiveImage.
      *
-     * @param imgName - pointer to the data File for which this label is being created
-     * @param lblFileName - pointer to the output label file to be written.
+     * @param imgName
+     *            - pointer to the data File for which this label is being
+     *            created
+     * @param lblFileName
+     *            - pointer to the output label file to be written, without file
+     *            name extension. The extension is dependent on image type (e.g.
+     *            MSI images are written as PDS 4 XML labels), and is assigned
+     *            in the class implementing this function.
      * @throws IOException
      */
     public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
@@ -1540,7 +1548,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 //        return strbuf.toString();
         byte[] bytes = strbuf.toString().getBytes();
-        OutputStream out = new FileOutputStream(lblFileName.getAbsolutePath());
+        OutputStream out = new FileOutputStream(lblFileName.getAbsolutePath() + ".lbl");
         out.write(bytes, 0, bytes.length);
         out.close();
     }
