@@ -224,6 +224,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private boolean loadPointingOnly;
 
+
+    protected double[] maxFrustumDepth;
+    protected double[] minFrustumDepth;
+
+
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
@@ -327,6 +332,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             loadImage();
             updateFrameAdjustments();
         }
+
+        maxFrustumDepth=new double[imageDepth];
+        minFrustumDepth=new double[imageDepth];
     }
 
     private void copySpacecraftState()
@@ -769,6 +777,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
     }
 
+
+
+
     public void calculateFrustum()
     {
 //        System.out.println("recalculateFrustum()");
@@ -780,12 +791,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         vtkIdList idList = new vtkIdList();
         idList.SetNumberOfIds(2);
 
-        double dx = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) + smallBodyModel.getBoundingBoxDiagonalLength();
+        double maxFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) + smallBodyModel.getBoundingBoxDiagonalLength();
         double[] origin = spacecraftPositionAdjusted[currentSlice];
-        double[] UL = {origin[0]+frustum1Adjusted[currentSlice][0]*dx, origin[1]+frustum1Adjusted[currentSlice][1]*dx, origin[2]+frustum1Adjusted[currentSlice][2]*dx};
-        double[] UR = {origin[0]+frustum2Adjusted[currentSlice][0]*dx, origin[1]+frustum2Adjusted[currentSlice][1]*dx, origin[2]+frustum2Adjusted[currentSlice][2]*dx};
-        double[] LL = {origin[0]+frustum3Adjusted[currentSlice][0]*dx, origin[1]+frustum3Adjusted[currentSlice][1]*dx, origin[2]+frustum3Adjusted[currentSlice][2]*dx};
-        double[] LR = {origin[0]+frustum4Adjusted[currentSlice][0]*dx, origin[1]+frustum4Adjusted[currentSlice][1]*dx, origin[2]+frustum4Adjusted[currentSlice][2]*dx};
+        double[] UL = {origin[0]+frustum1Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum1Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum1Adjusted[currentSlice][2]*maxFrustumRayLength};
+        double[] UR = {origin[0]+frustum2Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum2Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum2Adjusted[currentSlice][2]*maxFrustumRayLength};
+        double[] LL = {origin[0]+frustum3Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum3Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum3Adjusted[currentSlice][2]*maxFrustumRayLength};
+        double[] LR = {origin[0]+frustum4Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum4Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum4Adjusted[currentSlice][2]*maxFrustumRayLength};
+
+        double minFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) - smallBodyModel.getBoundingBoxDiagonalLength();
+        maxFrustumDepth[currentSlice]=maxFrustumRayLength;  // a reasonable approximation for a max bound on the frustum depth
+        minFrustumDepth[currentSlice]=minFrustumRayLength;  // a reasonable approximation for a min bound on the frustum depth
+
+
 
         points.InsertNextPoint(spacecraftPositionAdjusted[currentSlice]);
         points.InsertNextPoint(UL);
@@ -2233,7 +2250,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             frustumActor.VisibilityOff();
         }
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     public boolean isFrustumShowing()
@@ -4002,6 +4018,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         smallBodyProperty.SetOpacity(imageOpacity);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
+
+    public double getMaxFrustumDepth(int slice)
+    {
+        return maxFrustumDepth[slice];
+    }
+
+    public double getMinFrustumDepth(int slice)
+    {
+        return minFrustumDepth[slice];
+    }
+
 
     @Override
     public LinkedHashMap<String, String> getProperties() throws IOException
