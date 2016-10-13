@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -21,6 +22,7 @@ import vtk.vtkCellArray;
 import vtk.vtkFeatureEdges;
 import vtk.vtkFunctionParser;
 import vtk.vtkIdList;
+import vtk.vtkLine;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
@@ -36,6 +38,7 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 
 public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 {
@@ -97,6 +100,15 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
     private vtkPolyData selectionPolyData=new vtkPolyData();
     boolean isSelected;
     double footprintHeight;
+
+    private vtkActor outlineActor=new vtkActor();
+    private vtkPolyData outlinePolyData=new vtkPolyData();
+    boolean isOutlineShowing;
+
+    private vtkActor toSunVectorActor=new vtkActor();
+    private vtkPolyData toSunVectorPolyData=new vtkPolyData();
+    boolean isToSunVectorShowing;
+    double toSunVectorLength;
 
     // These values were taken from Table 1 of "Spectral properties and geologic
     // processes on Eros from combined NEAR NIS and MSI data sets"
@@ -282,6 +294,10 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         shiftedFootprint = new vtkPolyData();
         footprintHeight=eros.getMinShiftAmount();
 
+        isToSunVectorShowing=false;
+        double dx = MathUtil.vnorm(spacecraftPosition) + erosModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
+
     }
 
     public void generateFootprint()
@@ -302,8 +318,13 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 
                 shiftedFootprint.DeepCopy(tmp);
                 PolyDataUtil.shiftPolyDataInMeanNormalDirection(shiftedFootprint, footprintHeight);
+
                 createSelectionPolyData();
                 createSelectionActor();
+                createToSunVectorPolyData();
+                createToSunVectorActor();
+                createOutlinePolyData();
+                createOutlineActor();
             }
         }
     }
@@ -329,8 +350,59 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         selectionActor.SetMapper(mapper);
         selectionActor.VisibilityOff();
         selectionActor.GetProperty().EdgeVisibilityOn();
-        selectionActor.GetProperty().SetColor(1,0,0);
-        selectionActor.GetProperty().SetLineWidth(3);
+        selectionActor.GetProperty().SetEdgeColor(0.5,1,0.5);
+        selectionActor.GetProperty().SetLineWidth(5);
+    }
+
+
+    private void createOutlinePolyData()
+    {
+        vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
+        edgeFilter.SetInputData(getShiftedFootprint());
+        edgeFilter.BoundaryEdgesOn();
+        edgeFilter.FeatureEdgesOff();
+        edgeFilter.ManifoldEdgesOff();
+        edgeFilter.NonManifoldEdgesOff();
+        edgeFilter.Update();
+        outlinePolyData.DeepCopy(edgeFilter.GetOutput());
+    }
+
+    private void createOutlineActor()
+    {
+        vtkPolyDataMapper mapper=new vtkPolyDataMapper();
+        mapper.SetInputData(outlinePolyData);
+        mapper.Update();
+        outlineActor.SetMapper(mapper);
+        outlineActor.VisibilityOff();
+        outlineActor.GetProperty().EdgeVisibilityOn();
+        outlineActor.GetProperty().SetEdgeColor(0.4,0.4,1);
+        outlineActor.GetProperty().SetLineWidth(2);
+    }
+
+    private void createToSunVectorPolyData()
+    {
+        Vector3D toSunVec=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
+        vtkPoints points=new vtkPoints();
+        vtkCellArray cells=new vtkCellArray();
+        Vector3D footprintCenter=new Vector3D(getUnshiftedFootprint().GetCenter());
+        int id1=points.InsertNextPoint(footprintCenter.toArray());
+        int id2=points.InsertNextPoint(footprintCenter.add(toSunVec.normalize().scalarMultiply(toSunVectorLength)).toArray());
+        vtkLine line=new vtkLine();
+        line.GetPointIds().SetId(0, id1);
+        line.GetPointIds().SetId(1, id2);
+        cells.InsertNextCell(line);
+        toSunVectorPolyData.SetPoints(points);
+        toSunVectorPolyData.SetLines(cells);
+    }
+
+    private void createToSunVectorActor()
+    {
+        vtkPolyDataMapper mapper=new vtkPolyDataMapper();
+        mapper.SetInputData(toSunVectorPolyData);
+        mapper.Update();
+        toSunVectorActor.SetMapper(mapper);
+        toSunVectorActor.VisibilityOff();
+        toSunVectorActor.GetProperty().SetColor(1,1,0.5);
     }
 
     public void setSelected()
@@ -374,6 +446,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         shiftedFootprint.DeepCopy(tmp);
         PolyDataUtil.shiftPolyDataInMeanNormalDirection(shiftedFootprint,h);
         createSelectionPolyData();
+        createOutlinePolyData();
         //
         if (isSelected)
             selectionActor.VisibilityOn();
@@ -382,6 +455,8 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         footprintActor.GetMapper().Update();
         ((vtkPolyDataMapper)selectionActor.GetMapper()).SetInputData(selectionPolyData);
         selectionActor.GetMapper().Update();
+        ((vtkPolyDataMapper)outlineActor.GetMapper()).SetInputData(selectionPolyData);
+        outlineActor.GetMapper().Update();
 
         //
         footprintHeight=h;
@@ -489,6 +564,8 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         }
 
         footprintActors.add(selectionActor);
+        footprintActors.add(toSunVectorActor);
+        footprintActors.add(outlineActor);
 
         return footprintActors;
     }
@@ -514,6 +591,35 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         return showFrustum;
     }
 
+    public void setShowToSunVector(boolean b)
+    {
+        isToSunVectorShowing=b;
+        if (isToSunVectorShowing)
+            toSunVectorActor.VisibilityOn();
+        else
+            toSunVectorActor.VisibilityOff();
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public boolean isToSunVectorShowing()
+    {
+        return isToSunVectorShowing;
+    }
+
+    public void setShowOutline(boolean b)
+    {
+        isOutlineShowing=b;
+        if (isOutlineShowing)
+            outlineActor.VisibilityOn();
+        else
+            outlineActor.VisibilityOff();
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public boolean isOutlineShowing()
+    {
+        return isOutlineShowing;
+    }
 
     public String getServerPath()
     {

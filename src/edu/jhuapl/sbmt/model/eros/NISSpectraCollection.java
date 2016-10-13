@@ -132,6 +132,7 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
     public void removeSpectrum(String path)
     {
         NISSpectrum spectrum = fileToSpectrumMap.get(path);
+        spectrum.setUnselected();
 
         List<vtkProp> actors = spectraActors.get(spectrum);
 
