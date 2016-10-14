@@ -534,7 +534,10 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void loadTrackOlaL2(File file) throws IOException
     {
-        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+
+        OLAL2File l2File=new OLAL2File(file.toPath());
+        originalPoints.addAll(l2File.read(1./1000.));
+/*        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
 
 //        Track track = new Track();
 //        track.startId = originalPoints.size();
@@ -587,7 +590,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
 //        track.stopId = originalPoints.size() - 1;
 //        tracks.add(track);
-
+*/
 
     }
 
