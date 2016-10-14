@@ -42,7 +42,6 @@ import vtk.vtkIdList;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkPolyDataWriter;
 import vtk.vtkProp;
 import vtk.vtkUnsignedCharArray;
 
@@ -658,11 +657,11 @@ public class LidarSearchDataCollection extends AbstractModel
 
         updateTrackPolydata();
 
-        vtkPolyDataWriter writer=new vtkPolyDataWriter();
+   /*     vtkPolyDataWriter writer=new vtkPolyDataWriter();
         writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
         writer.SetFileTypeToBinary();
         writer.SetInputData(polydata);
-        writer.Write();
+        writer.Write();*/
 
 
     }
