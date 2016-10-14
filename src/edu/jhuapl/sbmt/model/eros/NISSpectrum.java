@@ -19,19 +19,24 @@ import org.joda.time.DateTimeZone;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
+import vtk.vtkDoubleArray;
 import vtk.vtkFeatureEdges;
 import vtk.vtkFunctionParser;
 import vtk.vtkIdList;
+import vtk.vtkIdTypeArray;
 import vtk.vtkLine;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkProperty;
+import vtk.vtkTriangle;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
+import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
@@ -300,12 +305,30 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 
     }
 
+    public vtkPolyData getSelectionPolyData()
+    {
+        return selectionPolyData;
+    }
+
+    public static final String faceAreaFractionArrayName="faceAreaFraction";
+
     public void generateFootprint()
     {
         if (!latLons.isEmpty())
         {
             vtkPolyData tmp = erosModel.computeFrustumIntersection(spacecraftPosition,
                     frustum1, frustum2, frustum3, frustum4);
+
+            vtkDoubleArray faceAreaFraction=new vtkDoubleArray();
+            faceAreaFraction.SetName(faceAreaFractionArrayName);
+            Frustum frustum=new Frustum(getFrustumOrigin(), getFrustumCorner(0), getFrustumCorner(1), getFrustumCorner(2), getFrustumCorner(3));
+            for (int c=0; c<tmp.GetNumberOfCells(); c++)
+            {
+                int originalCellId=((vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName)).GetValue(c);
+                vtkTriangle tri=(vtkTriangle)erosModel.getSmallBodyPolyData().GetCell(originalCellId);
+                faceAreaFraction.InsertNextValue(PolyDataUtil.computeOverlapFraction(tri, frustum));
+            }
+            tmp.GetCellData().AddArray(faceAreaFraction);
 
             if (tmp != null)
             {
@@ -978,6 +1001,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         {
             System.out.println("updating nis image");
             generateFootprint();
+            setUnselected();
 
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         }
