@@ -42,7 +42,6 @@ import vtk.vtkIdList;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkPolyDataWriter;
 import vtk.vtkProp;
 import vtk.vtkUnsignedCharArray;
 
@@ -534,7 +533,10 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void loadTrackOlaL2(File file) throws IOException
     {
-        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+
+        OLAL2File l2File=new OLAL2File(file.toPath());
+        originalPoints.addAll(l2File.read(1./1000.));
+/*        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
 
 //        Track track = new Track();
 //        track.startId = originalPoints.size();
@@ -587,7 +589,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
 //        track.stopId = originalPoints.size() - 1;
 //        tracks.add(track);
-
+*/
 
     }
 
@@ -655,11 +657,11 @@ public class LidarSearchDataCollection extends AbstractModel
 
         updateTrackPolydata();
 
-        vtkPolyDataWriter writer=new vtkPolyDataWriter();
+   /*     vtkPolyDataWriter writer=new vtkPolyDataWriter();
         writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
         writer.SetFileTypeToBinary();
         writer.SetInputData(polydata);
-        writer.Write();
+        writer.Write();*/
 
 
     }
@@ -737,7 +739,6 @@ public class LidarSearchDataCollection extends AbstractModel
             double currentTime = originalPoints.get(i).getTime();
             if (currentTime - prevTime >= timeSeparationBetweenTracks)
             {
-              //  System.out.println(currentTime-prevTime);
                 track.stopId = i-1;
                 double t0 = originalPoints.get(track.startId).getTime();
                 double t1 = originalPoints.get(track.stopId).getTime();
@@ -750,8 +751,8 @@ public class LidarSearchDataCollection extends AbstractModel
                 tracks.add(track);
             }
 
-
             prevTime = currentTime;
+
         }
 //        if (tracks.size()>1)
 //            tracks.remove(tracks.size()-1); // last one is always empty so remove it, at least for the lidar tree search
