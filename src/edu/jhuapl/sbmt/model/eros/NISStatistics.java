@@ -6,29 +6,35 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import vtk.vtkDoubleArray;
 import vtk.vtkPolyData;
 import vtk.vtkProp;
 import vtk.vtkTriangle;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
-import edu.jhuapl.saavtk.util.Frustum;
 
 public class NISStatistics extends AbstractModel
 {
     int nFaces;
     List<Sample> emergenceAngle;
+    List<Sample> incidenceAngle;
+    List<Sample> phaseAngle;
+    List<Sample> irradiance;
 
     List<NISSpectrum> spectra=Lists.newArrayList();
 
-    public NISStatistics(List<Sample> emergenceAngle, List<NISSpectrum> spectra)
+    public NISStatistics(List<Sample> emergenceAngle, List<Sample> incidenceAngle, List<Sample> phaseAngle, List<Sample> irradiance, List<NISSpectrum> spectra)
     {
         this.emergenceAngle=emergenceAngle;
+        this.incidenceAngle=incidenceAngle;
+        this.phaseAngle=phaseAngle;
+        this.irradiance=irradiance;
         this.spectra=spectra;
-
         nFaces=emergenceAngle.size();
     }
 
@@ -48,9 +54,24 @@ public class NISStatistics extends AbstractModel
         return spectra;
     }
 
-    public List<Sample> sampleEmergenceAngle()
+    public List<Sample> getEmergenceAngleSamples()
     {
         return emergenceAngle;
+    }
+
+    public List<Sample> getIncidenceAngleSamples()
+    {
+        return incidenceAngle;
+    }
+
+    public List<Sample> getIrradianceSamples()
+    {
+        return irradiance;
+    }
+
+    public List<Sample> getPhaseAngleSamples()
+    {
+        return phaseAngle;
     }
 
     public Map<NISSpectrum, Integer> orderSpectraByMeanEmergenceAngle()
@@ -87,8 +108,8 @@ public class NISStatistics extends AbstractModel
 
     public static class Sample
     {
-        double value;
-        double weight;
+        public double value;
+        public double weight;
         NISSpectrum parentSpectrum;
     }
 
@@ -183,49 +204,100 @@ public class NISStatistics extends AbstractModel
         return val/wtot/Math.pow(getWeightedVariance(samples),2);
     }
 
-    public static List<Sample> sampleEmergenceAngle(NISSpectrum spectrum, vtkPolyData selectedFaces, Frustum frustum)
+    public static List<Sample> sampleEmergenceAngle(NISSpectrum spectrum, Vector3D scPos)
     {
+        vtkPolyData footprint=spectrum.getUnshiftedFootprint();
         List<Sample> samples=Lists.newArrayList();
-        Vector3D origin=new Vector3D(frustum.origin);
-        for (int c=0; c<selectedFaces.GetNumberOfCells(); c++)
+        vtkDoubleArray overlapFraction=(vtkDoubleArray)footprint.GetCellData().GetArray(NISSpectrum.faceAreaFractionArrayName);
+        for (int c=0; c<footprint.GetNumberOfCells(); c++)
         {
-            vtkTriangle tri=(vtkTriangle)selectedFaces.GetCell(c);
+            vtkTriangle tri=(vtkTriangle)footprint.GetCell(c);
             double[] nml=new double[3];
             tri.ComputeNormal(tri.GetPoints().GetPoint(0), tri.GetPoints().GetPoint(1), tri.GetPoints().GetPoint(2), nml);
             double[] ctr=new double[3];
             tri.TriangleCenter(tri.GetPoints().GetPoint(0), tri.GetPoints().GetPoint(1), tri.GetPoints().GetPoint(2), ctr);
             Vector3D nmlVec=new Vector3D(nml).normalize();
             Vector3D ctrVec=new Vector3D(ctr);
-            Vector3D toScVec=origin.subtract(ctrVec);
+            Vector3D toScVec=scPos.subtract(ctrVec);
             //
             Sample sample=new Sample();
-            sample.value=Math.acos(nmlVec.dotProduct(toScVec.normalize()));
-            sample.weight=computeOverlapFraction(tri, frustum);
+            sample.value=Math.toDegrees(Math.acos(nmlVec.dotProduct(toScVec.normalize())));
+            sample.weight=overlapFraction.GetValue(c);
             sample.parentSpectrum=spectrum;
             samples.add(sample);
         }
         return samples;
     }
 
-    private static double computeOverlapFraction(vtkTriangle surfaceTriangle, Frustum frustum)  // how much of a triangle is inside the frustum?
+    // TODO: incorporate occlusion in a meaningful way
+    public static List<Sample> sampleIncidenceAngle(NISSpectrum spectrum, Vector3D toSunVector)//, double[] illuminationFactors)
     {
-        double overlap=0;
-        int nPoints=3;  // this can be replaced with some other number if face subdivision is used
-        for (int i=0; i<nPoints; i++)
+        vtkPolyData footprint=spectrum.getUnshiftedFootprint();
+        List<Sample> samples=Lists.newArrayList();
+        vtkDoubleArray overlapFraction=(vtkDoubleArray)footprint.GetCellData().GetArray(NISSpectrum.faceAreaFractionArrayName);
+        for (int c=0; c<footprint.GetNumberOfCells(); c++)
         {
-            double[] pt=surfaceTriangle.GetPoints().GetPoint(i);
-            double[] uv=new double[2];
-            frustum.computeTextureCoordinatesFromPoint(pt, 1, 1, uv, false);
-            if (uv[0]>=0 && uv[0]<=1 && uv[1]>=0 && uv[1]<=1)
-                overlap+=1./(double)nPoints;
+            vtkTriangle tri=(vtkTriangle)footprint.GetCell(c);
+            double[] nml=new double[3];
+            tri.ComputeNormal(tri.GetPoints().GetPoint(0), tri.GetPoints().GetPoint(1), tri.GetPoints().GetPoint(2), nml);
+            double[] ctr=new double[3];
+            tri.TriangleCenter(tri.GetPoints().GetPoint(0), tri.GetPoints().GetPoint(1), tri.GetPoints().GetPoint(2), ctr);
+            Vector3D nmlVec=new Vector3D(nml).normalize();
+            //
+            Sample sample=new Sample();
+//            if (illuminationFactors[c]!=0)
+//            {
+                sample.value=Math.toDegrees(Math.acos(nmlVec.dotProduct(toSunVector.normalize())));
+                sample.weight=overlapFraction.GetValue(c);
+//            }
+            sample.parentSpectrum=spectrum;
+            samples.add(sample);
         }
-        return overlap;
+        return samples;
     }
 
-    public static List<Sample> sampleIncidentFlux(NISSpectrum spectrum, vtkPolyData selectedFaces)
+    public static List<Sample> samplePhaseAngle(List<Sample> incidenceAngle, List<Sample> emergenceAngle)
     {
-        // TODO: implement
-        return null;
+        List<Sample> samples=Lists.newArrayList();
+        for (int i=0; i<incidenceAngle.size(); i++)
+        {
+//            if (incidenceAngle.get(i).value!=Double.NaN)
+//            {
+                Sample sample=new Sample();
+                sample.value=FastMath.abs(incidenceAngle.get(i).value-emergenceAngle.get(i).value);
+                sample.weight=1;
+                samples.add(sample);
+//            }
+        }
+        return samples;
     }
+
+    public static List<Sample> sampleIrradiance(NISSpectrum spectrum, double[] illuminationFactors)
+    {
+        vtkPolyData footprint=spectrum.getUnshiftedFootprint();
+        List<Sample> samples=Lists.newArrayList();
+        vtkDoubleArray overlapFraction=(vtkDoubleArray)footprint.GetCellData().GetArray(NISSpectrum.faceAreaFractionArrayName);
+        for (int c=0; c<footprint.GetNumberOfCells(); c++)
+        {
+            vtkTriangle tri=(vtkTriangle)footprint.GetCell(c);
+                Sample sample=new Sample();
+                sample.value=illuminationFactors[c];
+                sample.weight=overlapFraction.GetValue(c);
+                sample.parentSpectrum=spectrum;
+                samples.add(sample);
+        }
+        return samples;
+
+    }
+
+
+/*    public static List<Sample> removeNans(List<Sample> samples)
+    {
+        List<Sample> result=Lists.newArrayList();
+        for (int i=0; i<samples.size(); i++)
+            if (!Double.isNaN(samples.get(i).value))
+                result.add(samples.get(i));
+        return result;
+    }*/
 
 }

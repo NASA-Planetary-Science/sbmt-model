@@ -10,6 +10,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import vtk.vtkActor;
 import vtk.vtkCell;
 import vtk.vtkCellArray;
+import vtk.vtkFeatureEdges;
 import vtk.vtkIdList;
 import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageConstantPad;
@@ -24,7 +25,6 @@ import vtk.vtkTexture;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
-import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
@@ -38,6 +38,7 @@ public class OsirisImage extends PerspectiveImage
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
+
     }
 
     @Override
@@ -234,9 +235,35 @@ public class OsirisImage extends PerspectiveImage
     vtkPolyData offLimbPlane=null;
     vtkActor offLimbActor;
     vtkTexture offLimbTexture;
+    vtkPolyData offLimbBoundary=null;
+    vtkActor offLimbBoundaryActor;
+    double offLimbFootprintDepth;
 
-    public void loadOffLimbPlane()
+    public double getOffLimbPlaneDepth()
     {
+        return offLimbFootprintDepth;
+    }
+
+    public void setOffLimbPlaneDepth(double footprintDepth)
+    {
+        this.offLimbFootprintDepth=footprintDepth;
+        loadOffLimbPlane(footprintDepth);
+    }
+
+
+    protected void loadOffLimbPlane()
+    {
+        double[] spacecraftPosition=new double[3];
+        double[] focalPoint=new double[3];
+        double[] upVector=new double[3];
+        this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
+        this.offLimbFootprintDepth=new Vector3D(spacecraftPosition).getNorm();
+        loadOffLimbPlane(offLimbFootprintDepth);
+    }
+
+    protected void loadOffLimbPlane(double footprintDepth)
+    {
+
         double[] spacecraftPosition=new double[3];
         double[] focalPoint=new double[3];
         double[] upVector=new double[3];
@@ -250,20 +277,18 @@ public class OsirisImage extends PerspectiveImage
         int szW=szMax;//(int)(aspect*szMax);
         int szH=szMax;
 
-        //
-        final double[] ul=frustum1Adjusted[getCurrentSlice()];
-        final double[] ur=frustum3Adjusted[getCurrentSlice()];
-        final double[] lr=frustum4Adjusted[getCurrentSlice()];
-        final double[] ll=frustum2Adjusted[getCurrentSlice()];
-        double footprintDepth=PolyDataUtil.computeFarthestFrustumPlaneDepth(getFootprint(getCurrentSlice()), spacecraftPosition, ul, ur, lr, ll);
-
         Vector3D lookVec=new Vector3D(focalPoint).subtract(new Vector3D(spacecraftPosition));
         // rotation to align points with camera view, given that camera is at spacecraft position
         Vector3D upVec=new Vector3D(upVector);
         Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
         Vector3D scPos=new Vector3D(spacecraftPosition);
-        double sfac=footprintDepth*Math.tan(Math.toRadians(fov/2));
+        if (minFrustumDepth[getCurrentSlice()]==0)
+            minFrustumDepth[getCurrentSlice()]=0;
+        if (maxFrustumDepth[getCurrentSlice()]==0)
+            maxFrustumDepth[getCurrentSlice()]=scPos.getNorm()+getSmallBodyModel().getBoundingBoxDiagonalLength();
+        double maxRayDepth=(minFrustumDepth[getCurrentSlice()]+maxFrustumDepth[getCurrentSlice()]);
+        double ffac=maxRayDepth*Math.tan(Math.toRadians(fov/2));
 
         vtkImageCanvasSource2D imageSource=new vtkImageCanvasSource2D();
         imageSource.SetScalarTypeToUnsignedChar();
@@ -272,7 +297,7 @@ public class OsirisImage extends PerspectiveImage
         for (int i=-szW/2; i<=szW/2; i++)
             for (int j=-szH/2; j<=szH/2; j++)
             {
-                Vector3D ray=new Vector3D((double)i/((double)szW/2)*sfac,(double)j/((double)szW/2)*sfac,-footprintDepth);
+                Vector3D ray=new Vector3D((double)i/((double)szW/2)*ffac,(double)j/((double)szW/2)*ffac,-maxRayDepth);
                 ray=upRot.applyTo(lookRot.applyTo(ray));//upRot.applyInverseTo(lookRot.applyInverseTo(ray.normalize()));
                 Vector3D rayEnd=ray.add(scPos);
                 //
@@ -306,7 +331,7 @@ public class OsirisImage extends PerspectiveImage
         vtkPolyData imagePolyData=new vtkPolyData();
         imagePolyData.SetPoints(tempImagePolyData.GetPoints());
         imagePolyData.SetPolys(cells);
-
+        double sfac=footprintDepth*Math.tan(Math.toRadians(fov/2));
         for (int i=0; i<imagePolyData.GetNumberOfPoints(); i++)
         {
             Vector3D pt=new Vector3D(imagePolyData.GetPoint(i));
@@ -315,6 +340,12 @@ public class OsirisImage extends PerspectiveImage
             pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());
         }
+
+/*        vtkPolyDataWriter writer=new vtkPolyDataWriter();
+        writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
+        writer.SetFileTypeToBinary();
+        writer.SetInputData(imagePolyData);
+        writer.Write();*/
 
 /*        vtkAppendPolyData piAppendFilter=new vtkAppendPolyData();
         piAppendFilter.AddInputData(imagePolyData);
@@ -327,7 +358,8 @@ public class OsirisImage extends PerspectiveImage
         piWriter.SetInputData(piAppendFilter.GetOutput());
         piWriter.Write();*/
 
-        offLimbPlane=imagePolyData;
+        offLimbPlane=new vtkPolyData();
+        offLimbPlane.DeepCopy(imagePolyData);
         PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), offLimbPlane);
 
         if (getDisplayedImage()!=null)
@@ -335,19 +367,40 @@ public class OsirisImage extends PerspectiveImage
             //        for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
             //            for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
             //                image.SetScalarComponentFromDouble(i, j, 0, 3, 0.7*255);    // set alpha manually per pixel; is there a faster way to do this?
-            offLimbTexture = new vtkTexture();
-            offLimbTexture.InterpolateOn();
-            offLimbTexture.RepeatOff();
-            offLimbTexture.EdgeClampOn();
+            if (offLimbTexture==null)
+            {
+                offLimbTexture = new vtkTexture();
+                offLimbTexture.InterpolateOn();
+                offLimbTexture.RepeatOff();
+                offLimbTexture.EdgeClampOn();
+            }
             //offLimbTexture.SetBlendingMode(3);
             this.setDisplayedImageRange(super.getDisplayedRange());
 
             vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
             offLimbMapper.SetInputData(offLimbPlane);
 
-            offLimbActor=new vtkActor();
+            if (offLimbActor==null)
+                offLimbActor=new vtkActor();
             offLimbActor.SetMapper(offLimbMapper);
             offLimbActor.SetTexture(offLimbTexture);
+
+            vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
+            edgeFilter.SetInputData(offLimbPlane);
+            edgeFilter.BoundaryEdgesOn();
+            edgeFilter.ManifoldEdgesOff();
+            edgeFilter.FeatureEdgesOff();
+            edgeFilter.Update();
+            offLimbBoundary=new vtkPolyData();
+            offLimbBoundary.DeepCopy(edgeFilter.GetOutput());
+            vtkPolyDataMapper boundaryMapper=new vtkPolyDataMapper();
+            boundaryMapper.SetInputData(offLimbBoundary);
+
+            if (offLimbBoundaryActor==null)
+                offLimbBoundaryActor=new vtkActor();
+            offLimbBoundaryActor.SetMapper(boundaryMapper);
+            offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
+            offLimbBoundaryActor.GetProperty().SetLineWidth(1);
         }
 
     }
@@ -357,11 +410,15 @@ public class OsirisImage extends PerspectiveImage
     {
         if (offLimbActor==null)
             loadOffLimbPlane();
+        offLimbActor.VisibilityOn();
 
         List<vtkProp> props=super.getProps();
         if (props.contains(offLimbActor))
             props.remove(offLimbActor);
         props.add(offLimbActor);
+        if (props.contains(offLimbBoundaryActor))
+            props.remove(offLimbBoundaryActor);
+        props.add(offLimbBoundaryActor);
         return props;
     }
 
@@ -378,12 +435,16 @@ public class OsirisImage extends PerspectiveImage
         if (offLimbActor!=null)
         {
             if (visible)
+            {
                 offLimbActor.VisibilityOn();
+                offLimbBoundaryActor.VisibilityOn();
+            }
             else
+            {
                 offLimbActor.VisibilityOff();
+                offLimbBoundaryActor.VisibilityOff();
+            }
         }
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-
     }
 
     @Override
@@ -396,6 +457,17 @@ public class OsirisImage extends PerspectiveImage
         image.DeepCopy(getDisplayedImage());
         offLimbTexture.SetInputData(image);
         offLimbTexture.Modified();
-
     }
+
+    public void setOffLimbFootprintAlpha(double alpha)  // between 0-1
+    {
+/*        vtkImageData image=offLimbTexture.GetImageDataInput(0);
+        for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
+            for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
+                image.SetScalarComponentFromDouble(i, j, 0, 3, value*255);    // set alpha manually per pixel; is there a faster way to do this?
+        offLimbTexture.Modified();*/
+        offLimbActor.GetProperty().SetOpacity(alpha);
+        //offLimbBoundaryActor.GetProperty().SetOpacity(alpha);
+    }
+
 }

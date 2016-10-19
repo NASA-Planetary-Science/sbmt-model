@@ -157,15 +157,19 @@ public class MSIImage extends PerspectiveImage
      * MSI PDS4 label generation. Uses the PDS3 label file associated with the source image to populate
      * the XML tags in the output lblFilename. This implementation assumes the product file referenced
      * by imgName is a FITS file.
-     * @param imgName
-     * @param lblFileName
+     * @param imgName - full name of image
+     * @param lblFileName - base name of label file, no extension. The extension is dependent on image
+     *                      type and is added here (e.g. PDS 3 extension is ".lbl", PDS 4 is ".xml").
      * @throws IOException
      */
     public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
     {
+        //Append the appropriate extension
+        File labelFileName = new File(lblFileName.getAbsolutePath() + ".xml");
+
         //generate XML metadata from PDS3 label. NOTE: the PDS3 label is the label associated with the source image,
         //i.e. the image that was used to generate this class.
-        BPMetaBuilder xmlMetaDataBuilder = pds3ToXmlMeta(this.getLabelFileFullPath(), lblFileName.getAbsolutePath());
+        BPMetaBuilder xmlMetaDataBuilder = pds3ToXmlMeta(this.getLabelFileFullPath(), labelFileName.getAbsolutePath());
 
         //gather additional metadata from image Fits file
         try
@@ -206,13 +210,13 @@ public class MSIImage extends PerspectiveImage
         //create PDS4 XML label
         try
         {
-            xmlLabel.writeXML(lblFileName.getAbsolutePath());
+            xmlLabel.writeXML(labelFileName.getAbsolutePath());
         }
         catch (XPathExpressionException | TransformerException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            System.out.println("ERROR! Could not write XML label:" + lblFileName);
+            System.out.println("ERROR! Could not write XML label:" + labelFileName);
         }
 
     }
@@ -318,7 +322,7 @@ public class MSIImage extends PerspectiveImage
      */
     private BPMetaBuilder metaBfromPDS3(String pds3LblFname, String outXmlFname) {
         //load PDS3 label file into memory.
-        List<String> labelContents = new ArrayList<String>();
+    	List<String> labelContents = new ArrayList<String>();
         try
         {
             labelContents = FileUtil.getFileLinesAsStringList(pds3LblFname);

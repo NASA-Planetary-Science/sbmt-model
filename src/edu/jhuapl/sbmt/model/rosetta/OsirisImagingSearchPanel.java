@@ -1,19 +1,29 @@
 package edu.jhuapl.sbmt.model.rosetta;
 
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
+
+import com.jidesoft.swing.RangeSlider;
 
 import edu.jhuapl.saavtk.gui.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
+import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.client.SbmtSpectrumWindowManager;
@@ -25,7 +35,7 @@ import edu.jhuapl.sbmt.model.image.ImagingInstrument;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.model.image.PerspectiveImageBoundaryCollection;
 
-public class OsirisImagingSearchPanel extends ImagingSearchPanel    // this class overrides the default jtable model for the results list in ImagingSearchPanel to include parameters for controlling off-limb rendering planes
+public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements ChangeListener // this class overrides the default jtable model for the results list in ImagingSearchPanel to include parameters for controlling off-limb rendering planes
 {
     int hideOffLimbFootprintColumnIndex;
 
@@ -158,6 +168,9 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel    // this clas
                     PerspectiveImage image = (PerspectiveImage) images.getImage(key);
     //                System.out.println(((OsirisImage)image).offLimbFootprintIsVisible());
                     resultList.setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
+                    ((OsirisImage)image).setOffLimbFootprintAlpha(alphaSlider.getAlphaValue());
+                    if (depthSlider.activeImage!=null)
+                        depthSlider.setValue(depthSlider.convertDepthToSliderValue(((OsirisImage)image).getOffLimbPlaneDepth()));
                 }
                 else
                 {
@@ -205,7 +218,6 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel    // this clas
 
     }
 
-
     public class StructuresTableModel extends DefaultTableModel
     {
         public StructuresTableModel(Object[][] data, String[] columnNames)
@@ -239,5 +251,142 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel    // this clas
         }
     }
 
+
+    class DepthSlider extends JSlider
+    {
+        double depthMin,depthMax;
+        OsirisImage activeImage;
+
+        public DepthSlider()
+        {
+            setMinimum(0);
+            setMaximum(100);
+        }
+
+        public void setDepthBounds(double depthMin, double depthMax)
+        {
+            this.depthMin=depthMin;
+            this.depthMax=depthMax;
+        }
+
+        public void applyDepthToImage(OsirisImage image)
+        {
+            activeImage=image;
+            depthMin=activeImage.getMinFrustumDepth(getCurrentSlice());
+            depthMax=activeImage.getMaxFrustumDepth(getCurrentSlice());
+            activeImage.loadOffLimbPlane(getDepthValue());
+        }
+
+        public double getDepthValue()
+        {
+            double depthNorm=(double)(getValue()-getMinimum())/(double)(getMaximum()-getMinimum());
+            return depthMin+depthNorm*(depthMax-depthMin);
+        }
+
+        public int convertDepthToSliderValue(double depth)
+        {
+            double depthNorm=(activeImage.getOffLimbPlaneDepth()-depthMin)/(depthMax-depthMin);
+            return (int)((double)(getMaximum()-getMinimum())*depthNorm);
+        }
+
+    }
+
+    class AlphaSlider extends JSlider
+    {
+        public AlphaSlider()
+        {
+            setMinimum(0);
+            setMaximum(100);
+        }
+
+        public void applyAlphaToImage(OsirisImage image)
+        {
+            image.setOffLimbFootprintAlpha(getAlphaValue());
+        }
+
+        public double getAlphaValue()
+        {
+            return (double)(getValue()-getMinimum())/(double)(getMaximum()-getMinimum());
+        }
+    }
+
+    class ContrastSlider extends RangeSlider
+    {
+        public ContrastSlider()
+        {
+            setMinimum(0);
+            setMaximum(255);
+        }
+
+        public void applyContrastToImage(OsirisImage image)
+        {
+            image.setDisplayedImageRange(new IntensityRange(getLowValue(), getHighValue()));
+        }
+    }
+
+    DepthSlider depthSlider;
+    AlphaSlider alphaSlider;
+    ContrastSlider contrastSlider;
+
+    @Override
+    protected void populateMonochromePanel(JPanel panel)
+    {
+        super.populateMonochromePanel(panel);
+        //
+        depthSlider=new DepthSlider();
+        depthSlider.addChangeListener(this);
+        JLabel label=new JLabel();
+        label.setText("Off-limb footprint depth");
+
+        alphaSlider=new AlphaSlider();
+        alphaSlider.addChangeListener(this);
+        JLabel label2=new JLabel();
+        label2.setText("Off-limb footprint transparency");
+
+        contrastSlider=new ContrastSlider();
+        contrastSlider.addChangeListener(this);
+        JLabel label3=new JLabel();
+        label3.setText("Image contrast");
+
+        JPanel wholePanel=new JPanel(new GridLayout(3, 1));
+
+        JPanel depthPanel=new JPanel();
+        depthPanel.add(label,BorderLayout.NORTH);
+        depthPanel.add(depthSlider,BorderLayout.CENTER);
+        JPanel alphaPanel=new JPanel();
+        alphaPanel.add(label2,BorderLayout.NORTH);
+        alphaPanel.add(alphaSlider,BorderLayout.CENTER);
+        JPanel contrastPanel=new JPanel();
+        contrastPanel.add(label3, BorderLayout.NORTH);
+        contrastPanel.add(contrastSlider, BorderLayout.CENTER);
+
+        wholePanel.add(depthPanel);
+        wholePanel.add(alphaPanel);
+        wholePanel.add(contrastPanel);
+
+        panel.add(wholePanel);
+    }
+
+
+    @Override
+    public void stateChanged(ChangeEvent e)
+    {
+        if (resultList.getSelectedRows().length==1)
+        {
+            String name = imageRawResults.get(resultList.getSelectedRow()).get(0);
+            ImageKey key = createImageKey(name.substring(0, name.length()-4), sourceOfLastQuery, instrument);
+            ImageCollection images = (ImageCollection)modelManager.getModel(getImageCollectionModelName());
+            OsirisImage image=(OsirisImage)images.getImage(key);
+            if (image!=null)
+            {
+                if (e.getSource()==depthSlider && !depthSlider.getValueIsAdjusting())
+                    depthSlider.applyDepthToImage(image);
+                else if (e.getSource()==alphaSlider && !alphaSlider.getValueIsAdjusting())
+                    alphaSlider.applyAlphaToImage(image);
+                else if (e.getSource()==contrastSlider && !contrastSlider.getValueIsAdjusting())
+                    contrastSlider.applyContrastToImage(image);
+            }
+        }
+    }
 
 }
