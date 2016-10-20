@@ -355,7 +355,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
                 spacecraftLabelActor.GetCaptionTextProperty().ShadowOff();
 //                spacecraftLabelActor.GetCaptionTextProperty().ItalicOff();
                 spacecraftLabelActor.SetPosition(0.0, 0.0);
-                spacecraftLabelActor.SetWidth(0.2);
+                spacecraftLabelActor.SetWidth(0.1);
 //                spacecraftLabelActor.SetPosition2(30.0, 20.0);
                 spacecraftLabelActor.SetBorder(0);
                 spacecraftLabelActor.SetLeader(0);
@@ -850,7 +850,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 //            double altitude = distance - europaRadius;
 
 //            String speedText = String.format("%7.1f km %7.3f km/sec   .", altitude, groundSpeed);
-            String speedText = String.format("%7.1f km %7.3f km/sec   .", radius, speed);
+//              String speedText = String.format("%7.1f km %7.3f km/sec   .", radius, speed);
+              String speedText = String.format("%7.1f km       ", radius);
 
 //            System.out.println("Speed: " + speed + ", Ground Speed: " + groundSpeed);
 
