@@ -34,7 +34,7 @@ public class CsvState implements State
         {
             utc = parts[0].trim();
             ephemerisTime = TimeUtil.str2et(utc);
-            System.out.println("State: " + utc + " = " + ephemerisTime);
+//            System.out.println("State: " + utc + " = " + ephemerisTime);
         }
 
         if (ntokens > 3)

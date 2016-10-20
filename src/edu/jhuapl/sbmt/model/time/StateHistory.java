@@ -4,6 +4,8 @@ import java.util.Map.Entry;
 
 public interface StateHistory
 {
+    public static final double epsilon = 0.0000001;
+
     public Double getTime();
 
     public void setTime(Double time);

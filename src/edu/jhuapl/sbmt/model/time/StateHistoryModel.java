@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,12 +20,9 @@ import vtk.vtkActor2D;
 import vtk.vtkCaptionActor2D;
 import vtk.vtkCellArray;
 import vtk.vtkConeSource;
-import vtk.vtkCoordinate;
 import vtk.vtkCubeSource;
 import vtk.vtkCylinderSource;
-import vtk.vtkDataArray;
 import vtk.vtkIdList;
-import vtk.vtkLookupTable;
 import vtk.vtkMatrix4x4;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
@@ -37,7 +33,6 @@ import vtk.vtkProperty;
 import vtk.vtkScalarBarActor;
 import vtk.vtkSphereSource;
 import vtk.vtkTextActor;
-import vtk.vtkTextProperty;
 import vtk.vtkUnsignedCharArray;
 
 import edu.jhuapl.saavtk.gui.Renderer;
@@ -149,6 +144,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
     private ArrayList<vtkProp> stateHistoryActors = new ArrayList<vtkProp>();
 
+    private boolean showTrajectories;
     private boolean showSpacecraft;
     private boolean showMonolith;
     private boolean showSpacecraftBody;
@@ -282,7 +278,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             {
                 loadStateHistory();
 
-                loadAreaCalculationCollection();
+//                loadAreaCalculationCollection();
 
                 createTrajectoryPolyData();
 
@@ -414,8 +410,6 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
                 sunMarkerActor.GetProperty().ShadingOn();
                 sunMarkerActor.GetProperty().SetInterpolationToPhong();
 
-
-
                 // By default do not show the trajectories
                 //trajectoryActors.add(trajectoryActor);
 
@@ -430,8 +424,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         if (timeBarActor == null)
             setupTimeBar();
 
-        if (scalarBarActor == null)
-            setupScalarBar();
+//        if (scalarBarActor == null)
+//            setupScalarBar();
 
 //        if (testActor == null)
 //        {
@@ -444,20 +438,20 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 //        }
     }
 
-    private AreaCalculationCollection areaCalculationList = null;
-    public AreaCalculationCollection getAreaCalculationCollection()
-    {
-        return areaCalculationList;
-    }
+//    private AreaCalculationCollection areaCalculationList = null;
+//    public AreaCalculationCollection getAreaCalculationCollection()
+//    {
+//        return areaCalculationList;
+//    }
 
-    private void loadAreaCalculationCollection()
-    {
-        String runName = getKey().name;
-        File missionFile = new File(runName);
-        String runDirName = missionFile.getParent();
-
-        areaCalculationList = new StandardAreaCalculationCollection(runDirName, this, smallBodyModel);
-    }
+//    private void loadAreaCalculationCollection()
+//    {
+//        String runName = getKey().name;
+//        File missionFile = new File(runName);
+//        String runDirName = missionFile.getParent();
+//
+//        areaCalculationList = new StandardAreaCalculationCollection(runDirName, this, smallBodyModel);
+//    }
 
     private void loadStateHistory()
     {
@@ -477,8 +471,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         cellIdToTrajectory.clear();
         propToTrajectory.clear();
 
-        if (areaCalculationList != null && areaCalculationList.getCurrentValue() != null)
-            areaCalculationList.getCurrentValue().initialize();
+//        if (areaCalculationList != null && areaCalculationList.getCurrentValue() != null)
+//            areaCalculationList.getCurrentValue().initialize();
 
         nameToFlybyStateHistory.clear();
 
@@ -559,21 +553,21 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     }
 
 
-    private AreaCalculation areaCalculation;
-
-    public AreaCalculation getAreaCalculation()
-    {
-        return areaCalculation;
-    }
-
-    public void setAreaCalculation(AreaCalculation areaCalculation)
-    {
-        this.areaCalculation = areaCalculation;
-
-        System.out.println("Loading Area Calculation Actors: " + areaCalculation.getName());
-        areaCalculation.initialize();
-//        setShowPatches(new HashSet<String>(areaCalculation.getPatchNames()));
-    }
+//    private AreaCalculation areaCalculation;
+//
+//    public AreaCalculation getAreaCalculation()
+//    {
+//        return areaCalculation;
+//    }
+//
+//    public void setAreaCalculation(AreaCalculation areaCalculation)
+//    {
+//        this.areaCalculation = areaCalculation;
+//
+//        System.out.println("Loading Area Calculation Actors: " + areaCalculation.getName());
+//        areaCalculation.initialize();
+////        setShowPatches(new HashSet<String>(areaCalculation.getPatchNames()));
+//    }
 
 
     private void createTrajectoryPolyData()
@@ -706,22 +700,22 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         return this.propToTrajectory.get(prop);
     }
 
-    public SurfacePatch getSurfacePatch(vtkProp prop)
-    {
-        SurfacePatch result = null;
-        if (getAreaCalculation() != null)
-            result = getAreaCalculation().getPatch(prop);
-        return result;
-    }
-
-    public Double getSurfacePatchValue(vtkProp prop, int cellId, double[] pickPosition)
-    {
-//        System.out.println("Surface Patch Value at " + prop.GetVTKId() + ", " + cellId + ", (" + pickPosition[0] + ", " + pickPosition[1] + ", " + pickPosition[2] + ")");
-        Double result = null;
-        if (getAreaCalculation() != null)
-            result = getAreaCalculation().getSurfacePatchValue(prop, cellId, pickPosition);
-        return result;
-    }
+//    public SurfacePatch getSurfacePatch(vtkProp prop)
+//    {
+//        SurfacePatch result = null;
+//        if (getAreaCalculation() != null)
+//            result = getAreaCalculation().getPatch(prop);
+//        return result;
+//    }
+//
+//    public Double getSurfacePatchValue(vtkProp prop, int cellId, double[] pickPosition)
+//    {
+////        System.out.println("Surface Patch Value at " + prop.GetVTKId() + ", " + cellId + ", (" + pickPosition[0] + ", " + pickPosition[1] + ", " + pickPosition[2] + ")");
+//        Double result = null;
+//        if (getAreaCalculation() != null)
+//            result = getAreaCalculation().getSurfacePatchValue(prop, cellId, pickPosition);
+//        return result;
+//    }
 
     public Trajectory getTrajectoryByIndex(int index)
     {
@@ -755,13 +749,13 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
 
 
-    public void setPatchColor(int cellId, int[] color)
-    {
-    }
-
-    public void setsAllPatchesColor(int[] color)
-    {
-    }
+//    public void setPatchColor(int cellId, int[] color)
+//    {
+//    }
+//
+//    public void setsAllPatchesColor(int[] color)
+//    {
+//    }
 
 
     private Double time;
@@ -786,8 +780,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             return null;
     }
 
-    public static final double europaRadius = 1560.8;
-    public static final double fovWidthFudge = 1.3;
+//    public static final double europaRadius = 1560.8;
+//    public static final double fovWidthFudge = 1.3;
 
     public void setTimeFraction(double timeFraction)
     {
@@ -821,8 +815,14 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             MathUtil.vscl(-1.0, sunDirection, sunViewDirection);
             int result = smallBodyModel.computeRayIntersection(sunViewpoint, sunViewDirection, sunMarkerPosition);
 
-            renderer.setFixedLightDirection(sunDirection);
-            renderer.setLighting(LightingType.FIXEDLIGHT);
+            if (timeFraction > 0.0)
+            {
+                renderer.setFixedLightDirection(sunDirection);
+                renderer.setLighting(LightingType.FIXEDLIGHT);
+            }
+            else
+                renderer.setLighting(LightingType.LIGHT_KIT);
+
 
             double[] earthPosition = currentFlybyStateHistory.getEarthPosition();
             double[] earthMarkerPosition = new double[3];
@@ -979,22 +979,22 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         }
     }
 
-    public void setOffset(double offset)
-    {
-        this.offset = offset;
-        areaCalculation.setOffset(offset);
-        this.updateActorVisibility();
-        Set<String> visiblePatches = new HashSet<String>();
-        for (int i=0; i<areaCalculation.getSize(); i++)
-            visiblePatches.add(areaCalculation.getValue(i).getName());
-        setShowPatches(visiblePatches);
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
+//    public void setOffset(double offset)
+//    {
+//        this.offset = offset;
+//        areaCalculation.setOffset(offset);
+//        this.updateActorVisibility();
+//        Set<String> visiblePatches = new HashSet<String>();
+//        for (int i=0; i<areaCalculation.getSize(); i++)
+//            visiblePatches.add(areaCalculation.getValue(i).getName());
+//        setShowPatches(visiblePatches);
+//        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//    }
 
-    public double getOffset()
-    {
-        return offset;
-    }
+//    public double getOffset()
+//    {
+//        return offset;
+//    }
 
     public void setShowSpacecraft(boolean show)
     {
@@ -1015,6 +1015,17 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     public void updateActorVisibility()
     {
         stateHistoryActors.clear();
+
+        initialize();
+
+        if (visibleTrajectories != null)
+        {
+            for (int itraj=0; itraj<ntrajectories; itraj++)
+            {
+                if (visibleTrajectories.contains(trajectories[itraj].getName()))
+                    stateHistoryActors.add(trajectoryActors[itraj]);
+            }
+        }
 
 //      stateHistoryActors.add(spacecraftBoresightActor);
 
@@ -1042,18 +1053,12 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             stateHistoryActors.add(sunMarkerActor);
         }
 
-        if (visibleTrajectories != null)
-            for (int itraj=0; itraj<ntrajectories; itraj++)
-            {
-                if (visibleTrajectories.contains(trajectories[itraj].getName()))
-                    stateHistoryActors.add(trajectoryActors[itraj]);
-            }
 
-        if (areaCalculation != null)
-        {
-            areaCalculation.initializePatches();
-            stateHistoryActors.addAll(areaCalculation.getVisibleActors());
-        }
+//        if (areaCalculation != null)
+//        {
+//            areaCalculation.initializePatches();
+//            stateHistoryActors.addAll(areaCalculation.getVisibleActors());
+//        }
 
         if (showTimeBar)
         {
@@ -1061,50 +1066,53 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             stateHistoryActors.add(timeBarTextActor);
         }
 
-        if (showScalarBar)
-        {
-            stateHistoryActors.add(scalarBarActor);
-        }
+//        if (showScalarBar)
+//        {
+//            stateHistoryActors.add(scalarBarActor);
+//        }
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     public void setShowTrajectories(boolean show)
     {
-        if (show)
-        {
-            if (stateHistoryActors.isEmpty())
-            {
-                initialize();
+        showTrajectories = show;
+        updateActorVisibility();
 
-                for (int itraj=0; itraj<ntrajectories; itraj++)
-                    stateHistoryActors.add(trajectoryActors[itraj]);
-                if (this.showSpacecraft)
-                {
-//                    stateHistoryActors.add(spacecraftBoresightActor);
-                    stateHistoryActors.add(monolithBodyActor);
-                    stateHistoryActors.add(spacecraftBodyActor);
-                    stateHistoryActors.add(spacecraftLabelActor);
-                    stateHistoryActors.add(spacecraftFovActor);
-                }
-                if (this.showSpacecraftMarker)
-                    stateHistoryActors.add(spacecraftMarkerActor);
-                if (this.showEarthMarker)
-                    stateHistoryActors.add(earthMarkerActor);
-                if (this.showSunMarker)
-                    stateHistoryActors.add(sunMarkerActor);
-
-                this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-            }
-        }
-        else
-        {
-            if (!stateHistoryActors.isEmpty())
-            {
-                stateHistoryActors.clear();
-                this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-            }
-        }
+//        if (show)
+//        {
+//            if (stateHistoryActors.isEmpty())
+//            {
+//                initialize();
+//
+//                for (int itraj=0; itraj<ntrajectories; itraj++)
+//                    stateHistoryActors.add(trajectoryActors[itraj]);
+//                if (this.showSpacecraft)
+//                {
+////                    stateHistoryActors.add(spacecraftBoresightActor);
+//                    stateHistoryActors.add(monolithBodyActor);
+//                    stateHistoryActors.add(spacecraftBodyActor);
+//                    stateHistoryActors.add(spacecraftLabelActor);
+//                    stateHistoryActors.add(spacecraftFovActor);
+//                }
+//                if (this.showSpacecraftMarker)
+//                    stateHistoryActors.add(spacecraftMarkerActor);
+//                if (this.showEarthMarker)
+//                    stateHistoryActors.add(earthMarkerActor);
+//                if (this.showSunMarker)
+//                    stateHistoryActors.add(sunMarkerActor);
+//
+//                this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//            }
+//        }
+//        else
+//        {
+//            if (!stateHistoryActors.isEmpty())
+//            {
+//                stateHistoryActors.clear();
+//                this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//            }
+//        }
 
     }
 
@@ -1114,14 +1122,14 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         updateActorVisibility();
     }
 
-    public void setShowPatches(Set<String> patchNames)
-    {
-        if (areaCalculation != null)
-        {
-            areaCalculation.setShowPatches(patchNames);
-            updateActorVisibility();
-        }
-    }
+//    public void setShowPatches(Set<String> patchNames)
+//    {
+//        if (areaCalculation != null)
+//        {
+//            areaCalculation.setShowPatches(patchNames);
+//            updateActorVisibility();
+//        }
+//    }
 
     public ArrayList<vtkProp> getProps()
     {
@@ -1168,63 +1176,63 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 //
 //        loadColoringData();
 
-        vtkDataArray array = null;
+//        vtkDataArray array = null;
 
-        if (this.areaCalculation != null)
-        {
-            int index = areaCalculation.getCurrentIndex();
-            SurfacePatch currentPatch = areaCalculation.getCurrentPatch();
-            ScalarRange currentRange = areaCalculation.getScalarRange();
-
-            if (coloringIndex >= 0)
-            {
-    //            ColoringInfo info = coloringInfo.get(coloringIndex);
-    //            array = info.coloringValues;
-    //            String title = info.coloringName;
-    //            if (!info.coloringUnits.isEmpty())
-    //                title += " (" + info.coloringUnits + ")";
-    //            String title = "Scalar Bar";
-//                String title = currentRange.getCurrentRangeType();
-                String title = currentPatch.getCurrentDataType();
-                scalarBarActor.SetTitle(title);
-            }
-            if (coloringIndex < 0)
-            {
-                showScalarBar = false;
-            }
-            else
-            {
-                showScalarBar = true;
-
-    //            ColoringInfo info = coloringInfo.get(coloringIndex);
-                if (this.areaCalculation != null)
-                {
-                    System.out.println("Heat map index: " + index);
-                    PolyDataHeatMap patchHeatMap = areaCalculation.getPatchHeatMapActor(index);
-//                    vtkPolyDataMapper heatMapper = patchHeatMap.getMapper();
-//                    scalarBarActor.SetLookupTable(heatMapper.GetLookupTable());
-                    scalarBarActor.SetLookupTable(patchHeatMap.getLookupTable());
-                }
-            }
-
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-        }
+//        if (this.areaCalculation != null)
+//        {
+//            int index = areaCalculation.getCurrentIndex();
+//            SurfacePatch currentPatch = areaCalculation.getCurrentPatch();
+//            ScalarRange currentRange = areaCalculation.getScalarRange();
+//
+//            if (coloringIndex >= 0)
+//            {
+//    //            ColoringInfo info = coloringInfo.get(coloringIndex);
+//    //            array = info.coloringValues;
+//    //            String title = info.coloringName;
+//    //            if (!info.coloringUnits.isEmpty())
+//    //                title += " (" + info.coloringUnits + ")";
+//    //            String title = "Scalar Bar";
+////                String title = currentRange.getCurrentRangeType();
+//                String title = currentPatch.getCurrentDataType();
+//                scalarBarActor.SetTitle(title);
+//            }
+//            if (coloringIndex < 0)
+//            {
+//                showScalarBar = false;
+//            }
+//            else
+//            {
+//                showScalarBar = true;
+//
+//    //            ColoringInfo info = coloringInfo.get(coloringIndex);
+//                if (this.areaCalculation != null)
+//                {
+//                    System.out.println("Heat map index: " + index);
+//                    PolyDataHeatMap patchHeatMap = areaCalculation.getPatchHeatMapActor(index);
+////                    vtkPolyDataMapper heatMapper = patchHeatMap.getMapper();
+////                    scalarBarActor.SetLookupTable(heatMapper.GetLookupTable());
+//                    scalarBarActor.SetLookupTable(patchHeatMap.getLookupTable());
+//                }
+//            }
+//
+//            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//        }
     }
 
-    private void setupScalarBar()
-    {
-        scalarBarActor = new vtkScalarBarActor();
-        vtkCoordinate coordinate = scalarBarActor.GetPositionCoordinate();
-        coordinate.SetCoordinateSystemToNormalizedViewport();
-        coordinate.SetValue(0.2, 0.01);
-        scalarBarActor.SetOrientationToHorizontal();
-        scalarBarActor.SetWidth(0.6);
-        scalarBarActor.SetHeight(0.1275);
-        vtkTextProperty tp = new vtkTextProperty();
-        tp.SetFontSize(10);
-        scalarBarActor.SetTitleTextProperty(tp);
-        scalarBarActor.SetLookupTable(new vtkLookupTable());
-    }
+//    private void setupScalarBar()
+//    {
+//        scalarBarActor = new vtkScalarBarActor();
+//        vtkCoordinate coordinate = scalarBarActor.GetPositionCoordinate();
+//        coordinate.SetCoordinateSystemToNormalizedViewport();
+//        coordinate.SetValue(0.2, 0.01);
+//        scalarBarActor.SetOrientationToHorizontal();
+//        scalarBarActor.SetWidth(0.6);
+//        scalarBarActor.SetHeight(0.1275);
+//        vtkTextProperty tp = new vtkTextProperty();
+//        tp.SetFontSize(10);
+//        scalarBarActor.SetTitleTextProperty(tp);
+//        scalarBarActor.SetLookupTable(new vtkLookupTable());
+//    }
 
     private void setupTimeBar()
     {
@@ -1339,22 +1347,22 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 //            this.setCurrentTrajectoryId(traj.id);
             return "Trajectory " + traj.getId() + " = " + traj.getName() + " contains " + traj.getX().size() + " vertices";
         }
-        else
-        {
-            SurfacePatch patch = getSurfacePatch(prop);
-            if (patch != null)
-            {
-                String dataType = patch.getCurrentDataType();
-                if (this.getAreaCalculation() != null)
-                {
-                    Double value = getAreaCalculation().getSurfacePatchValue(prop, cellId, pickPosition);
-                    if (value != null)
-                    {
-                        return dataType + ": " + value;
-                    }
-                }
-            }
-        }
+//        else
+//        {
+//            SurfacePatch patch = getSurfacePatch(prop);
+//            if (patch != null)
+//            {
+//                String dataType = patch.getCurrentDataType();
+//                if (this.getAreaCalculation() != null)
+//                {
+//                    Double value = getAreaCalculation().getSurfacePatchValue(prop, cellId, pickPosition);
+//                    if (value != null)
+//                    {
+//                        return dataType + ": " + value;
+//                    }
+//                }
+//            }
+//        }
 
         return "";
     }

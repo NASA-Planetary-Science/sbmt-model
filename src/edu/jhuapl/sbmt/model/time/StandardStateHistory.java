@@ -94,15 +94,8 @@ public class StandardStateHistory implements StateHistory, HasTime
         double[] ceilingPosition = ceiling.getSpacecraftPosition();
         double floorTime = floor.getEphemerisTime();
         double ceilingTime = ceiling.getEphemerisTime();
-        double timeDelta = ceilingTime - floorTime;
-        double timeFraction = (time - floorTime) / timeDelta;
-        double[] positionDelta = new double[3];
-        MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
-        double[] positionFraction = new double[3];
-        MathUtil.vscl(timeFraction, positionDelta, positionFraction);
-        double[] result = new double[3];
-        MathUtil.vadd(floorPosition, positionFraction, result);
-        return result;
+
+        return interpolateDouble(floorPosition, ceilingPosition, floorTime, ceilingTime, time);
     }
 
     public double[] getSunPosition()
@@ -113,15 +106,8 @@ public class StandardStateHistory implements StateHistory, HasTime
         double[] ceilingPosition = ceiling.getSunPosition();
         double floorTime = floor.getEphemerisTime();
         double ceilingTime = ceiling.getEphemerisTime();
-        double timeDelta = ceilingTime - floorTime;
-        double timeFraction = (time - floorTime) / timeDelta;
-        double[] positionDelta = new double[3];
-        MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
-        double[] positionFraction = new double[3];
-        MathUtil.vscl(timeFraction, positionDelta, positionFraction);
-        double[] result = new double[3];
-        MathUtil.vadd(floorPosition, positionFraction, result);
-        return result;
+
+        return interpolateDouble(floorPosition, ceilingPosition, floorTime, ceilingTime, time);
     }
 
     public double[] getEarthPosition()
@@ -132,14 +118,29 @@ public class StandardStateHistory implements StateHistory, HasTime
         double[] ceilingPosition = ceiling.getEarthPosition();
         double floorTime = floor.getEphemerisTime();
         double ceilingTime = ceiling.getEphemerisTime();
-        double timeDelta = ceilingTime - floorTime;
-        double timeFraction = (time - floorTime) / timeDelta;
-        double[] positionDelta = new double[3];
-        MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
-        double[] positionFraction = new double[3];
-        MathUtil.vscl(timeFraction, positionDelta, positionFraction);
-        double[] result = new double[3];
-        MathUtil.vadd(floorPosition, positionFraction, result);
-        return result;
+
+        return interpolateDouble(floorPosition, ceilingPosition, floorTime, ceilingTime, time);
     }
+
+
+    private double[] interpolateDouble(double[] floorPosition, double[] ceilingPosition, double floorTime, double ceilingTime, double time)
+    {
+        double timeDelta = ceilingTime - floorTime;
+        if (timeDelta < epsilon)
+        {
+            return floorPosition;
+        }
+        else
+        {
+            double timeFraction = (time - floorTime) / timeDelta;
+            double[] positionDelta = new double[3];
+            MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
+            double[] positionFraction = new double[3];
+            MathUtil.vscl(timeFraction, positionDelta, positionFraction);
+            double[] result = new double[3];
+            MathUtil.vadd(floorPosition, positionFraction, result);
+            return result;
+        }
+    }
+
 }
