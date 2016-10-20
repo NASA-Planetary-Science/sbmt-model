@@ -6,7 +6,7 @@ import java.util.TreeMap;
 
 import altwg.util.MathUtil;
 
-public class StandardStateHistory implements StateHistory, HasTime
+public class StandardStateHistory implements StateHistory
 {
     private NavigableMap<Double, State> timeToFlybyState = new TreeMap<Double, State>();
 
@@ -84,6 +84,11 @@ public class StandardStateHistory implements StateHistory, HasTime
     {
         // for now, just return floor
         return getValue(getTime());
+    }
+
+    public Double getPeriod()
+    {
+        return getMaxTime() - getMinTime();
     }
 
     public double[] getSpacecraftPosition()

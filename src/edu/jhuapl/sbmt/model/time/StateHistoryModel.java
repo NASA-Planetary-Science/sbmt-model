@@ -48,7 +48,7 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.europa.time.TimeUtils;
 
 
-public class StateHistoryModel extends AbstractModel implements PropertyChangeListener, ListModel
+public class StateHistoryModel extends AbstractModel implements PropertyChangeListener, ListModel, HasTime
 {
     // constants
     private double fovDepthFudgeFactor = 2.0;
@@ -788,10 +788,20 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             return null;
     }
 
+    public Double getPeriod()
+    {
+        if (currentFlybyStateHistory != null)
+            return currentFlybyStateHistory.getPeriod();
+        else
+            return 0.0;
+    }
+
+
+
 //    public static final double europaRadius = 1560.8;
 //    public static final double fovWidthFudge = 1.3;
 
-    public void setTimeFraction(double timeFraction)
+    public void setTimeFraction(Double timeFraction)
     {
         if (currentFlybyStateHistory != null && spacecraftBodyActor != null)
         {

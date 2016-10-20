@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.time;
 
 import java.util.Map.Entry;
 
-public interface StateHistory
+public interface StateHistory extends HasTime
 {
     public static final double epsilon = 0.0000001;
 

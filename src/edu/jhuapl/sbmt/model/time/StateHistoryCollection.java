@@ -207,4 +207,12 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
             return 0.0;
     }
 
+    public Double getPeriod()
+    {
+        if (currentRun != null)
+            return ((HasTime)currentRun).getPeriod();
+        else
+            return 0.0;
+    }
+
 }
