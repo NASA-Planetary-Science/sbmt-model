@@ -227,9 +227,17 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     public void setCurrentTrajectory(Trajectory currentTrajectory)
     {
         this.currentTrajectory = currentTrajectory;
-        currentTrajectoryName = currentTrajectory.getName();
-        currentFlybyStateHistory = nameToFlybyStateHistory.get(currentTrajectoryName);
-        this.setTimeFraction(0.0);
+        if (this.currentTrajectory != null)
+        {
+            currentTrajectoryName = currentTrajectory.getName();
+            currentFlybyStateHistory = nameToFlybyStateHistory.get(currentTrajectoryName);
+            this.setTimeFraction(0.0);
+        }
+        else
+        {
+            currentTrajectoryName = null;
+            currentFlybyStateHistory = null;
+        }
     }
 
     public String getCurrentTrajectoryName()

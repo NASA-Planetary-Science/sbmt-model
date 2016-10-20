@@ -131,7 +131,7 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
     public void setShowTrajectories(boolean show)
     {
         for (StateHistoryModel run : simRuns)
-            run.setShowTrajectories(show);
+            run.setShowSpacecraft(show);
     }
 
     public ArrayList<vtkProp> getProps()
