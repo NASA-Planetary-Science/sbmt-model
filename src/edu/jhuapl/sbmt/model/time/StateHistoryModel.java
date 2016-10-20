@@ -45,7 +45,7 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.europa.time.TimeUtils;
+import edu.jhuapl.sbmt.util.TimeUtil;
 
 
 public class StateHistoryModel extends AbstractModel implements PropertyChangeListener, ListModel, HasTime
@@ -1322,7 +1322,8 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     {
         timeBarValue = time;
 //        timeBarTextActor.SetInput(String.format("%.2f sec", timeBarValue));
-        String utcValue = TimeUtils.et2UTCString(timeBarValue);
+//        String utcValue = TimeUtils.et2UTCString(timeBarValue);
+        String utcValue = TimeUtil.et2str(timeBarValue);
         timeBarTextActor.SetInput(utcValue.trim());
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
