@@ -271,4 +271,17 @@ public class LEISAJupiterImage extends PerspectiveImage
         return createRawImage(height, width, depth, false, array2D, array3D);
     }
 
+    @Override
+    public float[] getRawPixelValue(int p0, int p1)
+    {
+        if(getRawImage() == null)
+        {
+            return null;
+        }
+        else
+        {
+            float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(getRawImage(), getImageHeight()-1-p0, p1);
+            return new float[] {pixelColumn[getCurrentSlice()]};
+        }
+    }
 }

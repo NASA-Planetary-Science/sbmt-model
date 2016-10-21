@@ -888,4 +888,9 @@ public class CylindricalImage extends Image
     {
         return imageName;
     }
+
+    public float[] getRawPixelValue(int p0, int p1)
+    {
+        return null;
+    }
 }

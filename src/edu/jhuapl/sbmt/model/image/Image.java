@@ -23,7 +23,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     public static final String IMAGE_ROTATIONS = "ImageRotations";
     public static final String IMAGE_FLIPS = "ImageFlips";
 
-    
+
 
 
 //    public static class ImagingInstrument
@@ -189,6 +189,11 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
             return texture.GetInterpolate() == 0 ? false : true;
         else
             return true;
+    }
+
+    public float[] getRawPixelValue(int p0, int p1)
+    {
+        return null;
     }
 
     abstract public int getNumberOfComponentsOfOriginalImage();
