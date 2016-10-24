@@ -38,6 +38,7 @@ import vtk.vtkUnsignedCharArray;
 import edu.jhuapl.saavtk.gui.Renderer;
 import edu.jhuapl.saavtk.gui.Renderer.LightingType;
 import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.ConvertResourceToFile;
 import edu.jhuapl.saavtk.util.MathUtil;
@@ -50,6 +51,8 @@ import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class StateHistoryModel extends AbstractModel implements PropertyChangeListener, ListModel, HasTime
 {
+    //Use approximate radius of largest solar system body as scale for surface intercept vector.
+    private static final double JupiterScale = 75000;
     // constants
     private double fovDepthFudgeFactor = 2.0;
 
@@ -676,6 +679,11 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         spacecraftFov.SetResolution(4);
         spacecraftFov.Update();
 
+        //Scale subsolar and subearth point markers to body size
+        BoundingBox bb = smallBodyModel.getBoundingBox();
+        double width = Math.max((bb.xmax-bb.xmin), Math.max((bb.ymax-bb.ymin), (bb.zmax-bb.zmin)));
+        markerRadius = 0.01 * width;
+
         spacecraftMarkerBody = new vtkSphereSource();
         spacecraftMarkerBody.SetRadius(markerRadius);
         spacecraftMarkerBody.SetCenter(markerOffset);
@@ -829,7 +837,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             double[] sunViewpoint = new double[3];
             double[] sunViewDirection = new double[3];
             MathUtil.unorm(sunPosition, sunDirection);
-            MathUtil.vscl(1000.0, sunDirection, sunViewpoint);
+            MathUtil.vscl(JupiterScale, sunDirection, sunViewpoint);
             MathUtil.vscl(-1.0, sunDirection, sunViewDirection);
             int result = smallBodyModel.computeRayIntersection(sunViewpoint, sunViewDirection, sunMarkerPosition);
 
@@ -848,7 +856,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             double[] earthViewpoint = new double[3];
             double[] earthViewDirection = new double[3];
             MathUtil.unorm(earthPosition, earthDirection);
-            MathUtil.vscl(1000.0, earthDirection, earthViewpoint);
+            MathUtil.vscl(JupiterScale, earthDirection, earthViewpoint);
             MathUtil.vscl(-1.0, earthDirection, earthViewDirection);
             result = smallBodyModel.computeRayIntersection(earthViewpoint, earthViewDirection, earthMarkerPosition);
 
