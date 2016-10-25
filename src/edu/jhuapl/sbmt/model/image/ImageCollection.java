@@ -144,9 +144,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         {
             PerspectiveImage pi = (PerspectiveImage) pickedImage;
             double[] pickedPixel = pi.getPixelFromPoint(pickPosition);
-            int p0 = (int)Math.round(pickedPixel[0]);
-            int p1 = (int)Math.round(pickedPixel[1]);
-            status += ", " + pickedImage.getPickStatusMessage(pi.getImageHeight()-1-p0, p1);
+            status += ", " + pickedImage.getPickStatusMessage(pi.getImageHeight()-1-pickedPixel[0], pickedPixel[1]);
         }
 
         // Return status message for display

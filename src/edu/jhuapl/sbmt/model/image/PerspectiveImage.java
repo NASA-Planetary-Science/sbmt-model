@@ -4174,38 +4174,25 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     }
 
     @Override
-    public String getPickStatusMessage(int p0, int p1)
+    public String getPickStatusMessage(double p0, double p1)
     {
-        float[] pixelValues;
+        // Get default status message
+        String status = super.getPickStatusMessage(p0, p1);
+
+        // Append raw pixel value information
+        status += ", Raw Value = ";
         if(rawImage == null)
         {
-            pixelValues = null;
+            status += "Unavailable";
         }
         else
         {
-            float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-p0, p1);
-            pixelValues = new float[] {pixelColumn[currentSlice]};
+            int ip0 = (int)Math.round(p0);
+            int ip1 = (int)Math.round(p1);
+            float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+            status += pixelColumn[currentSlice];
         }
 
-        // Display pixel coordinate and raw value on the status bar
-        String statusStr = "Pixel Coordinate = (" + p1 + ", " + p0 + "), Raw Value = ";
-        if(pixelValues == null)
-        {
-            statusStr += "Unavailable";
-        }
-        else if(pixelValues.length == 1)
-        {
-            statusStr += pixelValues[0];
-        }
-        else
-        {
-            statusStr += "(" + pixelValues[0];
-            for(int i=1; i<pixelValues.length; i++)
-            {
-                statusStr += ", " + pixelValues[i];
-            }
-            statusStr += ")";
-        }
-       return statusStr;
+        return status;
     }
 }

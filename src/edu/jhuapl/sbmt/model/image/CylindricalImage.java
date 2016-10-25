@@ -888,10 +888,4 @@ public class CylindricalImage extends Image
     {
         return imageName;
     }
-
-    @Override
-    public String getPickStatusMessage(int p0, int p1)
-    {
-        return "Pixel Coordinate = (" + p1 + ", " + p0 + "), Raw Value = Not Available";
-    }
 }
