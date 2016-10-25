@@ -642,12 +642,13 @@ public class ColorImage extends Image implements PropertyChangeListener
      * Implement Image abstract methods
      */
     @Override
-    public float[] getRawPixelValue(int p0, int p1)
+    public String getPickStatusMessage(int p0, int p1)
     {
-        float[] rgb = new float[3];
-        rgb[0] = redPixelData[p1][imageHeight-1-p0];
-        rgb[1] = greenPixelData[p1][imageHeight-1-p0];
-        rgb[2] = bluePixelData[p1][imageHeight-1-p0];
-        return rgb;
+        String statusStr = "Pixel Coordinate = (" + p1 + ", " + p0 + "), Raw RGB Value = ";
+        statusStr += "(" + redPixelData[p1][imageHeight-1-p0];
+        statusStr += ", " + greenPixelData[p1][imageHeight-1-p0];
+        statusStr += ", " + bluePixelData[p1][imageHeight-1-p0];
+        statusStr += ")";
+        return statusStr;
     }
 }

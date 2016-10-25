@@ -191,10 +191,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
             return true;
     }
 
-    public float[] getRawPixelValue(int p0, int p1)
-    {
-        return null;
-    }
+    abstract public String getPickStatusMessage(int p0, int p1);
 
     abstract public int getNumberOfComponentsOfOriginalImage();
 

@@ -229,7 +229,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected double[] maxFrustumDepth;
     protected double[] minFrustumDepth;
 
-
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
@@ -843,7 +842,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setPickedPosition(double[] position)
     {
-//        System.out.println("PerspectiveImage.setPickedPosition(): " + position[0] + ", " + position[1] + ", " + position[2]);
+        //System.out.println("PerspectiveImage.setPickedPosition(): " + position[0] + ", " + position[1] + ", " + position[2]);
         double[] pixelPosition = getPixelFromPoint(position);
         double[][] region = { { pixelPosition[0], pixelPosition[1] } };
         setSpectrumRegion(region);
@@ -4175,16 +4174,38 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     }
 
     @Override
-    public float[] getRawPixelValue(int p0, int p1)
+    public String getPickStatusMessage(int p0, int p1)
     {
+        float[] pixelValues;
         if(rawImage == null)
         {
-            return null;
+            pixelValues = null;
         }
         else
         {
             float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-p0, p1);
-            return new float[] {pixelColumn[currentSlice]};
+            pixelValues = new float[] {pixelColumn[currentSlice]};
         }
+
+        // Display pixel coordinate and raw value on the status bar
+        String statusStr = "Pixel Coordinate = (" + p1 + ", " + p0 + "), Raw Value = ";
+        if(pixelValues == null)
+        {
+            statusStr += "Unavailable";
+        }
+        else if(pixelValues.length == 1)
+        {
+            statusStr += pixelValues[0];
+        }
+        else
+        {
+            statusStr += "(" + pixelValues[0];
+            for(int i=1; i<pixelValues.length; i++)
+            {
+                statusStr += ", " + pixelValues[i];
+            }
+            statusStr += ")";
+        }
+       return statusStr;
     }
 }

@@ -889,8 +889,9 @@ public class CylindricalImage extends Image
         return imageName;
     }
 
-    public float[] getRawPixelValue(int p0, int p1)
+    @Override
+    public String getPickStatusMessage(int p0, int p1)
     {
-        return null;
+        return "Pixel Coordinate = (" + p1 + ", " + p0 + "), Raw Value = Not Available";
     }
 }
