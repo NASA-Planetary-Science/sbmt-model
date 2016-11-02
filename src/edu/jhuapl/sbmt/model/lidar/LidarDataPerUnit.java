@@ -368,7 +368,7 @@ public class LidarDataPerUnit extends AbstractModel
 
         vtkActor actor = new SaavtkLODActor();
         actor.SetMapper(pointsMapper);
-        vtkPolyDataMapper lodMapper = ((SaavtkLODActor)actor).addQuadricDecimatedLODMapper(geometryFilter.GetOutputPort());
+        vtkPolyDataMapper lodMapper = ((SaavtkLODActor)actor).setQuadricDecimatedLODMapper(geometryFilter.GetOutputPort());
 
         actor.GetProperty().SetPointSize(2.0);
 
@@ -377,7 +377,7 @@ public class LidarDataPerUnit extends AbstractModel
 
         actorSpacecraft = new SaavtkLODActor();
         actorSpacecraft.SetMapper(pointsMapperSc);
-        ((SaavtkLODActor)actorSpacecraft).addQuadricDecimatedLODMapper(geometryFilterSc.GetOutputPort());
+        ((SaavtkLODActor)actorSpacecraft).setQuadricDecimatedLODMapper(geometryFilterSc.GetOutputPort());
         actorSpacecraft.GetProperty().SetColor(0.0, 1.0, 0.0);
         // for Itokawa optimized lidar data, show in different color.
         if (path.contains("_v2"))
