@@ -23,7 +23,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     public static final String IMAGE_ROTATIONS = "ImageRotations";
     public static final String IMAGE_FLIPS = "ImageFlips";
 
-    
+
 
 
 //    public static class ImagingInstrument
@@ -201,6 +201,10 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     public void setCurrentMask(int[] masking)
     {
 
+    }
+
+    public void outputToOBJ(String filename)
+    {
     }
 
 }

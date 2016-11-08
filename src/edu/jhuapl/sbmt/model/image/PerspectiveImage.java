@@ -15,6 +15,7 @@ import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
+import edu.jhuapl.saavtk.util.ObjUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -2243,6 +2245,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         return footprintActors;
+    }
+
+    @Override
+    public void outputToOBJ(String filename)
+    {
+        ObjUtil.writePolyDataToObj(shiftedFootprint[0],getDisplayedImage(),Paths.get(filename));
     }
 
     public void setShowFrustum(boolean b)
