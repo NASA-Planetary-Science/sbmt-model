@@ -13,7 +13,7 @@ public class Eros extends SmallBodyModel
     };
 
     static private final String[] modelFiles = {
-            "/edu/jhuapl/sbmt/data/Eros_ver64q.vtk",
+            "/EROS/ver64q.vtk.gz",
             "/EROS/ver128q.vtk.gz",
             "/EROS/ver256q.vtk.gz",
             "/EROS/ver512q.vtk.gz"
@@ -63,7 +63,7 @@ public class Eros extends SmallBodyModel
                 null,
                 imageMap,
                 ColoringValueType.CELLDATA,
-                true);
+                false);
     }
 
 
