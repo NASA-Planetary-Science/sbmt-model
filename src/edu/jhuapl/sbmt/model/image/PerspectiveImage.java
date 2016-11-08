@@ -24,6 +24,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -75,10 +79,6 @@ import edu.jhuapl.sbmt.util.BackplaneInfo;
 import edu.jhuapl.sbmt.util.BackplanesLabel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
-
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 
 /**
  * This class represents an abstract image of a spacecraft imager instrument.
@@ -230,7 +230,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected double[] maxFrustumDepth;
     protected double[] minFrustumDepth;
-
 
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
@@ -845,7 +844,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setPickedPosition(double[] position)
     {
-//        System.out.println("PerspectiveImage.setPickedPosition(): " + position[0] + ", " + position[1] + ", " + position[2]);
+        //System.out.println("PerspectiveImage.setPickedPosition(): " + position[0] + ", " + position[1] + ", " + position[2]);
         double[] pixelPosition = getPixelFromPoint(position);
         double[][] region = { { pixelPosition[0], pixelPosition[1] } };
         setSpectrumRegion(region);
@@ -4182,4 +4181,26 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return xmlLabel;
     }
 
+    @Override
+    public String getPickStatusMessage(double p0, double p1)
+    {
+        // Get default status message
+        String status = super.getPickStatusMessage(p0, p1);
+
+        // Append raw pixel value information
+        status += ", Raw Value = ";
+        if(rawImage == null)
+        {
+            status += "Unavailable";
+        }
+        else
+        {
+            int ip0 = (int)Math.round(p0);
+            int ip1 = (int)Math.round(p1);
+            float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+            status += pixelColumn[currentSlice];
+        }
+
+        return status;
+    }
 }

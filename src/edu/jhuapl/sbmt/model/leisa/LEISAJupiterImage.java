@@ -270,5 +270,4 @@ public class LEISAJupiterImage extends PerspectiveImage
     {
         return createRawImage(height, width, depth, false, array2D, array3D);
     }
-
 }

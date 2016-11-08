@@ -134,8 +134,21 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
-        File file = new File(actorToImageMap.get(prop).getImageName());
-        return "Image " + file.getName();
+        // Get image and show image name in status
+        Image pickedImage = actorToImageMap.get(prop);
+        File file = new File(pickedImage.getImageName());
+        String status = "Image " + file.getName();
+
+        // Add on additional information if applicable
+        if(pickedImage instanceof PerspectiveImage)
+        {
+            PerspectiveImage pi = (PerspectiveImage) pickedImage;
+            double[] pickedPixel = pi.getPixelFromPoint(pickPosition);
+            status += ", " + pickedImage.getPickStatusMessage(pi.getImageHeight()-1-pickedPixel[0], pickedPixel[1]);
+        }
+
+        // Return status message for display
+        return status;
     }
 
     public String getImageName(vtkActor actor)

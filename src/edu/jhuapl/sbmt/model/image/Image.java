@@ -3,6 +3,8 @@ package edu.jhuapl.sbmt.model.image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 
 import vtk.vtkTexture;
@@ -189,6 +191,21 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
             return texture.GetInterpolate() == 0 ? false : true;
         else
             return true;
+    }
+
+    public String getPickStatusMessage(double p0, double p1)
+    {
+        // Number format
+        DecimalFormat df = new DecimalFormat("#.0");
+        df.setRoundingMode(RoundingMode.HALF_UP);
+
+        // Construct status message
+        String status = "Pixel Coordinate = (";
+        status += df.format(p1);
+        status += ", ";
+        status += df.format(p0);
+        status += ")";
+        return status;
     }
 
     abstract public int getNumberOfComponentsOfOriginalImage();
