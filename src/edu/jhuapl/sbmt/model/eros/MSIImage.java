@@ -10,10 +10,7 @@ import java.util.List;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
-
+import org.apache.commons.io.FilenameUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -28,6 +25,10 @@ import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.MetaField;
+
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
 
 public class MSIImage extends PerspectiveImage
 {
@@ -115,6 +116,14 @@ public class MSIImage extends PerspectiveImage
         File keyFile = new File(key.name);
         String sumFilename = keyFile.getParentFile().getParent()
         + "/sumfiles/" + keyFile.getName().substring(0, 11) + ".SUM";
+
+//        //This is for the ~90K new sumfiles from Olivier for the MSI backplanes delivery
+//        if (true)
+//        {
+//            sumFilename = keyFile.getParentFile().getParent()
+//            + "/sumfiles_to_be_delivered/" + keyFile.getName().substring(0, 11) + ".SUM";
+//        }
+
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
     }
 
@@ -164,6 +173,14 @@ public class MSIImage extends PerspectiveImage
      */
     public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
     {
+        if (FilenameUtils.getExtension(imgName.getAbsolutePath()).toUpperCase().compareTo("IMG") == 0)
+        {
+            System.err.println("PDS4 MSI backplanes label generator requires a FITS backplanes image. Input file " + imgName + " is IMG format.");
+            System.err.println("Writing PDS3 label, not PDS4.");
+            super.generateBackplanesLabel(imgName, lblFileName);
+            return;
+        }
+
         //Append the appropriate extension
         File labelFileName = new File(lblFileName.getAbsolutePath() + ".xml");
 
@@ -174,7 +191,7 @@ public class MSIImage extends PerspectiveImage
         //gather additional metadata from image Fits file
         try
         {
-            xmlMetaDataBuilder = fitsToXmlMeta(imgName, xmlMetaDataBuilder);
+            xmlMetaDataBuilder = fitsToXmlMeta(imgName, xmlMetaDataBuilder); //imgName must be a FITS file
         }
         catch (FitsException e1)
         {
