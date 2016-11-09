@@ -15,6 +15,8 @@ import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -62,6 +64,7 @@ import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
+import edu.jhuapl.saavtk.util.ObjUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -129,6 +132,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private vtkActor footprintActor;
     private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
 
+    vtkPolyData frustumPolyData;
     private vtkActor frustumActor;
 
     private vtkPolyDataNormals normalsFilter;
@@ -783,7 +787,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void calculateFrustum()
     {
 //        System.out.println("recalculateFrustum()");
-        vtkPolyData frus = new vtkPolyData();
+        frustumPolyData = new vtkPolyData();
 
         vtkPoints points = new vtkPoints();
         vtkCellArray lines = new vtkCellArray();
@@ -823,12 +827,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         idList.SetId(1, 4);
         lines.InsertNextCell(idList);
 
-        frus.SetPoints(points);
-        frus.SetLines(lines);
+        frustumPolyData.SetPoints(points);
+        frustumPolyData.SetLines(lines);
 
 
         vtkPolyDataMapper frusMapper = new vtkPolyDataMapper();
-        frusMapper.SetInputData(frus);
+        frusMapper.SetInputData(frustumPolyData);
 
         frustumActor.SetMapper(frusMapper);
     }
@@ -2245,9 +2249,27 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     }
 
     @Override
-    public void outputToOBJ(String filename)
+    public void outputToOBJ(String filePath)
     {
-        //ObjUtil.writePolyDataToObj(shiftedFootprint[0],getDisplayedImage(),Paths.get(filename));
+        // write image to obj triangles w/ texture map based on displayed image
+        Path footprintFilePath=Paths.get(filePath);
+        ObjUtil.writePolyDataToObj(shiftedFootprint[0],getDisplayedImage(),footprintFilePath,null);
+        // write footprint boundary to obj lines
+        vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
+        edgeFilter.SetInputData(shiftedFootprint[0]);
+        edgeFilter.Update();
+        Path basedir=Paths.get(filePath).getParent();
+        String filename=Paths.get(filePath).getFileName().toString();
+        Path boundaryFilePath=basedir.resolve("bnd_"+filename);
+        ObjUtil.writePolyDataToObj(edgeFilter.GetOutput(), boundaryFilePath);
+        //
+        Path frustumFilePath=basedir.resolve("frst_"+filename);
+        double[] spacecraftPosition=new double[3];
+        double[] focalPoint=new double[3];
+        double[] upVector=new double[3];
+        getCameraOrientation(spacecraftPosition, focalPoint, upVector);
+        String frustumFileHeader="Camera position="+new Vector3D(spacecraftPosition)+" Camera focal point="+new Vector3D(focalPoint)+" Camera up vector="+new Vector3D(upVector);
+        ObjUtil.writePolyDataToObj(frustumPolyData, frustumFilePath, frustumFileHeader);
     }
 
     public void setShowFrustum(boolean b)
