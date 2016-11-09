@@ -117,12 +117,13 @@ public class MSIImage extends PerspectiveImage
         String sumFilename = keyFile.getParentFile().getParent()
         + "/sumfiles/" + keyFile.getName().substring(0, 11) + ".SUM";
 
-//        //This is for the ~90K new sumfiles from Olivier for the MSI backplanes delivery
-//        if (true)
-//        {
-//            sumFilename = keyFile.getParentFile().getParent()
-//            + "/sumfiles_to_be_delivered/" + keyFile.getName().substring(0, 11) + ".SUM";
-//        }
+        //This is for the ~90K new sumfiles from Olivier for the MSI backplanes delivery
+        if (true)
+        {
+            sumFilename = keyFile.getParentFile().getParent()
+            + "/sumfiles_to_be_delivered/" + keyFile.getName().substring(0, 11) + ".SUM";
+            System.err.println("SUMFILE: " + sumFilename);
+        }
 
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
     }
