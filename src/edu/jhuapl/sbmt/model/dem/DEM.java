@@ -29,6 +29,7 @@ import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.dem.DEMView;
 
 public class DEM extends SmallBodyModel implements PropertyChangeListener
 {
@@ -48,6 +49,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     private double[] normalOfDEM = null;
     private vtksbCellLocator boundaryLocator;
     private vtkGenericCell genericCell;
+    private DEMView demView;
 
     /**
      * An DEMKey should be used to uniquely distinguish one DEM from another.
@@ -830,6 +832,26 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         coloringNames[colorIdx] = processedName;
         coloringUnits[colorIdx] = processedUnits;
         coloringValuesScale[colorIdx] = processedScale;
+    }
+
+    public void setView(DEMView demView)
+    {
+        this.demView = demView;
+    }
+
+    public boolean hasView()
+    {
+        return (demView != null);
+    }
+
+    public DEMView getView()
+    {
+        return demView;
+    }
+
+    public void removeView()
+    {
+        this.demView = null;
     }
 
     @Override
