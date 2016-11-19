@@ -771,6 +771,31 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 
     public void demAboutToBeRemoved()
     {
+        // If we have a dem view, close it
+        if(demView != null)
+        {
+            demView.dispose();
+            removeView();
+        }
+
+        // Reset colorings and scales
+        try
+        {
+            setColoringIndex(-1);
+            for(int i=0; i<this.getNumberOfColors(); i++)
+            {
+                double[] defaultRange = getDefaultColoringRange(i);
+                if (defaultRange[1] > defaultRange[0])
+                {
+                    setCurrentColoringRange(i, defaultRange);
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+
         // TODO Do something here.
     }
 
