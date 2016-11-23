@@ -10,6 +10,10 @@ import java.util.List;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+
 import org.apache.commons.io.FilenameUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -25,10 +29,6 @@ import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.MetaField;
-
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 
 public class MSIImage extends PerspectiveImage
 {
@@ -131,7 +131,17 @@ public class MSIImage extends PerspectiveImage
     public int getFilter()
     {
         String fitName = new File(getFitFileFullPath()).getName();
-        return Integer.parseInt(fitName.substring(12,13));
+        int filter;
+        try
+        {
+            filter = Integer.parseInt(fitName.substring(12,13));
+        }
+        catch(Exception e)
+        {
+            // Negative indicates invalid filter
+            filter = -1;
+        }
+        return filter;
     }
 
     /**
