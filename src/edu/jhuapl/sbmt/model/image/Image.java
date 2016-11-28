@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 
+import vtk.vtkProp;
 import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
@@ -193,7 +194,8 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
             return true;
     }
 
-    public String getPickStatusMessage(double p0, double p1)
+    @Override
+    public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
         // Number format
         DecimalFormat df = new DecimalFormat("#.0");
@@ -201,9 +203,9 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
 
         // Construct status message
         String status = "Pixel Coordinate = (";
-        status += df.format(p1);
+        status += df.format(pickPosition[0]);
         status += ", ";
-        status += df.format(p0);
+        status += df.format(pickPosition[1]);
         status += ")";
         return status;
     }

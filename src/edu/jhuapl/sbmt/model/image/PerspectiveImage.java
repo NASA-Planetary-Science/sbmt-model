@@ -25,6 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -76,10 +80,6 @@ import edu.jhuapl.sbmt.util.BackplaneInfo;
 import edu.jhuapl.sbmt.util.BackplanesLabel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
-
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 
 /**
  * This class represents an abstract image of a spacecraft imager instrument.
@@ -4202,10 +4202,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     }
 
     @Override
-    public String getPickStatusMessage(double p0, double p1)
+    public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
         // Get default status message
-        String status = super.getPickStatusMessage(p0, p1);
+        String status = super.getClickStatusBarText(prop, cellId, pickPosition);
 
         // Append raw pixel value information
         status += ", Raw Value = ";
@@ -4215,8 +4215,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
         else
         {
-            int ip0 = (int)Math.round(p0);
-            int ip1 = (int)Math.round(p1);
+            int ip0 = (int)Math.round(pickPosition[0]);
+            int ip1 = (int)Math.round(pickPosition[1]);
             float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
             status += pixelColumn[currentSlice];
         }
