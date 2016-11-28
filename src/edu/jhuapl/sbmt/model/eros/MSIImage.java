@@ -84,6 +84,7 @@ public class MSIImage extends PerspectiveImage
         if (true)
         {
             ImageDataUtil.flipImageYAxis(rawImage);
+            System.err.println("Flipped MSIImage");
         }
     }
 
