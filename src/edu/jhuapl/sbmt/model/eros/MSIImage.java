@@ -25,6 +25,7 @@ import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.MetaField;
+import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
@@ -76,6 +77,14 @@ public class MSIImage extends PerspectiveImage
         vtkImageData resliceOutput = reslice.GetOutput();
         rawImage.DeepCopy(resliceOutput);
         rawImage.SetSpacing(1, 1, 1);
+
+
+        //This is for the ~90K new sumfiles from Olivier for the MSI backplanes delivery.
+        //Carolyn said they were flipped about the Y axis.
+        if (true)
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+        }
     }
 
     @Override
