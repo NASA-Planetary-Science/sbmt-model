@@ -152,7 +152,6 @@ public class MSIFits {
 
       //The backplanes are flipped bottom-to-top, correct them.
       data = FitsUtil.flipVertical(data);
-      System.err.println("Flipped the MSI Image");
 
       String localFitsFile = outfile;
 //      System.out.println("saving to fits file:" + localFitsFile);
