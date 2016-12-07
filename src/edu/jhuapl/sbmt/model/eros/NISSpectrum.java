@@ -48,7 +48,7 @@ import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 {
     private String fullpath; // The actual path of the spectrum stored on the local disk (after downloading from the server)
-    private String serverpath; // The path of the spectrum as passed into the constructor. This is not the
+    protected String serverpath; // The path of the spectrum as passed into the constructor. This is not the
        // same as fullpath but instead corresponds to the name needed to download
        // the file from the server (excluding the hostname).
 
@@ -318,6 +318,8 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         {
             vtkPolyData tmp = erosModel.computeFrustumIntersection(spacecraftPosition,
                     frustum1, frustum2, frustum3, frustum4);
+            if (tmp==null)
+                return;
 
             vtkDoubleArray faceAreaFraction=new vtkDoubleArray();
             faceAreaFraction.SetName(faceAreaFractionArrayName);
@@ -326,7 +328,7 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
             {
                 int originalCellId=((vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName)).GetValue(c);
                 vtkTriangle tri=(vtkTriangle)erosModel.getSmallBodyPolyData().GetCell(originalCellId);
-                faceAreaFraction.InsertNextValue(PolyDataUtil.computeOverlapFraction(tri, frustum));
+                faceAreaFraction.InsertNextValue(PolyDataUtil.approximateOverlapFraction(tri, frustum));
             }
             tmp.GetCellData().AddArray(faceAreaFraction);
 
@@ -402,9 +404,11 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
         outlineActor.GetProperty().SetLineWidth(2);
     }
 
-    private void createToSunVectorPolyData()
+    protected void createToSunVectorPolyData()
     {
         Vector3D toSunVec=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
+        if (toSunVec==null)
+            return;
         vtkPoints points=new vtkPoints();
         vtkCellArray cells=new vtkCellArray();
         Vector3D footprintCenter=new Vector3D(getUnshiftedFootprint().GetCenter());
