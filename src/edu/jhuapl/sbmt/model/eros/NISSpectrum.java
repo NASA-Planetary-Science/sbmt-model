@@ -326,7 +326,8 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
             {
                 int originalCellId=((vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName)).GetValue(c);
                 vtkTriangle tri=(vtkTriangle)erosModel.getSmallBodyPolyData().GetCell(originalCellId);
-                faceAreaFraction.InsertNextValue(PolyDataUtil.computeOverlapFraction(tri, frustum));
+                // XXX: TODO: uncomment this
+    //            faceAreaFraction.InsertNextValue(PolyDataUtil.computeOverlapFraction(tri, frustum));
             }
             tmp.GetCellData().AddArray(faceAreaFraction);
 
