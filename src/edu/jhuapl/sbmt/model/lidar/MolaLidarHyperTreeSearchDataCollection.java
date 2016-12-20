@@ -1,9 +1,6 @@
 package edu.jhuapl.sbmt.model.lidar;
 
-import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,10 +27,8 @@ import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
-import edu.jhuapl.sbmt.lidar.hyperoctree.mola.MolaFSHyperPoint;
-import edu.jhuapl.sbmt.lidar.hyperoctree.mola.MolaFSHyperTreeSkeleton;
-import edu.jhuapl.sbmt.lidar.test.LidarPoint;
 
 public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
 {
@@ -77,7 +72,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
             {
-                skeleton = new MolaFSHyperTreeSkeleton(basePath);
+                skeleton = new FSHyperTreeSkeleton(basePath);
                 skeletons.put(datasourceName, skeleton);
             }
         }
@@ -222,7 +217,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
 
     public static List<LidarPoint> readDataFile(File dataInputFile, PointInRegionChecker pointInRegionChecker, double[] timeLimits) {
         List<LidarPoint> pts=Lists.newArrayList();
-        try {
+/*        try {
             DataInputStream stream=new DataInputStream(new FileInputStream(dataInputFile));
             while (true) {
                 MolaFSHyperPoint pt=new MolaFSHyperPoint(stream);                                         // TODO: this is MOLA-specific
@@ -234,11 +229,6 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                         pts.add(pt);    // if region checker exists then filter on space as well as time
                     continue;
                 }
-                //
-/*                int id=points.InsertNextPoint(pt.getTargetPosition().toArray());
-                vtkVertex vert=new vtkVertex();
-                vert.GetPointIds().SetId(0, id);
-                cells.InsertNextCell(vert);*/
                 pts.add(pt);    // if the region checker does not exist and the point is within the time limits then add it
             }
         } catch (IOException e)
@@ -262,14 +252,14 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
     @Override
     protected void computeTracks()
     {
-        super.computeTracks();
+ /*       super.computeTracks();
         //
         for (int i=0; i<tracks.size(); i++)
         {
             Track track=tracks.get(i);
             for (int j=track.startId; j<=track.stopId; j++)
                 track.registerSourceFileIndex(((MolaFSHyperPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
-        }
+        }*/
     }
 
     public FSHyperTreeSkeleton getCurrentSkeleton()
