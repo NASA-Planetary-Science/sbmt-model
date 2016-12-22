@@ -25,6 +25,7 @@ import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.MetaField;
+import edu.jhuapl.sbmt.util.BackplanesFileFormat;
 
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
@@ -175,7 +176,7 @@ public class MSIImage extends PerspectiveImage
      */
     public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
     {
-        if (FilenameUtils.getExtension(imgName.getAbsolutePath()).toUpperCase().compareTo("IMG") == 0)
+        if (FilenameUtils.getExtension(imgName.getAbsolutePath()).toUpperCase().compareTo(BackplanesFileFormat.IMG.getExtension().toUpperCase()) == 0)
         {
             System.err.println("PDS4 MSI backplanes label generator requires a FITS backplanes image. Input file " + imgName + " is IMG format.");
             System.err.println("Writing PDS3 label, not PDS4.");
@@ -254,10 +255,10 @@ public class MSIImage extends PerspectiveImage
             //add metadata describing fits file.
             BasicHDU thisHDU = thisFits.getHDU(0);
             xmlMetaDataBuilder.hdrSize(thisHDU.getHeader().getSize());
-            xmlMetaDataBuilder.setMetaField(MetaField.PRODUCTFILENAME, fitsFile.getName().toLowerCase());
+            xmlMetaDataBuilder.setMetaField(MetaField.PRODUCTFILENAME, fitsFile.getName());
 
             //build logical ID
-            xmlMetaDataBuilder.setMetaField(MetaField.LOGICALID, "urn:nasa:pds:nearmsi.shapebackplane:data:" + fitsFile.getName().toLowerCase());
+            xmlMetaDataBuilder.setMetaField(MetaField.LOGICALID, "urn:nasa:pds:nearmsi.shapebackplane:data:" + fitsFile.getName());
 
             /*
              * retrieve FITS axes information. Fits library returns the axes in order of
