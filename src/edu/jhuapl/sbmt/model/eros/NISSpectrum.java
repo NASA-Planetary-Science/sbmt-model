@@ -324,10 +324,11 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
             Frustum frustum=new Frustum(getFrustumOrigin(), getFrustumCorner(0), getFrustumCorner(1), getFrustumCorner(2), getFrustumCorner(3));
             for (int c=0; c<tmp.GetNumberOfCells(); c++)
             {
-                int originalCellId=((vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName)).GetValue(c);
-                vtkTriangle tri=(vtkTriangle)erosModel.getSmallBodyPolyData().GetCell(originalCellId);
-                // XXX: TODO: uncomment this
-    //            faceAreaFraction.InsertNextValue(PolyDataUtil.computeOverlapFraction(tri, frustum));
+                vtkIdTypeArray originalIds=(vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName);
+                int originalId=originalIds.GetValue(c);
+                vtkTriangle tri=(vtkTriangle)erosModel.getSmallBodyPolyData().GetCell(originalId);  // tri on original body model
+                vtkTriangle ftri=(vtkTriangle)tmp.GetCell(c); // tri on footprint
+                faceAreaFraction.InsertNextValue(ftri.ComputeArea()/tri.ComputeArea());
             }
             tmp.GetCellData().AddArray(faceAreaFraction);
 
