@@ -48,7 +48,7 @@ import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 {
     private String fullpath; // The actual path of the spectrum stored on the local disk (after downloading from the server)
-    private String serverpath; // The path of the spectrum as passed into the constructor. This is not the
+    protected String serverpath; // The path of the spectrum as passed into the constructor. This is not the
        // same as fullpath but instead corresponds to the name needed to download
        // the file from the server (excluding the hostname).
 
