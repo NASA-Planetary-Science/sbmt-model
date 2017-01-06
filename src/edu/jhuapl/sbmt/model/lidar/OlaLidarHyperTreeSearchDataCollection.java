@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -137,7 +136,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 sw.start();
                 loading=true;
 
-                originalPoints.clear();
+//                originalPoints.clear();
                 int cnt=0;
                 for (Integer cidx : cubeList)
                 {
@@ -147,7 +146,12 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     File dataFile=FileCache.getFileFromServer(dataFilePath.toString());
                     if (!dataFile.exists())
                         dataFile=FileCache.getFileFromServer(FileCache.FILE_PREFIX+dataFilePath.toString());
-                    originalPoints.addAll(readDataFile(dataFile,pointInRegionChecker,new double[]{startDate,stopDate}));
+                    List<LidarPoint> pts=readDataFile(dataFile,pointInRegionChecker,new double[]{startDate,stopDate});
+                    for (int i=0; i<pts.size(); i++)
+                    {
+                        originalPoints.add(pts.get(i));
+                        originalPointsSourceFiles.put(pts.get(i),((OlaFSHyperPoint)pts.get(i)).getFileNum());
+                    }
                     //
                     cnt++;
                     double progressPercentage=((double)cnt/(double)cubeList.size()*100);
@@ -162,11 +166,11 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 sw.start();
 
                 // Sort points in time order
-                Collections.sort(originalPoints);
+//                Collections.sort(originalPoints);
 
-                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
+//                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
+//                sw.reset();
+//                sw.start();
 
                 radialOffset = 0.0;
                 translation[0] = translation[1] = translation[2] = 0.0;
@@ -270,6 +274,8 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
     @Override
     protected void computeTracks()
     {
+        localFileMap.clear();
+        localFileMap.putAll(getCurrentSkeleton().getFileMap());
         super.computeTracks();
         //
         for (int i=0; i<tracks.size(); i++)
