@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.image;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -140,6 +141,30 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     public boolean containsImage(ImageCubeKey key)
     {
         return containsKey(key);
+    }
+
+    public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
+    {
+        // Get image and show image name in status
+        Image pickedImage = actorToImageMap.get(prop);
+        if(pickedImage == null)
+        {
+            return "";
+        }
+        File file = new File(pickedImage.getImageName());
+        String status = "Image Cube " + file.getName();
+
+        // Add on additional information if applicable
+        if(pickedImage instanceof ImageCube)
+        {
+            ImageCube ic = (ImageCube) pickedImage;
+            double[] pickedPixel = ic.getPixelFromPoint(pickPosition);
+            double[] pixelLocation = {ic.getImageHeight()-1-pickedPixel[0], pickedPixel[1]};
+            status += ", " + ic.getClickStatusBarText(null, 0, pixelLocation);
+        }
+
+        // Return status message for display
+        return status;
     }
 
 //    public void setShowFrustums(boolean b)

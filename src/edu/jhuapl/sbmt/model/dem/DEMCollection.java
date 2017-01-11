@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import nom.tam.fits.FitsException;
+
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -19,8 +21,6 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.dem.DEM.DEMKey;
 import edu.jhuapl.sbmt.model.dem.DEMBoundaryCollection.DEMBoundary;
-
-import nom.tam.fits.FitsException;
 
 public class DEMCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -154,6 +154,13 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         this.pcs.firePropertyChange(Properties.MODEL_REMOVED, null, dem);
+    }
+
+    public void removeDEMs()
+    {
+        HashMap<DEM, List<vtkProp>> map = (HashMap<DEM, List<vtkProp>>)demToActorsMap.clone();
+        for (DEM dem : map.keySet())
+                removeDEM(dem.getKey());
     }
 
     public boolean containsDEM(DEMKey key)

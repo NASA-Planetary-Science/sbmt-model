@@ -129,7 +129,12 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
 
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
-        File file = new File(actorToBoundaryMap.get(prop).getKey().name);
+        PerspectiveImageBoundary boundary = actorToBoundaryMap.get(prop);
+        if(boundary == null)
+        {
+            return "";
+        }
+        File file = new File(boundary.getKey().name);
         return "Boundary of image " + file.getName();
     }
 

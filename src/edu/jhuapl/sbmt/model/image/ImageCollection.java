@@ -136,6 +136,10 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     {
         // Get image and show image name in status
         Image pickedImage = actorToImageMap.get(prop);
+        if(pickedImage == null)
+        {
+            return "";
+        }
         File file = new File(pickedImage.getImageName());
         String status = "Image " + file.getName();
 
@@ -144,7 +148,8 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         {
             PerspectiveImage pi = (PerspectiveImage) pickedImage;
             double[] pickedPixel = pi.getPixelFromPoint(pickPosition);
-            status += ", " + pickedImage.getPickStatusMessage(pi.getImageHeight()-1-pickedPixel[0], pickedPixel[1]);
+            double[] pixelLocation = {pi.getImageHeight()-1-pickedPixel[0], pickedPixel[1]};
+            status += ", " + pi.getClickStatusBarText(null, 0, pixelLocation);
         }
 
         // Return status message for display

@@ -48,7 +48,7 @@ import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 public class NISSpectrum extends AbstractModel implements PropertyChangeListener
 {
     private String fullpath; // The actual path of the spectrum stored on the local disk (after downloading from the server)
-    private String serverpath; // The path of the spectrum as passed into the constructor. This is not the
+    protected String serverpath; // The path of the spectrum as passed into the constructor. This is not the
        // same as fullpath but instead corresponds to the name needed to download
        // the file from the server (excluding the hostname).
 
@@ -324,9 +324,11 @@ public class NISSpectrum extends AbstractModel implements PropertyChangeListener
             Frustum frustum=new Frustum(getFrustumOrigin(), getFrustumCorner(0), getFrustumCorner(1), getFrustumCorner(2), getFrustumCorner(3));
             for (int c=0; c<tmp.GetNumberOfCells(); c++)
             {
-                int originalCellId=((vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName)).GetValue(c);
-                vtkTriangle tri=(vtkTriangle)erosModel.getSmallBodyPolyData().GetCell(originalCellId);
-                faceAreaFraction.InsertNextValue(PolyDataUtil.computeOverlapFraction(tri, frustum));
+                vtkIdTypeArray originalIds=(vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName);
+                int originalId=originalIds.GetValue(c);
+                vtkTriangle tri=(vtkTriangle)erosModel.getSmallBodyPolyData().GetCell(originalId);  // tri on original body model
+                vtkTriangle ftri=(vtkTriangle)tmp.GetCell(c); // tri on footprint
+                faceAreaFraction.InsertNextValue(ftri.ComputeArea()/tri.ComputeArea());
             }
             tmp.GetCellData().AddArray(faceAreaFraction);
 

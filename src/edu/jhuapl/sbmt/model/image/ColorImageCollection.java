@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.image;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -144,4 +145,20 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
 //
 //        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 //    }
+
+
+    public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
+    {
+        // Get image and show image name in status
+        Image pickedImage = actorToImageMap.get(prop);
+        if(pickedImage == null)
+        {
+            return "";
+        }
+        File file = new File(pickedImage.getImageName());
+        String status = "Color Image " + file.getName();
+
+        // Return status message for display
+        return status;
+    }
 }

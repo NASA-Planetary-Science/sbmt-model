@@ -29,6 +29,7 @@ import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.dem.DEMView;
 
 public class DEM extends SmallBodyModel implements PropertyChangeListener
 {
@@ -48,6 +49,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     private double[] normalOfDEM = null;
     private vtksbCellLocator boundaryLocator;
     private vtkGenericCell genericCell;
+    private DEMView demView;
 
     /**
      * An DEMKey should be used to uniquely distinguish one DEM from another.
@@ -636,19 +638,35 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 
         // Figure out which data set to sample
         vtkFloatArray valuePerPoint = null;
+        boolean useDefaultProfile = false;
         if(coloringIndex >= 0 && coloringIndex < coloringValuesPerCell.length)
         {
             valuePerPoint = coloringValuesPerPoint[coloringIndex];
         }
+        else
+        {
+            // Show default profile
+            useDefaultProfile = true;
+        }
 
         // Sample
-        if(valuePerPoint != null)
+        if(valuePerPoint != null || useDefaultProfile)
         {
             for (Point3D p : xyzPointList)
             {
                 int cellId = findClosestCell(p.xyz);
 
-                double val = PolyDataUtil.interpolateWithinCell(dem, valuePerPoint, cellId, p.xyz, idList);
+                double val;
+                if(useDefaultProfile)
+                {
+                    // Compute the radius
+                    val = MathUtil.reclat(p.xyz).rad * 1000;
+                }
+                else
+                {
+                    // Interpolate to get the plate coloring
+                    val = PolyDataUtil.interpolateWithinCell(dem, valuePerPoint, cellId, p.xyz, idList);
+                }
 
                 profileValues.add(val);
 
@@ -769,6 +787,31 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 
     public void demAboutToBeRemoved()
     {
+        // If we have a dem view, close it
+        if(demView != null)
+        {
+            demView.dispose();
+            removeView();
+        }
+
+        // Reset colorings and scales
+        try
+        {
+            setColoringIndex(-1);
+            for(int i=0; i<this.getNumberOfColors(); i++)
+            {
+                double[] defaultRange = getDefaultColoringRange(i);
+                if (defaultRange[1] > defaultRange[0])
+                {
+                    setCurrentColoringRange(i, defaultRange);
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+
         // TODO Do something here.
     }
 
@@ -830,6 +873,26 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         coloringNames[colorIdx] = processedName;
         coloringUnits[colorIdx] = processedUnits;
         coloringValuesScale[colorIdx] = processedScale;
+    }
+
+    public void setView(DEMView demView)
+    {
+        this.demView = demView;
+    }
+
+    public boolean hasView()
+    {
+        return (demView != null);
+    }
+
+    public DEMView getView()
+    {
+        return demView;
+    }
+
+    public void removeView()
+    {
+        this.demView = null;
     }
 
     @Override

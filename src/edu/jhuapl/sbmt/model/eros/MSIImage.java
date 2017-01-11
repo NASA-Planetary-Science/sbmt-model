@@ -31,6 +31,7 @@ import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
 
+
 public class MSIImage extends PerspectiveImage
 {
     // Size of image after resampling. Before resampling image is 537 by 244 pixels.
@@ -134,7 +135,17 @@ public class MSIImage extends PerspectiveImage
     public int getFilter()
     {
         String fitName = new File(getFitFileFullPath()).getName();
-        return Integer.parseInt(fitName.substring(12,13));
+        int filter;
+        try
+        {
+            filter = Integer.parseInt(fitName.substring(12,13));
+        }
+        catch(Exception e)
+        {
+            // Negative indicates invalid filter
+            filter = -1;
+        }
+        return filter;
     }
 
     /**

@@ -35,6 +35,7 @@ import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquar
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
@@ -57,8 +58,8 @@ import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
-import edu.jhuapl.sbmt.lidar.test.BasicLidarPoint;
-import edu.jhuapl.sbmt.lidar.test.LidarPoint;
+import edu.jhuapl.sbmt.lidar.BasicLidarPoint;
+import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.util.TimeUtil;
 import edu.jhuapl.sbmt.util.gravity.Gravity;
 
@@ -75,7 +76,11 @@ public class LidarSearchDataCollection extends AbstractModel
     private PolyhedralModel smallBodyModel;
     private vtkPolyData polydata;   // target points
     private vtkPolyData selectedPointPolydata;
+
     protected List<LidarPoint> originalPoints = new ArrayList<LidarPoint>();
+    Map<LidarPoint,Integer> originalPointsSourceFiles=Maps.newHashMap();
+
+
     private List<vtkProp> actors = new ArrayList<vtkProp>();
     private vtkPolyDataMapper pointsMapper;
     private vtkPolyDataMapper selectedPointMapper;
@@ -326,6 +331,7 @@ public class LidarSearchDataCollection extends AbstractModel
         double stop = stopDate;
 
         originalPoints.clear();
+        originalPointsSourceFiles.clear();  // this is only used when generating file ids upon loading from local disk
 
 
         int timeindex = 0;
@@ -369,6 +375,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 if (pointInRegionChecker==null) // if this part of the code has been reached and the point-checker is null then this is a time-only search, and the time criterion has already been met (cf. continue statement a few lines above)
                 {
                     originalPoints.add(new BasicLidarPoint(target, scpos, time, 0));
+
                     continue;
                 }
 
@@ -383,8 +390,6 @@ public class LidarSearchDataCollection extends AbstractModel
             in.close();
         }
 
-        // Sort points in time order
-        Collections.sort(originalPoints);
 
         radialOffset = 0.0;
         translation[0] = translation[1] = translation[2] = 0.0;
@@ -405,6 +410,8 @@ public class LidarSearchDataCollection extends AbstractModel
 
         Track track = new Track();
         track.startId = originalPoints.size();
+
+        int fileId=localFileMap.inverse().get(file.toString());
 
         String lineRead;
         while ((lineRead = in.readLine()) != null)
@@ -468,7 +475,9 @@ public class LidarSearchDataCollection extends AbstractModel
                 throw new IOException("Error: Incorrect file format!");
             }
 
-            originalPoints.add(new BasicLidarPoint(target, scpos, time, 0));
+            LidarPoint pt=new BasicLidarPoint(target, scpos, time, 0);
+            originalPoints.add(pt);
+            originalPointsSourceFiles.put(pt, fileId);
         }
 
         in.close();
@@ -483,6 +492,8 @@ public class LidarSearchDataCollection extends AbstractModel
 
         Track track = new Track();
         track.startId = originalPoints.size();
+
+        int fileId=localFileMap.inverse().get(file.toString());
 
         while (true)
         {
@@ -514,13 +525,16 @@ public class LidarSearchDataCollection extends AbstractModel
                 throw e;
             }
 
-            originalPoints.add(new BasicLidarPoint(target, scpos, time, 0));
+            LidarPoint pt=new BasicLidarPoint(target, scpos, time, 0);
+            originalPoints.add(pt);
+            originalPointsSourceFiles.put(pt,fileId);
         }
 
         in.close();
 
         track.stopId = originalPoints.size() - 1;
         tracks.add(track);
+        track.registerSourceFileIndex(fileId, localFileMap);
     }
 
     private void skip(DataInputStream in, int n) throws IOException
@@ -535,7 +549,15 @@ public class LidarSearchDataCollection extends AbstractModel
     {
 
         OLAL2File l2File=new OLAL2File(file.toPath());
-        originalPoints.addAll(l2File.read(1./1000.));
+        List<LidarPoint> pts=Lists.newArrayList();
+        pts.addAll(l2File.read(1./1000.));
+        int fileId=localFileMap.inverse().get(file.toString());
+        for (int i=0; i<pts.size(); i++)
+            originalPointsSourceFiles.put(pts.get(i),fileId);
+        originalPoints.addAll(pts);
+
+
+
 /*        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
 
 //        Track track = new Track();
@@ -594,7 +616,7 @@ public class LidarSearchDataCollection extends AbstractModel
     }
 
     BiMap<Integer, String> localFileMap=HashBiMap.create();
-    List<int[]> fileBounds=Lists.newArrayList();    // for adding filenum information to tracks later; length 3 -> lowerBound,upperBound,fileNum
+    //List<int[]> fileBounds=Lists.newArrayList();    // for adding filenum information to tracks later; length 3 -> lowerBound,upperBound,fileNum
 
     /**
      * Load a track from a file. This will replace all currently existing tracks
@@ -604,16 +626,17 @@ public class LidarSearchDataCollection extends AbstractModel
      */
     public void loadTracksFromFiles(File[] files, TrackFileType trackFileType) throws IOException
     {
-        originalPoints.clear();
-        tracks.clear();
-        fileBounds.clear();
-        localFileMap.clear();
+
+        //originalPoints.clear();
+        //tracks.clear();
+        //fileBounds.clear();
+        //localFileMap.clear();
 
         int oldBounds=0;
         for (File file : files)
         {
-            List<Track> oldTracks=Lists.newArrayList();
-            oldTracks.addAll(tracks);
+            if (!localFileMap.containsValue(file.toString()))
+                localFileMap.put(localFileMap.size(), file.toString());
 
             if (trackFileType == TrackFileType.TEXT)
                 loadTrackAscii(file);
@@ -622,11 +645,9 @@ public class LidarSearchDataCollection extends AbstractModel
             else
                 loadTrackOlaL2(file);
 
-            if (!localFileMap.containsValue(file.toString()))
-                localFileMap.put(localFileMap.size(), file.toString());
 
-            fileBounds.add(new int[]{oldBounds,originalPoints.size()-1,localFileMap.inverse().get(file.toString())});
-            oldBounds=originalPoints.size();
+            //fileBounds.add(new int[]{oldBounds,originalPoints.size()-1,localFileMap.inverse().get(file.toString())});
+            //oldBounds=originalPoints.size();
         }
 
         //timeSeparationBetweenTracks = Double.MAX_VALUE;
@@ -647,12 +668,12 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=0; i<tracks.size(); i++)
         {
             Track track=tracks.get(i);
-            for (int f=0; f<fileBounds.size(); f++)
+/*            for (int f=0; f<fileBounds.size(); f++)
             {
                 int[] bounds=fileBounds.get(f);
                 if (track.startId>=bounds[0] && track.stopId<=bounds[1])
                     tracks.get(i).registerSourceFileIndex(bounds[2], localFileMap);
-            }
+            }*/
         }
 
         updateTrackPolydata();
@@ -729,8 +750,13 @@ public class LidarSearchDataCollection extends AbstractModel
         if (size == 0)
             return;
 
+        // Sort points in time order
+        Collections.sort(originalPoints);
+
+
         double prevTime = originalPoints.get(0).getTime();
         Track track = new Track();
+        track.registerSourceFileIndex(originalPointsSourceFiles.get(originalPoints.get(0)), localFileMap);
         track.startId = 0;
         tracks.add(track);
 
@@ -743,9 +769,9 @@ public class LidarSearchDataCollection extends AbstractModel
                 double t0 = originalPoints.get(track.startId).getTime();
                 double t1 = originalPoints.get(track.stopId).getTime();
                 track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
-                System.out.println(Arrays.toString(track.timeRange));
 
                 track = new Track();
+                track.registerSourceFileIndex(originalPointsSourceFiles.get(originalPoints.get(i)), localFileMap);
                 track.startId = i;
 
                 tracks.add(track);
@@ -754,14 +780,11 @@ public class LidarSearchDataCollection extends AbstractModel
             prevTime = currentTime;
 
         }
-//        if (tracks.size()>1)
-//            tracks.remove(tracks.size()-1); // last one is always empty so remove it, at least for the lidar tree search
 
         track.stopId = size-1;
-        /*double t0 = originalPoints.get(track.startId).getTime();
+        double t0 = originalPoints.get(track.startId).getTime();
         double t1 = originalPoints.get(track.stopId).getTime();
         track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
-        tracks.add(track);*/
 
 
     }
@@ -1133,7 +1156,7 @@ public class LidarSearchDataCollection extends AbstractModel
         polydata.DeepCopy(emptyPolyData);
         originalPoints.clear();
         tracks.clear();
-        fileBounds.clear();
+//        fileBounds.clear();
         localFileMap.clear();
 
         this.dataSource = null;
@@ -1174,7 +1197,8 @@ public class LidarSearchDataCollection extends AbstractModel
                     (target[0]-scpos[0])*(target[0]-scpos[0]) +
                     (target[1]-scpos[1])*(target[1]-scpos[1]) +
                     (target[2]-scpos[2])*(target[2]-scpos[2]))*1000;*/
-            double range=originalPoints.get(cellId).getRange()*1000;    // m
+            LidarPoint p=originalPoints.get(cellId);
+            double range=p.getSourcePosition().subtract(p.getTargetPosition()).getNorm()*1000;    // m
             return String.format("Lidar point acquired at " + TimeUtil.et2str(et) +
                     ", ET = %f, unmodified range = %f m", et, range);
         }

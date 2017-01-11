@@ -766,13 +766,4 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         appendString += "}";
         return appendString;
     }
-
-    /*
-     * Implement Image abstract methods
-     */
-    public String getPickStatusMessage(double p0, double p1)
-    {
-        String statusStr = ""; // Return with empty string for now, original implementation not working as expected
-        return statusStr;
-    }
 }
