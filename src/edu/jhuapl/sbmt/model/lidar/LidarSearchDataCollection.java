@@ -347,6 +347,15 @@ public class LidarSearchDataCollection extends AbstractModel
             String filename = getLidarDataSourceMap().get(dataSource) + "/" + cubeid + ".lidarcube";
             File file = FileCache.getFileFromServer(filename);
 
+            int fileId;
+            if (!localFileMap.containsValue(file.toString()))
+            {
+                fileId=localFileMap.size();
+                localFileMap.put(fileId, file.toString());
+            }
+            else
+                fileId=localFileMap.inverse().get(file.toString());
+
             if (file == null)
                 continue;
 
@@ -374,15 +383,18 @@ public class LidarSearchDataCollection extends AbstractModel
 
                 if (pointInRegionChecker==null) // if this part of the code has been reached and the point-checker is null then this is a time-only search, and the time criterion has already been met (cf. continue statement a few lines above)
                 {
-                    originalPoints.add(new BasicLidarPoint(target, scpos, time, 0));
-
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, 0);
+                    originalPoints.add(p);
+                    originalPointsSourceFiles.put(p, fileId);
                     continue;
                 }
 
 
                 if (pointInRegionChecker.checkPointIsInRegion(target))  // here, the point is known to be within the specified time bounds, and since the point checker exists the target coordinates are filtered against
                 {
-                    originalPoints.add(new BasicLidarPoint(target, scpos, time, 0));
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, 0);
+                    originalPoints.add(p);
+                    originalPointsSourceFiles.put(p, fileId);
                     continue;
                 }
             }
