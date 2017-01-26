@@ -10,10 +10,6 @@ import java.util.List;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
-
 import org.apache.commons.io.FilenameUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -29,6 +25,12 @@ import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.MetaField;
+import edu.jhuapl.sbmt.util.BackplanesFileFormat;
+
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+
 
 public class MSIImage extends PerspectiveImage
 {
@@ -76,6 +78,7 @@ public class MSIImage extends PerspectiveImage
         vtkImageData resliceOutput = reslice.GetOutput();
         rawImage.DeepCopy(resliceOutput);
         rawImage.SetSpacing(1, 1, 1);
+
     }
 
     @Override
@@ -117,12 +120,13 @@ public class MSIImage extends PerspectiveImage
         String sumFilename = keyFile.getParentFile().getParent()
         + "/sumfiles/" + keyFile.getName().substring(0, 11) + ".SUM";
 
-//        //This is for the ~90K new sumfiles from Olivier for the MSI backplanes delivery
-//        if (true)
-//        {
-//            sumFilename = keyFile.getParentFile().getParent()
-//            + "/sumfiles_to_be_delivered/" + keyFile.getName().substring(0, 11) + ".SUM";
-//        }
+        //This is for the ~90K new sumfiles from Olivier for the MSI backplanes delivery
+        if (true)
+        {
+            sumFilename = keyFile.getParentFile().getParent()
+            + "/sumfiles_to_be_delivered/" + keyFile.getName().substring(0, 11) + ".SUM";
+            System.err.println("SUMFILE: " + sumFilename);
+        }
 
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
     }
@@ -183,7 +187,7 @@ public class MSIImage extends PerspectiveImage
      */
     public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
     {
-        if (FilenameUtils.getExtension(imgName.getAbsolutePath()).toUpperCase().compareTo("IMG") == 0)
+        if (FilenameUtils.getExtension(imgName.getAbsolutePath()).toUpperCase().compareTo(BackplanesFileFormat.IMG.getExtension().toUpperCase()) == 0)
         {
             System.err.println("PDS4 MSI backplanes label generator requires a FITS backplanes image. Input file " + imgName + " is IMG format.");
             System.err.println("Writing PDS3 label, not PDS4.");
@@ -262,10 +266,10 @@ public class MSIImage extends PerspectiveImage
             //add metadata describing fits file.
             BasicHDU thisHDU = thisFits.getHDU(0);
             xmlMetaDataBuilder.hdrSize(thisHDU.getHeader().getSize());
-            xmlMetaDataBuilder.setMetaField(MetaField.PRODUCTFILENAME, fitsFile.getName().toLowerCase());
+            xmlMetaDataBuilder.setMetaField(MetaField.PRODUCTFILENAME, fitsFile.getName());
 
             //build logical ID
-            xmlMetaDataBuilder.setMetaField(MetaField.LOGICALID, "urn:nasa:pds:nearmsi.shapebackplane:data:" + fitsFile.getName().toLowerCase());
+            xmlMetaDataBuilder.setMetaField(MetaField.LOGICALID, "urn:nasa:pds:nearmsi.shapebackplane:data:" + fitsFile.getName());
 
             /*
              * retrieve FITS axes information. Fits library returns the axes in order of

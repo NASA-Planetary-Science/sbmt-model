@@ -2149,6 +2149,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 catch (FileNotFoundException e)
                 {
                     System.out.println("SUM file not available");
+                    throw(e);
                 }
             }
         }
