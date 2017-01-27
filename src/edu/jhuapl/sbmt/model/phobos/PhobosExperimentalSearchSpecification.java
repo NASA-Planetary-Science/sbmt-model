@@ -69,7 +69,7 @@ public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpe
         }
     }
 
-    // Must match what is defined in SmallBodyViewConfig's imageSearchFilterNames
+    // Order must match exactly what is defined in SmallBodyViewConfig's imageSearchFilterNames
     public enum CameraCheckbox
     {
         PHOBOS_2,
@@ -82,7 +82,7 @@ public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpe
         MGS_MOC
     };
 
-    // Must match what is defined in SmallBodyViewConfig's imageSearchUserDefinedCheckBoxesNames
+    // Order must match exactly what is defined in SmallBodyViewConfig's imageSearchUserDefinedCheckBoxesNames
     public enum FilterCheckbox
     {
         VSK_CHANNEL_1,
@@ -97,7 +97,7 @@ public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpe
     };
 
     /**
-     *  This is where all the paths and mapping to camera/filter checkboxes are specified
+     *  This is where all the paths and corresponding mapping to camera/filter checkbox numbers are specified
      */
     public PhobosExperimentalSearchSpecification(String rootName)
     {

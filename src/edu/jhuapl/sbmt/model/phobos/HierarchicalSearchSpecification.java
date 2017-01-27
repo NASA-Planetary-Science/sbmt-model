@@ -1,6 +1,8 @@
 package edu.jhuapl.sbmt.model.phobos;
 
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -9,12 +11,18 @@ import javax.swing.tree.TreePath;
 
 public abstract class HierarchicalSearchSpecification
 {
-    protected TreeModel treeModel;
+    private TreeModel treeModel;
+    private List<Integer> selectedCameras;
+    private List<Integer> selectedFilters;
 
     public HierarchicalSearchSpecification(String rootName)
     {
         // Create a tree model with just the root
         treeModel = new DefaultTreeModel(new DefaultMutableTreeNode(rootName));
+
+        // Initialize container objects
+        selectedCameras = new LinkedList<Integer>();
+        selectedFilters = new LinkedList<Integer>();
     }
 
     // Method used to get the tree model
@@ -75,6 +83,10 @@ public abstract class HierarchicalSearchSpecification
     // Method for processing tree selections
     public void processTreeSelections(TreePath[] selectedPaths)
     {
+        // Clear storage for selected (camera,filter) pairs
+        selectedCameras.clear();
+        selectedFilters.clear();
+
         // Iterate through the selected paths
         for(TreePath tp : selectedPaths)
         {
@@ -93,10 +105,35 @@ public abstract class HierarchicalSearchSpecification
                 {
                     // Extract the saved object at the leaf node containing camera and filter checkbox numbers
                     HierarchicalSearchLeafNode ln = (HierarchicalSearchLeafNode)tempNode.getUserObject();
-                    System.out.println("Camera = " + ln.cameraCheckbox + ", Filter = " + ln.filterCheckbox);
+                    selectedCameras.add(ln.cameraCheckbox);
+                    selectedFilters.add(ln.filterCheckbox);
                 }
             }
         }
+    }
+
+    // Get camera portion of selected (camera,filter) pairs
+    public int[] getSelectedCameras()
+    {
+        Integer[] temp = (Integer[]) selectedCameras.toArray();
+        int[] arr = new int[temp.length];
+        for(int i=0;i<temp.length;i++)
+        {
+            arr[i] = temp[i];
+        }
+        return arr;
+    }
+
+    // Get filter portion of selected (camera,filter) pairs
+    public int[] getSelectedFilters()
+    {
+        Integer[] temp = (Integer[]) selectedFilters.toArray();
+        int[] arr = new int[temp.length];
+        for(int i=0;i<temp.length;i++)
+        {
+            arr[i] = temp[i];
+        }
+        return arr;
     }
 
     /**
