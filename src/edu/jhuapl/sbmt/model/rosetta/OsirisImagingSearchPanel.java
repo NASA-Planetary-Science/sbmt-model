@@ -76,24 +76,24 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
         dateColumnIndex=7;
 
         Object[][] data = new Object[0][8];
-        resultList.setModel(new StructuresTableModel(data, columnNames));
-        resultList.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        resultList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        resultList.setDefaultRenderer(String.class, new StringRenderer());
-        resultList.getColumnModel().getColumn(mapColumnIndex).setPreferredWidth(31);
-        resultList.getColumnModel().getColumn(hideFootprintColumnIndex).setPreferredWidth(69);
-        resultList.getColumnModel().getColumn(hideOffLimbFootprintColumnIndex).setPreferredWidth(73);
-        resultList.getColumnModel().getColumn(frusColumnIndex).setPreferredWidth(31);
-        resultList.getColumnModel().getColumn(bndrColumnIndex).setPreferredWidth(31);
-        resultList.getColumnModel().getColumn(idColumnIndex).setPreferredWidth(31);
-        resultList.getColumnModel().getColumn(mapColumnIndex).setResizable(false);
-        resultList.getColumnModel().getColumn(hideFootprintColumnIndex).setResizable(false);
-        resultList.getColumnModel().getColumn(hideOffLimbFootprintColumnIndex).setResizable(false);
-        resultList.getColumnModel().getColumn(frusColumnIndex).setResizable(false);
-        resultList.getColumnModel().getColumn(bndrColumnIndex).setResizable(false);
-        resultList.getColumnModel().getColumn(idColumnIndex).setResizable(false);
-        resultList.addMouseListener(this);
-        resultList.getModel().addTableModelListener(this);
+        getResultList().setModel(new StructuresTableModel(data, columnNames));
+        getResultList().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        getResultList().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        getResultList().setDefaultRenderer(String.class, new StringRenderer());
+        getResultList().getColumnModel().getColumn(mapColumnIndex).setPreferredWidth(31);
+        getResultList().getColumnModel().getColumn(hideFootprintColumnIndex).setPreferredWidth(69);
+        getResultList().getColumnModel().getColumn(hideOffLimbFootprintColumnIndex).setPreferredWidth(73);
+        getResultList().getColumnModel().getColumn(frusColumnIndex).setPreferredWidth(31);
+        getResultList().getColumnModel().getColumn(bndrColumnIndex).setPreferredWidth(31);
+        getResultList().getColumnModel().getColumn(idColumnIndex).setPreferredWidth(31);
+        getResultList().getColumnModel().getColumn(mapColumnIndex).setResizable(false);
+        getResultList().getColumnModel().getColumn(hideFootprintColumnIndex).setResizable(false);
+        getResultList().getColumnModel().getColumn(hideOffLimbFootprintColumnIndex).setResizable(false);
+        getResultList().getColumnModel().getColumn(frusColumnIndex).setResizable(false);
+        getResultList().getColumnModel().getColumn(bndrColumnIndex).setResizable(false);
+        getResultList().getColumnModel().getColumn(idColumnIndex).setResizable(false);
+        getResultList().addMouseListener(this);
+        getResultList().getModel().addTableModelListener(this);
     }
 
 
@@ -110,12 +110,12 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
         ImageCollection images = (ImageCollection)modelManager.getModel(getImageCollectionModelName());
         PerspectiveImageBoundaryCollection boundaries = (PerspectiveImageBoundaryCollection)modelManager.getModel(getImageBoundaryCollectionModelName());
 
-        resultList.getModel().removeTableModelListener(this);
+        getResultList().getModel().removeTableModelListener(this);
         images.removePropertyChangeListener(this);
         boundaries.removePropertyChangeListener(this);
 
         // add the results to the list
-        ((DefaultTableModel)resultList.getModel()).setRowCount(results.size());
+        ((DefaultTableModel)getResultList().getModel()).setRowCount(results.size());
         int i=0;
         for (List<String> str : results)
         {
@@ -126,22 +126,22 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
             if (images.containsImage(key))
             {
                 PerspectiveImage image = (PerspectiveImage) images.getImage(key);
-                resultList.setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
+                getResultList().setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
             }
             else
             {
-                resultList.setValueAt(false, i, hideOffLimbFootprintColumnIndex);
+                getResultList().setValueAt(false, i, hideOffLimbFootprintColumnIndex);
             }
 
             ++i;
         }
 
-        resultList.getModel().addTableModelListener(this);
+        getResultList().getModel().addTableModelListener(this);
         images.addPropertyChangeListener(this);
         boundaries.addPropertyChangeListener(this);
 
         // Show the first set of boundaries
-        this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.numberOfBoundariesComboBox.getSelectedItem()));
+        this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.getNumberOfBoundariesComboBox().getSelectedItem()));
         this.showImageBoundaries(resultIntervalCurrentlyShown);
 
     }
@@ -154,7 +154,7 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
 
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
         {
-            resultList.getModel().removeTableModelListener(this);
+            getResultList().getModel().removeTableModelListener(this);
             int size = imageRawResults.size();
             ImageCollection images = (ImageCollection)modelManager.getModel(getImageCollectionModelName());
             PerspectiveImageBoundaryCollection boundaries = (PerspectiveImageBoundaryCollection)modelManager.getModel(getImageBoundaryCollectionModelName());
@@ -167,19 +167,19 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
                 {
                     PerspectiveImage image = (PerspectiveImage) images.getImage(key);
     //                System.out.println(((OsirisImage)image).offLimbFootprintIsVisible());
-                    resultList.setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
+                    getResultList().setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
                     ((OsirisImage)image).setOffLimbFootprintAlpha(alphaSlider.getAlphaValue());
                     if (depthSlider.activeImage!=null)
                         depthSlider.setValue(depthSlider.convertDepthToSliderValue(((OsirisImage)image).getOffLimbPlaneDepth()));
                 }
                 else
                 {
-                    resultList.setValueAt(false, i, hideOffLimbFootprintColumnIndex);
+                    getResultList().setValueAt(false, i, hideOffLimbFootprintColumnIndex);
                 }
             }
-            resultList.getModel().addTableModelListener(this);
+            getResultList().getModel().addTableModelListener(this);
             // Repaint the list in case the boundary colors has changed
-            resultList.repaint();
+            getResultList().repaint();
         }
 
         super.propertyChange(evt);
@@ -212,7 +212,7 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
             int row = e.getFirstRow();
             String name = imageRawResults.get(row).get(0);
             String namePrefix = name.substring(0, name.length()-4);
-            boolean visible = !(Boolean)resultList.getValueAt(row, hideOffLimbFootprintColumnIndex);
+            boolean visible = !(Boolean)getResultList().getValueAt(row, hideOffLimbFootprintColumnIndex);
             setOffLimbFootprintVisibility(namePrefix, visible);
         }
 
@@ -371,9 +371,9 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
     @Override
     public void stateChanged(ChangeEvent e)
     {
-        if (resultList.getSelectedRows().length==1)
+        if (getResultList().getSelectedRows().length==1)
         {
-            String name = imageRawResults.get(resultList.getSelectedRow()).get(0);
+            String name = imageRawResults.get(getResultList().getSelectedRow()).get(0);
             ImageKey key = createImageKey(name.substring(0, name.length()-4), sourceOfLastQuery, instrument);
             ImageCollection images = (ImageCollection)modelManager.getModel(getImageCollectionModelName());
             OsirisImage image=(OsirisImage)images.getImage(key);
