@@ -113,27 +113,15 @@ public abstract class HierarchicalSearchSpecification
     }
 
     // Get camera portion of selected (camera,filter) pairs
-    public int[] getSelectedCameras()
+    public List<Integer> getSelectedCameras()
     {
-        Integer[] temp = (Integer[]) selectedCameras.toArray();
-        int[] arr = new int[temp.length];
-        for(int i=0;i<temp.length;i++)
-        {
-            arr[i] = temp[i];
-        }
-        return arr;
+        return new LinkedList<Integer>(selectedCameras);
     }
 
     // Get filter portion of selected (camera,filter) pairs
-    public int[] getSelectedFilters()
+    public List<Integer> getSelectedFilters()
     {
-        Integer[] temp = (Integer[]) selectedFilters.toArray();
-        int[] arr = new int[temp.length];
-        for(int i=0;i<temp.length;i++)
-        {
-            arr[i] = temp[i];
-        }
-        return arr;
+        return new LinkedList<Integer>(selectedFilters);
     }
 
     /**

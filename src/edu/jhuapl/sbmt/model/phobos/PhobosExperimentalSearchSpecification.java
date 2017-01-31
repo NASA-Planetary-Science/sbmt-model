@@ -99,10 +99,10 @@ public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpe
     /**
      *  This is where all the paths and corresponding mapping to camera/filter checkbox numbers are specified
      */
-    public PhobosExperimentalSearchSpecification(String rootName)
+    public PhobosExperimentalSearchSpecification()
     {
-        // Call parent constructor
-        super(rootName);
+        // Call parent constructor with name of the root node that we want
+        super("Phobos");
 
         // Phobos 2
         addHierarchicalSearchPath(new String[] {Mission.PHOBOS_2.toString(),Instrument.VSK.toString(),Band.CHANNEL_1.toString()},
