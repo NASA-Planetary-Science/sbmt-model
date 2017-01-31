@@ -106,7 +106,7 @@ public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpe
 
         // Phobos 2
         addHierarchicalSearchPath(new String[] {Mission.PHOBOS_2.toString(),Instrument.VSK.toString(),Band.CHANNEL_1.toString()},
-                CameraCheckbox.PHOBOS_2.ordinal(),FilterCheckbox.VSK_CHANNEL_1.ordinal());
+                CameraCheckbox.PHOBOS_2.ordinal(),FilterCheckbox.VSK_CHANNEL_2.ordinal());
 
         // Viking Orbiter 1
         addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_1.toString(),Instrument.VIS_A.toString(),Band.MINUS_BLUE.toString()},
@@ -132,14 +132,14 @@ public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpe
 
         // MEX
         addHierarchicalSearchPath(new String[] {Mission.MEX.toString(),Instrument.HRSC.toString(),Band.ALL.toString()},
-                CameraCheckbox.MEX_HRSC.ordinal(),-1);
+                CameraCheckbox.MEX_HRSC.ordinal(),-2); // -2 maps to -1 filter value in database
 
         // MRO
         addHierarchicalSearchPath(new String[] {Mission.MRO.toString(),Instrument.HIRISE.toString(),Band.ALL.toString()},
-                CameraCheckbox.MRO_HIRISE.ordinal(),-1);
+                CameraCheckbox.MRO_HIRISE.ordinal(),-2); // -2 maps to -1 filter value in database
 
         // MGS
         addHierarchicalSearchPath(new String[] {Mission.MGS.toString(),Instrument.MOC.toString(),Band.ALL.toString()},
-                CameraCheckbox.MGS_MOC.ordinal(),-1);
+                CameraCheckbox.MGS_MOC.ordinal(),-2); // -2 maps to -1 filter value in database
     }
 }
