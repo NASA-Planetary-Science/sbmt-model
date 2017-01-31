@@ -9,15 +9,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import nom.tam.fits.FitsException;
-import nom.tam.fits.HeaderCard;
-import nom.tam.fits.HeaderCardException;
+import edu.jhuapl.sbmt.util.BackplaneInfo;
+
 import altwg.Fits.HeaderTags;
 import altwg.util.FitsHeader;
 import altwg.util.FitsHeader.FitsHeaderBuilder;
 import altwg.util.FitsUtil;
-
-import edu.jhuapl.sbmt.util.BackplaneInfo;
+import nom.tam.fits.FitsException;
+import nom.tam.fits.HeaderCard;
+import nom.tam.fits.HeaderCardException;
 
 
 /**
@@ -149,6 +149,9 @@ public class MSIFits {
           new Exception().printStackTrace();
           System.exit(1);
       }
+
+      //The backplanes are flipped bottom-to-top, correct them.
+      data = FitsUtil.flipVertical(data);
 
       String localFitsFile = outfile;
 //      System.out.println("saving to fits file:" + localFitsFile);
