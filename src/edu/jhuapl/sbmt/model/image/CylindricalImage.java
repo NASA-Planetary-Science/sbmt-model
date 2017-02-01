@@ -750,6 +750,7 @@ public class CylindricalImage extends Image
             reader.Update();
             rawImage.DeepCopy(reader.GetOutput());
         }
+        // TODO: add capability to read FITS images - this could be moved up into the Image class
 
         double[] scalarRange = rawImage.GetScalarRange();
         minValue = (float)scalarRange[0];
