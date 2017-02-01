@@ -1,10 +1,5 @@
 package edu.jhuapl.sbmt.model.phobos;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-
-
 public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpecification
 {
     public enum Mission
@@ -74,121 +69,77 @@ public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpe
         }
     }
 
-    // Constructor
+    // Order must match exactly what is defined in SmallBodyViewConfig's imageSearchFilterNames
+    public enum CameraCheckbox
+    {
+        PHOBOS_2,
+        VIKING_ORBITER_1_A,
+        VIKING_ORBITER_1_B,
+        VIKING_ORBITER_2_A,
+        VIKING_ORBITER_2_B,
+        MEX_HRSC,
+        MRO_HIRISE,
+        MGS_MOC
+    };
+
+    // Order must match exactly what is defined in SmallBodyViewConfig's imageSearchUserDefinedCheckBoxesNames
+    public enum FilterCheckbox
+    {
+        VSK_CHANNEL_1,
+        VSK_CHANNEL_2,
+        VSK_CHANNEL_3,
+        VIS_BLUE,
+        VIS_MINUS_BLUE,
+        VIS_VIOLET,
+        VIS_CLEAR,
+        VIS_GREEN,
+        VIS_RED
+    };
+
+    /**
+     *  This is where all the paths and corresponding mapping to camera/filter checkbox numbers are specified
+     */
     public PhobosExperimentalSearchSpecification()
     {
-        // Root node
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Phobos");
-        treeModel = new DefaultTreeModel(rootNode);
+        // Call parent constructor with name of the root node that we want
+        super("Phobos");
 
         // Phobos 2
-        {
-            // Instruments
-            DefaultMutableTreeNode vsk = new DefaultMutableTreeNode(Instrument.VSK);
-            vsk.add(new DefaultMutableTreeNode(Band.CHANNEL_1));
-
-            // Mission
-            DefaultMutableTreeNode phobos2 = new DefaultMutableTreeNode(Mission.PHOBOS_2);
-            phobos2.add(vsk);
-
-            // Add to root
-            rootNode.add(phobos2);
-        }
+        addHierarchicalSearchPath(new String[] {Mission.PHOBOS_2.toString(),Instrument.VSK.toString(),Band.CHANNEL_1.toString()},
+                CameraCheckbox.PHOBOS_2.ordinal(),FilterCheckbox.VSK_CHANNEL_2.ordinal());
 
         // Viking Orbiter 1
-        {
-            // Instruments
-            DefaultMutableTreeNode vis_a = new DefaultMutableTreeNode(Instrument.VIS_A);
-            vis_a.add(new DefaultMutableTreeNode(Band.MINUS_BLUE));
-            vis_a.add(new DefaultMutableTreeNode(Band.VIOLET));
-            vis_a.add(new DefaultMutableTreeNode(Band.CLEAR));
-            vis_a.add(new DefaultMutableTreeNode(Band.GREEN));
-            vis_a.add(new DefaultMutableTreeNode(Band.RED));
-
-            // Mission
-            DefaultMutableTreeNode viking1 = new DefaultMutableTreeNode(Mission.VIKING_ORBITER_1);
-            viking1.add(vis_a);
-
-            // Add to root
-            rootNode.add(viking1);
-        }
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_1.toString(),Instrument.VIS_A.toString(),Band.MINUS_BLUE.toString()},
+                CameraCheckbox.VIKING_ORBITER_1_A.ordinal(),FilterCheckbox.VIS_MINUS_BLUE.ordinal());
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_1.toString(),Instrument.VIS_A.toString(),Band.VIOLET.toString()},
+                CameraCheckbox.VIKING_ORBITER_1_A.ordinal(),FilterCheckbox.VIS_VIOLET.ordinal());
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_1.toString(),Instrument.VIS_A.toString(),Band.CLEAR.toString()},
+                CameraCheckbox.VIKING_ORBITER_1_A.ordinal(),FilterCheckbox.VIS_CLEAR.ordinal());
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_1.toString(),Instrument.VIS_A.toString(),Band.GREEN.toString()},
+                CameraCheckbox.VIKING_ORBITER_1_A.ordinal(),FilterCheckbox.VIS_GREEN.ordinal());
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_1.toString(),Instrument.VIS_A.toString(),Band.RED.toString()},
+                CameraCheckbox.VIKING_ORBITER_1_A.ordinal(),FilterCheckbox.VIS_RED.ordinal());
 
         // Viking Orbiter 2
-        {
-            // Instruments
-            DefaultMutableTreeNode vis_b = new DefaultMutableTreeNode(Instrument.VIS_B);
-            vis_b.add(new DefaultMutableTreeNode(Band.VIOLET));
-            vis_b.add(new DefaultMutableTreeNode(Band.CLEAR));
-            vis_b.add(new DefaultMutableTreeNode(Band.GREEN));
-            vis_b.add(new DefaultMutableTreeNode(Band.RED));
-
-            // Mission
-            DefaultMutableTreeNode viking2 = new DefaultMutableTreeNode(Mission.VIKING_ORBITER_2);
-            viking2.add(vis_b);
-
-            // Add to root
-            rootNode.add(viking2);
-        }
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_2.toString(),Instrument.VIS_B.toString(),Band.VIOLET.toString()},
+                CameraCheckbox.VIKING_ORBITER_2_B.ordinal(),FilterCheckbox.VIS_VIOLET.ordinal());
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_2.toString(),Instrument.VIS_B.toString(),Band.CLEAR.toString()},
+                CameraCheckbox.VIKING_ORBITER_2_B.ordinal(),FilterCheckbox.VIS_CLEAR.ordinal());
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_2.toString(),Instrument.VIS_B.toString(),Band.GREEN.toString()},
+                CameraCheckbox.VIKING_ORBITER_2_B.ordinal(),FilterCheckbox.VIS_GREEN.ordinal());
+        addHierarchicalSearchPath(new String[] {Mission.VIKING_ORBITER_2.toString(),Instrument.VIS_B.toString(),Band.RED.toString()},
+                CameraCheckbox.VIKING_ORBITER_2_B.ordinal(),FilterCheckbox.VIS_RED.ordinal());
 
         // MEX
-        {
-            // Instruments
-            DefaultMutableTreeNode hrsc = new DefaultMutableTreeNode(Instrument.HRSC);
-            hrsc.add(new DefaultMutableTreeNode(Band.ALL));
-
-            // Mission
-            DefaultMutableTreeNode mex = new DefaultMutableTreeNode(Mission.MEX);
-            mex.add(hrsc);
-
-            // Add to root
-            rootNode.add(mex);
-        }
+        addHierarchicalSearchPath(new String[] {Mission.MEX.toString(),Instrument.HRSC.toString(),Band.ALL.toString()},
+                CameraCheckbox.MEX_HRSC.ordinal(),-2); // -2 maps to -1 filter value in database
 
         // MRO
-        {
-            // Instruments
-            DefaultMutableTreeNode hirise = new DefaultMutableTreeNode(Instrument.HIRISE);
-            hirise.add(new DefaultMutableTreeNode(Band.ALL));
-
-            // Mission
-            DefaultMutableTreeNode mro = new DefaultMutableTreeNode(Mission.MRO);
-            mro.add(hirise);
-
-            // Add to root
-            rootNode.add(mro);
-        }
+        addHierarchicalSearchPath(new String[] {Mission.MRO.toString(),Instrument.HIRISE.toString(),Band.ALL.toString()},
+                CameraCheckbox.MRO_HIRISE.ordinal(),-2); // -2 maps to -1 filter value in database
 
         // MGS
-        {
-            // Instruments
-            DefaultMutableTreeNode moc = new DefaultMutableTreeNode(Instrument.MOC);
-            moc.add(new DefaultMutableTreeNode(Band.ALL));
-
-            // Mission
-            DefaultMutableTreeNode mgs = new DefaultMutableTreeNode(Mission.MGS);
-            mgs.add(moc);
-
-            // Add to root
-            rootNode.add(mgs);
-        }
-    }
-
-    // Method for processing tree selections
-    @Override
-    public void processTreeSelections(TreePath[] selectedPaths)
-    {
-        // Go through each selected path
-        for(TreePath tp : selectedPaths)
-        {
-            // Extract mission, instrument, and band
-
-
-            String mission = ((DefaultMutableTreeNode)tp.getPathComponent(0)).getUserObject().toString();
-            String instrument = ((DefaultMutableTreeNode)tp.getPathComponent(1)).getUserObject().toString();
-            //String band = ((DefaultMutableTreeNode)tp.getPathComponent(2)).getUserObject().toString();
-
-            // Process it
-            System.out.println("Mission: " + mission + ", Instrument: " + instrument);// + ", Band: " + band);
-        }
+        addHierarchicalSearchPath(new String[] {Mission.MGS.toString(),Instrument.MOC.toString(),Band.ALL.toString()},
+                CameraCheckbox.MGS_MOC.ordinal(),-2); // -2 maps to -1 filter value in database
     }
 }
