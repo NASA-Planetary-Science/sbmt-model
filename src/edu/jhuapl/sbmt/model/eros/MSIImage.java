@@ -20,6 +20,7 @@ import vtk.vtkImageReslice;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
@@ -120,12 +121,13 @@ public class MSIImage extends PerspectiveImage
         String sumFilename = keyFile.getParentFile().getParent()
         + "/sumfiles/" + keyFile.getName().substring(0, 11) + ".SUM";
 
-        //This is for the ~90K new sumfiles from Olivier for the MSI backplanes delivery
-        if (true)
+        if (key.source.equals(ImageSource.GASKELL_UPDATED))
         {
+            // This is for the ~90K new sumfiles from Olivier for the MSI
+            // backplanes delivery
             sumFilename = keyFile.getParentFile().getParent()
-            + "/sumfiles_to_be_delivered/" + keyFile.getName().substring(0, 11) + ".SUM";
-            System.err.println("SUMFILE: " + sumFilename);
+                    + "/sumfiles_to_be_delivered/"
+                    + keyFile.getName().substring(0, 11) + ".SUM";
         }
 
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();

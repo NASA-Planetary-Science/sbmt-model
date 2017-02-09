@@ -2,58 +2,53 @@ package edu.jhuapl.sbmt.model.image;
 
 public enum ImageSource
 {
-    SPICE {
-        public String toString()
-        {
-            return "SPICE Derived";
-        }
-    },
-    GASKELL {
-        public String toString()
-        {
-            return "Gaskell Derived";
-        }
-    },
-    LABEL {
-        public String toString()
-        {
-            return "Label Derived";
-        }
-    },
-    CORRECTED {
-        public String toString()
-        {
-            return "Corrected";
-        }
-    },
-    CORRECTED_SPICE {
-        public String toString()
-        {
-            return "Corrected SPICE Derived";
-        }
-    },
-    IMAGE_MAP {
-        public String toString()
-        {
-            return "ImageMap";
-        }
-    },
-    LOCAL_CYLINDRICAL {
-        public String toString()
-        {
-            return "LocalCylindrical";
-        }
-    },
-    LOCAL_PERSPECTIVE {
-        public String toString()
-        {
-            return "LocalPerspective";
-        }
-    },
-    FALSE_COLOR {
-        public String toString()
-        {
-            return "FalseColor";
-        }
+    SPICE("SPICE Derived", "pds"),
+    GASKELL("Gaskell Derived", "gaskell"),
+    GASKELL_UPDATED("Gaskell Updated", "gaskell_updated"),
+    LABEL("Label Derived", "label"),
+    CORRECTED("Corrected", "corrected"),
+    CORRECTED_SPICE("Corrected SPICE Derived", "corrected_pds"),
+    IMAGE_MAP("ImageMap", "image_map"),
+    LOCAL_CYLINDRICAL("LocalCylindrical", "local_cylindrical"),
+    LOCAL_PERSPECTIVE("LocalPerspective", "local_perspective"),
+    FALSE_COLOR("FalseColor", "false_color");
+
+    private String string; //String used in the GUI Pointing drop-down menu
+    private String databaseTableName; //String used in the database table name
+
+    private ImageSource(String nameString, String databaseTableName)
+    {
+        this.string = nameString;
+        this.databaseTableName = databaseTableName;
     }
+
+    public String toString()
+    {
+        return string;
+    }
+
+    public String getDatabaseTableName()
+    {
+        return databaseTableName;
+    }
+
+    public static String printSources(int tabLen)
+    {
+        String out = new String();
+        String tab = new String();
+        int i = 0;
+        while (i < tabLen)
+        {
+            tab = tab + " ";
+            i++;
+        }
+        ImageSource[] sources = ImageSource.values();
+        String imagesource = new String();
+        for (ImageSource s : sources)
+        {
+            out = out + tab + s.name() + "\n";
+        }
+        return out;
+    }
+
 }
