@@ -25,6 +25,7 @@ import vtk.vtkTexture;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
+import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
@@ -38,10 +39,10 @@ public class OsirisImage extends PerspectiveImage
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
-
+        offLimbVisibility=true;
     }
 
-    boolean offLimbVisibility=false;
+    boolean offLimbVisibility;
 
     @Override
     protected void processRawImage(vtkImageData rawImage)
@@ -404,8 +405,9 @@ public class OsirisImage extends PerspectiveImage
             offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
 
-            offLimbActor.SetVisibility(0);
-            offLimbBoundaryActor.SetVisibility(0);
+            offLimbActor.SetVisibility(offLimbVisibility?1:0);
+            offLimbBoundaryActor.SetVisibility(offLimbVisibility?1:0);
+
         }
 
     }
@@ -413,12 +415,11 @@ public class OsirisImage extends PerspectiveImage
     @Override
     public List<vtkProp> getProps()
     {
-        if (offLimbActor==null)
-            loadOffLimbPlane();
-
         List<vtkProp> props=super.getProps();
         if (offLimbVisibility)
         {
+            if (offLimbActor==null)
+                loadOffLimbPlane();
             if (props.contains(offLimbActor))
                 props.remove(offLimbActor);
             props.add(offLimbActor);
@@ -437,19 +438,21 @@ public class OsirisImage extends PerspectiveImage
     public void setOffLimbFootprintVisibility(boolean visible)
     {
         offLimbVisibility=visible;
-        if (offLimbActor!=null)
+        if (offLimbActor==null)
+            loadOffLimbPlane();
+
+        if (visible)
         {
-            if (visible)
-            {
-                offLimbActor.VisibilityOn();
-                offLimbBoundaryActor.VisibilityOn();
-            }
-            else
-            {
-                offLimbActor.VisibilityOff();
-                offLimbBoundaryActor.VisibilityOff();
-            }
+            offLimbActor.VisibilityOn();
+            offLimbBoundaryActor.VisibilityOn();
         }
+        else
+        {
+            offLimbActor.VisibilityOff();
+            offLimbBoundaryActor.VisibilityOff();
+        }
+
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     @Override
@@ -471,6 +474,8 @@ public class OsirisImage extends PerspectiveImage
             for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
                 image.SetScalarComponentFromDouble(i, j, 0, 3, value*255);    // set alpha manually per pixel; is there a faster way to do this?
         offLimbTexture.Modified();*/
+        if (offLimbActor==null)
+            loadOffLimbPlane();
         offLimbActor.GetProperty().SetOpacity(alpha);
         //offLimbBoundaryActor.GetProperty().SetOpacity(alpha);
     }

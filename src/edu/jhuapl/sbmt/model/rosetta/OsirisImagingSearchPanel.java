@@ -168,7 +168,7 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
                 {
                     PerspectiveImage image = (PerspectiveImage) images.getImage(key);
     //                System.out.println(((OsirisImage)image).offLimbFootprintIsVisible());
-                    getResultList().setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
+    //                getResultList().setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
                     ((OsirisImage)image).setOffLimbFootprintAlpha(alphaSlider.getAlphaValue());
                     if (depthSlider.activeImage!=null)
                         depthSlider.setValue(depthSlider.convertDepthToSliderValue(((OsirisImage)image).getOffLimbPlaneDepth()));
@@ -207,6 +207,23 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
     {
         // TODO Auto-generated method stub
         super.tableChanged(e);
+
+        if (e.getColumn() == mapColumnIndex)
+        {
+            int row = e.getFirstRow();
+            String name = imageRawResults.get(row).get(0);
+            String namePrefix = name.substring(0, name.length()-4);
+            if ((Boolean)getResultList().getValueAt(row, mapColumnIndex))
+            {
+                setOffLimbFootprintVisibility(namePrefix, false);   // set visibility to false by default
+                getResultList().setValueAt(true, row, hideOffLimbFootprintColumnIndex);
+            }
+            else
+            {
+                setOffLimbFootprintVisibility(namePrefix, false);   // this just clears the footprint checkbox if unmapping the image
+                getResultList().setValueAt(false, row, hideOffLimbFootprintColumnIndex);
+            }
+        }
 
         if (e.getColumn() == hideOffLimbFootprintColumnIndex)
         {
