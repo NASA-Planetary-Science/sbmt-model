@@ -41,6 +41,8 @@ public class OsirisImage extends PerspectiveImage
 
     }
 
+    boolean offLimbVisibility=false;
+
     @Override
     protected void processRawImage(vtkImageData rawImage)
     {
@@ -401,6 +403,9 @@ public class OsirisImage extends PerspectiveImage
             offLimbBoundaryActor.SetMapper(boundaryMapper);
             offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
+
+            offLimbActor.SetVisibility(0);
+            offLimbBoundaryActor.SetVisibility(0);
         }
 
     }
@@ -410,28 +415,28 @@ public class OsirisImage extends PerspectiveImage
     {
         if (offLimbActor==null)
             loadOffLimbPlane();
-        offLimbActor.VisibilityOn();
 
         List<vtkProp> props=super.getProps();
-        if (props.contains(offLimbActor))
-            props.remove(offLimbActor);
-        props.add(offLimbActor);
-        if (props.contains(offLimbBoundaryActor))
-            props.remove(offLimbBoundaryActor);
-        props.add(offLimbBoundaryActor);
+        if (offLimbVisibility)
+        {
+            if (props.contains(offLimbActor))
+                props.remove(offLimbActor);
+            props.add(offLimbActor);
+            if (props.contains(offLimbBoundaryActor))
+                props.remove(offLimbBoundaryActor);
+            props.add(offLimbBoundaryActor);
+        }
         return props;
     }
 
     public boolean offLimbFootprintIsVisible()
     {
-        if (offLimbActor==null)
-            return true;    // philosophically, it's not "hidden" if it doesn't exist
-        else
-            return offLimbActor.GetVisibility()==1;
+        return offLimbVisibility;
     }
 
     public void setOffLimbFootprintVisibility(boolean visible)
     {
+        offLimbVisibility=visible;
         if (offLimbActor!=null)
         {
             if (visible)

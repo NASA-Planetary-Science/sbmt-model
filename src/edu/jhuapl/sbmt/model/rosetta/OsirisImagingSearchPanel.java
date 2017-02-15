@@ -126,11 +126,12 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
             if (images.containsImage(key))
             {
                 PerspectiveImage image = (PerspectiveImage) images.getImage(key);
-                getResultList().setValueAt(!((OsirisImage)image).offLimbFootprintIsVisible(), i, hideOffLimbFootprintColumnIndex);
+                ((OsirisImage)image).setOffLimbFootprintVisibility(false);   // hide off limb footprint by default
+                getResultList().setValueAt(true, i, hideOffLimbFootprintColumnIndex);   // hide off limb footprint by default
             }
             else
             {
-                getResultList().setValueAt(false, i, hideOffLimbFootprintColumnIndex);
+                getResultList().setValueAt(true, i, hideOffLimbFootprintColumnIndex);   // hide off limb footprint by default
             }
 
             ++i;
