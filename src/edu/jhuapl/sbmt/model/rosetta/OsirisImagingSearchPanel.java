@@ -37,7 +37,7 @@ import edu.jhuapl.sbmt.model.image.PerspectiveImageBoundaryCollection;
 
 public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements ChangeListener // this class overrides the default jtable model for the results list in ImagingSearchPanel to include parameters for controlling off-limb rendering planes
 {
-    int hideOffLimbFootprintColumnIndex;
+    int showOffLimbFootprintColumnIndex;
 
     public OsirisImagingSearchPanel(SmallBodyViewConfig smallBodyConfig,
             ModelManager modelManager, SbmtInfoWindowManager infoPanelManager,
@@ -58,17 +58,17 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
 
         String[] columnNames = {
                 "Map",
-                "Hide Ftprnt",
-                "Hide OffLmb",
-                "Frus",
-                "Bndr",
+                "Show Footprint",
+                "Show OffLimb",
+                "Frustum",
+                "Bndry",
                 "Id",
                 "Filename",
                 "Date"
         };
         mapColumnIndex=0;
-        hideFootprintColumnIndex=1;
-        hideOffLimbFootprintColumnIndex=2;
+        showFootprintColumnIndex=1;
+        showOffLimbFootprintColumnIndex=2;
         frusColumnIndex=3;
         bndrColumnIndex=4;
         idColumnIndex=5;
@@ -81,17 +81,17 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
         getResultList().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         getResultList().setDefaultRenderer(String.class, new StringRenderer());
         getResultList().getColumnModel().getColumn(mapColumnIndex).setPreferredWidth(31);
-        getResultList().getColumnModel().getColumn(hideFootprintColumnIndex).setPreferredWidth(69);
-        getResultList().getColumnModel().getColumn(hideOffLimbFootprintColumnIndex).setPreferredWidth(73);
+        getResultList().getColumnModel().getColumn(showFootprintColumnIndex).setPreferredWidth(69);
+        getResultList().getColumnModel().getColumn(showOffLimbFootprintColumnIndex).setPreferredWidth(73);
         getResultList().getColumnModel().getColumn(frusColumnIndex).setPreferredWidth(31);
         getResultList().getColumnModel().getColumn(bndrColumnIndex).setPreferredWidth(31);
         getResultList().getColumnModel().getColumn(idColumnIndex).setPreferredWidth(31);
-        getResultList().getColumnModel().getColumn(mapColumnIndex).setResizable(false);
-        getResultList().getColumnModel().getColumn(hideFootprintColumnIndex).setResizable(false);
-        getResultList().getColumnModel().getColumn(hideOffLimbFootprintColumnIndex).setResizable(false);
-        getResultList().getColumnModel().getColumn(frusColumnIndex).setResizable(false);
-        getResultList().getColumnModel().getColumn(bndrColumnIndex).setResizable(false);
-        getResultList().getColumnModel().getColumn(idColumnIndex).setResizable(false);
+        getResultList().getColumnModel().getColumn(mapColumnIndex).setResizable(true);
+        getResultList().getColumnModel().getColumn(showFootprintColumnIndex).setResizable(true);
+        getResultList().getColumnModel().getColumn(showOffLimbFootprintColumnIndex).setResizable(true);
+        getResultList().getColumnModel().getColumn(frusColumnIndex).setResizable(true);
+        getResultList().getColumnModel().getColumn(bndrColumnIndex).setResizable(true);
+        getResultList().getColumnModel().getColumn(idColumnIndex).setResizable(true);
         getResultList().addMouseListener(this);
         getResultList().getModel().addTableModelListener(this);
     }
@@ -127,11 +127,11 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
             {
                 PerspectiveImage image = (PerspectiveImage) images.getImage(key);
                 ((OsirisImage)image).setOffLimbFootprintVisibility(false);   // hide off limb footprint by default
-                getResultList().setValueAt(true, i, hideOffLimbFootprintColumnIndex);   // hide off limb footprint by default
+                getResultList().setValueAt(false, i, showOffLimbFootprintColumnIndex);   // hide off limb footprint by default
             }
             else
             {
-                getResultList().setValueAt(true, i, hideOffLimbFootprintColumnIndex);   // hide off limb footprint by default
+                getResultList().setValueAt(false, i, showOffLimbFootprintColumnIndex);   // hide off limb footprint by default
             }
 
             ++i;
@@ -175,7 +175,7 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
                 }
                 else
                 {
-                    getResultList().setValueAt(false, i, hideOffLimbFootprintColumnIndex);
+                    getResultList().setValueAt(false, i, showOffLimbFootprintColumnIndex);
                 }
             }
             getResultList().getModel().addTableModelListener(this);
@@ -213,24 +213,16 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
             int row = e.getFirstRow();
             String name = imageRawResults.get(row).get(0);
             String namePrefix = name.substring(0, name.length()-4);
-            if ((Boolean)getResultList().getValueAt(row, mapColumnIndex))
-            {
-                setOffLimbFootprintVisibility(namePrefix, false);   // set visibility to false by default
-                getResultList().setValueAt(true, row, hideOffLimbFootprintColumnIndex);
-            }
-            else
-            {
-                setOffLimbFootprintVisibility(namePrefix, false);   // this just clears the footprint checkbox if unmapping the image
-                getResultList().setValueAt(false, row, hideOffLimbFootprintColumnIndex);
-            }
+            setOffLimbFootprintVisibility(namePrefix, false);   // set visibility to false if we are mapping or unmapping the image
+            getResultList().setValueAt(false, row, showOffLimbFootprintColumnIndex);
         }
 
-        if (e.getColumn() == hideOffLimbFootprintColumnIndex)
+        if (e.getColumn() == showOffLimbFootprintColumnIndex)
         {
             int row = e.getFirstRow();
             String name = imageRawResults.get(row).get(0);
             String namePrefix = name.substring(0, name.length()-4);
-            boolean visible = !(Boolean)getResultList().getValueAt(row, hideOffLimbFootprintColumnIndex);
+            boolean visible = (Boolean)getResultList().getValueAt(row, showOffLimbFootprintColumnIndex);
             setOffLimbFootprintVisibility(namePrefix, visible);
         }
 
@@ -246,7 +238,7 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
         public boolean isCellEditable(int row, int column)
         {
             // Only allow editing the hide column if the image is mapped
-            if (column == hideFootprintColumnIndex || column == hideOffLimbFootprintColumnIndex || column == frusColumnIndex)
+            if (column == showFootprintColumnIndex || column == showOffLimbFootprintColumnIndex || column == frusColumnIndex)
             {
                 String name = imageRawResults.get(row).get(0);
 //                ImageKey key = new ImageKey(name.substring(0, name.length()-4), sourceOfLastQuery, instrument);
