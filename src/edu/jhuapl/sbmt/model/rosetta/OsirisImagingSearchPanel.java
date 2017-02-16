@@ -58,8 +58,8 @@ public class OsirisImagingSearchPanel extends ImagingSearchPanel  implements Cha
 
         String[] columnNames = {
                 "Map",
-                "Show Footprint",
-                "Show OffLimb",
+                "Footprint",
+                "OffLimb",
                 "Frustum",
                 "Bndry",
                 "Id",
