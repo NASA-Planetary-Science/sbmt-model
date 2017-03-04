@@ -108,6 +108,11 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
             ImageCubeKey objectCubeKey = (ImageCubeKey)obj;
             List<ImageKey> objectKeys = objectCubeKey.imageKeys;
 
+            if(objectKeys.size() != imageKeys.size())
+            {
+                return false;
+            }
+
             for (int i = 0; i < imageKeys.size(); i++)
             {
                 ImageKey thisKey = this.imageKeys.get(i);
