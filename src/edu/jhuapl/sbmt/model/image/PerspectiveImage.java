@@ -84,7 +84,7 @@ import nom.tam.fits.FitsException;
 /**
  * This class represents an abstract image of a spacecraft imager instrument.
  */
-abstract public class PerspectiveImage extends Image implements PropertyChangeListener,BackPlanesPDS4XML, BackplanesLabel
+abstract public class PerspectiveImage extends Image implements PropertyChangeListener, BackPlanesPDS4XML, BackplanesLabel
 {
     public static final float PDS_NA = -1.e32f;
     public static final String FRUSTUM1 = "FRUSTUM1";
