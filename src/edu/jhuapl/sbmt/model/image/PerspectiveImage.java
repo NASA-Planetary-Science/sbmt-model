@@ -25,6 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -76,10 +80,6 @@ import edu.jhuapl.sbmt.util.BackplaneInfo;
 import edu.jhuapl.sbmt.util.BackplanesLabel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
-
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
 
 /**
  * This class represents an abstract image of a spacecraft imager instrument.
@@ -2288,6 +2288,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             frustumActor.VisibilityOff();
         }
 
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     public boolean isFrustumShowing()
