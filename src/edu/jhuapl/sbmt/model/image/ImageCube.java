@@ -92,7 +92,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         public ImageCubeKey(List<ImageKey> imageKeys, ImageKey firstImageKey,
                 String labelFileFullPath, String infoFileFullPath, String sumFileFullPath)
         {
-            super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, firstImageKey.slice);
+            super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, 0);
 
             this.imageKeys = new ArrayList<ImageKey>(imageKeys);
             this.nimages = imageKeys.size();
@@ -224,11 +224,11 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         {
             PerspectiveImage image = createImage(key, getSmallBodyModel(), getModelManager());
             images.add(image);
-            imageSlices.add(key.slice);
+            imageSlices.add(0); // twupy1: Hardcoded image slice to 0 since image cubes are always made from single slice images.  This was causing problems otherwise.
             if (key.equals(imageCubeKey.firstImageKey))
             {
                 firstImage = image;
-                firstSlice = key.slice;
+                firstSlice = 0; // twupy1: Hardcoded image slice to 0 since image cubes are always made from single slice images.  This was causing problems otherwise.
                 firstFrustum = image.getFrustum();
             }
         }
