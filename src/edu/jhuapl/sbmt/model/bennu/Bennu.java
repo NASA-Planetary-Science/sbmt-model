@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu;
 
+import java.io.IOException;
 import java.util.List;
 
 import edu.jhuapl.saavtk.model.ColoringInfo;
@@ -58,10 +59,6 @@ public class Bennu extends SmallBodyModel
                 imageMap,
                 ColoringValueType.CELLDATA,
                 false);
-        List<ColoringInfo> infoList = getColoringInfoList();
-        for (int index = 0; index < infoList.size(); ++index) {
-            infoList.get(index).format = Format.FIT;
-        }
     }
 
     private static final String[] getModelFiles(SmallBodyViewConfig config)
@@ -112,4 +109,12 @@ public class Bennu extends SmallBodyModel
         return modelFilesInPlateFormat[getModelResolution()];
     }
 
+    @Override
+    protected void loadColoringData() throws IOException {
+        List<ColoringInfo> infoList = getColoringInfoList();
+        for (int index = 0; index < infoList.size(); ++index) {
+            infoList.get(index).format = Format.FIT;
+        }
+        super.loadColoringData();
+   }
 }
