@@ -113,7 +113,8 @@ public class Bennu extends SmallBodyModel
     protected void loadColoringData() throws IOException {
         List<ColoringInfo> infoList = getColoringInfoList();
         for (int index = 0; index < infoList.size(); ++index) {
-            infoList.get(index).format = Format.FIT;
+            if (infoList.get(index).builtIn)
+                infoList.get(index).format = Format.FIT;
         }
         super.loadColoringData();
    }
