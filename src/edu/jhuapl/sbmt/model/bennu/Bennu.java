@@ -1,11 +1,5 @@
 package edu.jhuapl.sbmt.model.bennu;
 
-import java.io.IOException;
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
-import edu.jhuapl.saavtk.model.ColoringInfo;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 
@@ -109,41 +103,5 @@ public class Bennu extends SmallBodyModel
     public String getServerPathToShapeModelFileInPlateFormat()
     {
         return modelFilesInPlateFormat[getModelResolution()];
-    }
-
-    @Override
-    protected void loadColoringData() throws IOException {
-        List<ColoringInfo> infoListCopy = Lists.newArrayList(getColoringInfoList());
-        List<ColoringInfo> newInfoList = Lists.newArrayList();
-        for (int index = 0; index < infoListCopy.size(); ++index) {
-            ColoringInfo info = infoListCopy.get(index);
-            if (tryLoad(info, Format.FIT)) {
-                newInfoList.add(info);
-                continue;
-            }
-            if (tryLoad(info, Format.TXT)) {
-                newInfoList.add(info);
-                continue;
-            }
-            System.err.println("Unable to load coloring data; disabling " + info.coloringName);
-        }
-
-        List<ColoringInfo> infoList = getColoringInfoList();
-        infoList.clear();
-        infoList.addAll(newInfoList);
-   }
-
-    private boolean tryLoad(ColoringInfo info, Format format) {
-        info.format = format;
-        List<ColoringInfo> infoList = getColoringInfoList();
-        infoList.clear();
-        infoList.add(info);
-        try {
-            super.loadColoringData();
-            return true;
-        } catch (@SuppressWarnings("unused") Exception e) {
-            // Unable to load; report that by returning false.
-            return false;
-        }
     }
 }
