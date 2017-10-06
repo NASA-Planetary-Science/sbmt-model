@@ -32,6 +32,7 @@ import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
+import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
@@ -67,11 +68,13 @@ public class LidarDataPerUnit extends AbstractModel
         int noiseIndex = polyhedralModelConfig.lidarBrowseNoiseIndex;
         boolean isBinary = polyhedralModelConfig.lidarBrowseIsBinary;
         int binaryRecordSize = polyhedralModelConfig.lidarBrowseBinaryRecordSize;
-        int outgoingIntensityIndex = polyhedralModelConfig.lidarBrowseOutgoingIntensityIndex;
         int receivedIntensityIndex = polyhedralModelConfig.lidarBrowseReceivedIntensityIndex;
         boolean intensityEnabled = polyhedralModelConfig.lidarBrowseIntensityEnabled;
 
-        File file = FileCache.getFileFromServer(path);
+        if (polyhedralModelConfig.lidarBrowseOrigPathRegex != null && !polyhedralModelConfig.lidarBrowseOrigPathRegex.isEmpty()) {
+            path = path.replaceAll(polyhedralModelConfig.lidarBrowseOrigPathRegex, polyhedralModelConfig.lidarBrowsePathTop);
+        }
+        File file = FileCache.getFileFromServer(SafePaths.getString(path));
 
         if (file == null)
             throw new IOException(path + " could not be loaded");
