@@ -13,9 +13,9 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 public class NISStatisticsCollection extends AbstractModel implements PropertyChangeListener
 {
     List<vtkProp> props=Lists.newArrayList();
-    List<NISStatistics> stats=Lists.newArrayList();
+    List<SpectrumStatistics> stats=Lists.newArrayList();
 
-    public void addStatistics(NISStatistics stats)
+    public void addStatistics(SpectrumStatistics stats)
     {
         this.stats.add(stats);
     }
