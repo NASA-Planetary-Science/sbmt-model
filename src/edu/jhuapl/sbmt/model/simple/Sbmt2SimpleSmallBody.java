@@ -12,7 +12,7 @@ public class Sbmt2SimpleSmallBody extends SmallBodyModel
 
     public Sbmt2SimpleSmallBody(SmallBodyViewConfig config)
     {
-        super();
+        super(config);
         initializeConfigParameters(
                 config.hasImageMap ? getImageMap(config) : null,
                 false);
