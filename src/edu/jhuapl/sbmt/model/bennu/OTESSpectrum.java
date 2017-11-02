@@ -5,12 +5,16 @@ import java.io.IOException;
 
 import org.apache.commons.io.FilenameUtils;
 
+import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class OTESSpectrum extends BasicSpectrum
 {
+    boolean footprintGenerated=false;
+    File infoFile;
 
     public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
@@ -35,11 +39,24 @@ public class OTESSpectrum extends BasicSpectrum
         return "/../infofiles/"+FilenameUtils.getBaseName(getServerPath())+".info";
     }
 
-    protected String getLocalInfoFilePath()
+
+    @Override
+    public void generateFootprint()
     {
-        return getFullPath()+getInfoFilePathRelativeToSpectrumFile();
+        if (!footprintGenerated)
+        {
+
+        }
     }
 
+    protected Frustum readPointingFromInfoFile()
+    {
+        infoFile=FileCache.getFileFromServer(getInfoFileServerPath());
+        System.out.println(infoFile+" "+getInfoFileServerPath());
+        //
+        Frustum frustum=null;
+        return frustum;
+    }
 
 
 }

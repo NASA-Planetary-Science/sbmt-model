@@ -33,37 +33,40 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.gui.eros.SpectrumSearchPanel;
+
 
 public abstract class BasicSpectrum extends Spectrum
 {
-    PropertyChangeSupport pcs=new PropertyChangeSupport(this);
+    PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     protected SmallBodyModel smallBodyModel;
     protected SpectralInstrument instrument;
 
-    protected String fullpath; // The actual path of the spectrum stored on the local disk (after downloading from the server)
-    protected String serverpath; // The path of the spectrum as passed into the constructor. This is not the
-       // same as fullpath but instead corresponds to the name needed to download
-       // the file from the server (excluding the hostname).
+    protected String fullpath; // The actual path of the spectrum stored on the
+                               // local disk (after downloading from the server)
+    protected String serverpath; // The path of the spectrum as passed into the
+                                 // constructor. This is not the
+    // same as fullpath but instead corresponds to the name needed to download
+    // the file from the server (excluding the hostname).
 
     protected boolean isSelected;
     protected double footprintHeight;
 
-    protected vtkActor selectionActor=new vtkActor();
-    protected vtkPolyData selectionPolyData=new vtkPolyData();
+    protected vtkActor selectionActor = new vtkActor();
+    protected vtkPolyData selectionPolyData = new vtkPolyData();
     protected vtkPolyData footprint;
     protected vtkPolyData shiftedFootprint;
     protected vtkActor footprintActor;
     protected vtkActor frustumActor;
     protected List<vtkProp> footprintActors = new ArrayList<vtkProp>();
     protected double[] frustumCenter;
-    protected vtkActor outlineActor=new vtkActor();
-    protected vtkPolyData outlinePolyData=new vtkPolyData();
+    protected vtkActor outlineActor = new vtkActor();
+    protected vtkPolyData outlinePolyData = new vtkPolyData();
     boolean isOutlineShowing;
 
-    protected vtkActor toSunVectorActor=new vtkActor();
-    protected vtkPolyData toSunVectorPolyData=new vtkPolyData();
+    protected Vector3D toSunUnitVector;
+    protected vtkActor toSunVectorActor = new vtkActor();
+    protected vtkPolyData toSunVectorPolyData = new vtkPolyData();
     protected boolean isToSunVectorShowing;
     protected double toSunVectorLength;
 
@@ -73,9 +76,9 @@ public abstract class BasicSpectrum extends Spectrum
     protected double[] frustum3 = new double[3];
     protected double[] frustum4 = new double[3];
 
-    protected int[] channelsToColorBy = {0, 0, 0};
-    protected double[] channelsColoringMinValue= {0.0, 0.0, 0.0};
-    protected double[] channelsColoringMaxValue = {0.05, 0.05, 0.05};
+    protected int[] channelsToColorBy = { 0, 0, 0 };
+    protected double[] channelsColoringMinValue = { 0.0, 0.0, 0.0 };
+    protected double[] channelsColoringMaxValue = { 0.05, 0.05, 0.05 };
 
     protected DateTime dateTime;
     protected double duration;
@@ -93,25 +96,27 @@ public abstract class BasicSpectrum extends Spectrum
     protected double maxPhase;
     protected boolean showFrustum = false;
 
-        public BasicSpectrum(String filename, SmallBodyModel smallBodyModel, SpectralInstrument instrument) throws IOException
-        {
-            File file=FileCache.getFileFromServer(filename);
-            this.serverpath = filename; // path on server relative to data repository root (e.g. relative to /project/nearsdc/data/)
-            this.instrument=instrument; //
-            this.fullpath=file.getAbsolutePath();
-            this.smallBodyModel=smallBodyModel;
-        }
+    public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
+            SpectralInstrument instrument) throws IOException
+    {
+        File file = FileCache.getFileFromServer(filename);
+        this.serverpath = filename; // path on server relative to data
+                                    // repository root (e.g. relative to
+                                    // /project/nearsdc/data/)
+        this.instrument = instrument; //
+        this.fullpath = file.getAbsolutePath();
+        this.smallBodyModel = smallBodyModel;
+    }
 
-        public vtkPolyData getSelectionPolyData()
-        {
-            return selectionPolyData;
-        }
+    public vtkPolyData getSelectionPolyData()
+    {
+        return selectionPolyData;
+    }
 
-
-        public double[] getSpectrum()
-        {
-            return spectrum;
-        }
+    public double[] getSpectrum()
+    {
+        return spectrum;
+    }
 
     @Override
     public SpectralInstrument getInstrument()
@@ -125,30 +130,39 @@ public abstract class BasicSpectrum extends Spectrum
         return instrument.getBandCenters();
     }
 
-
     public void generateFootprint()
     {
         if (!latLons.isEmpty())
         {
-            vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(spacecraftPosition,
-                    frustum1, frustum2, frustum3, frustum4);
+            vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
+                    spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
 
-            vtkDoubleArray faceAreaFraction=new vtkDoubleArray();
+            vtkDoubleArray faceAreaFraction = new vtkDoubleArray();
             faceAreaFraction.SetName(faceAreaFractionArrayName);
-            Frustum frustum=new Frustum(getFrustumOrigin(), getFrustumCorner(0), getFrustumCorner(1), getFrustumCorner(2), getFrustumCorner(3));
-            for (int c=0; c<tmp.GetNumberOfCells(); c++)
+            Frustum frustum = new Frustum(getFrustumOrigin(),
+                    getFrustumCorner(0), getFrustumCorner(1),
+                    getFrustumCorner(2), getFrustumCorner(3));
+            for (int c = 0; c < tmp.GetNumberOfCells(); c++)
             {
-                vtkIdTypeArray originalIds=(vtkIdTypeArray)tmp.GetCellData().GetArray(GenericPolyhedralModel.cellIdsArrayName);
-                int originalId=originalIds.GetValue(c);
-                vtkTriangle tri=(vtkTriangle)smallBodyModel.getSmallBodyPolyData().GetCell(originalId);  // tri on original body model
-                vtkTriangle ftri=(vtkTriangle)tmp.GetCell(c); // tri on footprint
-                faceAreaFraction.InsertNextValue(ftri.ComputeArea()/tri.ComputeArea());
+                vtkIdTypeArray originalIds = (vtkIdTypeArray) tmp.GetCellData()
+                        .GetArray(GenericPolyhedralModel.cellIdsArrayName);
+                int originalId = originalIds.GetValue(c);
+                vtkTriangle tri = (vtkTriangle) smallBodyModel
+                        .getSmallBodyPolyData().GetCell(originalId); // tri on
+                                                                     // original
+                                                                     // body
+                                                                     // model
+                vtkTriangle ftri = (vtkTriangle) tmp.GetCell(c); // tri on
+                                                                 // footprint
+                faceAreaFraction.InsertNextValue(
+                        ftri.ComputeArea() / tri.ComputeArea());
             }
             tmp.GetCellData().AddArray(faceAreaFraction);
 
             if (tmp != null)
             {
-                // Need to clear out scalar data since if coloring data is being shown,
+                // Need to clear out scalar data since if coloring data is being
+                // shown,
                 // then the color might mix-in with the image.
                 tmp.GetCellData().SetScalars(null);
                 tmp.GetPointData().SetScalars(null);
@@ -156,7 +170,8 @@ public abstract class BasicSpectrum extends Spectrum
                 footprint.DeepCopy(tmp);
 
                 shiftedFootprint.DeepCopy(tmp);
-                PolyDataUtil.shiftPolyDataInMeanNormalDirection(shiftedFootprint, footprintHeight);
+                PolyDataUtil.shiftPolyDataInMeanNormalDirection(
+                        shiftedFootprint, footprintHeight);
 
                 createSelectionPolyData();
                 createSelectionActor();
@@ -168,7 +183,6 @@ public abstract class BasicSpectrum extends Spectrum
         }
     }
 
-
     public List<vtkProp> getProps()
     {
         if (footprintActor == null && !latLons.isEmpty())
@@ -177,8 +191,9 @@ public abstract class BasicSpectrum extends Spectrum
 
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint);
-            //footprintMapper.SetResolveCoincidentTopologyToPolygonOffset();
-            //footprintMapper.SetResolveCoincidentTopologyPolygonOffsetParameters(-.002, -2.0);
+            // footprintMapper.SetResolveCoincidentTopologyToPolygonOffset();
+            // footprintMapper.SetResolveCoincidentTopologyPolygonOffsetParameters(-.002,
+            // -2.0);
             footprintMapper.Update();
 
             footprintActor = new vtkActor();
@@ -192,29 +207,27 @@ public abstract class BasicSpectrum extends Spectrum
             footprintActors.add(footprintActor);
 
             /*
-            // Compute the bounding edges of this surface
-            vtkFeatureEdges edgeExtracter = new vtkFeatureEdges();
-            edgeExtracter.SetInput(shiftedFootprint);
-            edgeExtracter.BoundaryEdgesOn();
-            edgeExtracter.FeatureEdgesOff();
-            edgeExtracter.NonManifoldEdgesOff();
-            edgeExtracter.ManifoldEdgesOff();
-            edgeExtracter.Update();
-
-            vtkPolyDataMapper edgeMapper = new vtkPolyDataMapper();
-            edgeMapper.SetInputConnection(edgeExtracter.GetOutputPort());
-            edgeMapper.ScalarVisibilityOff();
-            //edgeMapper.SetResolveCoincidentTopologyToPolygonOffset();
-            //edgeMapper.SetResolveCoincidentTopologyPolygonOffsetParameters(-.004, -4.0);
-            edgeMapper.Update();
-
-            vtkActor edgeActor = new vtkActor();
-            edgeActor.SetMapper(edgeMapper);
-            edgeActor.GetProperty().SetColor(0.0, 0.39, 0.0);
-            edgeActor.GetProperty().SetLineWidth(2.0);
-            edgeActor.GetProperty().LightingOff();
-            footprintActors.add(edgeActor);
-            */
+             * // Compute the bounding edges of this surface vtkFeatureEdges
+             * edgeExtracter = new vtkFeatureEdges();
+             * edgeExtracter.SetInput(shiftedFootprint);
+             * edgeExtracter.BoundaryEdgesOn(); edgeExtracter.FeatureEdgesOff();
+             * edgeExtracter.NonManifoldEdgesOff();
+             * edgeExtracter.ManifoldEdgesOff(); edgeExtracter.Update();
+             *
+             * vtkPolyDataMapper edgeMapper = new vtkPolyDataMapper();
+             * edgeMapper.SetInputConnection(edgeExtracter.GetOutputPort());
+             * edgeMapper.ScalarVisibilityOff();
+             * //edgeMapper.SetResolveCoincidentTopologyToPolygonOffset();
+             * //edgeMapper.SetResolveCoincidentTopologyPolygonOffsetParameters(
+             * -.004, -4.0); edgeMapper.Update();
+             *
+             * vtkActor edgeActor = new vtkActor();
+             * edgeActor.SetMapper(edgeMapper);
+             * edgeActor.GetProperty().SetColor(0.0, 0.39, 0.0);
+             * edgeActor.GetProperty().SetLineWidth(2.0);
+             * edgeActor.GetProperty().LightingOff();
+             * footprintActors.add(edgeActor);
+             */
         }
 
         if (frustumActor == null)
@@ -227,12 +240,21 @@ public abstract class BasicSpectrum extends Spectrum
             vtkIdList idList = new vtkIdList();
             idList.SetNumberOfIds(2);
 
-            double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+            double dx = MathUtil.vnorm(spacecraftPosition)
+                    + smallBodyModel.getBoundingBoxDiagonalLength();
             double[] origin = spacecraftPosition;
-            double[] UL = {origin[0]+frustum1[0]*dx, origin[1]+frustum1[1]*dx, origin[2]+frustum1[2]*dx};
-            double[] UR = {origin[0]+frustum2[0]*dx, origin[1]+frustum2[1]*dx, origin[2]+frustum2[2]*dx};
-            double[] LL = {origin[0]+frustum3[0]*dx, origin[1]+frustum3[1]*dx, origin[2]+frustum3[2]*dx};
-            double[] LR = {origin[0]+frustum4[0]*dx, origin[1]+frustum4[1]*dx, origin[2]+frustum4[2]*dx};
+            double[] UL = { origin[0] + frustum1[0] * dx,
+                    origin[1] + frustum1[1] * dx,
+                    origin[2] + frustum1[2] * dx };
+            double[] UR = { origin[0] + frustum2[0] * dx,
+                    origin[1] + frustum2[1] * dx,
+                    origin[2] + frustum2[2] * dx };
+            double[] LL = { origin[0] + frustum3[0] * dx,
+                    origin[1] + frustum3[1] * dx,
+                    origin[2] + frustum3[2] * dx };
+            double[] LR = { origin[0] + frustum4[0] * dx,
+                    origin[1] + frustum4[1] * dx,
+                    origin[2] + frustum4[2] * dx };
 
             points.InsertNextPoint(spacecraftPosition);
             points.InsertNextPoint(UL);
@@ -255,7 +277,6 @@ public abstract class BasicSpectrum extends Spectrum
 
             frus.SetPoints(points);
             frus.SetLines(lines);
-
 
             vtkPolyDataMapper frusMapper = new vtkPolyDataMapper();
             frusMapper.SetInputData(frus);
@@ -281,7 +302,7 @@ public abstract class BasicSpectrum extends Spectrum
     {
         if (Properties.MODEL_RESOLUTION_CHANGED.equals(evt.getPropertyName()))
         {
-//            System.out.println("updating spectral image");
+            // System.out.println("updating spectral image");
             generateFootprint();
             setUnselected();
 
@@ -303,46 +324,47 @@ public abstract class BasicSpectrum extends Spectrum
 
     public void setSelected()
     {
-        isSelected=true;
+        isSelected = true;
         selectionActor.VisibilityOn();
         selectionActor.Modified();
     }
 
     public void setUnselected()
     {
-        isSelected=false;
+        isSelected = false;
         selectionActor.VisibilityOff();
         selectionActor.Modified();
     }
 
-
     public void shiftFootprintToHeight(double h)
     {
-        vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(spacecraftPosition,
-                frustum1, frustum2, frustum3, frustum4);
+        vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
+                spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
         shiftedFootprint.DeepCopy(tmp);
-        PolyDataUtil.shiftPolyDataInMeanNormalDirection(shiftedFootprint,h);
+        PolyDataUtil.shiftPolyDataInMeanNormalDirection(shiftedFootprint, h);
         createSelectionPolyData();
         createOutlinePolyData();
         //
         if (isSelected)
             selectionActor.VisibilityOn();
         //
-        ((vtkPolyDataMapper)footprintActor.GetMapper()).SetInputData(shiftedFootprint);
+        ((vtkPolyDataMapper) footprintActor.GetMapper())
+                .SetInputData(shiftedFootprint);
         footprintActor.GetMapper().Update();
-        ((vtkPolyDataMapper)selectionActor.GetMapper()).SetInputData(selectionPolyData);
+        ((vtkPolyDataMapper) selectionActor.GetMapper())
+                .SetInputData(selectionPolyData);
         selectionActor.GetMapper().Update();
-        ((vtkPolyDataMapper)outlineActor.GetMapper()).SetInputData(selectionPolyData);
+        ((vtkPolyDataMapper) outlineActor.GetMapper())
+                .SetInputData(selectionPolyData);
         outlineActor.GetMapper().Update();
 
         //
-        footprintHeight=h;
+        footprintHeight = h;
     }
-
 
     protected void createSelectionPolyData()
     {
-        vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
+        vtkFeatureEdges edgeFilter = new vtkFeatureEdges();
         edgeFilter.SetInputData(getShiftedFootprint());
         edgeFilter.BoundaryEdgesOn();
         edgeFilter.FeatureEdgesOff();
@@ -354,20 +376,19 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected void createSelectionActor()
     {
-        vtkPolyDataMapper mapper=new vtkPolyDataMapper();
+        vtkPolyDataMapper mapper = new vtkPolyDataMapper();
         mapper.SetInputData(selectionPolyData);
         mapper.Update();
         selectionActor.SetMapper(mapper);
         selectionActor.VisibilityOff();
         selectionActor.GetProperty().EdgeVisibilityOn();
-        selectionActor.GetProperty().SetEdgeColor(0.5,1,0.5);
+        selectionActor.GetProperty().SetEdgeColor(0.5, 1, 0.5);
         selectionActor.GetProperty().SetLineWidth(5);
     }
 
-
     protected void createOutlinePolyData()
     {
-        vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
+        vtkFeatureEdges edgeFilter = new vtkFeatureEdges();
         edgeFilter.SetInputData(getShiftedFootprint());
         edgeFilter.BoundaryEdgesOn();
         edgeFilter.FeatureEdgesOff();
@@ -379,26 +400,32 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected void createOutlineActor()
     {
-        vtkPolyDataMapper mapper=new vtkPolyDataMapper();
+        vtkPolyDataMapper mapper = new vtkPolyDataMapper();
         mapper.SetInputData(outlinePolyData);
         mapper.Update();
         outlineActor.SetMapper(mapper);
         outlineActor.VisibilityOff();
         outlineActor.GetProperty().EdgeVisibilityOn();
-        outlineActor.GetProperty().SetEdgeColor(0.4,0.4,1);
+        outlineActor.GetProperty().SetEdgeColor(0.4, 0.4, 1);
         outlineActor.GetProperty().SetLineWidth(2);
+    }
+
+    public double[] getToSunUnitVector()
+    {
+        return toSunUnitVector.toArray();
     }
 
     protected void createToSunVectorPolyData()
     {
-        Vector3D toSunVec=SpectrumSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
-        vtkPoints points=new vtkPoints();
-        vtkCellArray cells=new vtkCellArray();
-        Vector3D footprintCenter=new Vector3D(getUnshiftedFootprint().GetCenter());
-        int id1=points.InsertNextPoint(footprintCenter.toArray());
-        System.out.println(serverpath+" "+serverpath.replace("/NIS/2000/", ""));
-        int id2=points.InsertNextPoint(footprintCenter.add(toSunVec.normalize().scalarMultiply(toSunVectorLength)).toArray());
-        vtkLine line=new vtkLine();
+        vtkPoints points = new vtkPoints();
+        vtkCellArray cells = new vtkCellArray();
+        Vector3D footprintCenter = new Vector3D(
+                getUnshiftedFootprint().GetCenter());
+        int id1 = points.InsertNextPoint(footprintCenter.toArray());
+        int id2 = points.InsertNextPoint(footprintCenter
+                .add(new Vector3D(getToSunUnitVector()).scalarMultiply(toSunVectorLength))
+                .toArray());
+        vtkLine line = new vtkLine();
         line.GetPointIds().SetId(0, id1);
         line.GetPointIds().SetId(1, id2);
         cells.InsertNextCell(line);
@@ -408,18 +435,19 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected void createToSunVectorActor()
     {
-        vtkPolyDataMapper mapper=new vtkPolyDataMapper();
+        vtkPolyDataMapper mapper = new vtkPolyDataMapper();
         mapper.SetInputData(toSunVectorPolyData);
         mapper.Update();
         toSunVectorActor.SetMapper(mapper);
         toSunVectorActor.VisibilityOff();
-        toSunVectorActor.GetProperty().SetColor(1,1,0.5);
+        toSunVectorActor.GetProperty().SetColor(1, 1, 0.5);
     }
 
     /**
      * The shifted footprint is the original footprint shifted slightly in the
      * normal direction so that it will be rendered correctly and not obscured
      * by the asteroid.
+     *
      * @return
      */
     public vtkPolyData getShiftedFootprint()
@@ -430,6 +458,7 @@ public abstract class BasicSpectrum extends Spectrum
     /**
      * The original footprint whose cells exactly overlap the original asteroid.
      * If rendered as is, it would interfere with the asteroid.
+     *
      * @return
      */
     public vtkPolyData getUnshiftedFootprint()
@@ -443,18 +472,16 @@ public abstract class BasicSpectrum extends Spectrum
         shiftedFootprint.Delete();
     }
 
-
     public double getMinFootprintHeight()
     {
         return smallBodyModel.getMinShiftAmount();
     }
 
-    public void setChannelColoring(
-            int[] channels, double[] mins, double[] maxs)
+    public void setChannelColoring(int[] channels, double[] mins, double[] maxs)
     {
-        for (int i=0; i<3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
-            channelsToColorBy[i]        = channels[i];
+            channelsToColorBy[i] = channels[i];
             channelsColoringMinValue[i] = mins[i];
             channelsColoringMaxValue[i] = maxs[i];
         }
@@ -496,7 +523,7 @@ public abstract class BasicSpectrum extends Spectrum
     @Override
     public double[] getChannelColor()
     {
-        double[] color = new double[]{1,1,1};
+        double[] color = new double[] { 1, 1, 1 };
         return color;
     }
 
@@ -515,14 +542,14 @@ public abstract class BasicSpectrum extends Spectrum
     @Override
     public double evaluateDerivedParameters(int channel)
     {
-        switch(channel)
+        switch (channel)
         {
         case 0:
-//            return spectrum[35] - spectrum[4];
+            // return spectrum[35] - spectrum[4];
         case 1:
-//            return spectrum[0] - spectrum[4];
+            // return spectrum[0] - spectrum[4];
         case 2:
-//            return spectrum[51] - spectrum[35];
+            // return spectrum[51] - spectrum[35];
         default:
             return 0.0;
         }
@@ -532,10 +559,12 @@ public abstract class BasicSpectrum extends Spectrum
     {
         return showFrustum;
     }
+
     public boolean isToSunVectorShowing()
     {
         return isToSunVectorShowing;
     }
+
     public boolean isOutlineShowing()
     {
         return isOutlineShowing;
@@ -574,7 +603,7 @@ public abstract class BasicSpectrum extends Spectrum
 
     public void setShowToSunVector(boolean b)
     {
-        isToSunVectorShowing=b;
+        isToSunVectorShowing = b;
         if (isToSunVectorShowing)
             toSunVectorActor.VisibilityOn();
         else
@@ -582,10 +611,9 @@ public abstract class BasicSpectrum extends Spectrum
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-
     public void setShowOutline(boolean b)
     {
-        isOutlineShowing=b;
+        isOutlineShowing = b;
         if (isOutlineShowing)
             outlineActor.VisibilityOn();
         else
