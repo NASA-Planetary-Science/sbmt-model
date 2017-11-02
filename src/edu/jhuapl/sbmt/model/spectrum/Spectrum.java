@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.spectrum;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;

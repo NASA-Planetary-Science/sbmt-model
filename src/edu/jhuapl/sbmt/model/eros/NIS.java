@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.eros;
 
+import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+
 public class NIS implements SpectralInstrument
 {
 

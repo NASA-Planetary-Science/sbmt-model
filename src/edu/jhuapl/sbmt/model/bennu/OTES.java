@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu;
 
-import edu.jhuapl.sbmt.model.eros.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class OTES implements SpectralInstrument
 {

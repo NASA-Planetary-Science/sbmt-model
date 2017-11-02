@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.spectrum;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -39,17 +39,16 @@ public abstract class BasicSpectrum extends Spectrum
 {
     PropertyChangeSupport pcs=new PropertyChangeSupport(this);
 
-    String filename;
-    SmallBodyModel smallBodyModel;
-    SpectralInstrument instrument;
+    protected SmallBodyModel smallBodyModel;
+    protected SpectralInstrument instrument;
 
     protected String fullpath; // The actual path of the spectrum stored on the local disk (after downloading from the server)
     protected String serverpath; // The path of the spectrum as passed into the constructor. This is not the
        // same as fullpath but instead corresponds to the name needed to download
        // the file from the server (excluding the hostname).
 
-    boolean isSelected;
-    double footprintHeight;
+    protected boolean isSelected;
+    protected double footprintHeight;
 
     protected vtkActor selectionActor=new vtkActor();
     protected vtkPolyData selectionPolyData=new vtkPolyData();
@@ -65,8 +64,8 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected vtkActor toSunVectorActor=new vtkActor();
     protected vtkPolyData toSunVectorPolyData=new vtkPolyData();
-    boolean isToSunVectorShowing;
-    double toSunVectorLength;
+    protected boolean isToSunVectorShowing;
+    protected double toSunVectorLength;
 
     protected double[] spacecraftPosition = new double[3];
     protected double[] frustum1 = new double[3];
@@ -97,10 +96,9 @@ public abstract class BasicSpectrum extends Spectrum
         public BasicSpectrum(String filename, SmallBodyModel smallBodyModel, SpectralInstrument instrument) throws IOException
         {
             File file=FileCache.getFileFromServer(filename);
-            this.serverpath = filename;
-            this.instrument=instrument;
-            this.filename=file.getAbsolutePath();
-            this.fullpath = file.getAbsolutePath();
+            this.serverpath = filename; // path on server relative to data repository root (e.g. relative to /project/nearsdc/data/)
+            this.instrument=instrument; //
+            this.fullpath=file.getAbsolutePath();
             this.smallBodyModel=smallBodyModel;
         }
 
@@ -283,7 +281,7 @@ public abstract class BasicSpectrum extends Spectrum
     {
         if (Properties.MODEL_RESOLUTION_CHANGED.equals(evt.getPropertyName()))
         {
-            System.out.println("updating nis image");
+//            System.out.println("updating spectral image");
             generateFootprint();
             setUnselected();
 
