@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -18,7 +17,6 @@ import vtk.vtkIdTypeArray;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
-import vtk.vtkPolyDataWriter;
 import vtk.vtkProp;
 import vtk.vtkProperty;
 import vtk.vtkTriangle;
@@ -257,12 +255,12 @@ public class OTESSpectrum extends BasicSpectrum
             frus.SetPoints(points);
             frus.SetLines(lines);
 
-            vtkPolyDataWriter writer = new vtkPolyDataWriter();
+/*            vtkPolyDataWriter writer = new vtkPolyDataWriter();
             writer.SetInputData(frus);
             writer.SetFileName("/Users/zimmemi1/Desktop/otes/"
                     + UUID.randomUUID() + ".vtk");
             writer.SetFileTypeToBinary();
-            writer.Write();
+            writer.Write();*/
 
             vtkPolyDataMapper frusMapper = new vtkPolyDataMapper();
             frusMapper.SetInputData(frus);
