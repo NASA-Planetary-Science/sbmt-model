@@ -21,7 +21,7 @@ public class NIS implements SpectralInstrument
     // These values were taken from Table 1 of "Spectral properties and geologic
     // processes on Eros from combined NEAR NIS and MSI data sets"
     // by Noam Izenberg et. al.
-    static final private double[] bandCenters = {
+    static final public double[] bandCenters = {
         816.2,  // 0
         837.8,  // 1
         859.4,  // 2

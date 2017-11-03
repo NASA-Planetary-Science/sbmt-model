@@ -85,9 +85,7 @@ public abstract class BasicSpectrum extends Spectrum
     protected short polygon_type_flag;
     protected double range;
     protected List<LatLon> latLons = new ArrayList<LatLon>();
-    protected static final int numberOfBands = 64;
-    protected double[] spectrum = new double[numberOfBands];
-    protected double[] spectrumEros = new double[numberOfBands];
+    protected double[] spectrum;
     protected double minIncidence;
     protected double maxIncidence;
     protected double minEmission;
@@ -106,7 +104,12 @@ public abstract class BasicSpectrum extends Spectrum
         this.instrument = instrument; //
         this.fullpath = file.getAbsolutePath();
         this.smallBodyModel = smallBodyModel;
+
+        spectrum=new double[getNumberOfBands()];
+
     }
+
+    public abstract int getNumberOfBands();
 
     public vtkPolyData getSelectionPolyData()
     {

@@ -46,7 +46,7 @@ public class NISSpectrum extends BasicSpectrum
     static public final int NUMBER_OF_VERTICES_OFFSET = 259+2;
     static public final int POLYGON_START_COORDINATES_OFFSET = 260+2;
 
-
+    double[] spectrumEros;
 
     static final public String[] derivedParameters = {
         "B36 - B05",
@@ -54,15 +54,10 @@ public class NISSpectrum extends BasicSpectrum
         "B52 - B36"
     };
 
-    static private List<vtkFunctionParser> userDefinedDerivedParameters = new ArrayList<vtkFunctionParser>();
+    private List<vtkFunctionParser> userDefinedDerivedParameters = new ArrayList<vtkFunctionParser>();
 
     // A list of channels used in one of the user defined derived parameters
-    static private List< List<String>> bandsPerUserDefinedDerivedParameters = new ArrayList<List<String>>();
-
-    static
-    {
-        loadUserDefinedParametersfromPreferences();
-    }
+    private List< List<String>> bandsPerUserDefinedDerivedParameters = new ArrayList<List<String>>();
 
     /**
      * Because instances of NISSpectrum can be expensive, we want there to be
@@ -95,6 +90,7 @@ public class NISSpectrum extends BasicSpectrum
     {
         super(filename, smallBodyModel, instrument);
 
+
         List<String> values = FileUtil.getFileWordsAsStringList(fullpath);
 
         dateTime = new DateTime(values.get(DATE_TIME_OFFSET), DateTimeZone.UTC);
@@ -122,7 +118,8 @@ public class NISSpectrum extends BasicSpectrum
                                    (360.0-Double.parseDouble(values.get(lonIdx))) * Math.PI / 180.0));
         }
 
-        for (int i=0; i<numberOfBands; ++i)
+
+        for (int i=0; i<getNumberOfBands(); ++i)
         {
             // The following min and max clamps the value between 0 and 1.
             spectrum[i] = Math.min(1.0, Math.max(0.0, Double.parseDouble(values.get(CALIBRATED_GE_DATA_OFFSET + i))));
@@ -156,6 +153,11 @@ public class NISSpectrum extends BasicSpectrum
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
         toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
+
+        spectrum=new double[getNumberOfBands()];
+        spectrumEros=new double[getNumberOfBands()];
+
+        loadUserDefinedParametersfromPreferences();
 
     }
 
@@ -302,7 +304,7 @@ public class NISSpectrum extends BasicSpectrum
         return userDefinedDerivedParameters.get(userDefinedParameter).GetScalarResult();
     }
 
-    private static boolean setupUserDefinedDerivedParameter(
+    private boolean setupUserDefinedDerivedParameter(
             vtkFunctionParser functionParser, String function, List<String> bands)
     {
         functionParser.RemoveAllVariables();
@@ -322,7 +324,7 @@ public class NISSpectrum extends BasicSpectrum
             // Flag an error if user tries to create variable out of the range
             // of valid bands (only from 1 through 64 is allowed)
             int bandNumber = Integer.parseInt(bandName.substring(1));
-            if (bandNumber < 1 || bandNumber > numberOfBands)
+            if (bandNumber < 1 || bandNumber > getNumberOfBands())
                 return false;
 
             bands.add(bandName);
@@ -342,7 +344,7 @@ public class NISSpectrum extends BasicSpectrum
         return true;
     }
 
-    public static boolean testUserDefinedDerivedParameter(String function)
+    public boolean testUserDefinedDerivedParameter(String function)
     {
         vtkFunctionParser functionParser = new vtkFunctionParser();
         List<String> bands = new ArrayList<String>();
@@ -350,7 +352,7 @@ public class NISSpectrum extends BasicSpectrum
         return setupUserDefinedDerivedParameter(functionParser, function, bands);
     }
 
-    public static boolean addUserDefinedDerivedParameter(String function)
+    public boolean addUserDefinedDerivedParameter(String function)
     {
         vtkFunctionParser functionParser = new vtkFunctionParser();
         List<String> bands = new ArrayList<String>();
@@ -367,7 +369,7 @@ public class NISSpectrum extends BasicSpectrum
         return success;
     }
 
-    public static boolean editUserDefinedDerivedParameter(int index, String function)
+    public boolean editUserDefinedDerivedParameter(int index, String function)
     {
         vtkFunctionParser functionParser = new vtkFunctionParser();
         List<String> bands = new ArrayList<String>();
@@ -384,19 +386,19 @@ public class NISSpectrum extends BasicSpectrum
         return success;
     }
 
-    public static void removeUserDefinedDerivedParameters(int index)
+    public void removeUserDefinedDerivedParameters(int index)
     {
         bandsPerUserDefinedDerivedParameters.remove(index);
         userDefinedDerivedParameters.remove(index);
         saveUserDefinedParametersToPreferences();
     }
 
-    public static List<vtkFunctionParser> getAllUserDefinedDerivedParameters()
+    public List<vtkFunctionParser> getAllUserDefinedDerivedParameters()
     {
         return userDefinedDerivedParameters;
     }
 
-    public static void loadUserDefinedParametersfromPreferences()
+    public void loadUserDefinedParametersfromPreferences()
     {
         String[] functions = Preferences.getInstance().getAsArray(Preferences.NIS_CUSTOM_FUNCTIONS, ";");
         if (functions != null)
@@ -406,7 +408,7 @@ public class NISSpectrum extends BasicSpectrum
         }
     }
 
-    public static void saveUserDefinedParametersToPreferences()
+    public void saveUserDefinedParametersToPreferences()
     {
         String functionList = "";
         int numUserDefineParameters = userDefinedDerivedParameters.size();
@@ -502,6 +504,14 @@ public class NISSpectrum extends BasicSpectrum
         default:
             return 0.0;
         }
+    }
+
+
+
+    @Override
+    public int getNumberOfBands()
+    {
+        return NIS.bandCenters.length;
     }
 
 }
