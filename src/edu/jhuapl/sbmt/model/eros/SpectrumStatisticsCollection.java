@@ -10,7 +10,7 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 
-public class NISStatisticsCollection extends AbstractModel implements PropertyChangeListener
+public class SpectrumStatisticsCollection extends AbstractModel implements PropertyChangeListener
 {
     List<vtkProp> props=Lists.newArrayList();
     List<SpectrumStatistics> stats=Lists.newArrayList();

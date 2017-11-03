@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.eros;
 
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.query.QueryBase;
 
 public class NIS implements SpectralInstrument
 {
@@ -86,6 +87,13 @@ public class NIS implements SpectralInstrument
         2665.1, // 62
         2708.2  // 63
     };
+
+
+    @Override
+    public QueryBase getQueryBase()
+    {
+        return NisQuery.getInstance();
+    }
 
 
 }

@@ -31,7 +31,7 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getInfoFileServerPath()
     {
-        return getServerPath()+getInfoFilePathRelativeToSpectrumFile();
+        return getServerPath()+"/"+getInfoFilePathRelativeToSpectrumFile();
     }
 
     protected String getInfoFilePathRelativeToSpectrumFile()

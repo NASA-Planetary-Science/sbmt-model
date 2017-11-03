@@ -13,7 +13,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 
 public class InfoFileReader extends BasicFileReader
 {
-    // public static final float PDS_NA = -1.e32f;
+    public static final float DEFAULT_PDS_NA = -1.e32f;
     public static final String FRUSTUM1 = "FRUSTUM1";
     public static final String FRUSTUM2 = "FRUSTUM2";
     public static final String FRUSTUM3 = "FRUSTUM3";
@@ -36,18 +36,23 @@ public class InfoFileReader extends BasicFileReader
     boolean pad;
     String startTime;
     String stopTime;
-    double[] spacecraftPosition;
-    double[] sunPosition;
-    double[] frustum1;
-    double[] frustum2;
-    double[] frustum3;
-    double[] frustum4;
-    double[] boresightDirection;
-    double[] upVector;
-    double[] targetPixelCoordinates;
+    double[] spacecraftPosition=new double[3];
+    double[] sunPosition=new double[3];
+    double[] frustum1=new double[3];
+    double[] frustum2=new double[3];
+    double[] frustum3=new double[3];
+    double[] frustum4=new double[3];
+    double[] boresightDirection=new double[3];
+    double[] upVector=new double[3];
+    double[] targetPixelCoordinates=new double[3];
     boolean applyFrameAdjustments;
     double rotationOffset, zoomFactor;
     float pds_na;
+
+    public InfoFileReader()
+    {
+        this.pds_na=DEFAULT_PDS_NA;
+    }
 
     public InfoFileReader(float pds_na)
     {
@@ -60,7 +65,7 @@ public class InfoFileReader extends BasicFileReader
         try
         {
             if (getFileName() == null || getFileName().endsWith("null"))
-                throw new FileNotFoundException();
+                throw new FileNotFoundException(getFileName());
 
             boolean offset = true;
 
@@ -262,5 +267,87 @@ public class InfoFileReader extends BasicFileReader
             e.printStackTrace();
         }
     }
+
+    public boolean isPad()
+    {
+        return pad;
+    }
+
+    public String getStartTime()
+    {
+        return startTime;
+    }
+
+    public String getStopTime()
+    {
+        return stopTime;
+    }
+
+    public double[] getSpacecraftPosition()
+    {
+        return spacecraftPosition;
+    }
+
+    public double[] getSunPosition()
+    {
+        return sunPosition;
+    }
+
+    public double[] getFrustum1()
+    {
+        return frustum1;
+    }
+
+    public double[] getFrustum2()
+    {
+        return frustum2;
+    }
+
+    public double[] getFrustum3()
+    {
+        return frustum3;
+    }
+
+    public double[] getFrustum4()
+    {
+        return frustum4;
+    }
+
+    public double[] getBoresightDirection()
+    {
+        return boresightDirection;
+    }
+
+    public double[] getUpVector()
+    {
+        return upVector;
+    }
+
+    public double[] getTargetPixelCoordinates()
+    {
+        return targetPixelCoordinates;
+    }
+
+    public boolean isApplyFrameAdjustments()
+    {
+        return applyFrameAdjustments;
+    }
+
+    public double getRotationOffset()
+    {
+        return rotationOffset;
+    }
+
+    public double getZoomFactor()
+    {
+        return zoomFactor;
+    }
+
+    public float getPds_na()
+    {
+        return pds_na;
+    }
+
+
 
 }
