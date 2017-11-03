@@ -94,6 +94,7 @@ public abstract class BasicSpectrum extends Spectrum
     protected double maxPhase;
     protected boolean showFrustum = false;
 
+
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
@@ -106,6 +107,8 @@ public abstract class BasicSpectrum extends Spectrum
         this.smallBodyModel = smallBodyModel;
 
         spectrum=new double[getNumberOfBands()];
+
+
 
     }
 
@@ -548,11 +551,11 @@ public abstract class BasicSpectrum extends Spectrum
         switch (channel)
         {
         case 0:
-            // return spectrum[35] - spectrum[4];
+             return spectrum[35] - spectrum[4];
         case 1:
-            // return spectrum[0] - spectrum[4];
+             return spectrum[0] - spectrum[4];
         case 2:
-            // return spectrum[51] - spectrum[35];
+             return spectrum[51] - spectrum[35];
         default:
             return 0.0;
         }

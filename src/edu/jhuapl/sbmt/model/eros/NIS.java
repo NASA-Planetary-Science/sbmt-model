@@ -95,5 +95,10 @@ public class NIS implements SpectralInstrument
         return NisQuery.getInstance();
     }
 
+    @Override
+    public SpectrumMath getSpectrumMath()
+    {
+        return NISSpectrumMath.getSpectrumMath();
+    }
 
 }

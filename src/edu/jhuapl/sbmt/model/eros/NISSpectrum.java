@@ -39,7 +39,7 @@ public class NISSpectrum extends BasicSpectrum
     static public final int NUMBER_OF_VERTICES_OFFSET = 259+2;
     static public final int POLYGON_START_COORDINATES_OFFSET = 260+2;
 
-    double[] spectrumEros;
+    double[] spectrumEros=new double[NIS.bandCenters.length];
 
     /**
      * Because instances of NISSpectrum can be expensive, we want there to be
@@ -67,10 +67,10 @@ public class NISSpectrum extends BasicSpectrum
 //        }
 //    }
 
+
     public NISSpectrum(String filename, SmallBodyModel smallBodyModel, SpectralInstrument instrument) throws IOException
     {
         super(filename, smallBodyModel, instrument);
-
 
         List<String> values = FileUtil.getFileWordsAsStringList(fullpath);
 
@@ -135,10 +135,10 @@ public class NISSpectrum extends BasicSpectrum
         toSunVectorLength=dx;
         toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
 
-        spectrum=new double[getNumberOfBands()];
-        spectrumEros=new double[getNumberOfBands()];
+//        spectrum=new double[getNumberOfBands()];
+//        spectrumEros=new double[getNumberOfBands()];
 
-//        spectrumMath.loadUserDefinedParametersfromPreferences();
+        instrument.getSpectrumMath().loadUserDefinedParametersfromPreferences();
 
     }
 
@@ -317,15 +317,15 @@ public class NISSpectrum extends BasicSpectrum
     public double[] getChannelColor()
     {
         double[] color = new double[3];
-/*        for (int i=0; i<3; ++i)
+        for (int i=0; i<3; ++i)
         {
             double val = 0.0;
             if (channelsToColorBy[i] < instrument.getBandCenters().length)
                 val = spectrum[channelsToColorBy[i]];
-            else if (channelsToColorBy[i] < instrument.getBandCenters().length + derivedParameters.length)
+            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                 val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
             else
-                val = spectrumMath.evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-derivedParameters.length);
+                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length);
 
             if (val < 0.0)
                 val = 0.0;
@@ -334,7 +334,7 @@ public class NISSpectrum extends BasicSpectrum
 
             double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
             color[i] = slope * (val - channelsColoringMinValue[i]);
-        }*/
+        }
 
         return color;
     }

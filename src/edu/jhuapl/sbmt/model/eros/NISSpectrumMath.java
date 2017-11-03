@@ -3,6 +3,17 @@ package edu.jhuapl.sbmt.model.eros;
 public class NISSpectrumMath extends SpectrumMath
 {
 
+    private final static NISSpectrumMath spectrumMath=new NISSpectrumMath();
+
+    public static NISSpectrumMath getSpectrumMath()
+    {
+        return spectrumMath;
+    }
+
+    private NISSpectrumMath()
+    {
+
+    }
 
     static final public String[] derivedParameters = {
         "B36 - B05",

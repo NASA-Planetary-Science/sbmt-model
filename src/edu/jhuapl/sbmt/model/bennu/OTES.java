@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu;
 
+import edu.jhuapl.sbmt.model.eros.SpectrumMath;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 import edu.jhuapl.sbmt.query.OTESQuery;
 import edu.jhuapl.sbmt.query.QueryBase;
@@ -376,6 +377,12 @@ public class OTES implements SpectralInstrument
     public QueryBase getQueryBase()
     {
         return OTESQuery.getInstance();
+    }
+
+    @Override
+    public SpectrumMath getSpectrumMath()
+    {
+        return OTESSpectrumMath.getInstance();
     }
 
 }

@@ -118,7 +118,6 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         }
         else if (instrument instanceof OTES)
         {
-            System.out.println(path);
             spectrum=new OTESSpectrum(path, shapeModel, instrument);
         }
         else throw new Exception(instrument.getDisplayName()+" not supported");
