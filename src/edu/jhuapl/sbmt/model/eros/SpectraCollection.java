@@ -16,12 +16,13 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.bennu.OTES;
 
-public class NISSpectraCollection extends AbstractModel implements PropertyChangeListener
+public class SpectraCollection extends AbstractModel implements PropertyChangeListener
 {
-    private HashMap<NISSpectrum, List<vtkProp>> spectraActors = new HashMap<NISSpectrum, List<vtkProp>>();
+    private HashMap<Spectrum, List<vtkProp>> spectraActors = new HashMap<Spectrum, List<vtkProp>>();
 
-    private HashMap<String, NISSpectrum> fileToSpectrumMap = new HashMap<String, NISSpectrum>();
+    private HashMap<String, Spectrum> fileToSpectrumMap = new HashMap<String, Spectrum>();
 
     private HashMap<vtkProp, String> actorToFileMap = new HashMap<vtkProp, String>();
     private SmallBodyModel erosModel;
@@ -30,17 +31,20 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
     final double minFootprintSeparation=0.001;
     double footprintSeparation=0.001;
 
-    Map<NISSpectrum,Integer> ordinals=Maps.newHashMap();
+    Map<Spectrum,Integer> ordinals=Maps.newHashMap();
     final static int defaultOrdinal=0;
 
-    public NISSpectraCollection(SmallBodyModel eros)
+    SpectralInstrument instrument;
+
+    public SpectraCollection(SmallBodyModel eros, SpectralInstrument instrument)
     {
         this.erosModel = eros;
+        this.instrument=instrument;
     }
 
     public void reshiftFootprints()
     {
-        for (NISSpectrum spectrum : ordinals.keySet())
+        for (Spectrum spectrum : ordinals.keySet())
         {
             spectrum.shiftFootprintToHeight(footprintSeparation*(1+ordinals.get(spectrum)));
             //System.out.println(ordinals.get(spectrum)+" "+spectrum.isSelected);
@@ -49,7 +53,7 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
     }
 
-    public void setOrdinal(NISSpectrum spectrum, int ordinal)
+    public void setOrdinal(Spectrum spectrum, int ordinal)
     {
         //System.out.println(spectrum);
         if (ordinals.containsKey(spectrum))
@@ -100,7 +104,24 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
             return;
 
         //NISSpectrum spectrum = NISSpectrum.NISSpectrumFactory.createSpectrum(path, erosModel);
-        NISSpectrum spectrum = new NISSpectrum(path, erosModel);
+        //NISSpectrum spectrum = new NISSpectrum(path, erosModel, instrument);
+
+        Spectrum spectrum=null;
+        try
+        {
+        if (instrument instanceof NIS)
+        {
+            spectrum=new NISSpectrum(path, erosModel, instrument);
+        }
+        else if (instrument instanceof OTES)
+        {
+          //  spectrum=new OTESSpectrum(path, erosModel, instrument);
+        }
+        else throw new Exception(instrument.getDisplayName()+" not supported");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
 
         erosModel.addPropertyChangeListener(spectrum);
         spectrum.addPropertyChangeListener(this);
@@ -131,7 +152,7 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
 
     public void removeSpectrum(String path)
     {
-        NISSpectrum spectrum = fileToSpectrumMap.get(path);
+        Spectrum spectrum = fileToSpectrumMap.get(path);
         spectrum.setUnselected();
 
         List<vtkProp> actors = spectraActors.get(spectrum);
@@ -155,14 +176,14 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
 
     public void removeAllSpectra()
     {
-        HashMap<String, NISSpectrum> map = (HashMap<String, NISSpectrum>)fileToSpectrumMap.clone();
+        HashMap<String, Spectrum> map = (HashMap<String, Spectrum>)fileToSpectrumMap.clone();
         for (String path : map.keySet())
             removeSpectrum(path);
     }
 
-    public void toggleSelect(NISSpectrum spectrum)
+    public void toggleSelect(Spectrum spectrum)
     {
-        if (spectrum.isSelected)
+        if (spectrum.isSelected())
             spectrum.setUnselected();
         else
             spectrum.setSelected();
@@ -170,14 +191,14 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
         selectAll=false;
     }
 
-    public void select(NISSpectrum spectrum)
+    public void select(Spectrum spectrum)
     {
         spectrum.setSelected();
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
         selectAll=false;
     }
 
-    public void deselect(NISSpectrum spectrum)
+    public void deselect(Spectrum spectrum)
     {
         spectrum.setUnselected();
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
@@ -188,24 +209,24 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
     {
         if (!selectAll) // we're not in "select all" mode so go ahead and select all actors
         {
-            for (NISSpectrum spectrum : fileToSpectrumMap.values())
+            for (Spectrum spectrum : fileToSpectrumMap.values())
                 spectrum.setSelected();
             selectAll=true;
         }
         else
         {
-            for (NISSpectrum spectrum : fileToSpectrumMap.values())
+            for (Spectrum spectrum : fileToSpectrumMap.values())
                 spectrum.setUnselected();
             selectAll=false;
         }
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
     }
 
-    public List<NISSpectrum> getSelectedSpectra()
+    public List<Spectrum> getSelectedSpectra()
     {
-        List<NISSpectrum> spectra=Lists.newArrayList();
-        for (NISSpectrum s : fileToSpectrumMap.values())
-            if (s.isSelected)
+        List<Spectrum> spectra=Lists.newArrayList();
+        for (Spectrum s : fileToSpectrumMap.values())
+            if (s.isSelected())
                 spectra.add(s);
         return spectra;
     }
@@ -218,10 +239,10 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
         String filename = actorToFileMap.get(prop);
-        NISSpectrum spectrum = this.fileToSpectrumMap.get(filename);
+        Spectrum spectrum = this.fileToSpectrumMap.get(filename);
         if (spectrum==null)
             return "";
-        return "NIS Spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString();
+        return instrument.getDisplayName() + " spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString();
     }
 
     public String getSpectrumName(vtkProp actor)
@@ -229,7 +250,7 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
         return actorToFileMap.get(actor);
     }
 
-    public NISSpectrum getSpectrum(String file)
+    public Spectrum getSpectrum(String file)
     {
         return fileToSpectrumMap.get(file);
     }
@@ -241,11 +262,11 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
 
     public void setChannelColoring(int[] channels, double[] mins, double[] maxs)
     {
-        NISSpectrum.setChannelColoring(channels, mins, maxs);
-
         for (String file : this.fileToSpectrumMap.keySet())
         {
-            this.fileToSpectrumMap.get(file).updateChannelColoring();
+            Spectrum spectrum=this.fileToSpectrumMap.get(file);
+            spectrum.setChannelColoring(channels, mins, maxs);
+            spectrum.updateChannelColoring();
         }
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
@@ -255,7 +276,7 @@ public class NISSpectraCollection extends AbstractModel implements PropertyChang
     public List<vtkProp> getProps()
     {
         List<vtkProp> allProps=Lists.newArrayList();
-        for (NISSpectrum s : spectraActors.keySet())
+        for (Spectrum s : spectraActors.keySet())
             allProps.addAll(spectraActors.get(s));
         return allProps;
     }
