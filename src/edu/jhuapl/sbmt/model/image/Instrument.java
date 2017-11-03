@@ -19,7 +19,14 @@ public enum Instrument
     LEISA("LEISA"),
     LORRI("LORRI"),
     MOLA("MOLA"),
-    GENERIC("GENERIC");
+    HRIV("HRIV"),
+    MRI("MRI"),
+    ITS("ITS"),
+    GENERIC("GENERIC"),
+    VIS("VIS"),
+    SAMCAM("SAMCAM"),
+    ISS("ISS"),
+    ;
 
     final private String str;
     private Instrument(String str)
