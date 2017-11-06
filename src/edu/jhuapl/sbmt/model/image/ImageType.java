@@ -18,5 +18,6 @@ public enum ImageType
     LORRI_IMAGE,
     POLYCAM_IMAGE,
     MAPCAM_IMAGE,
-    GENERIC_IMAGE
+    GENERIC_IMAGE,
+    ONC_IMAGE,
 }
