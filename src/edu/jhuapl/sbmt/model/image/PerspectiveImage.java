@@ -218,6 +218,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private String labelFileFullPath;
     private String infoFileFullPath;
     private String sumFileFullPath;
+    protected int fitFileImageExtension = 0; // Default is to use the primary FITS image.
 
     private double offset;
     protected vtkTexture imageTexture;
@@ -1763,7 +1764,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (filenames.length == 1)
         {
             Fits f = new Fits(filename);
-            BasicHDU h = f.getHDU(0);
+            BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
             fitsAxes = h.getAxes();
             fitsNAxes = fitsAxes.length;
@@ -1881,7 +1882,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             for (int k=0; k<fitsDepth; k++)
             {
                 Fits f = new Fits(filenames[k]);
-                BasicHDU h = f.getHDU(0);
+                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
                 int[] multiImageAxes = h.getAxes();
                 int multiImageNAxes = multiImageAxes.length;
@@ -2052,7 +2053,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             try {
                 String filename = getFitFileFullPath();
                 Fits f = new Fits(filename);
-                BasicHDU h = f.getHDU(0);
+                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
                 int[] fitsAxes = h.getAxes();
                 int fitsNAxes = fitsAxes.length;
