@@ -1,6 +1,9 @@
 package edu.jhuapl.sbmt.model.bennu;
 
-import edu.jhuapl.sbmt.model.eros.SpectralInstrument;
+import edu.jhuapl.sbmt.model.eros.SpectrumMath;
+import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.query.OTESQuery;
+import edu.jhuapl.sbmt.query.QueryBase;
 
 public class OTES implements SpectralInstrument
 {
@@ -18,7 +21,7 @@ public class OTES implements SpectralInstrument
     }
 
     // these band centers are taken from 20170925T000010S324_ote_L2_V001.hdf under the xaxis variable
-    static final private double[] bandCenters = {
+    static final public double[] bandCenters = {
             8.660700e+00, // 0
             1.732140e+01, // 1
             2.598210e+01, // 2
@@ -370,5 +373,16 @@ public class OTES implements SpectralInstrument
             3.022587e+03, // 348
         };
 
+    @Override
+    public QueryBase getQueryBase()
+    {
+        return OTESQuery.getInstance();
+    }
+
+    @Override
+    public SpectrumMath getSpectrumMath()
+    {
+        return OTESSpectrumMath.getInstance();
+    }
 
 }

@@ -1,27 +1,23 @@
 package edu.jhuapl.sbmt.model.eros;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import vtk.vtkFunctionParser;
 import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
-import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
+import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
+import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class NISSpectrum extends BasicSpectrum
 {
@@ -43,23 +39,7 @@ public class NISSpectrum extends BasicSpectrum
     static public final int NUMBER_OF_VERTICES_OFFSET = 259+2;
     static public final int POLYGON_START_COORDINATES_OFFSET = 260+2;
 
-
-
-    static final public String[] derivedParameters = {
-        "B36 - B05",
-        "B01 - B05",
-        "B52 - B36"
-    };
-
-    static private List<vtkFunctionParser> userDefinedDerivedParameters = new ArrayList<vtkFunctionParser>();
-
-    // A list of channels used in one of the user defined derived parameters
-    static private List< List<String>> bandsPerUserDefinedDerivedParameters = new ArrayList<List<String>>();
-
-    static
-    {
-        loadUserDefinedParametersfromPreferences();
-    }
+    double[] spectrumEros=new double[NIS.bandCenters.length];
 
     /**
      * Because instances of NISSpectrum can be expensive, we want there to be
@@ -119,7 +99,8 @@ public class NISSpectrum extends BasicSpectrum
                                    (360.0-Double.parseDouble(values.get(lonIdx))) * Math.PI / 180.0));
         }
 
-        for (int i=0; i<numberOfBands; ++i)
+
+        for (int i=0; i<getNumberOfBands(); ++i)
         {
             // The following min and max clamps the value between 0 and 1.
             spectrum[i] = Math.min(1.0, Math.max(0.0, Double.parseDouble(values.get(CALIBRATED_GE_DATA_OFFSET + i))));
@@ -152,6 +133,12 @@ public class NISSpectrum extends BasicSpectrum
         isToSunVectorShowing=false;
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
+        toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
+
+//        spectrum=new double[getNumberOfBands()];
+//        spectrumEros=new double[getNumberOfBands()];
+
+        instrument.getSpectrumMath().loadUserDefinedParametersfromPreferences();
 
     }
 
@@ -197,10 +184,10 @@ public class NISSpectrum extends BasicSpectrum
         return spectrumEros;
     }
 
-    public static String[] getDerivedParameters()
+  /*  public static String[] getDerivedParameters()
     {
         return derivedParameters;
-    }
+    }*/
 
 
     public HashMap<String, String> getProperties() throws IOException
@@ -286,142 +273,10 @@ public class NISSpectrum extends BasicSpectrum
     }
 
 
-    private double evaluateUserDefinedDerivedParameters(int userDefinedParameter)
-    {
-        List<String> bands = bandsPerUserDefinedDerivedParameters.get(userDefinedParameter);
-        for (String c : bands)
-        {
-            userDefinedDerivedParameters.get(userDefinedParameter).SetScalarVariableValue(
-                    c, spectrum[Integer.parseInt(c.substring(1))-1]);
-        }
-
-        return userDefinedDerivedParameters.get(userDefinedParameter).GetScalarResult();
-    }
-
-    private static boolean setupUserDefinedDerivedParameter(
-            vtkFunctionParser functionParser, String function, List<String> bands)
-    {
-        functionParser.RemoveAllVariables();
-        functionParser.SetFunction(function);
-
-        // Find all variables in the expression of the form BXX where X is a digit
-        // such as B01, b63, B10
-        String patternString = "[Bb]\\d\\d";
-        Pattern pattern = Pattern.compile(patternString);
-        Matcher matcher = pattern.matcher(function);
-
-        bands.clear();
-        while(matcher.find())
-        {
-            String bandName = function.substring(matcher.start(), matcher.end());
-
-            // Flag an error if user tries to create variable out of the range
-            // of valid bands (only from 1 through 64 is allowed)
-            int bandNumber = Integer.parseInt(bandName.substring(1));
-            if (bandNumber < 1 || bandNumber > numberOfBands)
-                return false;
-
-            bands.add(bandName);
-        }
-
-        // First try to evaluate it to see if it's valid. Make sure to set
-        // Replacement value on, so only syntax errors are flagged.
-        // (Division by zero is not flagged).
-        functionParser.SetReplacementValue(0.0);
-        functionParser.ReplaceInvalidValuesOn();
-
-        for (String c : bands)
-            functionParser.SetScalarVariableValue(c, 0.0);
-        if (functionParser.IsScalarResult() == 0)
-            return false;
-
-        return true;
-    }
-
-    public static boolean testUserDefinedDerivedParameter(String function)
-    {
-        vtkFunctionParser functionParser = new vtkFunctionParser();
-        List<String> bands = new ArrayList<String>();
-
-        return setupUserDefinedDerivedParameter(functionParser, function, bands);
-    }
-
-    public static boolean addUserDefinedDerivedParameter(String function)
-    {
-        vtkFunctionParser functionParser = new vtkFunctionParser();
-        List<String> bands = new ArrayList<String>();
-
-        boolean success = setupUserDefinedDerivedParameter(functionParser, function, bands);
-
-        if (success)
-        {
-            bandsPerUserDefinedDerivedParameters.add(bands);
-            userDefinedDerivedParameters.add(functionParser);
-            saveUserDefinedParametersToPreferences();
-        }
-
-        return success;
-    }
-
-    public static boolean editUserDefinedDerivedParameter(int index, String function)
-    {
-        vtkFunctionParser functionParser = new vtkFunctionParser();
-        List<String> bands = new ArrayList<String>();
-
-        boolean success = setupUserDefinedDerivedParameter(functionParser, function, bands);
-
-        if (success)
-        {
-            bandsPerUserDefinedDerivedParameters.set(index, bands);
-            userDefinedDerivedParameters.set(index, functionParser);
-            saveUserDefinedParametersToPreferences();
-        }
-
-        return success;
-    }
-
-    public static void removeUserDefinedDerivedParameters(int index)
-    {
-        bandsPerUserDefinedDerivedParameters.remove(index);
-        userDefinedDerivedParameters.remove(index);
-        saveUserDefinedParametersToPreferences();
-    }
-
-    public static List<vtkFunctionParser> getAllUserDefinedDerivedParameters()
-    {
-        return userDefinedDerivedParameters;
-    }
-
-    public static void loadUserDefinedParametersfromPreferences()
-    {
-        String[] functions = Preferences.getInstance().getAsArray(Preferences.NIS_CUSTOM_FUNCTIONS, ";");
-        if (functions != null)
-        {
-            for (String func : functions)
-                addUserDefinedDerivedParameter(func);
-        }
-    }
-
-    public static void saveUserDefinedParametersToPreferences()
-    {
-        String functionList = "";
-        int numUserDefineParameters = userDefinedDerivedParameters.size();
-        for (int i=0; i<numUserDefineParameters; ++i)
-        {
-            functionList += userDefinedDerivedParameters.get(i).GetFunction();
-            if (i < numUserDefineParameters-1)
-                functionList += ";";
-        }
-
-        Preferences.getInstance().put(Preferences.NIS_CUSTOM_FUNCTIONS, functionList);
-    }
-
-
-
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        FileWriter fstream = new FileWriter(file);
+/*        FileWriter fstream = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fstream);
 
         String nl = System.getProperty("line.separator");
@@ -449,12 +304,12 @@ public class NISSpectrum extends BasicSpectrum
             out.write(derivedParameters[i] + " = " + evaluateDerivedParameters(i) + nl);
         }
 
-        for (int i=0; i<userDefinedDerivedParameters.size(); ++i)
+        for (int i=0; i<spectrumMath.userDefinedDerivedParameters.size(); ++i)
         {
-            out.write(userDefinedDerivedParameters.get(i).GetFunction() + " = " + evaluateUserDefinedDerivedParameters(i) + nl);
+            out.write(spectrumMath.userDefinedDerivedParameters.get(i).GetFunction() + " = " + spectrumMath.evaluateUserDefinedDerivedParameters(i) + nl);
         }
 
-        out.close();
+        out.close();*/
     }
 
 
@@ -467,10 +322,10 @@ public class NISSpectrum extends BasicSpectrum
             double val = 0.0;
             if (channelsToColorBy[i] < instrument.getBandCenters().length)
                 val = spectrum[channelsToColorBy[i]];
-            else if (channelsToColorBy[i] < instrument.getBandCenters().length + derivedParameters.length)
+            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                 val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
             else
-                val = evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-derivedParameters.length);
+                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length);
 
             if (val < 0.0)
                 val = 0.0;
@@ -498,6 +353,14 @@ public class NISSpectrum extends BasicSpectrum
         default:
             return 0.0;
         }
+    }
+
+
+
+    @Override
+    public int getNumberOfBands()
+    {
+        return NIS.bandCenters.length;
     }
 
 }

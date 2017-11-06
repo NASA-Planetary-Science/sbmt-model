@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkActor;
 import vtk.vtkGenericCell;
 import vtk.vtkImageCanvasSource2D;
@@ -30,6 +28,8 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class ImageCube extends PerspectiveImage implements PropertyChangeListener
 {
@@ -92,7 +92,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         public ImageCubeKey(List<ImageKey> imageKeys, ImageKey firstImageKey,
                 String labelFileFullPath, String infoFileFullPath, String sumFileFullPath)
         {
-            super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, 0);
+            super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, firstImageKey.slice);
 
             this.imageKeys = new ArrayList<ImageKey>(imageKeys);
             this.nimages = imageKeys.size();
@@ -107,11 +107,6 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         {
             ImageCubeKey objectCubeKey = (ImageCubeKey)obj;
             List<ImageKey> objectKeys = objectCubeKey.imageKeys;
-
-            if(objectKeys.size() != imageKeys.size())
-            {
-                return false;
-            }
 
             for (int i = 0; i < imageKeys.size(); i++)
             {
@@ -400,6 +395,10 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         vtkGenericCell cell = new vtkGenericCell();
 
         double[] spacecraftPosition = firstFrustum.origin;
+//        double[] frustum1 = firstFrustum.ul;
+//        double[] frustum2 = firstFrustum.ll;
+//        double[] frustum3 = firstFrustum.ur;
+
         double[] frustum1 = firstFrustum.ul;
         double[] frustum2 = firstFrustum.lr;
         double[] frustum3 = firstFrustum.ur;

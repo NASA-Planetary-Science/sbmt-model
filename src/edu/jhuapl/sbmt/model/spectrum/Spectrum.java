@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.spectrum;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -40,6 +40,7 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
     public abstract double[] getFrustumCenter();
     public abstract double[] getFrustumCorner(int i);
     public abstract double[] getFrustumOrigin();
+    public abstract double[] getToSunUnitVector();
 
     public abstract void setChannelColoring(int[] channels, double[] mins, double[] maxs);
     public abstract void updateChannelColoring();

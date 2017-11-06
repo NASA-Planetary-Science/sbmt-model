@@ -17,6 +17,9 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.OTES;
+import edu.jhuapl.sbmt.model.bennu.OTESSpectrum;
+import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 
 public class SpectraCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -25,7 +28,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     private HashMap<String, Spectrum> fileToSpectrumMap = new HashMap<String, Spectrum>();
 
     private HashMap<vtkProp, String> actorToFileMap = new HashMap<vtkProp, String>();
-    private SmallBodyModel erosModel;
+    private SmallBodyModel shapeModel;
 
     boolean selectAll=false;
     final double minFootprintSeparation=0.001;
@@ -38,7 +41,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
 
     public SpectraCollection(SmallBodyModel eros, SpectralInstrument instrument)
     {
-        this.erosModel = eros;
+        this.shapeModel = eros;
         this.instrument=instrument;
     }
 
@@ -111,11 +114,11 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         {
         if (instrument instanceof NIS)
         {
-            spectrum=new NISSpectrum(path, erosModel, instrument);
+            spectrum=new NISSpectrum(path, shapeModel, instrument);
         }
         else if (instrument instanceof OTES)
         {
-          //  spectrum=new OTESSpectrum(path, erosModel, instrument);
+            spectrum=new OTESSpectrum(path, shapeModel, instrument);
         }
         else throw new Exception(instrument.getDisplayName()+" not supported");
         }
@@ -123,7 +126,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
             e.printStackTrace();
         }
 
-        erosModel.addPropertyChangeListener(spectrum);
+        shapeModel.addPropertyChangeListener(spectrum);
         spectrum.addPropertyChangeListener(this);
 
         fileToSpectrumMap.put(path, spectrum);
@@ -165,7 +168,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         fileToSpectrumMap.remove(path);
 
         spectrum.removePropertyChangeListener(this);
-        erosModel.removePropertyChangeListener(spectrum);
+        shapeModel.removePropertyChangeListener(spectrum);
         spectrum.setShowFrustum(false);
 
         ordinals.remove(spectrum);
