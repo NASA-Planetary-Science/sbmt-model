@@ -23,6 +23,7 @@ public enum Instrument
     VIS("VIS"),
     SAMCAM("SAMCAM"),
     ISS("ISS"),
+    ONC("ONC"),
     ;
 
     final private String str;
