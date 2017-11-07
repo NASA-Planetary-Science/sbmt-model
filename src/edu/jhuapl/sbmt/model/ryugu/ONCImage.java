@@ -8,13 +8,10 @@ import java.text.ParseException;
 
 import com.google.common.collect.ImmutableMap;
 
-import vtk.vtkImageData;
-
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
@@ -28,13 +25,6 @@ public class ONCImage extends PerspectiveImage
     {
         super(key, smallBodyModel, loadPointingOnly);
         // TODO Auto-generated constructor stub
-    }
-
-    @Override
-    protected void processRawImage(vtkImageData rawImage)
-    {
-        // There is a -90 degree rotation in the data.
-        ImageDataUtil.rotateImage(rawImage, -90);
     }
 
     @Override
