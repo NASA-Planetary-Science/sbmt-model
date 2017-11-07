@@ -1,5 +1,10 @@
 package edu.jhuapl.sbmt.model.time;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class CsvState implements State
@@ -16,6 +21,77 @@ public class CsvState implements State
     private double[] spacecraftYAxis;
     private double[] spacecraftZAxis;
 
+    //writes the binary data to a CSV file and sets the data to the correct variables
+    public CsvState(String utc, double sunPosX, double sunPosY, double sunPosZ,
+                                double earthPosX, double earthPosY, double earthPosZ,
+                                double spacecraftPosX, double spacecraftPosY, double spacecraftPosZ,
+                                double spacecraftVelX, double spacecraftVelY, double spacecraftVelZ)
+    {
+        this.utc = utc;
+        ephemerisTime = TimeUtil.str2et(utc);
+
+        //System.out.println("Time: " + utc + "  " + earthPosY);
+
+        sunPosition = new double[] {sunPosX, sunPosY, sunPosZ};
+        earthPosition = new double[] {earthPosX, earthPosY, earthPosZ};
+        spacecraftPosition = new double[] {spacecraftPosX, spacecraftPosY, spacecraftPosZ};
+        spacecraftVelocity = new double[] {spacecraftVelX, spacecraftVelY, spacecraftVelZ};
+        spacecraftXAxis = new double[] { 1.0, 0.0, 0.0 };
+        spacecraftYAxis = new double[] { 0.0, 1.0, 0.0 };
+        spacecraftZAxis = new double[] { 0.0, 0.0, 1.0 };
+    }
+
+    public void writeToCSV(String path)
+    {
+        try
+        {
+            File file = new File(path);
+            FileWriter in = new FileWriter(file, true);
+
+            in.append(utc);
+            in.append(',');
+            in.append(Double.toString(sunPosition[0]));
+            in.append(',');
+            in.append(Double.toString(sunPosition[1]));
+            in.append(',');
+            in.append(Double.toString(sunPosition[2]));
+            in.append(',');
+            in.append(Double.toString(earthPosition[0]));
+            in.append(',');
+            in.append(Double.toString(earthPosition[1]));
+            in.append(',');
+            in.append(Double.toString(earthPosition[2]));
+            in.append(',');
+            in.append(Double.toString(spacecraftPosition[0]));
+            in.append(',');
+            in.append(Double.toString(spacecraftPosition[1]));
+            in.append(',');
+            in.append(Double.toString(spacecraftPosition[2]));
+            in.append(',');
+            in.append(Double.toString(spacecraftVelocity[0]));
+            in.append(',');
+            in.append(Double.toString(spacecraftVelocity[1]));
+            in.append(',');
+            in.append(Double.toString(spacecraftVelocity[2]));
+            in.append('\n');
+
+            in.flush();
+            in.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    // reads in a csv line and adds the data to the correct variables
     public CsvState(String line)
     {
         // initial values
@@ -64,6 +140,16 @@ public class CsvState implements State
                 Double.parseDouble(parts[7]),
                 Double.parseDouble(parts[8]),
                 Double.parseDouble(parts[9])
+            };
+        }
+
+        if (ntokens > 12)
+        {
+            spacecraftVelocity = new double[]
+            {
+                Double.parseDouble(parts[10]),
+                Double.parseDouble(parts[11]),
+                Double.parseDouble(parts[12])
             };
         }
     }

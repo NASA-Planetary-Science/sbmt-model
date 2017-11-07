@@ -8,36 +8,22 @@ import java.util.List;
 import vtk.vtkActor;
 import vtk.vtkProp;
 
-import edu.jhuapl.saavtk.gui.Renderer;
-import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.saavtk.model.AbstractRenderable;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.SbmtModelFactory;
 //import edu.jhuapl.sbmt.client.ModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.time.StateHistoryModel.StateHistoryKey;
-import edu.jhuapl.sbmt.model.time.StateHistoryModel.StateHistorySource;
 
-public class StateHistoryCollection extends AbstractModel implements PropertyChangeListener, HasTime
+public class StateHistoryCollection extends AbstractRenderable implements PropertyChangeListener, HasTime
 {
     private SmallBodyModel smallBodyModel;
-
+    private ArrayList<StateHistoryKey> keys = new ArrayList<StateHistoryKey>();
     private List<StateHistoryModel> simRuns = new ArrayList<StateHistoryModel>();
-
     private StateHistoryModel currentRun = null;
 
     public StateHistoryCollection(SmallBodyModel smallBodyModel)
     {
         this.smallBodyModel = smallBodyModel;
-    }
-
-    protected StateHistoryModel createRun(StateHistoryKey key, SmallBodyModel smallBodyModel, Renderer renderer) // throws FitsException, IOException
-    {
-        try {
-            return SbmtModelFactory.createStateHistory(key, smallBodyModel, renderer, false);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     private boolean containsKey(StateHistoryKey key)
@@ -62,6 +48,19 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
         return null;
     }
 
+    public StateHistoryKey getKeyFromRow(int row)
+    {
+        if (keys.size() > row) {
+            return keys.get(row);
+        }
+        return null;
+    }
+
+    public StateHistoryModel getRunFromRow(int row)
+    {
+        return getRunFromKey(getKeyFromRow(row));
+    }
+
     public StateHistoryModel getCurrentRun()
     {
         return currentRun;
@@ -77,24 +76,20 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
 
     }
 
-    public void addRun(StateHistoryKey key, Renderer renderer)//  throws FitsException, IOException
+    public void addRun(StateHistoryModel run)//  throws FitsException, IOException
     {
-
+        StateHistoryKey key = run.getKey();
         if (containsKey(key))
         {
             this.currentRun = this.getRun(key);
             return;
         }
 
-        StateHistoryModel run = createRun(key, smallBodyModel, renderer);
-
         // set the current run
-        this.currentRun = run;
-
-        run.addPropertyChangeListener(this);
-
         simRuns.add(run);
-
+        keys.add(key);
+//        setCurrentRun(key);  TODO only do this when selected? this way loading a new interval doesn't override existing one
+        run.addPropertyChangeListener(this);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
@@ -105,28 +100,35 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
 
         StateHistoryModel run = getRunFromKey(key);
         simRuns.remove(run);
+        keys.remove(key);
 
         // change the current run to the first on the list
 //        this.currentRun = simRuns.get(0);
         this.currentRun = null;
 
         run.removePropertyChangeListener(this);
-        run.imageAboutToBeRemoved();
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         this.pcs.firePropertyChange(Properties.MODEL_REMOVED, null, run);
+    }
+
+    public void removeRuns(StateHistoryKey[] keys)
+    {
+        for (StateHistoryKey key : keys) {
+            removeRun(key);
+        }
     }
 
     /**
      * Remove all images of the specified source
      * @param source
      */
-    public void removeRuns(StateHistorySource source)
-    {
-        for (StateHistoryModel run : simRuns)
-            if (run.getKey().source == source)
-                removeRun(run.getKey());
-    }
+//    public void removeRuns(StateHistorySource source)
+//    {
+//        for (StateHistoryModel run : simRuns)
+//            if (run.getKey().source == source)
+//                removeRun(run.getKey());
+//    }
 
     public void setShowTrajectories(boolean show)
     {
@@ -156,13 +158,13 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
             return "No simulation run selected";
     }
 
-    public String getRunName(vtkActor actor)
-    {
-        if (currentRun != null)
-            return currentRun.getKey().name;
-        else
-            return "No simulation run selected";
-    }
+//    public String getRunName(vtkActor actor)
+//    {
+//        if (currentRun != null)
+//            return currentRun.getKey().name;
+//        else
+//            return "No simulation run selected";
+//    }
 
     public StateHistoryModel getRun(vtkActor actor)
     {
@@ -213,6 +215,16 @@ public class StateHistoryCollection extends AbstractModel implements PropertyCha
             return ((HasTime)currentRun).getPeriod();
         else
             return 0.0;
+    }
+
+    public int size()
+    {
+        return simRuns.size();
+    }
+
+    public List<StateHistoryKey> getKeys()
+    {
+        return keys;
     }
 
 }

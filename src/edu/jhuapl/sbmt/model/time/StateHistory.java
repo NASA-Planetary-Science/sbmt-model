@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.time;
 
 import java.util.Map.Entry;
+import java.util.Set;
 
 public interface StateHistory extends HasTime
 {
@@ -34,4 +35,6 @@ public interface StateHistory extends HasTime
     public double[] getSunPosition();
 
     public double[] getEarthPosition();
+
+    public Set<Double> getAllKeys();
 }
