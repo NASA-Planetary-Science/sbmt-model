@@ -66,7 +66,7 @@ import vtk.vtkWindowToImageFilter;
 import edu.jhuapl.saavtk.gui.Renderer;
 import edu.jhuapl.saavtk.gui.Renderer.LightingType;
 import edu.jhuapl.saavtk.gui.jogl.vtksbmtJoglCanvas;
-import edu.jhuapl.saavtk.model.AbstractRenderable;
+import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.ConvertResourceToFile;
@@ -81,7 +81,7 @@ import edu.jhuapl.sbmt.gui.time.StateHistoryPanel;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
 
-public class StateHistoryModel extends AbstractRenderable implements PropertyChangeListener, TableModel, HasTime, ActionListener
+public class StateHistoryModel extends AbstractModel implements PropertyChangeListener, TableModel, HasTime, ActionListener
 {
     //Use approximate radius of largest solar system body as scale for surface intercept vector.
     private static final double JupiterScale = 75000;
