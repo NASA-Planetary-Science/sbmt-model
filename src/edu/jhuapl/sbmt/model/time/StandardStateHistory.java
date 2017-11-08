@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.time;
 
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.TreeMap;
 
 import altwg.util.MathUtil;
@@ -99,6 +100,7 @@ public class StandardStateHistory implements StateHistory
         double[] ceilingPosition = ceiling.getSpacecraftPosition();
         double floorTime = floor.getEphemerisTime();
         double ceilingTime = ceiling.getEphemerisTime();
+//        System.out.println("Floor: " + floorTime + " Ceiling: " + ceilingTime);
 
         return interpolateDouble(floorPosition, ceilingPosition, floorTime, ceilingTime, time);
     }
@@ -137,15 +139,27 @@ public class StandardStateHistory implements StateHistory
         }
         else
         {
+            //System.out.println(floorPosition[0] + " " + floorPosition[1] + " " + floorPosition[2]);
+            //System.out.println(ceilingPosition[0] + " " + ceilingPosition[1] + " " + ceilingPosition[2]);
             double timeFraction = (time - floorTime) / timeDelta;
             double[] positionDelta = new double[3];
             MathUtil.vsub(ceilingPosition, floorPosition, positionDelta);
             double[] positionFraction = new double[3];
             MathUtil.vscl(timeFraction, positionDelta, positionFraction);
             double[] result = new double[3];
+//            System.out.println("Time: " + time + " FloorTime: " + floorTime + " timeDelta: " + timeDelta);
+//            System.out.println("TF: " + timeFraction);
             MathUtil.vadd(floorPosition, positionFraction, result);
+            //System.out.println(result[0] + " " + result[1] + " " + result[2]);
             return result;
         }
+    }
+
+    @Override
+    public Set<Double> getAllKeys()
+    {
+        return timeToFlybyState.keySet();
+
     }
 
 }
