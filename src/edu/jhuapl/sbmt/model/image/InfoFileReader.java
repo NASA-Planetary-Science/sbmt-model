@@ -49,13 +49,15 @@ public class InfoFileReader extends BasicFileReader
     double rotationOffset, zoomFactor;
     float pds_na;
 
-    public InfoFileReader()
+    public InfoFileReader(String filename)
     {
+        super(filename);
         this.pds_na=DEFAULT_PDS_NA;
     }
 
-    public InfoFileReader(float pds_na)
+    public InfoFileReader(String filename, float pds_na)
     {
+        super(filename);
         this.pds_na = pds_na;
     }
 

@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.bennu.otes;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,12 +42,14 @@ public class OTESSearchPanel extends SpectrumSearchPanel
         {
             //String path = NisQuery.getNisPath(res);
             //matchedImages.add(path);
+
             String basePath=FilenameUtils.getPath(res.get(0));
             String filename=FilenameUtils.getBaseName(res.get(0));
+
             Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
 //            File file=FileCache.getFileFromServer("/"+infoFile.toString());
 
-            matchedImages.add("/"+infoFile.toString());
+            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
 
         }
 
@@ -83,7 +85,7 @@ public class OTESSearchPanel extends SpectrumSearchPanel
     @Override
     public String createSpectrumName(String currentSpectrumRaw)
     {
-        return "/earth/osirisrex/otes/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
+        return "/earth/osirisrex/otes/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".cal";
     }
 
 

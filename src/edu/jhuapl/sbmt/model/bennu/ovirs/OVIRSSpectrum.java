@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.bennu.ovirs;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,16 +32,17 @@ import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 
-public class OTESSpectrum extends BasicSpectrum
+public class OVIRSSpectrum extends BasicSpectrum
 {
     boolean footprintGenerated = false;
-    File infoFile;
+    File infoFile, spectrumFile;
 
-    public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
+    double[] calibratedRadiance;
+
+    public OVIRSSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
         super(filename, smallBodyModel, instrument);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -50,11 +51,11 @@ public class OTESSpectrum extends BasicSpectrum
         throw new IOException("Not implemented.");
     }
 
-    protected String getInfoFileServerPath()
+    protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getServerPath()).getParent()
+        return Paths.get(getSpectrumPathOnServer()).getParent()
                 .resolveSibling("infofiles-corrected")
-                .resolve(FilenameUtils.getBaseName(getServerPath()) + ".INFO")
+                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
                 .toString();
     }
 
@@ -64,6 +65,7 @@ public class OTESSpectrum extends BasicSpectrum
         if (!footprintGenerated)
         {
             readPointingFromInfoFile();
+            readSpectrumFromFile();
 
             vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
                     spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
@@ -118,10 +120,9 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readPointingFromInfoFile()
     {
-        infoFile = FileCache.getFileFromServer(getInfoFileServerPath());
+        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
         //
-        InfoFileReader reader = new InfoFileReader();
-        reader.setFileName(infoFile.getAbsolutePath());
+        InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
         //
         Vector3D origin = new Vector3D(reader.getSpacecraftPosition());
@@ -157,6 +158,16 @@ public class OTESSpectrum extends BasicSpectrum
         // 3 double[] lr,
         // 4 double[] ll)
 
+    }
+
+    protected void readSpectrumFromFile()
+    {
+        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+        //
+        OVIRSSpectrumReader reader=new OVIRSSpectrumReader(spectrumFile.getAbsolutePath());
+        reader.read();
+        //
+        calibratedRadiance=reader.getCalibratedRadiance();
     }
 
     @Override
@@ -285,7 +296,7 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return OTES.bandCenters.length;
+        return OVIRS.bandCenters.length;
     }
 
 }

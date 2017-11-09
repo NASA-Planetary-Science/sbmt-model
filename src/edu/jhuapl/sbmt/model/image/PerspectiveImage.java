@@ -3241,6 +3241,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 }
 
 
+//                vtkPolyDataWriter writer=new vtkPolyDataWriter();
+//                writer.SetInputData(tmp);
+//                writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
+ //               writer.SetFileTypeToBinary();
+//                writer.Write();
+
                 footprint[currentSlice].DeepCopy(tmp);
 
                 footprintGenerated[currentSlice] = true;
@@ -3358,6 +3364,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             normalsFilter.SetInputData(footprint[currentSlice]);
             normalsFilter.SetComputeCellNormals(1);
             normalsFilter.SetComputePointNormals(0);
+            //normalsFilter.AutoOrientNormalsOn();
+            //normalsFilter.ConsistencyOn();
             normalsFilter.SplittingOff();
             normalsFilter.Update();
 

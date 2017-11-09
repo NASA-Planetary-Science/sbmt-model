@@ -628,7 +628,7 @@ public abstract class BasicSpectrum extends Spectrum
     }
 
     @Override
-    public String getServerPath()
+    public String getSpectrumPathOnServer()
     {
         return serverpath;
     }
