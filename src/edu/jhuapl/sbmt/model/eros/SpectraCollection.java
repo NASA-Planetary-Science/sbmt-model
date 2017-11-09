@@ -16,8 +16,8 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.bennu.OTES;
-import edu.jhuapl.sbmt.model.bennu.OTESSpectrum;
+import edu.jhuapl.sbmt.model.bennu.otes.OTES;
+import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 

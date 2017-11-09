@@ -1,8 +1,7 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.bennu.otes;
 
 import edu.jhuapl.sbmt.model.eros.SpectrumMath;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.query.OTESQuery;
 import edu.jhuapl.sbmt.query.QueryBase;
 
 public class OTES implements SpectralInstrument

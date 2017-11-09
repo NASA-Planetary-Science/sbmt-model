@@ -2,18 +2,16 @@ package edu.jhuapl.sbmt.model.image;
 
 public abstract class BasicFileReader implements FileReader
 {
-    String filename=null;
+    protected final String filename;
+
+    public BasicFileReader(String filename)
+    {
+        this.filename=filename;
+    }
 
     @Override
     public String getFileName()
     {
         return filename;
     }
-
-    @Override
-    public void setFileName(String filename)
-    {
-        this.filename = filename;
-    }
-
 }

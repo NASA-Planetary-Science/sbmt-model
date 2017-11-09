@@ -1,17 +1,17 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.bennu.ovirs;
 
 import edu.jhuapl.sbmt.model.eros.SpectrumMath;
 
-public class OTESSpectrumMath extends SpectrumMath
+public class OVIRSSpectrumMath extends SpectrumMath
 {
-    private static OTESSpectrumMath spectrumMath=new OTESSpectrumMath();
+    private static OVIRSSpectrumMath spectrumMath=new OVIRSSpectrumMath();
 
-    public static OTESSpectrumMath getInstance()
+    public static OVIRSSpectrumMath getInstance()
     {
         return spectrumMath;
     }
 
-    private OTESSpectrumMath()
+    private OVIRSSpectrumMath()
     {
         // TODO Auto-generated constructor stub
     }
@@ -19,7 +19,7 @@ public class OTESSpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return OTES.bandCenters.length;
+        return OVIRS.bandCenters.length;
     }
 
     @Override
