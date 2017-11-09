@@ -5,6 +5,7 @@ import java.io.IOException;
 import vtk.vtkImageData;
 
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
@@ -22,6 +23,7 @@ public class MapCamEarthImage extends MapCamImage
     {
         // For some reason we need to do
         // this so the image is displayed properly.
-//        ImageDataUtil.rotateImage(rawImage, 90);
+        ImageDataUtil.flipImageXAxis(rawImage);
+        ImageDataUtil.rotateImage(rawImage, -90);
     }
 }
