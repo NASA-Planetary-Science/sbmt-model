@@ -20,4 +20,5 @@ public enum ImageType
     MAPCAM_IMAGE,
     GENERIC_IMAGE,
     ONC_IMAGE,
+    ONC_TRUTH_IMAGE
 }
