@@ -19,6 +19,11 @@ public class OTES implements SpectralInstrument
         return "OTES";
     }
 
+    public static double getFovDeg()
+    {
+        return 0.3635;
+    }
+
     // these band centers are taken from 20170925T000010S324_ote_L2_V001.hdf under the xaxis variable
     static final public double[] bandCenters = {
             8.660700e+00, // 0

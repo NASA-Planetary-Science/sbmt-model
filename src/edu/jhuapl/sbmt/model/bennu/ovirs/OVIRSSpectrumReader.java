@@ -10,10 +10,11 @@ import edu.jhuapl.sbmt.model.image.BasicFileReader;
 
 public class OVIRSSpectrumReader extends BasicFileReader
 {
-    String sourceFileName;
+    double boresightLatDeg;
+    double boresightLonDeg;
     double et;
-
     double[] calibratedRadiance;
+    double[] calibratedRadianceUncertainty;
 
     public OVIRSSpectrumReader(String filename)
     {
@@ -26,16 +27,25 @@ public class OVIRSSpectrumReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[349];
+            calibratedRadiance=new double[OVIRS.bandCenters.length];
+            calibratedRadianceUncertainty=new double[OVIRS.bandCenters.length];
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
-            byte[] sourceFileNameBytes=new byte[36];
-            stream.readFully(sourceFileNameBytes);
-            sourceFileName=new String(sourceFileNameBytes);
-            et=stream.readDouble();
+            byte[] junk=new byte[4];
+            stream.readFully(junk);
+            byte[] sclkStr=new byte[16];
+            stream.readFully(sclkStr);
+            et=Double.valueOf(new String(sclkStr));
+            boresightLatDeg=stream.readDouble();
+            boresightLonDeg=stream.readDouble();
             byte[] data=new byte[OVIRS.bandCenters.length*Double.BYTES];
             stream.readFully(data);
             ByteBuffer buffer=ByteBuffer.wrap(data);
             buffer.asDoubleBuffer().get(calibratedRadiance);
+
+            byte[] data2=new byte[OVIRS.bandCenters.length*Double.BYTES];
+            stream.readFully(data2);
+            ByteBuffer buffer2=ByteBuffer.wrap(data2);
+            buffer2.asDoubleBuffer().get(calibratedRadianceUncertainty);
             stream.close();
         }
         catch (IOException e)
@@ -50,9 +60,29 @@ public class OVIRSSpectrumReader extends BasicFileReader
         return calibratedRadiance;
     }
 
+    public double[] getCalibratedRadianceUncertainty()
+    {
+        return calibratedRadianceUncertainty;
+    }
+
     public double getEt()
     {
         return et;
+    }
+
+    public double getBoresightLatDeg()
+    {
+        return boresightLatDeg;
+    }
+
+    public double getBoresightLonDeg()
+    {
+        return boresightLonDeg;
+    }
+
+    public boolean boresightIsOnSurface()
+    {
+        return boresightLatDeg!=-999 & boresightLonDeg!=-999;
     }
 
 }

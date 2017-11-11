@@ -2,7 +2,12 @@ package edu.jhuapl.sbmt.model.bennu.ovirs;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.List;
+
+import javax.swing.JSpinner;
+import javax.swing.JSpinner.NumberEditor;
+import javax.swing.SpinnerNumberModel;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -28,6 +33,26 @@ public class OVIRSSearchPanel extends SpectrumSearchPanel
 
 
         setupComboBoxes();
+
+
+        List<JSpinner> spinners=Lists.newArrayList(blueMaxSpinner,blueMinSpinner,redMaxSpinner,redMinSpinner,greenMaxSpinner,greenMinSpinner);
+
+        for (JSpinner spinner : spinners)
+        {
+            spinner.setModel(new SpinnerNumberModel(Double.valueOf(0.0d), null, null, Double.valueOf(0.00001d)));
+            NumberEditor editor = (NumberEditor)spinner.getEditor();
+            DecimalFormat format = editor.getFormat();
+            format.setMinimumFractionDigits(6);
+        }
+
+        redMaxSpinner.setValue(0.00005);
+        greenMaxSpinner.setValue(0.0001);
+        blueMaxSpinner.setValue(0.002);
+
+        redComboBox.setSelectedIndex(736);
+        greenComboBox.setSelectedIndex(500);
+        blueComboBox.setSelectedIndex(50);
+
     }
 
     @Override
@@ -80,12 +105,13 @@ public class OVIRSSearchPanel extends SpectrumSearchPanel
         // Show the first set of footprints
         this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.numberOfFootprintsComboBox.getSelectedItem()));
         this.showFootprints(resultIntervalCurrentlyShown);
+
     }
 
     @Override
     public String createSpectrumName(String currentSpectrumRaw)
     {
-        return "/earth/osirisrex/ovirs/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".cal";
+        return "/earth/osirisrex/ovirs/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
     }
 
 

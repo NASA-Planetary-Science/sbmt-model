@@ -2,7 +2,12 @@ package edu.jhuapl.sbmt.model.bennu.otes;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.List;
+
+import javax.swing.JSpinner;
+import javax.swing.JSpinner.NumberEditor;
+import javax.swing.SpinnerNumberModel;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -28,6 +33,26 @@ public class OTESSearchPanel extends SpectrumSearchPanel
 
 
         setupComboBoxes();
+
+
+        List<JSpinner> spinners=Lists.newArrayList(blueMaxSpinner,blueMinSpinner,redMaxSpinner,redMinSpinner,greenMaxSpinner,greenMinSpinner);
+
+        for (JSpinner spinner : spinners)
+        {
+            spinner.setModel(new SpinnerNumberModel(Double.valueOf(0.0d), null, null, Double.valueOf(0.0000001d)));
+            NumberEditor editor = (NumberEditor)spinner.getEditor();
+            DecimalFormat format = editor.getFormat();
+            format.setMinimumFractionDigits(8);
+        }
+
+        redMaxSpinner.setValue(0.000001);
+        greenMaxSpinner.setValue(0.000001);
+        blueMaxSpinner.setValue(0.000001);
+
+        redComboBox.setSelectedIndex(50);
+        greenComboBox.setSelectedIndex(100);
+        blueComboBox.setSelectedIndex(150);
+
     }
 
     @Override
