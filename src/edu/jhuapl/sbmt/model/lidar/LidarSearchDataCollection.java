@@ -1201,6 +1201,8 @@ public class LidarSearchDataCollection extends AbstractModel
     {
         if (!originalPoints.isEmpty() && !tracks.isEmpty())
         {
+            try
+            {
             cellId = displayedPointToOriginalPointMap.get(cellId);
             double et = originalPoints.get(cellId).getTime();
             /*double[] target = originalPoints.get(cellId).getTargetPosition().toArray();
@@ -1213,6 +1215,11 @@ public class LidarSearchDataCollection extends AbstractModel
             double range=p.getSourcePosition().subtract(p.getTargetPosition()).getNorm()*1000;    // m
             return String.format("Lidar point acquired at " + TimeUtil.et2str(et) +
                     ", ET = %f, unmodified range = %f m", et, range);
+            }
+            catch (Exception e)
+            {
+
+            }
         }
 
         return "";

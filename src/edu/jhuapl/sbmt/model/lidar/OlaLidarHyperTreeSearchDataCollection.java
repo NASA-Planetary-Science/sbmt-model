@@ -131,7 +131,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         {
             @Override
             protected Void doInBackground() throws Exception
-            {
+           {
                 Stopwatch sw=new Stopwatch();
                 sw.start();
                 loading=true;
@@ -155,15 +155,36 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     //
                     cnt++;
                     double progressPercentage=((double)cnt/(double)cubeList.size()*100);
-                    setProgress((int)progressPercentage);
+                   setProgress((int)progressPercentage);
                     if (isCancelled())
                         break;
-                }
+               }
                 cancel(true);
+                loading=false;
 
                 System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
+
+                return null;
+           }
+
+
+//            return null;
+  //     }
+    };
+    dataLoader.executeDialog();
+
+   while (isLoading())
+       try
+       {
+           Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
+       }
+       catch (InterruptedException e)
+       {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
 
                 // Sort points in time order
 //                Collections.sort(originalPoints);
@@ -177,6 +198,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
                 computeTracks();
 
+                Stopwatch sw=new Stopwatch();
                 System.out.println("Compute Track Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
@@ -206,23 +228,6 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
                 System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
 
-                loading=false;
-
-                return null;
-            }
-        };
-        dataLoader.executeDialog();
-
-        while (isLoading())
-            try
-            {
-                Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
-            }
-            catch (InterruptedException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
 
         selectPoint(-1);
 
