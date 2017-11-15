@@ -16,8 +16,10 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.bennu.OTES;
-import edu.jhuapl.sbmt.model.bennu.OTESSpectrum;
+import edu.jhuapl.sbmt.model.bennu.otes.OTES;
+import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
+import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
+import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 
@@ -37,12 +39,9 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     Map<Spectrum,Integer> ordinals=Maps.newHashMap();
     final static int defaultOrdinal=0;
 
-    SpectralInstrument instrument;
-
-    public SpectraCollection(SmallBodyModel eros, SpectralInstrument instrument)
+    public SpectraCollection(SmallBodyModel eros)
     {
         this.shapeModel = eros;
-        this.instrument=instrument;
     }
 
     public void reshiftFootprints()
@@ -101,10 +100,10 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     }
 
 
-    public void addSpectrum(String path) throws IOException
+    public Spectrum addSpectrum(String path, SpectralInstrument instrument) throws IOException
     {
         if (fileToSpectrumMap.containsKey(path))
-            return;
+            return fileToSpectrumMap.get(path);
 
         //NISSpectrum spectrum = NISSpectrum.NISSpectrumFactory.createSpectrum(path, erosModel);
         //NISSpectrum spectrum = new NISSpectrum(path, erosModel, instrument);
@@ -119,6 +118,10 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         else if (instrument instanceof OTES)
         {
             spectrum=new OTESSpectrum(path, shapeModel, instrument);
+        }
+        else if (instrument instanceof OVIRS)
+        {
+            spectrum=new OVIRSSpectrum(path, shapeModel, instrument);
         }
         else throw new Exception(instrument.getDisplayName()+" not supported");
         }
@@ -151,6 +154,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
 
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        return spectrum;
     }
 
     public void removeSpectrum(String path)
@@ -245,7 +249,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         Spectrum spectrum = this.fileToSpectrumMap.get(filename);
         if (spectrum==null)
             return "";
-        return instrument.getDisplayName() + " spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString();
+        return spectrum.getInstrument().getDisplayName() + " spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString();
     }
 
     public String getSpectrumName(vtkProp actor)

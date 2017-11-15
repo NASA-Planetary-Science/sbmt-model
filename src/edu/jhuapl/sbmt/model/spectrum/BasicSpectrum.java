@@ -108,6 +108,7 @@ public abstract class BasicSpectrum extends Spectrum
 
         spectrum=new double[getNumberOfBands()];
 
+        footprintHeight=smallBodyModel.getMinShiftAmount();
 
 
     }
@@ -628,7 +629,7 @@ public abstract class BasicSpectrum extends Spectrum
     }
 
     @Override
-    public String getServerPath()
+    public String getSpectrumPathOnServer()
     {
         return serverpath;
     }

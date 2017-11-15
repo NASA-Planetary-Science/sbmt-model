@@ -1,8 +1,7 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.bennu.otes;
 
 import edu.jhuapl.sbmt.model.eros.SpectrumMath;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.query.OTESQuery;
 import edu.jhuapl.sbmt.query.QueryBase;
 
 public class OTES implements SpectralInstrument
@@ -18,6 +17,11 @@ public class OTES implements SpectralInstrument
     public String getDisplayName()
     {
         return "OTES";
+    }
+
+    public static double getFovDeg()
+    {
+        return 0.3635;
     }
 
     // these band centers are taken from 20170925T000010S324_ote_L2_V001.hdf under the xaxis variable

@@ -1,8 +1,13 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.bennu.otes;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.List;
+
+import javax.swing.JSpinner;
+import javax.swing.JSpinner.NumberEditor;
+import javax.swing.SpinnerNumberModel;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -28,6 +33,26 @@ public class OTESSearchPanel extends SpectrumSearchPanel
 
 
         setupComboBoxes();
+
+
+        List<JSpinner> spinners=Lists.newArrayList(blueMaxSpinner,blueMinSpinner,redMaxSpinner,redMinSpinner,greenMaxSpinner,greenMinSpinner);
+
+        for (JSpinner spinner : spinners)
+        {
+            spinner.setModel(new SpinnerNumberModel(Double.valueOf(0.0d), null, null, Double.valueOf(0.0000001d)));
+            NumberEditor editor = (NumberEditor)spinner.getEditor();
+            DecimalFormat format = editor.getFormat();
+            format.setMinimumFractionDigits(8);
+        }
+
+        redMaxSpinner.setValue(0.000001);
+        greenMaxSpinner.setValue(0.000001);
+        blueMaxSpinner.setValue(0.000001);
+
+        redComboBox.setSelectedIndex(50);
+        greenComboBox.setSelectedIndex(100);
+        blueComboBox.setSelectedIndex(150);
+
     }
 
     @Override
@@ -42,12 +67,14 @@ public class OTESSearchPanel extends SpectrumSearchPanel
         {
             //String path = NisQuery.getNisPath(res);
             //matchedImages.add(path);
+
             String basePath=FilenameUtils.getPath(res.get(0));
             String filename=FilenameUtils.getBaseName(res.get(0));
+
             Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
 //            File file=FileCache.getFileFromServer("/"+infoFile.toString());
 
-            matchedImages.add("/"+infoFile.toString());
+            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
 
         }
 
@@ -83,7 +110,7 @@ public class OTESSearchPanel extends SpectrumSearchPanel
     @Override
     public String createSpectrumName(String currentSpectrumRaw)
     {
-        return "/earth/osirisrex/otes/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
+        return "/earth/osirisrex/otes/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".cal";
     }
 
 

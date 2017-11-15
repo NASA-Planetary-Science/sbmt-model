@@ -17,7 +17,7 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
     public abstract double[] getBandCenters();
     public abstract double[] getSpectrum();
     public abstract String getFullPath();
-    public abstract String getServerPath();
+    public abstract String getSpectrumPathOnServer();
 
     public abstract void addPropertyChangeListener(PropertyChangeListener l);
     public abstract void removePropertyChangeListener(PropertyChangeListener l);

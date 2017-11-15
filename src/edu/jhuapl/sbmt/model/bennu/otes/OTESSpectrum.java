@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.bennu.otes;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.joda.time.DateTime;
 
@@ -14,12 +15,14 @@ import vtk.vtkCellArray;
 import vtk.vtkDoubleArray;
 import vtk.vtkIdList;
 import vtk.vtkIdTypeArray;
+import vtk.vtkPointLocator;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkProperty;
 import vtk.vtkTriangle;
+import vtk.vtksbCellLocator;
 
 import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileCache;
@@ -35,13 +38,12 @@ import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 public class OTESSpectrum extends BasicSpectrum
 {
     boolean footprintGenerated = false;
-    File infoFile;
+    File infoFile, spectrumFile;
 
     public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
         super(filename, smallBodyModel, instrument);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -50,11 +52,11 @@ public class OTESSpectrum extends BasicSpectrum
         throw new IOException("Not implemented.");
     }
 
-    protected String getInfoFileServerPath()
+    protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getServerPath()).getParent()
+        return Paths.get(getSpectrumPathOnServer()).getParent()
                 .resolveSibling("infofiles-corrected")
-                .resolve(FilenameUtils.getBaseName(getServerPath()) + ".INFO")
+                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
                 .toString();
     }
 
@@ -64,12 +66,50 @@ public class OTESSpectrum extends BasicSpectrum
         if (!footprintGenerated)
         {
             readPointingFromInfoFile();
+            readSpectrumFromFile();
 
             vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
                     spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
 
-            if (tmp != null)
+
+            if (tmp==null)
+                return;
+
+            Vector3D f1=new Vector3D(frustum1);
+            Vector3D f2=new Vector3D(frustum2);
+            Vector3D f3=new Vector3D(frustum3);
+            Vector3D f4=new Vector3D(frustum4);
+            Vector3D lookUnit=new Vector3D(1,f1,1,f2,1,f3,1,f4);
+
+            double[] angles=new double[]{22.5,45,67.5};
+            for (int i=0; i<angles.length; i++)
+
             {
+                vtkPolyData tmp2=new vtkPolyData();
+
+            Rotation rot=new Rotation(lookUnit, Math.toRadians(angles[i]));
+            Vector3D g1=rot.applyTo(f1);
+            Vector3D g2=rot.applyTo(f2);
+            Vector3D g3=rot.applyTo(f3);
+            Vector3D g4=rot.applyTo(f4);
+
+            vtksbCellLocator tree=new vtksbCellLocator();
+            tree.SetDataSet(tmp);
+            tree.SetTolerance(1e-12);
+            tree.BuildLocator();
+
+            vtkPointLocator ploc=new vtkPointLocator();
+            ploc.SetDataSet(tmp);
+            ploc.SetTolerance(1e-12);
+            ploc.BuildLocator();
+
+            tmp2 = PolyDataUtil.computeFrustumIntersection(tmp, tree, ploc, spacecraftPosition, g1.toArray(), g2.toArray(), g3.toArray(), g4.toArray());
+            tmp.DeepCopy(tmp2);
+            }
+
+            if (tmp==null)
+                return;
+
                 vtkDoubleArray faceAreaFraction = new vtkDoubleArray();
                 faceAreaFraction.SetName(faceAreaFractionArrayName);
                 for (int c = 0; c < tmp.GetNumberOfCells(); c++)
@@ -111,17 +151,15 @@ public class OTESSpectrum extends BasicSpectrum
                 createToSunVectorActor();
                 createOutlinePolyData();
                 createOutlineActor();
-            }
 
         }
     }
 
     protected void readPointingFromInfoFile()
     {
-        infoFile = FileCache.getFileFromServer(getInfoFileServerPath());
+        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
         //
-        InfoFileReader reader = new InfoFileReader();
-        reader.setFileName(infoFile.getAbsolutePath());
+        InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
         //
         Vector3D origin = new Vector3D(reader.getSpacecraftPosition());
@@ -157,6 +195,16 @@ public class OTESSpectrum extends BasicSpectrum
         // 3 double[] lr,
         // 4 double[] ll)
 
+    }
+
+    protected void readSpectrumFromFile()
+    {
+        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+        //
+        OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath());
+        reader.read();
+        //
+        spectrum=reader.getCalibratedRadiance();
     }
 
     @Override
@@ -287,5 +335,31 @@ public class OTESSpectrum extends BasicSpectrum
     {
         return OTES.bandCenters.length;
     }
+
+    @Override
+    public double[] getChannelColor()
+    {
+        double[] color = new double[3];
+        for (int i=0; i<3; ++i)
+        {
+            double val = 0.0;
+            if (channelsToColorBy[i] < instrument.getBandCenters().length)
+                val = spectrum[channelsToColorBy[i]];
+            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
+                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
+            else
+                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length);
+
+            if (val < 0.0)
+                val = 0.0;
+            else if (val > 1.0)
+                val = 1.0;
+
+            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
+            color[i] = slope * (val - channelsColoringMinValue[i]);
+        }
+        return color;
+    }
+
 
 }
