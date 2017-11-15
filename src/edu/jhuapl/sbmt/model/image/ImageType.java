@@ -25,5 +25,6 @@ public enum ImageType
     SAMCAM_EARTH_IMAGE,
     GENERIC_IMAGE,
     ONC_IMAGE,
-    ONC_TRUTH_IMAGE
+    ONC_TRUTH_IMAGE,
+    TIR_IMAGE,
 }
