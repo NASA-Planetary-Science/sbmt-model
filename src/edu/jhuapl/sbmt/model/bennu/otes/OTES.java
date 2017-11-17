@@ -374,7 +374,7 @@ public class OTES implements SpectralInstrument
             2.996605e+03, // 345
             3.005266e+03, // 346
             3.013927e+03, // 347
-            3.022587e+03, // 348
+            3.022587e+03 // 348
         };
 
     @Override

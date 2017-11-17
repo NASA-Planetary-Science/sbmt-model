@@ -24,9 +24,9 @@ public class OTESSpectrumReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[349];
+            calibratedRadiance=new double[OTES.bandCenters.length];
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
-            byte[] sourceFileNameBytes=new byte[36];
+            byte[] sourceFileNameBytes=new byte[36];    // Ray stores the filename as 36 bytes at the beginning of the header
             stream.readFully(sourceFileNameBytes);
             sourceFileName=new String(sourceFileNameBytes);
             et=stream.readDouble();
