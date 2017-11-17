@@ -86,7 +86,7 @@ import nom.tam.fits.FitsException;
  */
 abstract public class PerspectiveImage extends Image implements PropertyChangeListener, BackPlanesPDS4XML, BackplanesLabel
 {
-    public static final float PDS_NA = -1.e32f;
+    public static final float PDS_NA = -ImageDataUtil.FILL_CUTOFF;
     public static final String FRUSTUM1 = "FRUSTUM1";
     public static final String FRUSTUM2 = "FRUSTUM2";
     public static final String FRUSTUM3 = "FRUSTUM3";
