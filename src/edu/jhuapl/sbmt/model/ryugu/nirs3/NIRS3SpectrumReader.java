@@ -1,6 +1,8 @@
 package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Scanner;
 
 import edu.jhuapl.sbmt.model.image.BasicFileReader;
 
@@ -8,7 +10,7 @@ public class NIRS3SpectrumReader extends BasicFileReader
 {
     String sourceFileName;
     double et;
-    double[] calibratedRadiance;
+    double[] spectrum;
 
     public NIRS3SpectrumReader(String filename)
     {
@@ -21,8 +23,12 @@ public class NIRS3SpectrumReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[NIRS3.bandCenters.length];
-
+            spectrum=new double[NIRS3.bandCenters.length];
+            Scanner scanner=new Scanner(new File(filename));    // cf. NIRS3Preprocessor class to see how these files were written out in the first place
+            et=scanner.nextDouble();
+            for (int i=0; i<NIRS3.bandCenters.length; i++)
+                spectrum[i]=scanner.nextDouble();
+            scanner.close();
         }
         catch (IOException e)
         {
@@ -33,7 +39,7 @@ public class NIRS3SpectrumReader extends BasicFileReader
 
     public double[] getCalibratedRadiance()
     {
-        return calibratedRadiance;
+        return spectrum;
     }
 
     public double getEt()

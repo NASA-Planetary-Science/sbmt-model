@@ -30,7 +30,6 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrumReader;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
@@ -202,7 +201,7 @@ public class NIRS3Spectrum extends BasicSpectrum
     {
         spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
         //
-        OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath());
+        NIRS3SpectrumReader reader=new NIRS3SpectrumReader(spectrumFile.getAbsolutePath());
         reader.read();
         //
         spectrum=reader.getCalibratedRadiance();

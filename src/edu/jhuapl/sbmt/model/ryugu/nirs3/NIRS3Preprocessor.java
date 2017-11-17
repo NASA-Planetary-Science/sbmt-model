@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
@@ -46,18 +48,21 @@ public class NIRS3Preprocessor
             String utStr=utStrTokens[2];
             String utEnd=utEndTokens[2];
 
-            // XXX: be careful that none of the time intervals span midnight!!!
-            double etStr=TimeUtil.str2et(date+"T"+utStr);
+            // XXX: right now it is assumed that none of the time intervals span midnight!!!
+            double etStart=TimeUtil.str2et(date+"T"+utStr);
             double etEnd=TimeUtil.str2et(date+"T"+utEnd);
-
-            double et=(etEnd-etStr)*((double)m/(double)(fitFiles.size()-1));
 
             //String spectFileName=filename.replace(oldChar, newChar)
             for (int j=0; j<axes[1]; j++)
+            {
+                double etNow=(etEnd-etStart)*((double)j/((double)axes[1]-1))+etStart;   // there is no explicit time per spectrum, so we just assume linearly increasing time from the given start and end in the .fit file
+                String filename=basedir+"/NIRS3_"+String.valueOf((long)etNow)+".spect";
+                FileWriter writer=new FileWriter(new File(filename));
+                writer.write(etNow+" ");
                 for (int i=0; i<axes[0]; i++)
-                {
-
-                }
+                    writer.write(data[i][j]+" ");
+                writer.close();
+            }
         }
     }
 }
