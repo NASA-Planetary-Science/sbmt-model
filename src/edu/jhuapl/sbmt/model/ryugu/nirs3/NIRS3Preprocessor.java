@@ -32,7 +32,7 @@ public class NIRS3Preprocessor
 
         for (int m=0; m<fitFiles.size(); m++)
         {
-            Fits f = new Fits(basedir+"/"+fitFiles.get(m));// FileCache.getFileFromServer(filename));
+            Fits f = new Fits(basedir+"/fit/"+fitFiles.get(m));// FileCache.getFileFromServer(filename));
             BasicHDU hdu = f.read()[0];
             int[] axes = hdu.getAxes();
             float[][] data = (float[][]) hdu.getData().getData();
@@ -53,14 +53,14 @@ public class NIRS3Preprocessor
             double etEnd=TimeUtil.str2et(date+"T"+utEnd);
 
             //String spectFileName=filename.replace(oldChar, newChar)
-            for (int j=0; j<axes[1]; j++)
+            for (int j=0; j<axes[0]; j++)
             {
                 double etNow=(etEnd-etStart)*((double)j/((double)axes[1]-1))+etStart;   // there is no explicit time per spectrum, so we just assume linearly increasing time from the given start and end in the .fit file
-                String filename=basedir+"/NIRS3_"+String.valueOf((long)etNow)+".spect";
+                String filename=basedir+"/spect/"+String.valueOf((long)etNow)+"_NIRS3.spect";
                 FileWriter writer=new FileWriter(new File(filename));
                 writer.write(etNow+" ");
-                for (int i=0; i<axes[0]; i++)
-                    writer.write(data[i][j]+" ");
+                for (int i=0; i<axes[1]; i++)
+                    writer.write(data[j][i]+" ");
                 writer.close();
             }
         }

@@ -20,6 +20,8 @@ import edu.jhuapl.sbmt.model.bennu.otes.OTES;
 import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
+import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
+import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 
@@ -122,6 +124,10 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         else if (instrument instanceof OVIRS)
         {
             spectrum=new OVIRSSpectrum(path, shapeModel, instrument);
+        }
+        else if (instrument instanceof NIRS3)
+        {
+            spectrum=new NIRS3Spectrum(path, shapeModel, instrument);
         }
         else throw new Exception(instrument.getDisplayName()+" not supported");
         }

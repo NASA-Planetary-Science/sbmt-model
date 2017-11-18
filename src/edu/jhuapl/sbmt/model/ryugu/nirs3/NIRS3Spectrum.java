@@ -162,8 +162,7 @@ public class NIRS3Spectrum extends BasicSpectrum
         InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
         //
-        Vector3D origin = new Vector3D(reader.getSpacecraftPosition());
-//                .scalarMultiply(1e-3);
+        Vector3D origin = new Vector3D(reader.getSpacecraftPosition()).scalarMultiply(1e-3);
         Vector3D fovUnit = new Vector3D(reader.getFrustum2()).normalize(); // for whatever
                                                                // reason,
                                                                // frustum2
