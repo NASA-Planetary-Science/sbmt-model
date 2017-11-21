@@ -55,13 +55,18 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         this.polyhedralModelConfig = smallBodyModel.getSmallBodyConfig();
     }
 
+    protected LidarDataPerUnit createLidarDataPerUnitWhateverThatIs(String path, BodyViewConfig config) throws IOException
+    {
+        return new LidarDataPerUnit(
+                path, polyhedralModelConfig);
+    }
+
     public void addLidarData(String path) throws IOException
     {
         if (fileToLidarPerUnitMap.containsKey(path))
             return;
 
-        LidarDataPerUnit lidarData = new LidarDataPerUnit(
-                path, polyhedralModelConfig);
+        LidarDataPerUnit lidarData = createLidarDataPerUnitWhateverThatIs(path, polyhedralModelConfig);
         lidarData.setShowSpacecraftPosition(showSpacecraftPosition);
 
         lidarData.addPropertyChangeListener(this);

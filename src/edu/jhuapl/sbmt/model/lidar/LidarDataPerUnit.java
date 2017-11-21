@@ -38,41 +38,45 @@ import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class LidarDataPerUnit extends AbstractModel
 {
-    private vtkPolyData polydata;
-    private vtkPolyData polydataSc;
-    private vtkPoints originalPoints;
-    private vtkPoints originalPointsSc;
-    private List<vtkProp> actors = new ArrayList<vtkProp>();
-    private double startPercentage = 0.0;
-    private double stopPercentage = 1.0;
-    private vtkGeometryFilter geometryFilter;
-    private vtkGeometryFilter geometryFilterSc;
-    private String filepath;
-    private vtkDoubleArray times;
-    private vtkDoubleArray ranges;
-    private vtkActor actorSpacecraft;
+    protected vtkPolyData polydata;
+    protected vtkPolyData polydataSc;
+    protected vtkPoints originalPoints;
+    protected vtkPoints originalPointsSc;
+    protected List<vtkProp> actors = new ArrayList<vtkProp>();
+    protected double startPercentage = 0.0;
+    protected double stopPercentage = 1.0;
+    protected vtkGeometryFilter geometryFilter;
+    protected vtkGeometryFilter geometryFilterSc;
+    protected String filepath;
+    protected vtkDoubleArray times;
+    protected vtkDoubleArray ranges;
+    protected vtkActor actorSpacecraft;
 
-    public LidarDataPerUnit(String path,
-            BodyViewConfig polyhedralModelConfig) throws IOException
+    protected double offsetMultiplier=1.;
+
+    String path;
+    BodyViewConfig config;
+
+    void init() throws IOException
     {
-        int[] xyzIndices = polyhedralModelConfig.lidarBrowseXYZIndices;
-        int[] scXyzIndices = polyhedralModelConfig.lidarBrowseSpacecraftIndices;
-        boolean isLidarInSphericalCoordinates = polyhedralModelConfig.lidarBrowseIsLidarInSphericalCoordinates;
-        boolean isSpacecraftInSphericalCoordinates = polyhedralModelConfig.lidarBrowseIsSpacecraftInSphericalCoordinates;
-        boolean isTimeInET = polyhedralModelConfig.lidarBrowseIsTimeInET;
-        int timeIndex = polyhedralModelConfig.lidarBrowseTimeIndex;
-        int numberHeaderLines = polyhedralModelConfig.lidarBrowseNumberHeaderLines;
-        boolean isInMeters = polyhedralModelConfig.lidarBrowseIsInMeters;
-        int rangeIndex = polyhedralModelConfig.lidarBrowseRangeIndex;
-        boolean isRangeExplicitInData = polyhedralModelConfig.lidarBrowseIsRangeExplicitInData;
-        int noiseIndex = polyhedralModelConfig.lidarBrowseNoiseIndex;
-        boolean isBinary = polyhedralModelConfig.lidarBrowseIsBinary;
-        int binaryRecordSize = polyhedralModelConfig.lidarBrowseBinaryRecordSize;
-        int receivedIntensityIndex = polyhedralModelConfig.lidarBrowseReceivedIntensityIndex;
-        boolean intensityEnabled = polyhedralModelConfig.lidarBrowseIntensityEnabled;
+        int[] xyzIndices = config.lidarBrowseXYZIndices;
+        int[] scXyzIndices = config.lidarBrowseSpacecraftIndices;
+        boolean isLidarInSphericalCoordinates = config.lidarBrowseIsLidarInSphericalCoordinates;
+        boolean isSpacecraftInSphericalCoordinates = config.lidarBrowseIsSpacecraftInSphericalCoordinates;
+        boolean isTimeInET = config.lidarBrowseIsTimeInET;
+        int timeIndex = config.lidarBrowseTimeIndex;
+        int numberHeaderLines = config.lidarBrowseNumberHeaderLines;
+        boolean isInMeters = config.lidarBrowseIsInMeters;
+        int rangeIndex = config.lidarBrowseRangeIndex;
+        boolean isRangeExplicitInData = config.lidarBrowseIsRangeExplicitInData;
+        int noiseIndex = config.lidarBrowseNoiseIndex;
+        boolean isBinary = config.lidarBrowseIsBinary;
+        int binaryRecordSize = config.lidarBrowseBinaryRecordSize;
+        int receivedIntensityIndex = config.lidarBrowseReceivedIntensityIndex;
+        boolean intensityEnabled = config.lidarBrowseIntensityEnabled;
 
-        if (polyhedralModelConfig.lidarBrowseOrigPathRegex != null && !polyhedralModelConfig.lidarBrowseOrigPathRegex.isEmpty()) {
-            path = path.replaceAll(polyhedralModelConfig.lidarBrowseOrigPathRegex, polyhedralModelConfig.lidarBrowsePathTop);
+        if (config.lidarBrowseOrigPathRegex != null && !config.lidarBrowseOrigPathRegex.isEmpty()) {
+            path = path.replaceAll(config.lidarBrowseOrigPathRegex, config.lidarBrowsePathTop);
         }
         File file = FileCache.getFileFromServer(SafePaths.getString(path));
 
@@ -414,6 +418,16 @@ public class LidarDataPerUnit extends AbstractModel
         geometryFilterSc.Update();
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
+    }
+
+    public LidarDataPerUnit(String path,
+            BodyViewConfig polyhedralModelConfig) throws IOException
+    {
+        this.path=path;
+        this.config=polyhedralModelConfig;
+
+        init();
     }
 
     public DoublePair getPercentageShown()
@@ -431,7 +445,7 @@ public class LidarDataPerUnit extends AbstractModel
         {
             double[] pt = originalPoints.GetPoint(i);
             LatLon lla = MathUtil.reclat(pt);
-            lla.rad += offset;
+            lla.rad += offset*offsetMultiplier;
             pt = MathUtil.latrec(lla);
             points.SetPoint(i, pt);
         }
