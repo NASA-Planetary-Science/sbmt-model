@@ -1473,6 +1473,8 @@ public class LidarSearchDataCollection extends AbstractModel
             computeTrackError();
     }
 
+    int lastNumberOfPointsForTrackError=0;
+
     private void computeTrackError()
     {
         trackError = 0.0;
@@ -1491,6 +1493,12 @@ public class LidarSearchDataCollection extends AbstractModel
             trackError /= (double)numberOfPoints;
 
         trackError = Math.sqrt(trackError);
+        lastNumberOfPointsForTrackError=(int)numberOfPoints;
+    }
+
+    public int getLastNumberOfPointsForTrackError()
+    {
+        return lastNumberOfPointsForTrackError;
     }
 
     public double getTrackError()
