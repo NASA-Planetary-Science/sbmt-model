@@ -62,10 +62,10 @@ import vtk.vtkTextActor;
 import vtk.vtkTransform;
 import vtk.vtkUnsignedCharArray;
 import vtk.vtkWindowToImageFilter;
+import vtk.rendering.jogl.vtkJoglPanelComponent;
 
 import edu.jhuapl.saavtk.gui.Renderer;
 import edu.jhuapl.saavtk.gui.Renderer.LightingType;
-import edu.jhuapl.saavtk.gui.jogl.vtksbmtJoglCanvas;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
@@ -1671,7 +1671,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     }
 
     // saves a view to a file
-    public static void saveToFile(File file, vtksbmtJoglCanvas renWin)
+    public static void saveToFile(File file, vtkJoglPanelComponent renWin)
     {
         if (file != null)
         {
