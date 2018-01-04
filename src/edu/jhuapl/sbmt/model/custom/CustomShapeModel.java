@@ -13,7 +13,7 @@ public class CustomShapeModel extends SmallBodyModel
     public CustomShapeModel(SmallBodyViewConfig config)
     {
         super(config,
-                new String[] { config.customName },
+                new String[] { config.modelLabel },
                 new String[] { getModelFilename(config) },
                 null,
                 null,
@@ -25,7 +25,7 @@ public class CustomShapeModel extends SmallBodyModel
 
         // Check to see if this is an altwg FITs file, if so then extract the color and set it as well
         String fitsPath = Configuration.getImportedShapeModelsDir() +
-                File.separator + config.customName + File.separator + "model.fit";
+                File.separator + config.modelLabel + File.separator + "model.fit";
         File fitsFile = new File(fitsPath);
         if(fitsFile.exists())
         {
@@ -50,14 +50,14 @@ public class CustomShapeModel extends SmallBodyModel
     {
         if (config.customTemporary)
         {
-            return FileCache.FILE_PREFIX + config.customName;
+            return FileCache.FILE_PREFIX + config.modelLabel;
         }
         else
         {
             return FileCache.FILE_PREFIX +
                     Configuration.getImportedShapeModelsDir() +
                     File.separator +
-                    config.customName +
+                    config.modelLabel +
                     File.separator +
                     "model.vtk";
         }
