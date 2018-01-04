@@ -2257,7 +2257,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         // write image to obj triangles w/ texture map based on displayed image
         Path footprintFilePath=Paths.get(filePath);
-        ObjUtil.writePolyDataToObj(shiftedFootprint[0],getDisplayedImage(),footprintFilePath,null);
+        String headerString="start time "+getStartTime()+" end time "+getStopTime();
+        ObjUtil.writePolyDataToObj(shiftedFootprint[0],getDisplayedImage(),footprintFilePath,headerString);
         // write footprint boundary to obj lines
         vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
         edgeFilter.SetInputData(shiftedFootprint[0]);
