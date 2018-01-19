@@ -81,6 +81,10 @@ public class ImageSearchDataCollection extends BoundedObjectSearchDataCollection
         }
     }
 
+    public FSHyperTreeSkeleton getCurrentSkeleton() {
+        return currentSkeleton;
+    }
+
     public TreeSet<Integer> getLeavesIntersectingBoundingBox(BoundingBox bbox, double[] tlims)
     {
         double[] bounds=new double[]{bbox.xmin,bbox.xmax,bbox.ymin,bbox.ymax,bbox.zmin,bbox.zmax,tlims[0],tlims[1]};
