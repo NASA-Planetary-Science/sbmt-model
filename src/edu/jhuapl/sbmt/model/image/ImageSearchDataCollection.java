@@ -31,7 +31,7 @@ public class ImageSearchDataCollection extends BoundedObjectSearchDataCollection
 
     public ImageSearchDataCollection(SmallBodyModel smallBodyModel)
     {
-//        super(smallBodyModel);
+        super(smallBodyModel);
     }
 
     public void clearDatasourceSkeletons()
