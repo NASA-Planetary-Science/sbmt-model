@@ -19,7 +19,7 @@ import javax.swing.table.DefaultTableModel;
 
 import com.jidesoft.swing.RangeSlider;
 
-import edu.jhuapl.saavtk.gui.render.Renderer;
+import edu.jhuapl.saavtk.gui.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
