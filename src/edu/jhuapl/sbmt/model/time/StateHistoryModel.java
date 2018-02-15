@@ -78,6 +78,7 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.time.StateHistoryPanel;
+import edu.jhuapl.sbmt.gui.time.version2.StateHistoryController;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
 
@@ -1428,6 +1429,41 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             BigDecimal tf = num1.divide(num2,50,RoundingMode.UP);
             setTimeFraction(Double.parseDouble(tf.toString()));
             panel.setTimeSlider(Double.parseDouble(tf.toString()));
+        }
+        catch (Exception e)
+        {
+
+        }
+        return true;
+    }
+
+    public boolean setInputTime(DateTime dt, StateHistoryController controller)
+    {
+        try
+        {
+
+            String dtString = dt.toString().substring(0, 23);
+            String start = timeArray.get(0)[0];
+            String end = timeArray.get(0)[1];
+
+            if(dtString.compareTo(start) < 0 || dtString.compareTo(end) > 0)
+            {
+                JOptionPane.showMessageDialog(null, "Entered time is outside the range of the selected interval.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+
+            Interval interval1 = new Interval(startTime, dt);
+            Interval interval2 = new Interval(startTime, endTime);
+
+            org.joda.time.Duration duration1 = interval1.toDuration();
+            org.joda.time.Duration duration2 = interval2.toDuration();
+
+            BigDecimal num1 = new BigDecimal(duration1.getMillis());
+            BigDecimal num2 = new BigDecimal(duration2.getMillis());
+            BigDecimal tf = num1.divide(num2,50,RoundingMode.UP);
+            setTimeFraction(Double.parseDouble(tf.toString()));
+            controller.setTimeSlider(Double.parseDouble(tf.toString()));
         }
         catch (Exception e)
         {
