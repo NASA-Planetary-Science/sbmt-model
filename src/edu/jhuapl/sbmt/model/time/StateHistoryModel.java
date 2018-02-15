@@ -77,8 +77,7 @@ import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
-import edu.jhuapl.sbmt.gui.time.StateHistoryPanel;
-import edu.jhuapl.sbmt.gui.time.version2.StateHistoryController;
+import edu.jhuapl.sbmt.gui.time.version2.IStateHistoryPanel;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
 
@@ -1402,7 +1401,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     }
 
     // set time of animation - Alex W
-    public boolean setInputTime(DateTime dt, StateHistoryPanel panel)
+    public boolean setInputTime(DateTime dt, IStateHistoryPanel panel)
     {
         try
         {
@@ -1437,40 +1436,40 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         return true;
     }
 
-    public boolean setInputTime(DateTime dt, StateHistoryController controller)
-    {
-        try
-        {
-
-            String dtString = dt.toString().substring(0, 23);
-            String start = timeArray.get(0)[0];
-            String end = timeArray.get(0)[1];
-
-            if(dtString.compareTo(start) < 0 || dtString.compareTo(end) > 0)
-            {
-                JOptionPane.showMessageDialog(null, "Entered time is outside the range of the selected interval.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return false;
-            }
-
-            Interval interval1 = new Interval(startTime, dt);
-            Interval interval2 = new Interval(startTime, endTime);
-
-            org.joda.time.Duration duration1 = interval1.toDuration();
-            org.joda.time.Duration duration2 = interval2.toDuration();
-
-            BigDecimal num1 = new BigDecimal(duration1.getMillis());
-            BigDecimal num2 = new BigDecimal(duration2.getMillis());
-            BigDecimal tf = num1.divide(num2,50,RoundingMode.UP);
-            setTimeFraction(Double.parseDouble(tf.toString()));
-            controller.setTimeSlider(Double.parseDouble(tf.toString()));
-        }
-        catch (Exception e)
-        {
-
-        }
-        return true;
-    }
+//    public boolean setInputTime(DateTime dt, StateHistoryController controller)
+//    {
+//        try
+//        {
+//
+//            String dtString = dt.toString().substring(0, 23);
+//            String start = timeArray.get(0)[0];
+//            String end = timeArray.get(0)[1];
+//
+//            if(dtString.compareTo(start) < 0 || dtString.compareTo(end) > 0)
+//            {
+//                JOptionPane.showMessageDialog(null, "Entered time is outside the range of the selected interval.", "Error",
+//                        JOptionPane.ERROR_MESSAGE);
+//                return false;
+//            }
+//
+//            Interval interval1 = new Interval(startTime, dt);
+//            Interval interval2 = new Interval(startTime, endTime);
+//
+//            org.joda.time.Duration duration1 = interval1.toDuration();
+//            org.joda.time.Duration duration2 = interval2.toDuration();
+//
+//            BigDecimal num1 = new BigDecimal(duration1.getMillis());
+//            BigDecimal num2 = new BigDecimal(duration2.getMillis());
+//            BigDecimal tf = num1.divide(num2,50,RoundingMode.UP);
+//            setTimeFraction(Double.parseDouble(tf.toString()));
+//            controller.setTimeSlider(Double.parseDouble(tf.toString()));
+//        }
+//        catch (Exception e)
+//        {
+//
+//        }
+//        return true;
+//    }
 
     // toggle the visibility of trajectories - Alex W
     public void showTrajectory(boolean show)
@@ -1514,7 +1513,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
      * @return -1 if error thrown on creation, 1 if successfully created
      */
     // returns
-    public int createNewTimeInterval(StateHistoryPanel panel, double length, String name)
+    public int createNewTimeInterval(IStateHistoryPanel panel, double length, String name)
     {
 
         // gets the history file from the server
@@ -1633,133 +1632,133 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         return 1;
     }
 
-    /***
-     *  goes to the server and creates a new time history for the body with the given time range.
-     *
-     * @param panel - main panel
-     * @param length - length of interval
-     * @param name - name of interval
-     * @return -1 if error thrown on creation, 1 if successfully created
-     */
-    // returns
-    public int createNewTimeInterval(StateHistoryController panel, double length, String name)
-    {
-
-        // gets the history file from the server
-        SmallBodyViewConfig config = (SmallBodyViewConfig) smallBodyModel.getConfig();
-        path = FileCache.getFileFromServer(config.timeHistoryFile);
-
-        // removes the time zone from the time
-        String startString = startTime.toString().substring(0,23);
-        String endString = endTime.toString().substring(0,23);
-
-        // searches the file for the specified times
-        String queryStart = readString(lineLength);
-        String queryEnd = readString((int)getBinaryFileLength()*lineLength-lineLength);
-
-        // error checking
-        if(startTime.compareTo(endTime) > 0)
-        {
-            JOptionPane.showMessageDialog(null, "The entered times are not in the correct order.", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return -1;
-        }
-        if(startString.compareTo(queryStart) < 0 || endString.compareTo(queryEnd) > 0)
-        {
-            JOptionPane.showMessageDialog(null, "One or more of the query times are out of range of the available data.", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return -1;
-        }
-
-        // get start and stop positions in file
-        int positionStart = binarySearch(1, (int) getBinaryFileLength(), startString, false);
-        int positionEnd = binarySearch(1, (int) getBinaryFileLength(), endString, true);
-
-        // check length of time
-        if(readString(positionStart).compareTo(readString(positionEnd)) == 0)
-        {
-            JOptionPane.showMessageDialog(null, "The queried time interval is too small.", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return -1;
-        }
-
-        //sets the default name to "startTime_endTime"
-        if(name.equals(""))
-        {
-            name = readString(positionStart) + "_" + readString(positionEnd);
-        }
-
-        // check length of interval
-        if(length > 10.0)
-        {
-            int result = JOptionPane.showConfirmDialog(null, "The interval you selected is longer than 10 days and may take a while to generate. \nAre you sure you want to create it?");
-            if(result == JOptionPane.CANCEL_OPTION || result == JOptionPane.NO_OPTION)
-                return -1;
-        }
-
-        // creates the trajectory
-        Trajectory temp = new StandardTrajectory();
-        StateHistory history = new StandardStateHistory();
-
-        this.currentFlybyStateHistory = history;
-
-        //  reads the binary file and writes the data to a CSV file
-        String[] timeSet = new String[2];
-        timeArray.add(timeSet);
-        for(int i = positionStart; i <= positionEnd; i+=lineLength)
-        {
-            int[] position = new int[12];
-            for(int j = 0; j<position.length; j++)
-            {
-                position[j] = i + 25 + (j * 8);
-            }
-            State flybyState = new CsvState(readString(i),
-                    readBinary(position[0]), readBinary(position[1]), readBinary(position[2]),
-                    readBinary(position[3]), readBinary(position[4]), readBinary(position[5]),
-                    readBinary(position[6]), readBinary(position[7]), readBinary(position[8]),
-                    readBinary(position[9]), readBinary(position[10]), readBinary(position[11]));
-
-            // add to history
-            history.put(flybyState);
-
-            double[] spacecraftPosition = flybyState.getSpacecraftPosition();
-
-            temp.getX().add(spacecraftPosition[0]);
-            temp.getY().add(spacecraftPosition[1]);
-            temp.getZ().add(spacecraftPosition[2]);
-
-            if(com.mysql.jdbc.StringUtils.isNullOrEmpty(timeArray.get(0)[0]))
-            {
-                timeArray.get(0)[0] = flybyState.getUtc();
-            }
-            timeArray.get(0)[1] = flybyState.getUtc();
-
-        }
-
-        setCurrentTrajectory(temp);
-        createTrajectoryPolyData();
-
-        trajectoryMapper.SetInputData(trajectoryPolylines);
-
-        vtkActor actor = new vtkActor();
-        trajectoryActor = actor;
-        trajectoryActor.SetMapper(trajectoryMapper);
-        trajectoryActor.GetProperty().SetLineWidth(trajectoryLineThickness);
-        setTimeFraction(0.0);
-        try
-        {
-            panel.initializeRunList();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        initialize();
-        spacecraftBody.Modified();
-        trajectoryActor.Modified();
-        return 1;
-    }
+//    /***
+//     *  goes to the server and creates a new time history for the body with the given time range.
+//     *
+//     * @param panel - main panel
+//     * @param length - length of interval
+//     * @param name - name of interval
+//     * @return -1 if error thrown on creation, 1 if successfully created
+//     */
+//    // returns
+//    public int createNewTimeInterval(StateHistoryController panel, double length, String name)
+//    {
+//
+//        // gets the history file from the server
+//        SmallBodyViewConfig config = (SmallBodyViewConfig) smallBodyModel.getConfig();
+//        path = FileCache.getFileFromServer(config.timeHistoryFile);
+//
+//        // removes the time zone from the time
+//        String startString = startTime.toString().substring(0,23);
+//        String endString = endTime.toString().substring(0,23);
+//
+//        // searches the file for the specified times
+//        String queryStart = readString(lineLength);
+//        String queryEnd = readString((int)getBinaryFileLength()*lineLength-lineLength);
+//
+//        // error checking
+//        if(startTime.compareTo(endTime) > 0)
+//        {
+//            JOptionPane.showMessageDialog(null, "The entered times are not in the correct order.", "Error",
+//                    JOptionPane.ERROR_MESSAGE);
+//            return -1;
+//        }
+//        if(startString.compareTo(queryStart) < 0 || endString.compareTo(queryEnd) > 0)
+//        {
+//            JOptionPane.showMessageDialog(null, "One or more of the query times are out of range of the available data.", "Error",
+//                    JOptionPane.ERROR_MESSAGE);
+//            return -1;
+//        }
+//
+//        // get start and stop positions in file
+//        int positionStart = binarySearch(1, (int) getBinaryFileLength(), startString, false);
+//        int positionEnd = binarySearch(1, (int) getBinaryFileLength(), endString, true);
+//
+//        // check length of time
+//        if(readString(positionStart).compareTo(readString(positionEnd)) == 0)
+//        {
+//            JOptionPane.showMessageDialog(null, "The queried time interval is too small.", "Error",
+//                    JOptionPane.ERROR_MESSAGE);
+//            return -1;
+//        }
+//
+//        //sets the default name to "startTime_endTime"
+//        if(name.equals(""))
+//        {
+//            name = readString(positionStart) + "_" + readString(positionEnd);
+//        }
+//
+//        // check length of interval
+//        if(length > 10.0)
+//        {
+//            int result = JOptionPane.showConfirmDialog(null, "The interval you selected is longer than 10 days and may take a while to generate. \nAre you sure you want to create it?");
+//            if(result == JOptionPane.CANCEL_OPTION || result == JOptionPane.NO_OPTION)
+//                return -1;
+//        }
+//
+//        // creates the trajectory
+//        Trajectory temp = new StandardTrajectory();
+//        StateHistory history = new StandardStateHistory();
+//
+//        this.currentFlybyStateHistory = history;
+//
+//        //  reads the binary file and writes the data to a CSV file
+//        String[] timeSet = new String[2];
+//        timeArray.add(timeSet);
+//        for(int i = positionStart; i <= positionEnd; i+=lineLength)
+//        {
+//            int[] position = new int[12];
+//            for(int j = 0; j<position.length; j++)
+//            {
+//                position[j] = i + 25 + (j * 8);
+//            }
+//            State flybyState = new CsvState(readString(i),
+//                    readBinary(position[0]), readBinary(position[1]), readBinary(position[2]),
+//                    readBinary(position[3]), readBinary(position[4]), readBinary(position[5]),
+//                    readBinary(position[6]), readBinary(position[7]), readBinary(position[8]),
+//                    readBinary(position[9]), readBinary(position[10]), readBinary(position[11]));
+//
+//            // add to history
+//            history.put(flybyState);
+//
+//            double[] spacecraftPosition = flybyState.getSpacecraftPosition();
+//
+//            temp.getX().add(spacecraftPosition[0]);
+//            temp.getY().add(spacecraftPosition[1]);
+//            temp.getZ().add(spacecraftPosition[2]);
+//
+//            if(com.mysql.jdbc.StringUtils.isNullOrEmpty(timeArray.get(0)[0]))
+//            {
+//                timeArray.get(0)[0] = flybyState.getUtc();
+//            }
+//            timeArray.get(0)[1] = flybyState.getUtc();
+//
+//        }
+//
+//        setCurrentTrajectory(temp);
+//        createTrajectoryPolyData();
+//
+//        trajectoryMapper.SetInputData(trajectoryPolylines);
+//
+//        vtkActor actor = new vtkActor();
+//        trajectoryActor = actor;
+//        trajectoryActor.SetMapper(trajectoryMapper);
+//        trajectoryActor.GetProperty().SetLineWidth(trajectoryLineThickness);
+//        setTimeFraction(0.0);
+//        try
+//        {
+//            panel.initializeRunList();
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//        }
+//
+//        initialize();
+//        spacecraftBody.Modified();
+//        trajectoryActor.Modified();
+//        return 1;
+//    }
 
     private void setCurrentTrajectory(Trajectory temp)
     {
@@ -1770,7 +1769,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
 
     // starts the process for creating the movie frames
-    public void saveAnimation(StateHistoryPanel panel, String start, String end)
+    public void saveAnimation(IStateHistoryPanel panel, String start, String end)
     {
         frames = new JLabel("Number of Frames: ");
         fromLabel = new JLabel("Start: " + start);
@@ -1792,7 +1791,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         time.add(fromLabel);
         time.add(toLabel);
 
-        int result = chooser.showSaveDialog(JOptionPane.getFrameForComponent(panel));
+        int result = chooser.showSaveDialog(JOptionPane.getFrameForComponent(panel.getView()));
 
         if(result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION)
         {
@@ -1823,7 +1822,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     }
 
     // creates animation frame with data to move the camera
-    public AnimationFrame createAnimationFrameWithTimeFraction(double tf, File file, int delay, StateHistoryPanel panel)
+    public AnimationFrame createAnimationFrameWithTimeFraction(double tf, File file, int delay, IStateHistoryPanel panel)
     {
         AnimationFrame result = new AnimationFrame();
         result.timeFraction = tf;
@@ -2330,6 +2329,6 @@ class AnimationFrame
     public int delay;
     public double timeFraction;
     public File file;
-    public StateHistoryPanel panel;
+    public IStateHistoryPanel panel;
 
 }
