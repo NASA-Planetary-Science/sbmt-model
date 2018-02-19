@@ -999,7 +999,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         this.showSpacecraft = show;
         //        this.showMonolith = show;
         //        this.showSpacecraftBody = show;
-        this.showSpacecraftFov = show;
+        this.showSpacecraftFov = false;
         this.showSpacecraftLabel = show;
         updateActorVisibility();
     }
