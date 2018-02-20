@@ -501,6 +501,9 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             updateActorVisibility();
         }
 
+        setupStatusBar();
+        updateStatusBarPosition(renderer.getPanelWidth(), renderer.getPanelHeight());
+
         if (timeBarActor == null)
             setupTimeBar();
     }
@@ -694,6 +697,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
             if (timeBarActor != null)
             {
+                updateTimeBarPosition(renderer.getPanelWidth(), renderer.getPanelHeight());
                 updateTimeBarValue(getTime());
             }
 
@@ -1058,6 +1062,11 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     private vtkPolyDataMapper2D timeBarMapper;
     private vtkActor2D timeBarActor;
     private vtkTextActor timeBarTextActor;
+    private vtkActor2D statusBarActor;
+    private vtkTextActor statusBarTextActor;
+    private vtkPolyDataMapper2D statusBarMapper;
+    private vtkPolyData statusBarPolydata;
+    private int statusBarWidthInPixels = 0;
     private int timeBarWidthInPixels = 0;
     private double timeBarValue = -1.0;
 
@@ -1108,6 +1117,75 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     public int getColoringIndex()
     {
         return coloringIndex;
+    }
+
+    private void setupStatusBar()
+    {
+        statusBarPolydata = new vtkPolyData();
+        vtkPoints points = new vtkPoints();
+        vtkCellArray polys = new vtkCellArray();
+        statusBarPolydata.SetPoints(points);
+        statusBarPolydata.SetPolys(polys);
+
+        points.SetNumberOfPoints(4);
+
+        vtkIdList idList = new vtkIdList();
+        idList.SetNumberOfIds(4);
+        for (int i=0; i<4; ++i)
+            idList.SetId(i, i);
+        polys.InsertNextCell(idList);
+
+        statusBarMapper = new vtkPolyDataMapper2D();
+        statusBarMapper.SetInputData(statusBarPolydata);
+
+        statusBarActor = new vtkActor2D();
+        statusBarActor.SetMapper(statusBarMapper);
+
+        statusBarTextActor = new vtkTextActor();
+
+        stateHistoryActors.add(statusBarActor);
+        stateHistoryActors.add(statusBarTextActor);
+
+        statusBarActor.GetProperty().SetColor(0.0, 0.0, 0.0);
+        statusBarActor.GetProperty().SetOpacity(0.0);
+        statusBarTextActor.GetTextProperty().SetColor(1.0, 1.0, 1.0);
+        statusBarTextActor.GetTextProperty().SetJustificationToCentered();
+        statusBarTextActor.GetTextProperty().BoldOn();
+
+        statusBarActor.VisibilityOn();
+        statusBarTextActor.VisibilityOn();
+    }
+
+    public void updateStatusBarPosition(int windowWidth, int windowHeight)
+    {
+        vtkPoints points = statusBarPolydata.GetPoints();
+
+        int newStatusBarWidthInPixels = (int)Math.min(0.75*windowWidth, 200.0);
+
+        statusBarWidthInPixels = newStatusBarWidthInPixels;
+        int statusBarHeight = statusBarWidthInPixels/9;
+        int buffer = statusBarWidthInPixels/20;
+//        int x = buffer + 20; // lower left corner x
+        int x = (int)(0.8*windowWidth);
+        System.out.println("StateHistoryModel: statusBarPosition: windows Width " + windowWidth);
+        //        int x = windowWidth - timeBarWidthInPixels - buffer; // lower right corner x
+        int y = buffer; // lower left corner y
+
+        points.SetPoint(0, x, y, 0.0);
+        points.SetPoint(1, x+statusBarWidthInPixels, y, 0.0);
+        points.SetPoint(2, x+statusBarWidthInPixels, y+statusBarHeight, 0.0);
+        points.SetPoint(3, x, y+statusBarHeight, 0.0);
+
+        statusBarTextActor.SetPosition(x+statusBarWidthInPixels/2, y+2);
+        statusBarTextActor.GetTextProperty().SetFontSize(statusBarHeight-4);
+
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public void updateStatusBarValue(String text)
+    {
+        statusBarTextActor.SetInput(text);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     private void setupTimeBar()
