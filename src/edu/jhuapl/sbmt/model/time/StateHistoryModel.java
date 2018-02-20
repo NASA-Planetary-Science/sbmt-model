@@ -500,8 +500,10 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             showSpacecraft = false;
             updateActorVisibility();
         }
-
-        setupStatusBar();
+        if (statusBarActor == null)
+        {
+            setupStatusBar();
+        }
         updateStatusBarPosition(renderer.getPanelWidth(), renderer.getPanelHeight());
 
         if (timeBarActor == null)
@@ -1044,6 +1046,10 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             stateHistoryActors.add(timeBarTextActor);
         }
 
+        stateHistoryActors.add(statusBarActor);
+        stateHistoryActors.add(statusBarTextActor);
+
+
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
@@ -1167,7 +1173,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         int buffer = statusBarWidthInPixels/20;
 //        int x = buffer + 20; // lower left corner x
         int x = (int)(0.8*windowWidth);
-        System.out.println("StateHistoryModel: statusBarPosition: windows Width " + windowWidth);
+//        System.out.println("StateHistoryModel: statusBarPosition: windows Width " + windowWidth);
         //        int x = windowWidth - timeBarWidthInPixels - buffer; // lower right corner x
         int y = buffer; // lower left corner y
 
