@@ -125,9 +125,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public String getFlip() { return flip; }
 
     private boolean useDefaultFootprint = true;
-    protected vtkPolyData[] footprint = new vtkPolyData[1];
+    private vtkPolyData[] footprint = new vtkPolyData[1];
     private boolean[] footprintGenerated = new boolean[1];
-    private vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
+    private final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
 
     private vtkActor footprintActor;
     private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
