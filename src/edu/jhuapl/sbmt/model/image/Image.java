@@ -7,12 +7,14 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 
+import vtk.vtkPolyData;
 import vtk.vtkProp;
 import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.IntensityRange;
+import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 
 
@@ -149,10 +151,14 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     }
 
     protected final ImageKey key;
+    // Use a lazily initialized Double to avoid calling
+    // the non-final method getDefaultOffset from the  constructor.
+    private Double offset;
 
     public Image(ImageKey key)
     {
         this.key = key;
+        this.offset = null;
     }
 
     public ImageKey getKey()
@@ -174,6 +180,40 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     abstract public LinkedHashMap<String, String> getProperties() throws IOException;
     abstract public void setDisplayedImageRange(IntensityRange range);
 
+    /**
+     * The shifted footprint is the original footprint shifted slightly in the
+     * normal direction so that it will be rendered correctly and not obscured
+     * by the asteroid.
+     * @return
+     */
+    protected abstract vtkPolyData getShiftedFootprint();
+
+    /**
+     * The original footprint whose cells exactly overlap the original asteroid.
+     * If rendered as is, it would interfere with the asteroid.
+     * @return
+     */
+    protected abstract vtkPolyData getUnshiftedFootprint();
+
+    protected void applyOffset(vtkPolyData data, vtkPolyData offsetData) {
+        offsetData.DeepCopy(data);
+        PolyDataUtil.shiftPolyDataInNormalDirection(offsetData, getOffset());
+    }
+
+    @Override
+    public double getOffset() {
+        if (offset == null) {
+            offset = getDefaultOffset();
+        }
+        return offset;
+    }
+
+    @Override
+    public void setOffset(double offset) {
+        this.offset = offset;
+        applyOffset(getUnshiftedFootprint(), getShiftedFootprint());
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
 
     public void setInterpolate(boolean enable)
     {

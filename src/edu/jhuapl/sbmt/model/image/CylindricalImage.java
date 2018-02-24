@@ -52,7 +52,6 @@ public class CylindricalImage extends Image
     private SmallBodyModel smallBodyModel;
     private vtkTexture imageTexture;
     private boolean initialized = false;
-    private double offset;
     private double lowerLeftLat = -90.0;
     private double lowerLeftLon = 0.0;
     private double upperRightLat = 90.0;
@@ -85,8 +84,6 @@ public class CylindricalImage extends Image
 
         footprint = new vtkPolyData();
         shiftedFootprint = new vtkPolyData();
-
-        this.offset = getDefaultOffset();
 
         loadImageInfoFromConfigFile();
 
@@ -514,7 +511,7 @@ public class CylindricalImage extends Image
         footprint.DeepCopy(smallBodyPolyData);
 
         shiftedFootprint.DeepCopy(footprint);
-        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, offset);
+        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, getOffset());
 
         initialized = true;
     }
@@ -763,19 +760,14 @@ public class CylindricalImage extends Image
         return 2.0*smallBodyModel.getMinShiftAmount();
     }
 
-    public void setOffset(double offset)
-    {
-        this.offset = offset;
-
-        shiftedFootprint.DeepCopy(footprint);
-        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, offset);
-
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    @Override
+    protected vtkPolyData getShiftedFootprint() {
+        return shiftedFootprint;
     }
 
-    public double getOffset()
-    {
-        return offset;
+    @Override
+    protected vtkPolyData getUnshiftedFootprint() {
+        return footprint;
     }
 
     public void delete()
