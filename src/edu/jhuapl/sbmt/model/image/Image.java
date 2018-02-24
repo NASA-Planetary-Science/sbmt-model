@@ -150,6 +150,14 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         }
     }
 
+
+    public static void applyOffset(Image image, double offset)
+    {
+        vtkPolyData shiftedFootprint = image.getShiftedFootprint();
+        shiftedFootprint.DeepCopy(image.getUnshiftedFootprint());
+        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, offset);
+    }
+
     protected final ImageKey key;
     // Use a lazily initialized Double to avoid calling
     // the non-final method getDefaultOffset from the  constructor.
@@ -195,11 +203,6 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
      */
     protected abstract vtkPolyData getUnshiftedFootprint();
 
-    protected void applyOffset(vtkPolyData data, vtkPolyData offsetData) {
-        offsetData.DeepCopy(data);
-        PolyDataUtil.shiftPolyDataInNormalDirection(offsetData, getOffset());
-    }
-
     @Override
     public double getOffset() {
         if (offset == null) {
@@ -211,7 +214,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     @Override
     public void setOffset(double offset) {
         this.offset = offset;
-        applyOffset(getUnshiftedFootprint(), getShiftedFootprint());
+        applyOffset(this, getOffset());
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
