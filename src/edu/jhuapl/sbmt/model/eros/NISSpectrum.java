@@ -138,7 +138,6 @@ public class NISSpectrum extends BasicSpectrum
 //        spectrum=new double[getNumberOfBands()];
 //        spectrumEros=new double[getNumberOfBands()];
 
-        instrument.getSpectrumMath().loadUserDefinedParametersfromPreferences();
 
     }
 
@@ -325,7 +324,7 @@ public class NISSpectrum extends BasicSpectrum
             else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                 val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
             else
-                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length);
+                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
 
             if (val < 0.0)
                 val = 0.0;
