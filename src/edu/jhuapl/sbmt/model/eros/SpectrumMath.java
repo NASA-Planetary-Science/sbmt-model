@@ -39,7 +39,7 @@ public abstract class SpectrumMath
 
         // Find all variables in the expression of the form BXX where X is a digit
         // such as B01, b63, B10
-        String patternString = "[Bb]\\d\\d";
+        String patternString = "[Bb]\\d+\\b";
         Pattern pattern = Pattern.compile(patternString);
         Matcher matcher = pattern.matcher(function);
 
