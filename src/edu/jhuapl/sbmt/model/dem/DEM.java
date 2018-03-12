@@ -95,6 +95,10 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     /** Class DEM **/
     // Attributes
     protected final DEMKey key;
+    private double latitude;
+    private double longitude;
+    private double halfSize;
+    private double scale;
 
     // Old constructor based on filename only, called all over SBMT
     public DEM(String filename) throws IOException, FitsException
@@ -408,6 +412,11 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                 planeCount++;
             }
         }
+
+        this.latitude = header.getDoubleValue("LATITUDE");
+        this.longitude = header.getDoubleValue("LONGTUDE");
+        this.halfSize = header.getDoubleValue("HALFSIZE");
+        this.scale = header.getDoubleValue("SCALE");
 
         // Check to see if x,y,z planes were all defined
         if(xIdx < 0)
@@ -900,5 +909,25 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public double getLatitude()
+    {
+        return latitude;
+    }
+
+    public double getLongitude()
+    {
+        return longitude;
+    }
+
+    public double getHalfSize()
+    {
+        return halfSize;
+    }
+
+    public double getScale()
+    {
+        return scale;
     }
 }
