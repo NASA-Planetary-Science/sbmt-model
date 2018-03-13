@@ -1164,7 +1164,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
     public void updateStatusBarPosition(int windowWidth, int windowHeight)
     {
-        vtkPoints points = statusBarPolydata.GetPoints();
+//        vtkPoints points = statusBarPolydata.GetPoints();
 
         int newStatusBarWidthInPixels = (int)Math.min(0.75*windowWidth, 200.0);
 
@@ -1172,18 +1172,20 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         int statusBarHeight = statusBarWidthInPixels/9;
         int buffer = statusBarWidthInPixels/20;
 //        int x = buffer + 20; // lower left corner x
-        int x = (int)(0.8*windowWidth);
+//        int x = (int)(0.8*windowWidth);
 //        System.out.println("StateHistoryModel: statusBarPosition: windows Width " + windowWidth);
         //        int x = windowWidth - timeBarWidthInPixels - buffer; // lower right corner x
         int y = buffer; // lower left corner y
 
-        points.SetPoint(0, x, y, 0.0);
-        points.SetPoint(1, x+statusBarWidthInPixels, y, 0.0);
-        points.SetPoint(2, x+statusBarWidthInPixels, y+statusBarHeight, 0.0);
-        points.SetPoint(3, x, y+statusBarHeight, 0.0);
+        int leftside = windowWidth - statusBarWidthInPixels;
+//        points.SetPoint(0, leftside, y, 0.0);
+//        points.SetPoint(1, leftside+statusBarWidthInPixels, y, 0.0);
+//        points.SetPoint(2, leftside+statusBarWidthInPixels, y+statusBarHeight, 0.0);
+//        points.SetPoint(3, leftside, y+statusBarHeight, 0.0);
 
-        statusBarTextActor.SetPosition(x+statusBarWidthInPixels/2, y+2);
+        statusBarTextActor.SetPosition(leftside, y+2);
         statusBarTextActor.GetTextProperty().SetFontSize(statusBarHeight-4);
+        statusBarTextActor.GetTextProperty().SetJustificationToCentered();
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
