@@ -331,7 +331,10 @@ public class PhobosImage extends PerspectiveImage
     @Override
     protected void processRawImage(vtkImageData rawImage)
     {
-        if (getFlip().contains("Y"))
+        ImageKey key = getKey();
+        File keyFile = new File(key.name);
+        String fileName = keyFile.getName();
+        if (getFlip().contains("Y") && !isHiRISE(fileName))
         {
             ImageDataUtil.flipImageYAxis(rawImage);
         }
