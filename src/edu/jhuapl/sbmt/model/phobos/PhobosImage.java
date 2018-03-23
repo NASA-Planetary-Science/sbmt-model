@@ -3,13 +3,16 @@ package edu.jhuapl.sbmt.model.phobos;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
+import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
+import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class PhobosImage extends PerspectiveImage
 {
@@ -324,4 +327,17 @@ public class PhobosImage extends PerspectiveImage
             return -1;
         }
     }
+
+    @Override
+    protected void processRawImage(vtkImageData rawImage)
+    {
+        ImageKey key = getKey();
+        File keyFile = new File(key.name);
+        String fileName = keyFile.getName();
+        if (getFlip().contains("Y") && !isHiRISE(fileName))
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+        }
+    }
+
 }
