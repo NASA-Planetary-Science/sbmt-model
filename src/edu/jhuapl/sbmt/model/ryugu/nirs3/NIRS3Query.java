@@ -72,7 +72,7 @@ public final class NIRS3Query extends FixedListQuery
                 //spectrumListPrefix = "infofiles-corrected";
 //        }
 
-        List<List<String>> result = getResultsFromFileListOnServer(rootPath + "/" + spectrumListPrefix + "/spectrumlist.txt", rootPath + "/spectra/", getGalleryPath());
+        List<List<String>> result = getResultsFromFileListOnServer(rootPath + "/" + spectrumListPrefix + "/spectrumlist.txt", rootPath + "/spectra/", getGalleryPath(), searchString);
 
         return result;
     }
