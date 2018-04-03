@@ -71,7 +71,6 @@ public class OVIRSSpectrum extends BasicSpectrum
             vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
                     spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
 
-
             if (tmp==null)
                 return;
 
@@ -214,6 +213,13 @@ public class OVIRSSpectrum extends BasicSpectrum
         {
             generateFootprint();
 
+            createSelectionPolyData();
+            createSelectionActor();
+            createToSunVectorPolyData();
+            createToSunVectorActor();
+            createOutlinePolyData();
+            createOutlineActor();
+
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint);
             // footprintMapper.SetResolveCoincidentTopologyToPolygonOffset();
@@ -322,6 +328,7 @@ public class OVIRSSpectrum extends BasicSpectrum
 
             footprintActors.add(frustumActor);
         }
+
 
         footprintActors.add(selectionActor);
         footprintActors.add(toSunVectorActor);
