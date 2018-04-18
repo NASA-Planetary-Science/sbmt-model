@@ -667,13 +667,10 @@ public class LidarSearchDataCollection extends AbstractModel
             else if (trackFileType == TrackFileType.BINARY)
             {
                 loadTrackBinary(file);
-<<<<<<< HEAD
                 computeTracks();
             }
-=======
             else if (trackFileType == TrackFileType.PLY)
                 loadTrackPLY(file);
->>>>>>> branch 'sbmt1dev-redmine-1230' of http://hardin:8080/scm/git/sbmt
             else
             {
                 loadTrackOlaL2(file);
