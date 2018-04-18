@@ -69,7 +69,8 @@ public class LidarSearchDataCollection extends AbstractModel
     {
         TEXT,
         BINARY,
-        OLA_LEVEL_2
+        OLA_LEVEL_2,
+        PLY
     };
 
     private BodyViewConfig polyhedralModelConfig;
@@ -627,6 +628,23 @@ public class LidarSearchDataCollection extends AbstractModel
 
     }
 
+    public void loadTrackPLY(File file) throws IOException
+    {
+/*
+        PlyReader reader=new PlyReader();
+        reader.SetFileName(file.getAbsolutePath());
+        reader.Update();
+        vtkPolyData polyData=reader.GetOutput();
+        vtkPolyDataWriter writer=new vtkPolyDataWriter();
+        writer.SetInputData(polyData);
+        writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
+        writer.SetFileTypeToBinary();
+        writer.Write();*/
+        DataInputStream stream=new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+
+        stream.close();
+    }
+
     BiMap<Integer, String> localFileMap=HashBiMap.create();
     //List<int[]> fileBounds=Lists.newArrayList();    // for adding filenum information to tracks later; length 3 -> lowerBound,upperBound,fileNum
 
@@ -654,6 +672,8 @@ public class LidarSearchDataCollection extends AbstractModel
                 loadTrackAscii(file);
             else if (trackFileType == TrackFileType.BINARY)
                 loadTrackBinary(file);
+            else if (trackFileType == TrackFileType.PLY)
+                loadTrackPLY(file);
             else
                 loadTrackOlaL2(file);
 
