@@ -651,11 +651,20 @@ public class LidarSearchDataCollection extends AbstractModel
                 localFileMap.put(localFileMap.size(), file.toString());
 
             if (trackFileType == TrackFileType.TEXT)
+            {
                 loadTrackAscii(file);
+                computeLoadedTracks();
+            }
             else if (trackFileType == TrackFileType.BINARY)
+            {
                 loadTrackBinary(file);
+                computeTracks();
+            }
             else
+            {
                 loadTrackOlaL2(file);
+                computeTracks();
+            }
 
 
             //fileBounds.add(new int[]{oldBounds,originalPoints.size()-1,localFileMap.inverse().get(file.toString())});
@@ -667,7 +676,6 @@ public class LidarSearchDataCollection extends AbstractModel
         //translation[0] = translation[1] = translation[2] = 0.0;
 
         //int startTrack=tracks.size();
-        computeTracks();
 
 
         removeTracksThatAreTooSmall();
@@ -753,6 +761,25 @@ public class LidarSearchDataCollection extends AbstractModel
             return trackIds.get(hash);
         }
     }*/
+
+    protected void computeLoadedTracks()
+    {
+        for (Track track : tracks)
+        {
+            computeTrack(track);
+        }
+    }
+
+    private void computeTrack(Track track)
+    {
+        int size = originalPoints.size();
+        if (size == 0)
+            return;
+        track.registerSourceFileIndex(originalPointsSourceFiles.get(originalPoints.get(track.startId)), localFileMap);
+        double t0 = originalPoints.get(track.startId).getTime();
+        double t1 = originalPoints.get(track.stopId).getTime();
+        track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
+    }
 
     protected void computeTracks()
     {
