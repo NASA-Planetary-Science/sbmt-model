@@ -559,22 +559,11 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void loadTrackOlaL2(File file) throws IOException
     {
+        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
 
-        OLAL2File l2File=new OLAL2File(file.toPath());
-        List<LidarPoint> pts=Lists.newArrayList();
-        pts.addAll(l2File.read(1./1000.));
+        Track track = new Track();
+        track.startId = originalPoints.size();
         int fileId=localFileMap.inverse().get(file.toString());
-        for (int i=0; i<pts.size(); i++)
-            originalPointsSourceFiles.put(pts.get(i),fileId);
-        originalPoints.addAll(pts);
-
-
-
-/*        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-
-//        Track track = new Track();
-//        track.startId = originalPoints.size();
-
         while (true)
         {
             double time = 0;
@@ -616,16 +605,88 @@ public class LidarSearchDataCollection extends AbstractModel
             }
 
             if (!noise)
-                originalPoints.add(new BasicLidarPoint(target, scpos, time, intensityReceived));
+            {
+                BasicLidarPoint pt = new BasicLidarPoint(target, scpos, time, intensityReceived);
+                originalPointsSourceFiles.put(pt,fileId);
+                originalPoints.add(pt);
+            }
         }
 
         in.close();
 
-//        track.stopId = originalPoints.size() - 1;
-//        tracks.add(track);
-*/
-
+        track.stopId = originalPoints.size() - 1;
+        tracks.add(track);
     }
+
+//    public void loadTrackOlaL2(File file) throws IOException
+//    {
+//
+//        OLAL2File l2File=new OLAL2File(file.toPath());
+//        List<LidarPoint> pts=Lists.newArrayList();
+//        pts.addAll(l2File.read(1./1000.));
+//        int fileId=localFileMap.inverse().get(file.toString());
+//        for (int i=0; i<pts.size(); i++)
+//            originalPointsSourceFiles.put(pts.get(i),fileId);
+//        originalPoints.addAll(pts);
+//
+//
+//
+///*        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+//
+////        Track track = new Track();
+////        track.startId = originalPoints.size();
+//
+//        while (true)
+//        {
+//            double time = 0;
+//            double[] target = {0.0, 0.0, 0.0};
+//            double[] scpos = {0.0, 0.0, 0.0};
+//            double intensityReceived = 0;
+//            boolean noise = false;
+//
+//            try
+//            {
+//                in.readByte();
+//            }
+//            catch(EOFException e)
+//            {
+//                break;
+//            }
+//
+//            try
+//            {
+//                skip(in, 17 + 8 + 24);
+//                time = FileUtil.readDoubleAndSwap(in);
+//                skip(in, 8 + 2 * 3);
+//                short flagStatus = MathUtil.swap(in.readShort());
+//                noise = ((flagStatus == 0 || flagStatus == 1) ? false : true);
+//                skip(in, 8 + 8 * 3);
+//                intensityReceived = FileUtil.readDoubleAndSwap(in);
+//                target[0] = FileUtil.readDoubleAndSwap(in) / 1000.0;
+//                target[1] = FileUtil.readDoubleAndSwap(in) / 1000.0;
+//                target[2] = FileUtil.readDoubleAndSwap(in) / 1000.0;
+//                skip(in, 8 * 3);
+//                scpos[0] = FileUtil.readDoubleAndSwap(in) / 1000.0;
+//                scpos[1] = FileUtil.readDoubleAndSwap(in) / 1000.0;
+//                scpos[2] = FileUtil.readDoubleAndSwap(in) / 1000.0;
+//            }
+//            catch(IOException e)
+//            {
+//                in.close();
+//                throw e;
+//            }
+//
+//            if (!noise)
+//                originalPoints.add(new BasicLidarPoint(target, scpos, time, intensityReceived));
+//        }
+//
+//        in.close();
+//
+////        track.stopId = originalPoints.size() - 1;
+////        tracks.add(track);
+//*/
+//
+//    }
 
     BiMap<Integer, String> localFileMap=HashBiMap.create();
     //List<int[]> fileBounds=Lists.newArrayList();    // for adding filenum information to tracks later; length 3 -> lowerBound,upperBound,fileNum
@@ -651,11 +712,20 @@ public class LidarSearchDataCollection extends AbstractModel
                 localFileMap.put(localFileMap.size(), file.toString());
 
             if (trackFileType == TrackFileType.TEXT)
+            {
                 loadTrackAscii(file);
+                computeLoadedTracks();
+            }
             else if (trackFileType == TrackFileType.BINARY)
+            {
                 loadTrackBinary(file);
+                computeTracks();
+            }
             else
+            {
                 loadTrackOlaL2(file);
+                computeTracks();
+            }
 
 
             //fileBounds.add(new int[]{oldBounds,originalPoints.size()-1,localFileMap.inverse().get(file.toString())});
@@ -667,7 +737,6 @@ public class LidarSearchDataCollection extends AbstractModel
         //translation[0] = translation[1] = translation[2] = 0.0;
 
         //int startTrack=tracks.size();
-        computeTracks();
 
 
         removeTracksThatAreTooSmall();
@@ -754,6 +823,25 @@ public class LidarSearchDataCollection extends AbstractModel
         }
     }*/
 
+    protected void computeLoadedTracks()
+    {
+        for (Track track : tracks)
+        {
+            computeTrack(track);
+        }
+    }
+
+    private void computeTrack(Track track)
+    {
+        int size = originalPoints.size();
+        if (size == 0)
+            return;
+        track.registerSourceFileIndex(originalPointsSourceFiles.get(originalPoints.get(track.startId)), localFileMap);
+        double t0 = originalPoints.get(track.startId).getTime();
+        double t1 = originalPoints.get(track.stopId).getTime();
+        track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
+    }
+
     protected void computeTracks()
     {
         tracks.clear();
@@ -771,7 +859,6 @@ public class LidarSearchDataCollection extends AbstractModel
         track.registerSourceFileIndex(originalPointsSourceFiles.get(originalPoints.get(0)), localFileMap);
         track.startId = 0;
         tracks.add(track);
-
         for (int i=1; i<size; ++i)
         {
             double currentTime = originalPoints.get(i).getTime();
