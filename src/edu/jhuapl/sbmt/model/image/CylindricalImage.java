@@ -7,24 +7,31 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
 import vtk.vtkActor;
 import vtk.vtkAlgorithmOutput;
 import vtk.vtkAppendPolyData;
 import vtk.vtkClipPolyData;
 import vtk.vtkCone;
 import vtk.vtkFloatArray;
+import vtk.vtkIdList;
 import vtk.vtkImageData;
 import vtk.vtkImageMapToColors;
 import vtk.vtkLookupTable;
+import vtk.vtkOBBTree;
 import vtk.vtkPNGReader;
 import vtk.vtkPlane;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkPolyDataWriter;
 import vtk.vtkProp;
 import vtk.vtkProperty;
 import vtk.vtkTexture;
 import vtk.vtkTransform;
+import vtk.vtkTriangle;
+import vtk.vtkXMLImageDataWriter;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.IntensityRange;
@@ -33,6 +40,10 @@ import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.util.VtkDataTypes;
+import edu.jhuapl.saavtk2.image.projection.ConstantDepthFunction;
+import edu.jhuapl.saavtk2.image.projection.CylindricalMapCoordinates;
+import edu.jhuapl.saavtk2.image.projection.CylindricalProjection;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
 
@@ -94,6 +105,128 @@ public class CylindricalImage extends Image
             imageName = getKey().name;
         }
 }
+
+    public CylindricalImage(SmallBodyModel smallBodyModel, PerspectiveImage image, double minLon, double maxLon, double minLat, double maxLat, double pixelsPerDegree)
+    {
+        super(new ImageKey(image.getKey().name, ImageSource.GENERATED_CYLINDRICAL));
+        this.smallBodyModel=smallBodyModel;
+
+        lowerLeftLat=minLat;
+        lowerLeftLon=minLon;
+        upperRightLat=maxLat;
+        upperRightLon=maxLon;
+
+        footprint = new vtkPolyData();
+        shiftedFootprint = new vtkPolyData();
+        initialize();
+
+        vtkPolyDataWriter writer=new vtkPolyDataWriter();
+        writer.SetInputData(getShiftedFootprint());
+        writer.SetFileTypeToBinary();
+        writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
+        writer.Write();
+
+        CylindricalProjection projection=new CylindricalProjection(minLat, maxLat, minLon, maxLon);
+        writer.SetInputData(edu.jhuapl.saavtk2.image.CylindricalImage.createProjectionGeometry(smallBodyModel.getBoundingBoxDiagonalLength(), projection));
+        writer.SetFileName("/Users/zimmemi1/Desktop/test3.vtk");
+        writer.Write();
+
+        vtkPolyData projectionGeometrySolid=edu.jhuapl.saavtk2.image.CylindricalImage.createProjectionGeometrySolid(smallBodyModel.getBoundingBoxDiagonalLength(), projection, pixelsPerDegree);
+        writer.SetInputData(projectionGeometrySolid);
+        writer.SetFileName("/Users/zimmemi1/Desktop/test4.vtk");
+        writer.Write();
+
+        vtkOBBTree tree=new vtkOBBTree();
+        tree.SetDataSet(image.getShiftedFootprint());
+        tree.SetTolerance(1e-12);
+        tree.Update();
+
+        double[] lonDeg=edu.jhuapl.saavtk2.image.CylindricalImage.getLonDegRange(projection, pixelsPerDegree);
+        double[] latDeg=edu.jhuapl.saavtk2.image.CylindricalImage.getLonDegRange(projection, pixelsPerDegree);
+        vtkImageData imageData=new vtkImageData();
+        imageData.SetDimensions(lonDeg.length, latDeg.length, image.getNumberBands());
+        imageData.AllocateScalars(VtkDataTypes.VTK_DOUBLE,1);
+        vtkFloatArray tcoords=(vtkFloatArray)image.getShiftedFootprint().GetPointData().GetArray("tcoords");
+        for (int i=0; i<image.getShiftedFootprint().GetPointData().GetNumberOfArrays(); i++)
+        {
+            System.out.println(image.getShiftedFootprint().GetPointData().GetArrayName(i));
+        }
+        for (int k=0; k<image.getNumberBands(); k++)
+            for (int j=0; j<latDeg.length; j++)
+                for (int i=0; i<lonDeg.length; i++)
+                {
+                    Vector3D origin=projection.getRayOrigin();
+                    Vector3D rayEnd=projection.unproject(new CylindricalMapCoordinates(lonDeg[i], latDeg[j]), new ConstantDepthFunction(smallBodyModel.getBoundingBoxDiagonalLength()));
+                    vtkIdList ids=new vtkIdList();
+                    vtkPoints pts=new vtkPoints();
+                    tree.IntersectWithLine(origin.toArray(), rayEnd.toArray(), pts, ids);
+                    if (ids.GetNumberOfIds()==0)
+                        continue;
+                    //
+                    double[] x=new double[3];
+                    pts.GetPoint(0, x);
+                    vtkTriangle tri=(vtkTriangle)image.getShiftedFootprint().GetCell(ids.GetId(0));
+                    double[][] triPts=new double[3][3];
+                    tri.GetPoints().GetPoint(0, triPts[0]);
+                    tri.GetPoints().GetPoint(1, triPts[1]);
+                    tri.GetPoints().GetPoint(2, triPts[2]);
+                    int id0=tri.GetPointId(0);
+                    int id1=tri.GetPointId(1);
+                    int id2=tri.GetPointId(2);
+                    double[] c0=tcoords.GetTuple2(id0);
+                    double[] c1=tcoords.GetTuple2(id1);
+                    double[] c2=tcoords.GetTuple2(id2);
+                    double[] cinterp=MathUtil.interpolateWithinTriangle(x, triPts[0], triPts[1], triPts[2], c0, c1, c2);
+//                    double dinterp=MathUtil.interpolateWithinTriangle(x, triPts[0],triPts[1], triPts[2], d1, d2, d3);
+//                    imageData.SetScalarComponentFromDouble(i,j,k,0,dinterp);
+                }
+
+/*        double degreesPerPixel=1./pixelsPerDegree;
+        int nLat=(int)((maxLat-minLat)/pixelsPerDegree-1);
+        int nLon=(int)((maxLon-minLon)/pixelsPerDegree-1);
+        double[] pixLat=LinearSpace.create(minLat+degreesPerPixel/2., maxLat-degreesPerPixel/2., nLat);
+        double[] pixLon=LinearSpace.create(minLon+degreesPerPixel/2., maxLon-degreesPerPixel/2., nLon);*/
+
+/*        vtkDoubleArray lonArray=new vtkDoubleArray();
+        vtkDoubleArray latArray=new vtkDoubleArray();
+        vtkIntArray sourcePixArray=new vtkIntArray();
+        lonArray.SetName("Lon");
+        latArray.SetName("Lat");
+        sourcePixArray.SetName("SrcPix");
+        sourcePixArray.SetNumberOfComponents(2);
+
+        for (int i=0; i<image.getShiftedFootprint().GetNumberOfPoints(); i++)
+        {
+            Vector3D pt=new Vector3D(image.getShiftedFootprint().GetPoint(i));
+            CylindricalMapCoordinates coords=projection.project(pt);
+            lonArray.InsertNextValue(coords.getX());
+            latArray.InsertNextValue(coords.getY());
+            sourcePixArray.InsertNextTuple2(id0, id1);
+        }
+        image.getShiftedFootprint().GetPointData().AddArray(lonArray);
+        image.getShiftedFootprint().GetPointData().AddArray(latArray);
+
+        vtkImageCanvasSource2D canvas=new vtkImageCanvasSource2D();
+        canvas.SetExtent(0, lonArray.GetNumberOfTuples()-1, 0, latArray.GetNumberOfTuples()-1, 0, image.getNumberBands()-1);
+        canvas.SetNumberOfScalarComponents(1);
+        canvas.SetScalarTypeToDouble();
+        canvas.Update();
+        for (int c=0; c<image.getShiftedFootprint().GetNumberOfCells(); c++)
+        {
+
+        }*/
+
+        writer.SetInputData(image.getShiftedFootprint());
+        writer.SetFileName("/Users/zimmemi1/Desktop/test2.vtk");
+        writer.Write();
+
+        vtkXMLImageDataWriter iwriter=new vtkXMLImageDataWriter();
+        iwriter.SetFileName("/Users/zimmemi1/Desktop/test.vti");
+        iwriter.SetDataModeToBinary();
+     //   iwriter.SetInputData(imageData);
+     //   iwriter.Write();
+
+    }
 
     private void loadImageInfoFromConfigFile()
     {
@@ -761,7 +894,7 @@ public class CylindricalImage extends Image
     }
 
     @Override
-    protected vtkPolyData getShiftedFootprint() {
+    public vtkPolyData getShiftedFootprint() {
         return shiftedFootprint;
     }
 
