@@ -3749,7 +3749,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      * @return
      */
     @Override
-    protected vtkPolyData getShiftedFootprint()
+    public vtkPolyData getShiftedFootprint()
     {
         return shiftedFootprint[0];
     }
