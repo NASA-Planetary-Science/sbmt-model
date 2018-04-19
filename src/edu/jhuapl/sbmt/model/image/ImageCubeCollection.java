@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import nom.tam.fits.FitsException;
+
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -17,8 +19,6 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageCube.ImageCubeKey;
-
-import nom.tam.fits.FitsException;
 
 public class ImageCubeCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -34,11 +34,6 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     {
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
-    }
-
-    public SmallBodyModel getSmallBodyModel()
-    {
-        return smallBodyModel;
     }
 
     protected ImageCube createImage(ImageCubeKey key,

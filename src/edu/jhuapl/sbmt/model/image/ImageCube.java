@@ -35,11 +35,6 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 {
 //    private SmallBodyModel smallBodyModel;
     private List<PerspectiveImage> images;
-    public List<PerspectiveImage> getImages()
-    {
-        return images;
-    }
-
     private int nimages;
     private List<Integer> imageSlices;
     private PerspectiveImage firstImage;

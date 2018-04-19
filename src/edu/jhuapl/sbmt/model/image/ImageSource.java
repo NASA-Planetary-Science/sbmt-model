@@ -11,8 +11,7 @@ public enum ImageSource
     IMAGE_MAP("ImageMap", "image_map"),
     LOCAL_CYLINDRICAL("LocalCylindrical", "local_cylindrical"),
     LOCAL_PERSPECTIVE("LocalPerspective", "local_perspective"),
-    FALSE_COLOR("FalseColor", "false_color"),
-    GENERATED_CYLINDRICAL("GeneratedCylindrical", "generated_cylindrical");
+    FALSE_COLOR("FalseColor", "false_color");
 
     private String string; //String used in the GUI Pointing drop-down menu
     private String databaseTableName; //String used in the database table name
