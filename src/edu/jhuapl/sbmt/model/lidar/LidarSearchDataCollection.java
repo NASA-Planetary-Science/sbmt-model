@@ -560,63 +560,13 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void loadTrackOlaL2(File file) throws IOException
     {
-        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
-
-        Track track = new Track();
-        track.startId = originalPoints.size();
+        OLAL2File l2File=new OLAL2File(file.toPath());
+        List<LidarPoint> pts=Lists.newArrayList();
+        pts.addAll(l2File.read(1./1000.));
         int fileId=localFileMap.inverse().get(file.toString());
-        while (true)
-        {
-            double time = 0;
-            double[] target = {0.0, 0.0, 0.0};
-            double[] scpos = {0.0, 0.0, 0.0};
-            double intensityReceived = 0;
-            boolean noise = false;
-
-            try
-            {
-                in.readByte();
-            }
-            catch(EOFException e)
-            {
-                break;
-            }
-
-            try
-            {
-                skip(in, 17 + 8 + 24);
-                time = FileUtil.readDoubleAndSwap(in);
-                skip(in, 8 + 2 * 3);
-                short flagStatus = MathUtil.swap(in.readShort());
-                noise = ((flagStatus == 0 || flagStatus == 1) ? false : true);
-                skip(in, 8 + 8 * 3);
-                intensityReceived = FileUtil.readDoubleAndSwap(in);
-                target[0] = FileUtil.readDoubleAndSwap(in) / 1000.0;
-                target[1] = FileUtil.readDoubleAndSwap(in) / 1000.0;
-                target[2] = FileUtil.readDoubleAndSwap(in) / 1000.0;
-                skip(in, 8 * 3);
-                scpos[0] = FileUtil.readDoubleAndSwap(in) / 1000.0;
-                scpos[1] = FileUtil.readDoubleAndSwap(in) / 1000.0;
-                scpos[2] = FileUtil.readDoubleAndSwap(in) / 1000.0;
-            }
-            catch(IOException e)
-            {
-                in.close();
-                throw e;
-            }
-
-            if (!noise)
-            {
-                BasicLidarPoint pt = new BasicLidarPoint(target, scpos, time, intensityReceived);
-                originalPointsSourceFiles.put(pt,fileId);
-                originalPoints.add(pt);
-            }
-        }
-
-        in.close();
-
-        track.stopId = originalPoints.size() - 1;
-        tracks.add(track);
+        for (int i=0; i<pts.size(); i++)
+            originalPointsSourceFiles.put(pts.get(i),fileId);
+        originalPoints.addAll(pts);
     }
 
     public void loadTrackPLY(File file) throws IOException
