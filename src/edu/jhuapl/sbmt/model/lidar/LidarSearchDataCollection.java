@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -106,97 +105,13 @@ public class LidarSearchDataCollection extends AbstractModel
     protected List<Track> tracks = new ArrayList<Track>();
     private double timeSeparationBetweenTracks = 10.0; // In seconds
     private int minTrackLength = 1;
-    private int[] defaultColor = {0, 0, 255, 255};
+    int[] defaultColor = {0, 0, 255, 255};
     private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
     private boolean enableTrackErrorComputation = false;
     private double trackError;
 
 
     private boolean showSpacecraftPosition = false;
-
-    public class Track
-    {
-        public int startId = -1;
-        public int stopId = -1;
-        public boolean hidden = false;
-        public int[] color = defaultColor.clone(); // blue by default
-        List<Integer> sourceFiles=Lists.newArrayList();
-        public String[] timeRange=new String[]{"",""};
-        List<Map<Integer,String>> fileMaps=Lists.newArrayList();
-
-        public int getNumberOfPoints()
-        {
-            return stopId - startId + 1;
-        }
-
-        public boolean containsId(int id)
-        {
-            return startId >= 0 && stopId >=0 && id >= startId && id <= stopId;
-        }
-
-        public int getNumberOfSourceFiles()
-        {
-            return sourceFiles.size();
-        }
-
-        public String getSourceFileName(int i)
-        {
-            return fileMaps.get(i).get(sourceFiles.get(i));
-        }
-
-        public void registerSourceFileIndex(int fileNum, Map<Integer,String> fileMap)
-        {
-            if (!sourceFiles.contains(fileNum))
-            {
-                sourceFiles.add(fileNum);
-                fileMaps.add(fileMap);
-            }
-        }
-
-        public LidarPoint getPoint(int i)
-        {
-            return originalPoints.get(startId+i);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + getOuterType().hashCode();
-            result = prime * result + startId;
-            result = prime * result + stopId;
-            result = prime * result + Arrays.hashCode(timeRange);
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            Track other = (Track) obj;
-            if (!getOuterType().equals(other.getOuterType()))
-                return false;
-            if (startId != other.startId)
-                return false;
-            if (stopId != other.stopId)
-                return false;
-            if (!Arrays.equals(timeRange, other.timeRange))
-                return false;
-            return true;
-        }
-
-        private LidarSearchDataCollection getOuterType()
-        {
-            return LidarSearchDataCollection.this;
-        }
-
-    }
 
     public LidarSearchDataCollection(PolyhedralModel smallBodyModel)
     {
@@ -417,86 +332,89 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void loadTrackAscii(File file) throws IOException
     {
-        InputStream fs = new FileInputStream(file.getAbsolutePath());
-        InputStreamReader isr = new InputStreamReader(fs);
-        BufferedReader in = new BufferedReader(isr);
-
-        Track track = new Track();
-        track.startId = originalPoints.size();
-
-        int fileId=localFileMap.inverse().get(file.toString());
-
-        String lineRead;
-        while ((lineRead = in.readLine()) != null)
-        {
-            String[] vals = lineRead.trim().split("\\s+");
-
-            double time = 0;
-            double[] target = {0.0, 0.0, 0.0};
-            double[] scpos = {0.0, 0.0, 0.0};
-
-            // The lines in the file may contain either 3, or greater columns.
-            // If 3, they are assumed to contain the lidar point only and time and spacecraft
-            // position are set to zero. If 4 or 5, they are assumed to contain time and lidar point
-            // and spacecraft position is set to zero. If 6, they are assumed to contain
-            // lidar position and spacecraft position and time is set to zero. If 7 or greater,
-            // they are assumed to contain time, lidar position, and spacecraft position.
-            // In the case of 5 columns, the last column is ignored and in the case of
-            // greater than 7 columns, columns 8 or higher are ignored.
-            if (vals.length == 4 || vals.length == 5 || vals.length >= 7)
-            {
-                try
-                {
-                    // First try to see if it's a double ET. Otherwise assume it's UTC.
-                    time = Double.parseDouble(vals[0]);
-                }
-                catch (NumberFormatException e)
-                {
-                    time = TimeUtil.str2et(vals[0]);
-                    if (time == -Double.MIN_VALUE)
-                    {
-                        in.close();
-                        throw new IOException("Error: Incorrect file format!");
-                    }
-                }
-                target[0] = Double.parseDouble(vals[1]);
-                target[1] = Double.parseDouble(vals[2]);
-                target[2] = Double.parseDouble(vals[3]);
-            }
-            if (vals.length >= 7)
-            {
-                scpos[0] = Double.parseDouble(vals[4]);
-                scpos[1] = Double.parseDouble(vals[5]);
-                scpos[2] = Double.parseDouble(vals[6]);
-            }
-            if (vals.length == 3 || vals.length == 6)
-            {
-                target[0] = Double.parseDouble(vals[0]);
-                target[1] = Double.parseDouble(vals[1]);
-                target[2] = Double.parseDouble(vals[2]);
-            }
-            if (vals.length == 6)
-            {
-                scpos[0] = Double.parseDouble(vals[3]);
-                scpos[1] = Double.parseDouble(vals[4]);
-                scpos[2] = Double.parseDouble(vals[5]);
-            }
-
-            if (vals.length < 3)
-            {
-                in.close();
-                throw new IOException("Error: Incorrect file format!");
-            }
-
-            LidarPoint pt=new BasicLidarPoint(target, scpos, time, 0);
-            originalPoints.add(pt);
-            originalPointsSourceFiles.put(pt, fileId);
-        }
-
-        in.close();
-
-        track.stopId = originalPoints.size() - 1;
-        tracks.add(track);
+        LidarTextFormatReader textReader = new LidarTextFormatReader(file, localFileMap.inverse().get(file.toString()), originalPoints, originalPointsSourceFiles, tracks);
+//
+//
+//        InputStream fs = new FileInputStream(file.getAbsolutePath());
+//        InputStreamReader isr = new InputStreamReader(fs);
+//        BufferedReader in = new BufferedReader(isr);
+//
+//        Track track = new Track();
+//        track.startId = originalPoints.size();
+//
+//        int fileId=localFileMap.inverse().get(file.toString());
+//
+//        String lineRead;
+//        while ((lineRead = in.readLine()) != null)
+//        {
+//            String[] vals = lineRead.trim().split("\\s+");
+//
+//            double time = 0;
+//            double[] target = {0.0, 0.0, 0.0};
+//            double[] scpos = {0.0, 0.0, 0.0};
+//
+//            // The lines in the file may contain either 3, or greater columns.
+//            // If 3, they are assumed to contain the lidar point only and time and spacecraft
+//            // position are set to zero. If 4 or 5, they are assumed to contain time and lidar point
+//            // and spacecraft position is set to zero. If 6, they are assumed to contain
+//            // lidar position and spacecraft position and time is set to zero. If 7 or greater,
+//            // they are assumed to contain time, lidar position, and spacecraft position.
+//            // In the case of 5 columns, the last column is ignored and in the case of
+//            // greater than 7 columns, columns 8 or higher are ignored.
+//            if (vals.length == 4 || vals.length == 5 || vals.length >= 7)
+//            {
+//                try
+//                {
+//                    // First try to see if it's a double ET. Otherwise assume it's UTC.
+//                    time = Double.parseDouble(vals[0]);
+//                }
+//                catch (NumberFormatException e)
+//                {
+//                    time = TimeUtil.str2et(vals[0]);
+//                    if (time == -Double.MIN_VALUE)
+//                    {
+//                        in.close();
+//                        throw new IOException("Error: Incorrect file format!");
+//                    }
+//                }
+//                target[0] = Double.parseDouble(vals[1]);
+//                target[1] = Double.parseDouble(vals[2]);
+//                target[2] = Double.parseDouble(vals[3]);
+//            }
+//            if (vals.length >= 7)
+//            {
+//                scpos[0] = Double.parseDouble(vals[4]);
+//                scpos[1] = Double.parseDouble(vals[5]);
+//                scpos[2] = Double.parseDouble(vals[6]);
+//            }
+//            if (vals.length == 3 || vals.length == 6)
+//            {
+//                target[0] = Double.parseDouble(vals[0]);
+//                target[1] = Double.parseDouble(vals[1]);
+//                target[2] = Double.parseDouble(vals[2]);
+//            }
+//            if (vals.length == 6)
+//            {
+//                scpos[0] = Double.parseDouble(vals[3]);
+//                scpos[1] = Double.parseDouble(vals[4]);
+//                scpos[2] = Double.parseDouble(vals[5]);
+//            }
+//
+//            if (vals.length < 3)
+//            {
+//                in.close();
+//                throw new IOException("Error: Incorrect file format!");
+//            }
+//
+//            LidarPoint pt=new BasicLidarPoint(target, scpos, time, 0);
+//            originalPoints.add(pt);
+//            originalPointsSourceFiles.put(pt, fileId);
+//        }
+//
+//        in.close();
+//
+//        track.stopId = originalPoints.size() - 1;
+//        tracks.add(track);
     }
 
     public void loadTrackBinary(File file) throws IOException
@@ -620,7 +538,10 @@ public class LidarSearchDataCollection extends AbstractModel
                 computeTracks();
             }
             else if (trackFileType == TrackFileType.PLY)
+            {
                 loadTrackPLY(file);
+                computeTracks();
+            }
             else
             {
                 loadTrackOlaL2(file);
