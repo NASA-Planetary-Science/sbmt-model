@@ -9,23 +9,17 @@ import com.google.common.collect.Lists;
 public class Track
 {
     /**
-     *
-     */
-//    private LidarSearchDataCollection lidarSearchDataCollection = null;
-
-    /**
      * @param lidarSearchDataCollection
      */
-    public Track(/*LidarSearchDataCollection lidarSearchDataCollection*/)
+    Track()
     {
-//        this.lidarSearchDataCollection = lidarSearchDataCollection;
+
     }
 
     public int startId = -1;
     public int stopId = -1;
     public boolean hidden = false;
-//    public int[] color = this.lidarSearchDataCollection.defaultColor.clone(); // blue by default
-    public int[] color = {0, 0, 255, 255};
+    public int[] color = {0, 0, 255, 255}; //blue by default
     List<Integer> sourceFiles=Lists.newArrayList();
     public String[] timeRange=new String[]{"",""};
     List<Map<Integer,String>> fileMaps=Lists.newArrayList();
@@ -69,7 +63,6 @@ public class Track
     {
         final int prime = 31;
         int result = 1;
-//        result = prime * result + getOuterType().hashCode();
         result = prime * result + startId;
         result = prime * result + stopId;
         result = prime * result + Arrays.hashCode(timeRange);
@@ -86,8 +79,6 @@ public class Track
         if (getClass() != obj.getClass())
             return false;
         Track other = (Track) obj;
-//        if (!getOuterType().equals(other.getOuterType()))
-//            return false;
         if (startId != other.startId)
             return false;
         if (stopId != other.stopId)
@@ -96,10 +87,5 @@ public class Track
             return false;
         return true;
     }
-
-//    private LidarSearchDataCollection getOuterType()
-//    {
-//        return this.lidarSearchDataCollection;
-//    }
 
 }

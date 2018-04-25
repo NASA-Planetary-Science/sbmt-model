@@ -93,7 +93,7 @@ public class LidarSearchDataCollection extends AbstractModel
     private vtkActor scPosActor;
 
     protected double radialOffset = 0.0;
-    protected double[] translation = {0.0, 0.0, 0.0};
+    protected double[][] translation;
 
     private String dataSource;
     private double startDate;
@@ -164,6 +164,15 @@ public class LidarSearchDataCollection extends AbstractModel
         scPosActor=new vtkActor();
         scPosActor.SetMapper(scPosMapper);
         actors.add(scPosActor);
+    }
+
+    protected void initTranslationArray(int size)
+    {
+        translation = new double[size][];
+        for (int i = 0; i < size; i++)
+        {
+            translation[i] = new double[] {0.0, 0.0, 0.0};
+        }
     }
 
     public boolean isLoading()
@@ -314,13 +323,13 @@ public class LidarSearchDataCollection extends AbstractModel
                     continue;
                 }
             }
-
+            initTranslationArray(originalPoints.size());
             in.close();
         }
 
 
         radialOffset = 0.0;
-        translation[0] = translation[1] = translation[2] = 0.0;
+//        translation[0] = translation[1] = translation[2] = 0.0;
 
         computeTracks();
         removeTracksThatAreTooSmall();
@@ -460,7 +469,7 @@ public class LidarSearchDataCollection extends AbstractModel
             originalPoints.add(pt);
             originalPointsSourceFiles.put(pt,fileId);
         }
-
+        initTranslationArray(originalPoints.size());
         in.close();
 
         track.stopId = originalPoints.size() - 1;
@@ -485,6 +494,8 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=0; i<pts.size(); i++)
             originalPointsSourceFiles.put(pts.get(i),fileId);
         originalPoints.addAll(pts);
+        
+        initTranslationArray(originalPoints.size());
     }
 
     public void loadTrackPLY(File file) throws IOException
@@ -736,8 +747,8 @@ public class LidarSearchDataCollection extends AbstractModel
             double[] scpos = pt.getSourcePosition().toArray();
             if (transformPoint)
             {
-                target = transformLidarPoint(target);
-                scpos = transformScpos(scpos, target);
+                target = transformLidarPoint(target, i);
+                scpos = transformScpos(scpos, target, i);
             }
 
             String timeString = TimeUtil.et2str(pt.getTime());
@@ -789,8 +800,8 @@ public class LidarSearchDataCollection extends AbstractModel
                     double[] scpos = pt.getSourcePosition().toArray();
                     if (transformPoint)
                     {
-                        target = transformLidarPoint(target);
-                        scpos = transformScpos(scpos, target);
+                        target = transformLidarPoint(target, i);
+                        scpos = transformScpos(scpos, target, i);
                     }
 
                     String timeString = TimeUtil.et2str(pt.getTime());
@@ -914,7 +925,7 @@ public class LidarSearchDataCollection extends AbstractModel
         return displayedPointToOriginalPointMap.indexOf(ptId);
     }
 
-    private double[] transformLidarPoint(double[] pt)
+    private double[] transformLidarPoint(double[] pt, int index)
     {
         if (radialOffset != 0.0)
         {
@@ -923,7 +934,7 @@ public class LidarSearchDataCollection extends AbstractModel
             pt = MathUtil.latrec(lla);
         }
 
-        return new double[]{pt[0]+translation[0], pt[1]+translation[1], pt[2]+translation[2]};
+        return new double[]{pt[0]+translation[index][0], pt[1]+translation[index][1], pt[2]+translation[index][2]};
     }
 
     /**
@@ -935,7 +946,7 @@ public class LidarSearchDataCollection extends AbstractModel
      * @param lidarPoint
      * @return
      */
-    private double[] transformScpos(double[] scpos, double[] lidarPoint)
+    private double[] transformScpos(double[] scpos, double[] lidarPoint, int index)
     {
         if (radialOffset != 0.0)
         {
@@ -948,7 +959,7 @@ public class LidarSearchDataCollection extends AbstractModel
             scpos[2] += (offsetLidarPoint[2]-lidarPoint[2]);
         }
 
-        return new double[]{scpos[0]+translation[0], scpos[1]+translation[1], scpos[2]+translation[2]};
+        return new double[]{scpos[0]+translation[index][0], scpos[1]+translation[index][1], scpos[2]+translation[index][2]};
     }
 
     protected void updateTrackPolydata()
@@ -962,8 +973,8 @@ public class LidarSearchDataCollection extends AbstractModel
         vtkCellArray vert = polydata.GetVerts();
         vtkUnsignedCharArray colors = (vtkUnsignedCharArray)polydata.GetCellData().GetScalars();
 
-        vtkPoints scPoints=scPosPolyData.GetPoints();
-        vtkCellArray scVert=scPosPolyData.GetVerts();
+//        vtkPoints scPoints=scPosPolyData.GetPoints();
+//        vtkCellArray scVert=scPosPolyData.GetVerts();
         vtkUnsignedCharArray scColors=(vtkUnsignedCharArray)scPosPolyData.GetCellData().GetScalars();
 
         vtkIdList idList = new vtkIdList();
@@ -991,7 +1002,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 {
 
                     double[] pt = originalPoints.get(i).getTargetPosition().toArray();
-                    pt = transformLidarPoint(pt);
+                    pt = transformLidarPoint(pt, i);
                     int id=points.InsertNextPoint(pt);
                     idList.SetId(0, id);
                     vert.InsertNextCell(idList);
@@ -1146,18 +1157,50 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void setTranslation(double[] translation)
     {
-        if (this.translation[0] == translation[0] && this.translation[1] == translation[1] && this.translation[2] == translation[2])
-            return;
+        for (int i=0; i<this.translation.length; i++)
+        {
+//            if (this.translation[i][0] == translation[0] && this.translation[i][1] == translation[1] && this.translation[i][2] == translation[2])
+//                return;
 
-        this.translation[0] = translation[0];
-        this.translation[1] = translation[1];
-        this.translation[2] = translation[2];
+            this.translation[i][0] = translation[0];
+            this.translation[i][1] = translation[1];
+            this.translation[i][2] = translation[2];
+
+        }
 
         updateTrackPolydata();
         updateSelectedPoint();
     }
 
-    public double[] getTranslation()
+    public double[] getTranslation(int forIndex)
+    {
+        return this.translation[forIndex];
+    }
+
+    public void setTranslation(double[] translation, int forIndex)
+    {
+//        if (this.translation[forIndex][0] == translation[0] && this.translation[forIndex][1] == translation[1] && this.translation[forIndex][2] == translation[2])
+//        {
+//            System.out.println(
+//                    "LidarSearchDataCollection: setTranslation: no translation change");
+//            return;
+//        }
+
+        int startIndex = tracks.get(forIndex).startId;
+        int stopIndex = tracks.get(forIndex).stopId;
+        for (int i=startIndex; i<=stopIndex; i++)
+        {
+            this.translation[i][0] = translation[0];
+            this.translation[i][1] = translation[1];
+            this.translation[i][2] = translation[2];
+        }
+//        System.out.println("LidarSearchDataCollection: setTranslation: for index " + forIndex + " translation is " + this.translation[forIndex][0] + " " + this.translation[forIndex][1] + " " + this.translation[forIndex][2]);
+
+        updateTrackPolydata();
+        updateSelectedPoint();
+    }
+
+    public double[][] getTranslation()
     {
         return this.translation;
     }
@@ -1208,7 +1251,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 for (int i=startId; i<=stopId; ++i)
                 {
                     LidarPoint lp = originalPoints.get(i);
-                    double[] target = transformLidarPoint(lp.getTargetPosition().toArray());
+                    double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
                     fitter.addObservedPoint(1.0, lp.getTime()-t0, target[j]);
                 }
 
@@ -1221,7 +1264,7 @@ public class LidarSearchDataCollection extends AbstractModel
             // Set the fittedLinePoint to the point on the line closest to first track point
             // as this makes it easier to do distance computations along the line.
             double[] dist = new double[1];
-            double[] target = transformLidarPoint(originalPoints.get(startId).getTargetPosition().toArray());
+            double[] target = transformLidarPoint(originalPoints.get(startId).getTargetPosition().toArray(), startId);
             MathUtil.nplnpt(lineStartPoint, fittedLineDirection, target, fittedLinePoint, dist);
         }
         catch (Exception e)
@@ -1270,7 +1313,7 @@ public class LidarSearchDataCollection extends AbstractModel
         {
             LidarPoint pt = originalPoints.get(i);
             double[] target = pt.getTargetPosition().toArray();
-            target = transformLidarPoint(target);
+            target = transformLidarPoint(target, i);
             xyzPointList.add(target);
         }
         List<Point3D> accelerationVector = new ArrayList<Point3D>();
@@ -1291,7 +1334,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=track.startId; i<=track.stopId; ++i)
         {
             double[] point = originalPoints.get(i).getTargetPosition().toArray();
-            point = transformLidarPoint(point);
+            point = transformLidarPoint(point, i);
             double dist = distanceOfClosestPointOnLineToStartOfLine(point, trackId, fittedLinePoint, fittedLineDirection);
             distance.add(dist);
             time.add(originalPoints.get(i).getTime());
@@ -1334,6 +1377,18 @@ public class LidarSearchDataCollection extends AbstractModel
 
         selectedPointPolydata.Modified();
 
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public int getTrackIdFromSelectedPoint()
+    {
+        return getTrackIdFromPointId(getDisplayPointIdFromOriginalPointId(selectedPoint));
+    }
+
+    public void deselectSelectedPoint()
+    {
+        selectedPointPolydata.DeepCopy(emptyPolyData);
+        selectedPointPolydata.Modified();
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
@@ -1424,7 +1479,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=startId; i<=stopId; ++i)
         {
             LidarPoint lp = originalPoints.get(i);
-            double[] target = transformLidarPoint(lp.getTargetPosition().toArray());
+            double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
             centroid[0] += target[0];
             centroid[1] += target[1];
             centroid[2] += target[2];
@@ -1466,7 +1521,7 @@ public class LidarSearchDataCollection extends AbstractModel
             for (int i=startId,j=0; i<=stopId; ++i,++j)
             {
                 LidarPoint lp = originalPoints.get(i);
-                double[] target = transformLidarPoint(lp.getTargetPosition().toArray());
+                double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
                 points[0][j] = target[0] - centroid[0];
                 points[1][j] = target[1] - centroid[1];
                 points[2][j] = target[2] - centroid[2];
@@ -1522,7 +1577,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=startId; i<=stopId; ++i)
         {
             LidarPoint lp = originalPoints.get(i);
-            double[] target = transformLidarPoint(lp.getTargetPosition().toArray());
+            double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
 
             target[0] = target[0] - pointOnPlane[0];
             target[1] = target[1] - pointOnPlane[1];
@@ -1584,8 +1639,8 @@ public class LidarSearchDataCollection extends AbstractModel
             double[] scpos = pt.getSourcePosition().toArray();
             if (transformPoint)
             {
-                target = transformLidarPoint(target);
-                scpos = transformScpos(scpos, target);
+                target = transformLidarPoint(target, i);
+                scpos = transformScpos(scpos, target, i);
             }
 
             FileUtil.writeDoubleAndSwap(out, pt.getTime());

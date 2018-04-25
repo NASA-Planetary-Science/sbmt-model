@@ -150,7 +150,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                         break;
                 }
                 cancel(true);
-
+                initTranslationArray(originalPoints.size());
 
                 System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
@@ -164,7 +164,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                 sw.start();
 
                 radialOffset = 0.0;
-                translation[0] = translation[1] = translation[2] = 0.0;
+//                translation[0] = translation[1] = translation[2] = 0.0;
 
                 computeTracks();
 
