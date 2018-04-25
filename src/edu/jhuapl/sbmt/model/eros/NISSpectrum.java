@@ -9,11 +9,17 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import vtk.vtkDoubleArray;
+import vtk.vtkIdTypeArray;
 import vtk.vtkPolyData;
+import vtk.vtkTriangle;
 
+import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileUtil;
+import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
+import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
@@ -140,6 +146,60 @@ public class NISSpectrum extends BasicSpectrum
 
 
     }
+
+    @Override
+    public void generateFootprint()
+    {
+                if (!latLons.isEmpty())
+                {
+                    vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
+                            spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
+
+                    vtkDoubleArray faceAreaFraction = new vtkDoubleArray();
+                    faceAreaFraction.SetName(faceAreaFractionArrayName);
+                    Frustum frustum = new Frustum(getFrustumOrigin(),
+                            getFrustumCorner(0), getFrustumCorner(1),
+                            getFrustumCorner(2), getFrustumCorner(3));
+                    for (int c = 0; c < tmp.GetNumberOfCells(); c++)
+                    {
+                        vtkIdTypeArray originalIds = (vtkIdTypeArray) tmp.GetCellData()
+                                .GetArray(GenericPolyhedralModel.cellIdsArrayName);
+                        int originalId = originalIds.GetValue(c);
+                        vtkTriangle tri = (vtkTriangle) smallBodyModel
+                                .getSmallBodyPolyData().GetCell(originalId); // tri on
+                                                                             // original
+                                                                             // body
+                                                                             // model
+                        vtkTriangle ftri = (vtkTriangle) tmp.GetCell(c); // tri on
+                                                                         // footprint
+                        faceAreaFraction.InsertNextValue(
+                                ftri.ComputeArea() / tri.ComputeArea());
+                    }
+                    tmp.GetCellData().AddArray(faceAreaFraction);
+
+                    if (tmp != null)
+                    {
+                        // Need to clear out scalar data since if coloring data is being
+                        // shown,
+                        // then the color might mix-in with the image.
+                        tmp.GetCellData().SetScalars(null);
+                        tmp.GetPointData().SetScalars(null);
+
+                        footprint.DeepCopy(tmp);
+
+                        shiftedFootprint.DeepCopy(tmp);
+                        PolyDataUtil.shiftPolyDataInMeanNormalDirection(
+                                shiftedFootprint, footprintHeight);
+
+                        createSelectionPolyData();
+                        createSelectionActor();
+                        createToSunVectorPolyData();
+                        createToSunVectorActor();
+                        createOutlinePolyData();
+                        createOutlineActor();
+                    }
+                }
+            }
 
 
 

@@ -25,7 +25,7 @@ public enum Instrument
     ISS("ISS"),
     ONC("ONC"),
     TIR("TIR"),
-    LASER("LASER")
+    LASER("LIDAR")
     ;
 
     final private String str;
