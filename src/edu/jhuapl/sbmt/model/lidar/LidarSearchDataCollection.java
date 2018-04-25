@@ -66,10 +66,49 @@ public class LidarSearchDataCollection extends AbstractModel
 {
     public enum TrackFileType
     {
-        TEXT,
-        BINARY,
-        OLA_LEVEL_2,
-        PLY
+        LIDAR_ONLY("Lidar Point Only (X,Y,Z)"),
+        LIDAR_WITH_INTENSITY("Lidar Point (X,Y,Z) with Intensity (Albedo)"),
+        TIME_WITH_LIDAR("Time, Lidar Point (X,Y,Z)"),
+        TIME_LIDAR_ALBEDO("Time, Lidar (X,Y,Z), Albedo"),
+        LIDAR_SC("Lidar (X,Y,Z), S/C (SCx, SCy, SCz)"),
+        TIME_LIDAR_SC("Time, Lidar (X,Y,Z), S/C (SCx, SCy, SCz)"),
+        TIME_LIDAR_SC_ALBEDO("Time, Lidar (X,Y,Z), S/C (SCx, SCy, SCz), Albedo"),
+        BINARY("Binary"),
+        OLA_LEVEL_2("OLA Level 2"),
+        PLY("PLY");
+
+        String name;
+
+        private TrackFileType(String name)
+        {
+            this.name = name;
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public static TrackFileType find(String name)
+        {
+            for (TrackFileType type : values())
+            {
+                if (name == type.getName())
+                    return type;
+            }
+            return null;
+        }
+
+        public static String[] names()
+        {
+            String[] titles = new String[values().length];
+            int i=0;
+            for (TrackFileType type : values())
+            {
+                titles[i++] = type.getName();
+            }
+            return titles;
+        }
     };
 
     private BodyViewConfig polyhedralModelConfig;
@@ -339,10 +378,11 @@ public class LidarSearchDataCollection extends AbstractModel
         updateTrackPolydata();
     }
 
-    public void loadTrackAscii(File file) throws IOException
+    public void loadTrackAscii(File file, LIDARTextInputType type) throws IOException
     {
         LidarTextFormatReader textReader = new LidarTextFormatReader(file, localFileMap.inverse().get(file.toString()), originalPoints, originalPointsSourceFiles, tracks);
-//
+        textReader.process(type);
+        initTranslationArray(originalPoints.size());
 //
 //        InputStream fs = new FileInputStream(file.getAbsolutePath());
 //        InputStreamReader isr = new InputStreamReader(fs);
@@ -494,7 +534,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=0; i<pts.size(); i++)
             originalPointsSourceFiles.put(pts.get(i),fileId);
         originalPoints.addAll(pts);
-        
+
         initTranslationArray(originalPoints.size());
     }
 
@@ -538,12 +578,8 @@ public class LidarSearchDataCollection extends AbstractModel
             if (!localFileMap.containsValue(file.toString()))
                 localFileMap.put(localFileMap.size(), file.toString());
 
-            if (trackFileType == TrackFileType.TEXT)
-            {
-                loadTrackAscii(file);
-                computeLoadedTracks();
-            }
-            else if (trackFileType == TrackFileType.BINARY)
+
+            if (trackFileType == TrackFileType.BINARY)
             {
                 loadTrackBinary(file);
                 computeTracks();
@@ -553,51 +589,21 @@ public class LidarSearchDataCollection extends AbstractModel
                 loadTrackPLY(file);
                 computeTracks();
             }
-            else
+            else if (trackFileType == TrackFileType.OLA_LEVEL_2)
             {
                 loadTrackOlaL2(file);
                 computeTracks();
             }
-
-
-            //fileBounds.add(new int[]{oldBounds,originalPoints.size()-1,localFileMap.inverse().get(file.toString())});
-            //oldBounds=originalPoints.size();
+            else //variations on text input
+            {
+                loadTrackAscii(file, LIDARTextInputType.valueOf(trackFileType.name()));
+                computeLoadedTracks();
+            }
         }
-
-        //timeSeparationBetweenTracks = Double.MAX_VALUE;
-        //radialOffset = 0.0;
-        //translation[0] = translation[1] = translation[2] = 0.0;
-
-        //int startTrack=tracks.size();
-
 
         removeTracksThatAreTooSmall();
-        //int endTrack=tracks.size();
-
-
         assignInitialColorToTrack();
-
-        //for (int i=startTrack; i<endTrack; i++)
-        for (int i=0; i<tracks.size(); i++)
-        {
-            Track track=tracks.get(i);
-/*            for (int f=0; f<fileBounds.size(); f++)
-            {
-                int[] bounds=fileBounds.get(f);
-                if (track.startId>=bounds[0] && track.stopId<=bounds[1])
-                    tracks.get(i).registerSourceFileIndex(bounds[2], localFileMap);
-            }*/
-        }
-
         updateTrackPolydata();
-
-   /*     vtkPolyDataWriter writer=new vtkPolyDataWriter();
-        writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
-        writer.SetFileTypeToBinary();
-        writer.SetInputData(polydata);
-        writer.Write();*/
-
-
     }
 
     /**
