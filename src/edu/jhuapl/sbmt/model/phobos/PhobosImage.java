@@ -334,7 +334,7 @@ public class PhobosImage extends PerspectiveImage
         ImageKey key = getKey();
         File keyFile = new File(key.name);
         String fileName = keyFile.getName();
-        if (getFlip().contains("Y") && !isHiRISE(fileName))
+        if (getFlip().contains("Y") && !isHiRISE(fileName) && !isMoc(fileName))
         {
             ImageDataUtil.flipImageYAxis(rawImage);
         }
