@@ -44,7 +44,9 @@ import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkUnsignedCharArray;
+import vtk.vtkUnstructuredGrid;
 
+import edu.jhuapl.saavtk.io.readers.IpwgPlyReader;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
@@ -59,6 +61,7 @@ import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.lidar.BasicLidarPoint;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
+import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperPointWithFileTag;
 import edu.jhuapl.sbmt.util.TimeUtil;
 import edu.jhuapl.sbmt.util.gravity.Gravity;
 
@@ -148,7 +151,7 @@ public class LidarSearchDataCollection extends AbstractModel
     private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
     private boolean enableTrackErrorComputation = false;
     private double trackError;
-
+    protected float lightnessSpanBase = 0.5f;
 
     private boolean showSpacecraftPosition = false;
 
@@ -540,19 +543,22 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void loadTrackPLY(File file) throws IOException
     {
-/*
-        PlyReader reader=new PlyReader();
+        IpwgPlyReader reader = new IpwgPlyReader();
         reader.SetFileName(file.getAbsolutePath());
         reader.Update();
-        vtkPolyData polyData=reader.GetOutput();
-        vtkPolyDataWriter writer=new vtkPolyDataWriter();
-        writer.SetInputData(polyData);
-        writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
-        writer.SetFileTypeToBinary();
-        writer.Write();*/
-        DataInputStream stream=new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+        vtkUnstructuredGrid polyData=reader.getOutputAsUnstructuredGrid();
 
-        stream.close();
+        int fileId=localFileMap.inverse().get(file.toString());
+
+        LidarPoint lidarPt = null;
+        for (int i=0; i<polyData.GetNumberOfPoints(); i+=10)
+        {
+            double[] pt=polyData.GetPoint(i);
+            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, polyData.GetPointData().GetArray(0).GetTuple1(i), fileId);
+            originalPointsSourceFiles.put(lidarPt,fileId);
+            originalPoints.add(lidarPt);
+        }
+        initTranslationArray(originalPoints.size());
     }
 
     BiMap<Integer, String> localFileMap=HashBiMap.create();
@@ -1033,7 +1039,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 Color plotColor;
                 for(double intensity : intensityList)
                 {
-                    plotColor = ColorUtil.scaleLightness(trackHSL, intensity, minIntensity, maxIntensity);
+                    plotColor = ColorUtil.scaleLightness(trackHSL, intensity, minIntensity, maxIntensity, lightnessSpanBase);
                     colors.InsertNextTuple4(plotColor.getRed(), plotColor.getGreen(), plotColor.getBlue(), plotColor.getAlpha());
                     scColors.InsertNextTuple4(plotColor.getRed(), plotColor.getGreen(), plotColor.getBlue(), plotColor.getAlpha());
                 }
