@@ -530,6 +530,9 @@ public class LidarSearchDataCollection extends AbstractModel
 
     public void loadTrackOlaL2(File file) throws IOException
     {
+        Track track = new Track();
+        track.startId = originalPoints.size();
+
         OLAL2File l2File=new OLAL2File(file.toPath());
         List<LidarPoint> pts=Lists.newArrayList();
         pts.addAll(l2File.read(1./1000.));
@@ -539,10 +542,17 @@ public class LidarSearchDataCollection extends AbstractModel
         originalPoints.addAll(pts);
 
         initTranslationArray(originalPoints.size());
+
+        track.stopId = originalPoints.size() - 1;
+        tracks.add(track);
+        track.registerSourceFileIndex(fileId, localFileMap);
     }
 
     public void loadTrackPLY(File file) throws IOException
     {
+        Track track = new Track();
+        track.startId = originalPoints.size();
+
         IpwgPlyReader reader = new IpwgPlyReader();
         reader.SetFileName(file.getAbsolutePath());
         reader.Update();
@@ -559,6 +569,10 @@ public class LidarSearchDataCollection extends AbstractModel
             originalPoints.add(lidarPt);
         }
         initTranslationArray(originalPoints.size());
+
+        track.stopId = originalPoints.size() - 1;
+        tracks.add(track);
+        track.registerSourceFileIndex(fileId, localFileMap);
     }
 
     BiMap<Integer, String> localFileMap=HashBiMap.create();
@@ -588,17 +602,17 @@ public class LidarSearchDataCollection extends AbstractModel
             if (trackFileType == TrackFileType.BINARY)
             {
                 loadTrackBinary(file);
-                computeTracks();
+                computeLoadedTracks();
             }
             else if (trackFileType == TrackFileType.PLY)
             {
                 loadTrackPLY(file);
-                computeTracks();
+                computeLoadedTracks();
             }
             else if (trackFileType == TrackFileType.OLA_LEVEL_2)
             {
                 loadTrackOlaL2(file);
-                computeTracks();
+                computeLoadedTracks();
             }
             else //variations on text input
             {
@@ -669,6 +683,8 @@ public class LidarSearchDataCollection extends AbstractModel
 
     protected void computeLoadedTracks()
     {
+        System.out.println(
+                "LidarSearchDataCollection: computeLoadedTracks: number of tracks " + tracks.size());
         for (Track track : tracks)
         {
             computeTrack(track);
