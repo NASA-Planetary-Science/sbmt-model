@@ -39,6 +39,9 @@ public class OVIRSSpectrum extends BasicSpectrum
 {
     boolean footprintGenerated = false;
     File infoFile, spectrumFile;
+    double time;
+    double boresightLatDeg, boresightLonDeg;
+    double[] calibratedRadianceUncertainty;
 
     public OVIRSSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
@@ -49,7 +52,7 @@ public class OVIRSSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        throw new IOException("Not implemented.");
+        new OVIRSSpectrumWriter(file.getAbsolutePath(), this);
     }
 
     protected String getInfoFilePathOnServer()
@@ -204,6 +207,10 @@ public class OVIRSSpectrum extends BasicSpectrum
         reader.read();
         //
         spectrum=reader.getCalibratedRadiance();
+        time = reader.getEt();
+        calibratedRadianceUncertainty = reader.getCalibratedRadianceUncertainty();
+        boresightLatDeg = reader.getBoresightLatDeg();
+        boresightLonDeg = reader.getBoresightLonDeg();
     }
 
     @Override
@@ -366,6 +373,26 @@ public class OVIRSSpectrum extends BasicSpectrum
             color[i] = slope * (val - channelsColoringMinValue[i]);
         }
         return color;
+    }
+
+    public double getTime()
+    {
+        return time;
+    }
+
+    public double getBoresightLatDeg()
+    {
+        return boresightLatDeg;
+    }
+
+    public double getBoresightLonDeg()
+    {
+        return boresightLonDeg;
+    }
+
+    public double[] getCalibratedRadianceUncertainty()
+    {
+        return calibratedRadianceUncertainty;
     }
 
 }
