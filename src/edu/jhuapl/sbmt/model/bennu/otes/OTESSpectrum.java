@@ -50,7 +50,7 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        new OTESSpectrumWriter(file.getAbsolutePath(), this);
+        new OTESSpectrumWriter(file.getAbsolutePath(), this).write();;
     }
 
     protected String getInfoFilePathOnServer()

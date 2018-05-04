@@ -52,7 +52,7 @@ public class OVIRSSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        new OVIRSSpectrumWriter(file.getAbsolutePath(), this);
+        new OVIRSSpectrumWriter(file.getAbsolutePath(), this).write();;
     }
 
     protected String getInfoFilePathOnServer()
