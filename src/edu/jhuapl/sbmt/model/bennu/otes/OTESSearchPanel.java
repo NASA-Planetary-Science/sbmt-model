@@ -110,7 +110,7 @@ public class OTESSearchPanel extends SpectrumSearchPanel
     @Override
     public String createSpectrumName(String currentSpectrumRaw)
     {
-        return "/earth/osirisrex/otes/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".cal";
+        return "/earth/osirisrex/otes/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".000000.spect";
     }
 
 

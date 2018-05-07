@@ -60,6 +60,13 @@ public class OTESSpectrum extends BasicSpectrum
                 .toString();
     }
 
+    public String getSpectrumPathOnServer()
+    {
+        return Paths.get(serverpath).getParent()
+                .resolve(FilenameUtils.getBaseName(serverpath) + ".spect")
+                .toString();
+    }
+
     @Override
     public void generateFootprint()
     {
