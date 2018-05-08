@@ -173,17 +173,17 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
 
        initTranslationArray(originalPoints.size());
 
-       while (isLoading())
-       {
-           try
-           {
-               Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
-           }
-           catch (InterruptedException e)
-           {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
-           }
+//       while (isLoading())
+//       {
+//           try
+//           {
+//               Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
+//           }
+//           catch (InterruptedException e)
+//           {
+//               // TODO Auto-generated catch block
+//               e.printStackTrace();
+//           }
 
                     // Sort points in time order
     //                Collections.sort(originalPoints);
@@ -232,7 +232,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
 
             pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
        }
-    }
+//    }
 
     static vtkPoints points=new vtkPoints();
     static vtkCellArray cells=new vtkCellArray();
