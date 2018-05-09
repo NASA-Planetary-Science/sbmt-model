@@ -58,7 +58,7 @@ public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyC
             series.add(wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory.createXYLineChart
-                ("OVIRS Calibrated Spectrum", "W sr^-1 m^2", "Radiance",
+                ("OVIRS Calibrated Spectrum", "Wavelength (micron)", "Radiance (W sr^-1 m^2)",
                         xyDataset, PlotOrientation.VERTICAL, true, true, false);
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setMouseWheelEnabled(true);
