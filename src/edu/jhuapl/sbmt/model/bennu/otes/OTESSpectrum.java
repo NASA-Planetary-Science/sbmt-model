@@ -39,6 +39,7 @@ public class OTESSpectrum extends BasicSpectrum
 {
     boolean footprintGenerated = false;
     File infoFile, spectrumFile;
+    double time;
 
     public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
@@ -49,7 +50,7 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        throw new IOException("Not implemented.");
+        new OTESSpectrumWriter(file.getAbsolutePath(), this).write();;
     }
 
     protected String getInfoFilePathOnServer()
@@ -57,6 +58,13 @@ public class OTESSpectrum extends BasicSpectrum
         return Paths.get(getSpectrumPathOnServer()).getParent()
                 .resolveSibling("infofiles-corrected")
                 .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+                .toString();
+    }
+
+    public String getSpectrumPathOnServer()
+    {
+        return Paths.get(serverpath).getParent()
+                .resolve(FilenameUtils.getBaseName(serverpath) + ".spect")
                 .toString();
     }
 
@@ -205,6 +213,7 @@ public class OTESSpectrum extends BasicSpectrum
         reader.read();
         //
         spectrum=reader.getCalibratedRadiance();
+        time = reader.getEt();
     }
 
     @Override
@@ -359,6 +368,11 @@ public class OTESSpectrum extends BasicSpectrum
             color[i] = slope * (val - channelsColoringMinValue[i]);
         }
         return color;
+    }
+
+    public double getTime()
+    {
+        return time;
     }
 
 

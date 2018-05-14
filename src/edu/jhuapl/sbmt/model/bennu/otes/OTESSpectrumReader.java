@@ -9,7 +9,7 @@ import edu.jhuapl.sbmt.model.image.BasicFileReader;
 
 public class OTESSpectrumReader extends BasicFileReader
 {
-    String sourceFileName;
+//    String sourceFileName;
     double et;
     double[] calibratedRadiance;
 
@@ -26,9 +26,9 @@ public class OTESSpectrumReader extends BasicFileReader
         {
             calibratedRadiance=new double[OTES.bandCenters.length];
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
-            byte[] sourceFileNameBytes=new byte[36];    // Ray stores the filename as 36 bytes at the beginning of the header
-            stream.readFully(sourceFileNameBytes);
-            sourceFileName=new String(sourceFileNameBytes);
+//            byte[] sourceFileNameBytes=new byte[36];    // Ray stores the filename as 36 bytes at the beginning of the header
+//            stream.readFully(sourceFileNameBytes);
+//            sourceFileName=new String(sourceFileNameBytes);
             et=stream.readDouble();
             //byte[] data=new byte[OTES.bandCenters.length*Double.BYTES];
             //stream.readFully(data);
