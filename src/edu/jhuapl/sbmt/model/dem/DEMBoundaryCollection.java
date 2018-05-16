@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkActor;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
@@ -23,7 +21,8 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.dem.DEM.DEMKey;
+
+import nom.tam.fits.FitsException;
 
 public class DEMBoundaryCollection extends AbstractModel implements PropertyChangeListener
 {
