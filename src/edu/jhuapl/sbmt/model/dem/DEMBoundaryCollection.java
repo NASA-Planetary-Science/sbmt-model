@@ -19,12 +19,16 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk2.event.Event;
+import edu.jhuapl.saavtk2.event.EventListener;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.dtm.HideDEMBoundaryEvent;
+import edu.jhuapl.sbmt.model.dtm.ShowDEMBoundaryEvent;
 
 import nom.tam.fits.FitsException;
 
-public class DEMBoundaryCollection extends AbstractModel implements PropertyChangeListener
+public class DEMBoundaryCollection extends AbstractModel implements PropertyChangeListener, EventListener
 {
     public class DEMBoundary extends AbstractModel implements PropertyChangeListener
     {
@@ -348,5 +352,28 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    @Override
+    public void handle(Event event)
+    {
+        try
+        {
+            if (event instanceof ShowDEMBoundaryEvent)
+            {
+                ShowDEMBoundaryEvent eventCast = (ShowDEMBoundaryEvent) event;
+                addBoundary(eventCast.getKey());
+            }
+            else if (event instanceof HideDEMBoundaryEvent)
+            {
+                HideDEMBoundaryEvent eventCast=(HideDEMBoundaryEvent) event;
+                removeBoundary(eventCast.getKey());
+            }
+        }
+        catch (IOException | FitsException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

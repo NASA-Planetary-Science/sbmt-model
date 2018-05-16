@@ -3,8 +3,11 @@ package edu.jhuapl.sbmt.model.dem;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.FilenameUtils;
 
 import vtk.vtkCellArray;
 import vtk.vtkDataArray;
@@ -22,7 +25,8 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.saavtk2.io.GeometryReader;
+import edu.jhuapl.saavtk2.geom.Geometry;
+import edu.jhuapl.saavtk2.io.ObjGeometryReader;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.dem.DEMView;
 
@@ -121,17 +125,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     }
 
 
-    public DEM(GeometryReader demSource)
-    {
-        key=new DEMKey(demSource.getPath().toString(), demSource.getPath().getFileName().toString());
-        // Initialize data structures
-        dem = demSource.readAndBuild().getPolyData();
-        boundary = new vtkPolyData();
-
-    }
-
     // New constructor making use of key
-    public DEM(DEMKey key) throws IOException, FitsException
+    public DEM(DEMKey key) throws IOException
     {
         // Store the key for future use
         this.key = key;
@@ -140,7 +135,20 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         dem = new vtkPolyData();
         boundary = new vtkPolyData();
 
-        initializeDEM(key.fileName);
+        if (FilenameUtils.isExtension(key.fileName.toLowerCase(), new String[]{"fit","fits"}))
+            try
+            {
+                fromFits(key.fileName);
+            }
+            catch (FitsException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        else if (FilenameUtils.isExtension(key.fileName.toLowerCase(), "obj"))
+        {
+            fromObj(key.fileName);
+        }
 
         setSmallBodyPolyData(dem, coloringValuesPerCell, coloringNames, coloringUnits, ColoringValueType.CELLDATA);
     }
@@ -308,7 +316,22 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                 coloringUnits, ColoringValueType.CELLDATA);
     }
 
-    protected vtkPolyData initializeDEM(String filename) throws IOException, FitsException
+    protected vtkPolyData fromObj(String filename)
+    {
+        ObjGeometryReader reader=new ObjGeometryReader(Paths.get(filename));
+        Geometry geom=reader.get();
+        dem=geom.getPolyData();
+        centerOfDEM=dem.GetCenter();
+        int numBackPlanes = 0;
+        coloringValuesPerCell = new vtkFloatArray[numBackPlanes];
+        coloringValuesPerPoint = new vtkFloatArray[numBackPlanes];
+        coloringNames = new String[numBackPlanes];
+        coloringUnits = new String[numBackPlanes];
+        coloringValuesScale = new float[numBackPlanes];
+        return dem;
+    }
+
+    protected vtkPolyData fromFits(String filename) throws IOException, FitsException
     {
         vtkPoints points = new vtkPoints();
         vtkCellArray polys = new vtkCellArray();
