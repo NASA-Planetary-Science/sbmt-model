@@ -194,7 +194,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
      * by the asteroid.
      * @return
      */
-    protected abstract vtkPolyData getShiftedFootprint();
+    public abstract vtkPolyData getShiftedFootprint();
 
     /**
      * The original footprint whose cells exactly overlap the original asteroid.

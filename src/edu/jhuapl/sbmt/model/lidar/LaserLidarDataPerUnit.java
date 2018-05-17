@@ -94,7 +94,7 @@ public class LaserLidarDataPerUnit extends LidarDataPerUnit
         float[] baseHSL = ColorUtil.getHSLColorComponents(baseColor);
         for(double intensity : intensityList)
         {
-            plotColor = ColorUtil.scaleLightness(baseHSL, intensity, minIntensity, maxIntensity);
+            plotColor = ColorUtil.scaleLightness(baseHSL, intensity, minIntensity, maxIntensity, 0.5f);
             colors.InsertNextTuple4(plotColor.getRed(), plotColor.getGreen(), plotColor.getBlue(), plotColor.getAlpha());
         }
 
