@@ -227,4 +227,13 @@ public final class NisQuery extends QueryBase
         }
         return result;
     }
+
+    protected void changeImagePathToFullPath(List<String> result)
+    {
+        String fullPath = result.get(1) + "/" + result.get(2) + "/" + result.get(0);
+        if (!fullPath.contains("/"))
+        {
+            result.set(0, getDataPath() + "/" + fullPath);
+        }
+    }
 }
