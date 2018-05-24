@@ -6,10 +6,10 @@ import com.google.common.collect.Lists;
 
 import edu.jhuapl.saavtk2.event.Event;
 import edu.jhuapl.saavtk2.event.EventListener;
+import edu.jhuapl.saavtk2.table.MapAndShowTable;
 import edu.jhuapl.saavtk2.table.TableColumn;
 import edu.jhuapl.saavtk2.table.TableEntryChangedEvent;
 import edu.jhuapl.saavtk2.table.TableSwingWrapper;
-import edu.jhuapl.saavtk2.table.search.MapAndShowTable;
 import edu.jhuapl.sbmt.model.dem.DEMKey;
 
 public class DEMTable extends MapAndShowTable {
@@ -59,6 +59,7 @@ public class DEMTable extends MapAndShowTable {
 	{
 		this.availableKeys.add(key);
 		super.appendRow(new Object[]{false,false,false, generateDescription(key)});
+
 	}
 
 	protected String generateDescription(DEMKey key)
@@ -172,6 +173,11 @@ public class DEMTable extends MapAndShowTable {
 
             }
         }
+    }
+
+    public DEMKey getKey(int row)
+    {
+        return availableKeys.get(row);
     }
 
     public static TableSwingWrapper createSwingWrapper(final DEMTable table)

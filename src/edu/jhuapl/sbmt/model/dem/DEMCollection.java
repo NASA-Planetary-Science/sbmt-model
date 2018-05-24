@@ -232,7 +232,7 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
         }
     }
 
-    protected void saveDEM(DEMKey key) throws IOException
+    public void saveDEM(DEMKey key) throws IOException
     {
         String uuid = UUID.randomUUID().toString();
 
@@ -243,7 +243,7 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
             String newFilepath = Paths.get(modelManager.getPolyhedralModel().getCustomDataFolder()).resolve(newFilename).toString();
             FileUtil.copyFile(key.fileName,  newFilepath);
             // Change demInfo.demfilename to the new location of the file
-            key.fileName = newFilename;
+            key.fileName = newFilepath;
         }
         else
         {
