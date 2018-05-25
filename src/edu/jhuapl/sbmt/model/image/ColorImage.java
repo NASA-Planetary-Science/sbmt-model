@@ -535,7 +535,7 @@ public class ColorImage extends Image implements PropertyChangeListener
     }
 
     @Override
-    protected vtkPolyData getShiftedFootprint() {
+    public vtkPolyData getShiftedFootprint() {
         return shiftedFootprint;
     }
 

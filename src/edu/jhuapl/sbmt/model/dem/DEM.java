@@ -109,6 +109,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     // Copy constructor
     public DEM(DEM copyDEM)
     {
+        super(copyDEM.getKey().fileName);
         if(copyDEM.dem != null)
         {
             dem = new vtkPolyData();
@@ -162,6 +163,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     // New constructor making use of key
     public DEM(DEMKey key) throws IOException, FitsException
     {
+        super(key.fileName);
         // Store the key for future use
         this.key = key;
 

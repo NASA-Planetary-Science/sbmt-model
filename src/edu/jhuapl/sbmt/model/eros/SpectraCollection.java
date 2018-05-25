@@ -273,13 +273,16 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return fileToSpectrumMap.containsKey(file);
     }
 
-    public void setChannelColoring(int[] channels, double[] mins, double[] maxs)
+    public void setChannelColoring(int[] channels, double[] mins, double[] maxs, SpectralInstrument instrument)
     {
         for (String file : this.fileToSpectrumMap.keySet())
         {
             Spectrum spectrum=this.fileToSpectrumMap.get(file);
-            spectrum.setChannelColoring(channels, mins, maxs);
-            spectrum.updateChannelColoring();
+            if (spectrum.getInstrument() == instrument)
+            {
+                spectrum.setChannelColoring(channels, mins, maxs);
+                spectrum.updateChannelColoring();
+            }
         }
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
