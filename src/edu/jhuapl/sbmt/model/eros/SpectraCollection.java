@@ -158,7 +158,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         for (vtkProp act : props)
             actorToFileMap.put(act, path);
 
-
+        select(spectrum);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         return spectrum;
     }
