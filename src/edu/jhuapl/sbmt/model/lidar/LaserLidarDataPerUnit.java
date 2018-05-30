@@ -156,7 +156,7 @@ public class LaserLidarDataPerUnit extends LidarDataPerUnit
             BodyViewConfig polyhedralModelConfig) throws IOException
     {
         super(path, polyhedralModelConfig);
-        offsetMultiplier=1e6;
+        offsetMultiplier=10.;
     }
 
 }
