@@ -45,6 +45,7 @@ public class OLAL2File
         {
             int timeAddx=(1 + 17 + 8 + 24);
             int flagStatusAddx=timeAddx+Double.BYTES+(8 + 2 * 3);
+            int intensityAddx=flagStatusAddx+Short.BYTES+(8 + 8 * 3);
             int tgPosAddx=flagStatusAddx+Short.BYTES+(8 + 8 * 4);
             int scPosAddx=tgPosAddx+Double.BYTES*3+(8 * 3);
             int recordLength=scPosAddx+Double.BYTES*3;
@@ -54,9 +55,12 @@ public class OLAL2File
             byte[] readBuffer=new byte[recordLength];
             while (true)
             {
+                double intensityReceived = 0;
+
                 in.readFully(readBuffer);
                 double time=ByteBuffer.wrap(readBuffer,timeAddx,Double.BYTES).order(ByteOrder.LITTLE_ENDIAN).getDouble();
                 short flagStatus=ByteBuffer.wrap(readBuffer,flagStatusAddx,Short.BYTES).order(ByteOrder.LITTLE_ENDIAN).getShort();
+                intensityReceived = ByteBuffer.wrap(readBuffer,intensityAddx,Double.BYTES).order(ByteOrder.LITTLE_ENDIAN).getDouble();
                 double[] tgPos=new double[3];
                 double[] scPos=new double[3];
                 ByteBuffer.wrap(readBuffer,tgPosAddx,Double.BYTES*3).order(ByteOrder.LITTLE_ENDIAN).asDoubleBuffer().get(tgPos);
@@ -65,7 +69,7 @@ public class OLAL2File
                 //
                 boolean noise = ((flagStatus == 0 || flagStatus == 1) ? false : true);
                 if (!noise)
-                    points.add(new OlaFSHyperPoint(tgPos[0]*scale, tgPos[1]*scale, tgPos[2]*scale, time, scPos[0]*scale, scPos[1]*scale, scPos[2]*scale, 0, id));
+                    points.add(new OlaFSHyperPoint(tgPos[0]*scale, tgPos[1]*scale, tgPos[2]*scale, time, scPos[0]*scale, scPos[1]*scale, scPos[2]*scale, intensityReceived, id));
             }
 
         }

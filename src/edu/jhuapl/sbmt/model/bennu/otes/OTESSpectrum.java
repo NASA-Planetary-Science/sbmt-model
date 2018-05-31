@@ -95,24 +95,37 @@ public class OTESSpectrum extends BasicSpectrum
             {
                 vtkPolyData tmp2=new vtkPolyData();
 
-            Rotation rot=new Rotation(lookUnit, Math.toRadians(angles[i]));
-            Vector3D g1=rot.applyTo(f1);
-            Vector3D g2=rot.applyTo(f2);
-            Vector3D g3=rot.applyTo(f3);
-            Vector3D g4=rot.applyTo(f4);
+                Rotation rot=new Rotation(lookUnit, Math.toRadians(angles[i]));
+                Vector3D g1=rot.applyTo(f1);
+                Vector3D g2=rot.applyTo(f2);
+                Vector3D g3=rot.applyTo(f3);
+                Vector3D g4=rot.applyTo(f4);
 
-            vtksbCellLocator tree=new vtksbCellLocator();
-            tree.SetDataSet(tmp);
-            tree.SetTolerance(1e-12);
-            tree.BuildLocator();
+                vtksbCellLocator tree=new vtksbCellLocator();
+                tree.SetDataSet(tmp);
+                tree.SetTolerance(1e-12);
+                tree.BuildLocator();
 
-            vtkPointLocator ploc=new vtkPointLocator();
-            ploc.SetDataSet(tmp);
-            ploc.SetTolerance(1e-12);
-            ploc.BuildLocator();
+                vtkPointLocator ploc=new vtkPointLocator();
+                ploc.SetDataSet(tmp);
+                ploc.SetTolerance(1e-12);
+                ploc.BuildLocator();
 
-            tmp2 = PolyDataUtil.computeFrustumIntersection(tmp, tree, ploc, spacecraftPosition, g1.toArray(), g2.toArray(), g3.toArray(), g4.toArray());
-            tmp.DeepCopy(tmp2);
+                tmp2 = PolyDataUtil.computeFrustumIntersection(tmp, tree, ploc, spacecraftPosition, g1.toArray(), g2.toArray(), g3.toArray(), g4.toArray());
+                if (tmp2 == null)
+                {
+                    try
+                    {
+                        throw new Exception("Frustum intersection is null - this needs to be handled better");
+                    }
+                    catch (Exception e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    continue;
+                }
+                tmp.DeepCopy(tmp2);
             }
 
             if (tmp==null)

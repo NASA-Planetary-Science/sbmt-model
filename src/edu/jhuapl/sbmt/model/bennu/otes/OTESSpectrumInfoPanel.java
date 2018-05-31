@@ -55,10 +55,10 @@ public class OTESSpectrumInfoPanel extends ModelInfoWindow implements PropertyCh
         double[] wavelengths = spectrum.getBandCenters();
         double[] spect = spectrum.getSpectrum();
         for (int i=0; i<wavelengths.length; ++i)
-            series.add(wavelengths[i], spect[i]);
+            series.add(10000.0/wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory.createXYLineChart
-                ("OTES Calibrated Spectrum", "Wavelength (nm)", "Reflectance",
+                ("OTES Calibrated Spectrum", "Wavelength (micron)", "Reflectance",
                         xyDataset, PlotOrientation.VERTICAL, true, true, false);
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setMouseWheelEnabled(true);

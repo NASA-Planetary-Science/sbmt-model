@@ -761,7 +761,7 @@ public class CylindricalImage extends Image
     }
 
     @Override
-    protected vtkPolyData getShiftedFootprint() {
+    public vtkPolyData getShiftedFootprint() {
         return shiftedFootprint;
     }
 
