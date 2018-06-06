@@ -73,12 +73,12 @@ public class DEMTable extends MapAndShowTable {
 		super.removeRow(r);
 	}
 
-	public void signalDemCreated(int row)
+	public void signalDemMapped(int row)
 	{
 	    fire(new CreateDEMEvent(this, availableKeys.get(row)));
 	}
 
-    public void signalDemDeleted(int row)
+    public void signalDemUnmapped(int row)
     {
         fire(new DeleteDEMEvent(this, availableKeys.get(row)));
     }
@@ -108,6 +108,7 @@ public class DEMTable extends MapAndShowTable {
     {
 
         TableSwingWrapper swingTableWrapper;
+
         public MapAndShowBehavior(TableSwingWrapper swingTableWrapper)
         {
             this.swingTableWrapper=swingTableWrapper;
@@ -125,11 +126,11 @@ public class DEMTable extends MapAndShowTable {
                     Boolean map=(Boolean)event.getValue();
                     if (map)  // here we fire events that are meant to be listened for externally
                     {
-                        signalDemCreated(row);
+                        signalDemMapped(row);
                     }
                     else
                     {
-                        signalDemDeleted(row);
+                        signalDemUnmapped(row);
                     }
                     //
                     setItemMapped(row, map);    // this fires events needed internally for the table and its swing counterpart to synchronize
