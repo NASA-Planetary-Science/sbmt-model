@@ -18,17 +18,18 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchPanel;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class NIRS3SearchPanel extends SpectrumSearchPanel
 {
 
-    public NIRS3SearchPanel(ModelManager modelManager,
+    public NIRS3SearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
             Renderer renderer, SpectralInstrument instrument)
     {
-        super(modelManager, infoPanelManager, pickManager, renderer, instrument);
+        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
         // TODO Auto-generated constructor stub
 
 

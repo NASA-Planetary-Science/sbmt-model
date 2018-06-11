@@ -18,24 +18,23 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
-import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchPanel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
-public class OTESSearchPanel extends SpectrumSearchPanel
+public class OTESSearchPanel extends SpectrumSearchController
 {
 
-    public OTESSearchPanel(ModelManager modelManager,
+    public OTESSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
             Renderer renderer, SpectralInstrument instrument)
     {
-        super(modelManager, infoPanelManager, pickManager, renderer, instrument);
-        // TODO Auto-generated constructor stub
-
+        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
 
         setupComboBoxes();
 
-
-        List<JSpinner> spinners=Lists.newArrayList(blueMaxSpinner,blueMinSpinner,redMaxSpinner,redMinSpinner,greenMaxSpinner,greenMinSpinner);
+        List<JSpinner> spinners=Lists.newArrayList(view.getBlueMaxSpinner(), view.getBlueMinSpinner(), view.getRedMaxSpinner(), view.getRedMinSpinner(),
+                view.getGreenMaxSpinner(), view.getGreenMinSpinner());
 
         for (JSpinner spinner : spinners)
         {
@@ -45,22 +44,20 @@ public class OTESSearchPanel extends SpectrumSearchPanel
             format.setMinimumFractionDigits(8);
         }
 
-        redMaxSpinner.setValue(0.000001);
-        greenMaxSpinner.setValue(0.000001);
-        blueMaxSpinner.setValue(0.000001);
+        view.getRedMaxSpinner().setValue(0.000001);
+        view.getGreenMaxSpinner().setValue(0.000001);
+        view.getBlueMaxSpinner().setValue(0.000001);
 
-        redComboBox.setSelectedIndex(50);
-        greenComboBox.setSelectedIndex(100);
-        blueComboBox.setSelectedIndex(150);
+        view.getRedComboBox().setSelectedIndex(50);
+        view.getGreenComboBox().setSelectedIndex(100);
+        view.getBlueComboBox().setSelectedIndex(150);
 
     }
 
     @Override
     protected void setSpectrumSearchResults(List<List<String>> results)
     {
-
-        spectrumResultsLabelText = results.size() + " spectra matched";
-        resultsLabel.setText(spectrumResultsLabelText);
+        view.getResultsLabel().setText(results.size() + " spectra matched");
 
         List<String> matchedImages=Lists.newArrayList();
         for (List<String> res : results)
@@ -78,8 +75,8 @@ public class OTESSearchPanel extends SpectrumSearchPanel
 
         }
 
-
-        spectrumRawResults = matchedImages;
+        model.setSpectrumRawResults(matchedImages);
+//        spectrumRawResults = matchedImages;
 
         String[] formattedResults = new String[results.size()];
 
@@ -99,12 +96,14 @@ public class OTESSearchPanel extends SpectrumSearchPanel
             ++i;
         }
 
-        resultList.setListData(formattedResults);
+        view.getResultList().setListData(formattedResults);
+//        resultList.setListData(formattedResults);
 
-
+        System.out.println("OTESSearchPanel: setSpectrumSearchResults: model is " + model + " and num footprints combo " + view.getNumberOfFootprintsComboBox());
         // Show the first set of footprints
-        this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.numberOfFootprintsComboBox.getSelectedItem()));
-        this.showFootprints(resultIntervalCurrentlyShown);
+        model.setResultIntervalCurrentlyShown(new IdPair(0, Integer.parseInt((String)view.getNumberOfFootprintsComboBox().getSelectedItem())));
+//        this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.numberOfFootprintsComboBox.getSelectedItem()));
+        this.showFootprints(model.getResultIntervalCurrentlyShown());
     }
 
     @Override

@@ -19,6 +19,7 @@ import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchPanel;
 import edu.jhuapl.sbmt.model.eros.SpectraCollection;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
@@ -26,11 +27,11 @@ import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 public class OVIRSSearchPanel extends SpectrumSearchPanel
 {
 
-    public OVIRSSearchPanel(ModelManager modelManager,
+    public OVIRSSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
             Renderer renderer, SpectralInstrument instrument)
     {
-        super(modelManager, infoPanelManager, pickManager, renderer, instrument);
+        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
         // TODO Auto-generated constructor stub
 
 

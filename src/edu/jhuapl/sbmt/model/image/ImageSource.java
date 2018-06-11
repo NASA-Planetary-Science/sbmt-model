@@ -51,4 +51,16 @@ public enum ImageSource
         return out;
     }
 
+    public static ImageSource valueFor(String description)
+    {
+        for (ImageSource source : values())
+        {
+            if (source.toString() == description)
+            {
+                return source;
+            }
+        }
+        return null;
+    }
+
 }
