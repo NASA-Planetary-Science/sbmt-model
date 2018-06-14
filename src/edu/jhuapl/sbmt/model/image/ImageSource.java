@@ -55,7 +55,7 @@ public enum ImageSource
     {
         for (ImageSource source : values())
         {
-            if (source.toString() == description)
+            if (source.toString().equals(description))
             {
                 return source;
             }
