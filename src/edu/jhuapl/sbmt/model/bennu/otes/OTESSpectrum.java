@@ -38,6 +38,7 @@ import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.SpectrumColoringStyle;
 
 
 public class OTESSpectrum extends BasicSpectrum
@@ -248,11 +249,11 @@ public class OTESSpectrum extends BasicSpectrum
     protected void readSpectrumFromFile()
     {
         spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
-        System.out.println("OTESSpectrum: readSpectrumFromFile: spectrum file is " + spectrumFile.getAbsolutePath());
         OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
         reader.read();
         //
-        spectrum=reader.getCalibratedRadiance();
+        spectrum=reader.getData();
+        xData = reader.getXAxis();
         time = reader.getSclk();
     }
 
@@ -389,47 +390,73 @@ public class OTESSpectrum extends BasicSpectrum
     }
 
     @Override
+    public String getxAxisUnits()
+    {
+        return "Wavenumber (1/cm)";
+    }
+
+    @Override
+    public String getyAxisUnits()
+    {
+        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+            return "Calibrated Radiance";
+        else
+            return "Emissivity Spectra";
+    }
+
+    @Override
+    public String getDataName()
+    {
+        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+            return "OTES L2 Calibrated Radiance";
+        else
+            return "OTES L3 Spot Emissivity";
+    }
+
+    @Override
     public double[] getChannelColor()
     {
-        //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
-        //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
+        if (coloringStyle == SpectrumColoringStyle.EMISSION_ANGLE)
+        {
+            //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
+            //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
 
-        List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(this, new Vector3D(spacecraftPosition));
-//        System.out.println("OTESSpectrum: getChannelColor: average emission angle " + SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
+            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(this, new Vector3D(spacecraftPosition));
+            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
+            colormap.setRangeMin(0.0);  //was 5.4
+            colormap.setRangeMax(90.00); //was 81.7
 
-//        Sample sampleEmissionAngle = SpectrumStatistics.getBoresightEmissionAngle(this, new Vector3D(spacecraftPosition), boresightInterceptFaceID);
-//        if (sampleEmissionAngle == null) return new double[] { 1.0, 1.0, 1.0 };
-//        System.out.println("OTESSpectrum: getChannelColor: calculated emission angle " + emissionAngle);
-        Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
-        colormap.setRangeMin(5.4);
-        colormap.setRangeMax(81.7);
+            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
+                    double[] color = new double[3];
+            color[0] = color2.getRed()/255.0;
+            color[1] = color2.getGreen()/255.0;
+            color[2] = color2.getBlue()/255.0;
+            return color;
+        }
+        else
+        {
+            //TODO: What do we do for L3 data here?  It has less XAxis points than the L2 data, so is the coloring scheme different?
+            double[] color = new double[3];
+            for (int i=0; i<3; ++i)
+            {
+                double val = 0.0;
+                if (channelsToColorBy[i] < instrument.getBandCenters().length)
+                    val = spectrum[channelsToColorBy[i]];
+                else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
+                    val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
+                else
+                    val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
 
-        Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
-                double[] color = new double[3];
-        color[0] = color2.getRed()/255.0;
-        color[1] = color2.getGreen()/255.0;
-        color[2] = color2.getBlue()/255.0;
-        return color;
-//        double[] color = new double[3];
-//        for (int i=0; i<3; ++i)
-//        {
-//            double val = 0.0;
-//            if (channelsToColorBy[i] < instrument.getBandCenters().length)
-//                val = spectrum[channelsToColorBy[i]];
-//            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-//                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-//            else
-//                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
-//
-//            if (val < 0.0)
-//                val = 0.0;
-//            else if (val > 1.0)
-//                val = 1.0;
-//
-//            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-//            color[i] = slope * (val - channelsColoringMinValue[i]);
-//        }
-//        return color;
+                if (val < 0.0)
+                    val = 0.0;
+                else if (val > 1.0)
+                    val = 1.0;
+
+                double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
+                color[i] = slope * (val - channelsColoringMinValue[i]);
+            }
+            return color;
+        }
     }
 
     public double getTime()

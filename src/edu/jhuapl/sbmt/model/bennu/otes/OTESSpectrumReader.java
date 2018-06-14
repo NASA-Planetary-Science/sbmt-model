@@ -11,15 +11,14 @@ public class OTESSpectrumReader extends BasicFileReader
 {
 //    String sourceFileName;
     double sclk;
-    double[] calibratedRadiance;
+    double[] yValues;
+    double[] xValues;
     int numberEntries = 0;
 
     public OTESSpectrumReader(String filename, int numberEntries)
     {
         super(filename);
         this.numberEntries = numberEntries;
-        System.out.println("OTESSpectrumReader: OTESSpectrumReader: filename " + filename);
-        System.out.println("OTESSpectrumReader: OTESSpectrumReader: number of entries " + numberEntries);
         // TODO Auto-generated constructor stub
     }
 
@@ -28,13 +27,17 @@ public class OTESSpectrumReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[numberEntries];
+            xValues=new double[numberEntries];
+            yValues=new double[numberEntries];
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
             sclk=stream.readDouble();
             for (int i=0; i<numberEntries; i++)
             {
-                System.out.println("OTESSpectrumReader: read: i is " + i);
-                calibratedRadiance[i]=stream.readDouble();
+                yValues[i]=stream.readDouble();
+            }
+            for (int i=0; i<numberEntries; i++)
+            {
+                xValues[i]=stream.readDouble();
             }
 
             stream.close();
@@ -46,9 +49,14 @@ public class OTESSpectrumReader extends BasicFileReader
         }
     }
 
-    public double[] getCalibratedRadiance()
+    public double[] getData()
     {
-        return calibratedRadiance;
+        return yValues;
+    }
+
+    public double[] getXAxis()
+    {
+        return xValues;
     }
 
     public double getSclk()

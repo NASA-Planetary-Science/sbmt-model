@@ -51,14 +51,14 @@ public class OTESSpectrumInfoPanel extends ModelInfoWindow implements PropertyCh
 
 
         // add the jfreechart graph
-        XYSeries series = new XYSeries("OTES Calibrated Radiance");
-        double[] wavelengths = spectrum.getBandCenters();
+        XYSeries series = new XYSeries(spectrum.getDataName());
+        double[] wavelengths = spectrum.getxData();
         double[] spect = spectrum.getSpectrum();
         for (int i=0; i<wavelengths.length; ++i)
             series.add(wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory.createXYLineChart
-                ("OTES Calibrated Radiance", "Wavenumber (1/cm)", "Radiance",
+                (spectrum.getDataName(), spectrum.getxAxisUnits(), spectrum.getyAxisUnits(),
                         xyDataset, PlotOrientation.VERTICAL, true, true, false);
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setMouseWheelEnabled(true);
@@ -135,7 +135,7 @@ public class OTESSpectrumInfoPanel extends ModelInfoWindow implements PropertyCh
         createMenus();
 
         // Finally make the frame visible
-        setTitle("NIS Spectrum Properties");
+        setTitle(spectrum.getDataName());
 
         pack();
         setVisible(true);

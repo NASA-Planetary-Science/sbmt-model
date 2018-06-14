@@ -86,6 +86,7 @@ public abstract class BasicSpectrum extends Spectrum
     protected double range;
     protected List<LatLon> latLons = new ArrayList<LatLon>();
     protected double[] spectrum;
+    protected double[] xData;
     protected double minIncidence;
     protected double maxIncidence;
     protected double minEmission;
@@ -93,6 +94,12 @@ public abstract class BasicSpectrum extends Spectrum
     protected double minPhase;
     protected double maxPhase;
     protected boolean showFrustum = false;
+
+    protected String dataName;
+    protected String xAxisUnits;
+    protected String yAxisUnits;
+
+    protected SpectrumColoringStyle coloringStyle = SpectrumColoringStyle.RGB;
 
 
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
@@ -632,5 +639,50 @@ public abstract class BasicSpectrum extends Spectrum
     public String getSpectrumPathOnServer()
     {
         return serverpath;
+    }
+
+    public String getDataName()
+    {
+        return dataName;
+    }
+
+    public void setDataName(String dataName)
+    {
+        this.dataName = dataName;
+    }
+
+    public String getxAxisUnits()
+    {
+        return xAxisUnits;
+    }
+
+    public void setxAxisUnits(String xAxisUnits)
+    {
+        this.xAxisUnits = xAxisUnits;
+    }
+
+    public String getyAxisUnits()
+    {
+        return yAxisUnits;
+    }
+
+    public void setyAxisUnits(String yAxisUnits)
+    {
+        this.yAxisUnits = yAxisUnits;
+    }
+
+    public double[] getxData()
+    {
+        return xData;
+    }
+
+    public SpectrumColoringStyle getColoringStyle()
+    {
+        return coloringStyle;
+    }
+
+    public void setColoringStyle(SpectrumColoringStyle coloringStyle)
+    {
+        this.coloringStyle = coloringStyle;
     }
 }
