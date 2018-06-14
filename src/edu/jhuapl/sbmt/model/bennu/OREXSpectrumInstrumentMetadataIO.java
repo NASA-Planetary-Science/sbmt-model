@@ -62,8 +62,6 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
         {
             if (instInfo.getInstrumentName().equals(instrumentName))
             {
-                System.out.println(
-                        "OREXSpectrumInstrumentMetadataIO: getInstrumentMetadata: returning inst info for " + instrumentName);
                 return instInfo;
             }
         }
@@ -76,13 +74,9 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     @Override
     public void readHierarchyForInstrument(String instrumentName)
     {
-        System.out.println(
-                "OREXSpectrumInstrumentMetadataIO: readHierarchyForInstrument: instrument name " + instrumentName);
         OREXSpectrumInstrumentMetadata<OREXSearchSpec> instrumentMetadata = getInstrumentMetadata(instrumentName);
         for (OREXSearchSpec spec : instrumentMetadata.getSpecs())
         {
-            System.out.println(
-                    "OREXSpectrumInstrumentMetadataIO: readHierarchyForInstrument: data name " + spec.getDataName());
             addHierarchicalSearchPath(new String[] {spec.getDataName()}, instrumentMetadata.getSpecs().indexOf(spec),-1);
         }
     }
