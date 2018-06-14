@@ -235,6 +235,14 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
     }
 
+    public void deselectAll()
+    {
+        for (Spectrum spectrum : fileToSpectrumMap.values())
+            spectrum.setUnselected();
+        selectAll=false;
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
+    }
+
     public List<Spectrum> getSelectedSpectra()
     {
         List<Spectrum> spectra=Lists.newArrayList();
@@ -253,9 +261,10 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     {
         String filename = actorToFileMap.get(prop);
         Spectrum spectrum = this.fileToSpectrumMap.get(filename);
+//        System.out.println("SpectraCollection: getClickStatusBarText: time is " + ((OTESSpectrum)spectrum).getTime());
         if (spectrum==null)
             return "";
-        return spectrum.getInstrument().getDisplayName() + " spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString();
+        return spectrum.getInstrument().getDisplayName() + " spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString() /*+ "(SCLK: " + ((OTESSpectrum)spectrum).getTime() + ")"*/;
     }
 
     public String getSpectrumName(vtkProp actor)

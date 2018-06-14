@@ -1,7 +1,5 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -24,6 +22,7 @@ import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class OTESSearchPanel extends SpectrumSearchController
 {
+    String fileExtension = "";
 
     public OTESSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
@@ -51,7 +50,6 @@ public class OTESSearchPanel extends SpectrumSearchController
         view.getRedComboBox().setSelectedIndex(50);
         view.getGreenComboBox().setSelectedIndex(100);
         view.getBlueComboBox().setSelectedIndex(150);
-
     }
 
     @Override
@@ -60,23 +58,19 @@ public class OTESSearchPanel extends SpectrumSearchController
         view.getResultsLabel().setText(results.size() + " spectra matched");
 
         List<String> matchedImages=Lists.newArrayList();
+        if (matchedImages.size() > 0)
+        fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
         for (List<String> res : results)
         {
-            //String path = NisQuery.getNisPath(res);
-            //matchedImages.add(path);
-
             String basePath=FilenameUtils.getPath(res.get(0));
             String filename=FilenameUtils.getBaseName(res.get(0));
+//            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
 
-            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
-//            File file=FileCache.getFileFromServer("/"+infoFile.toString());
-
-            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
-
+            matchedImages.add(basePath + filename + "." + FilenameUtils.getExtension(res.get(0)));
+//            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
         }
 
         model.setSpectrumRawResults(matchedImages);
-//        spectrumRawResults = matchedImages;
 
         String[] formattedResults = new String[results.size()];
 
@@ -84,33 +78,22 @@ public class OTESSearchPanel extends SpectrumSearchController
         int i=0;
         for (String str : matchedImages)
         {
-            //String fileNum=str.substring(9,str.length()-5);
-            //System.out.println(fileNum);
-//            String strippedFileName=str.replace("/NIS/2000/", "");
-//            String detailedTime=nisFileToObservationzTimeMap.get(strippedFileName);
-//            formattedResults[i] = new String(
- //                   fileNum
-//                    + ", day: " + str.substring(10, 13) + "/" + str.substring(5, 9)+" ("+detailedTime+")"
-//                    );
-            formattedResults[i]=str;//FilenameUtils.getBaseName(str);
+            formattedResults[i]=FilenameUtils.getBaseName(str) + "." + FilenameUtils.getExtension(str);
             ++i;
         }
 
         view.getResultList().setListData(formattedResults);
-//        resultList.setListData(formattedResults);
 
-        System.out.println("OTESSearchPanel: setSpectrumSearchResults: model is " + model + " and num footprints combo " + view.getNumberOfFootprintsComboBox());
         // Show the first set of footprints
         model.setResultIntervalCurrentlyShown(new IdPair(0, Integer.parseInt((String)view.getNumberOfFootprintsComboBox().getSelectedItem())));
-//        this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.numberOfFootprintsComboBox.getSelectedItem()));
         this.showFootprints(model.getResultIntervalCurrentlyShown());
     }
 
     @Override
-    public String createSpectrumName(String currentSpectrumRaw)
+    public String createSpectrumName(int index)
     {
-        return "/earth/osirisrex/otes/spectra/"+currentSpectrumRaw+".spect";
+        return model.getSpectrumRawResults().get(index); // + fileExtension;
+//        System.out.println("OTESSearchPanel: createSpectrumName: " + currentSpectrumRaw);
+//        return "/earth/osirisrex/otes/spectra/"+currentSpectrumRaw+".spect";
     }
-
-
 }
