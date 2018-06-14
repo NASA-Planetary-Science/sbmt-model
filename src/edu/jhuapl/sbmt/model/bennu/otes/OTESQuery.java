@@ -17,7 +17,7 @@ public final class OTESQuery extends FixedListQuery
 
     private OTESQuery()
     {
-        super("/earth/osirisrex/otes");
+        super(/*"/earth/osirisrex/otes"*/);
     }
 
     @Override
