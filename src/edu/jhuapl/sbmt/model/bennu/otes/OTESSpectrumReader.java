@@ -10,12 +10,16 @@ import edu.jhuapl.sbmt.model.image.BasicFileReader;
 public class OTESSpectrumReader extends BasicFileReader
 {
 //    String sourceFileName;
-    double et;
+    double sclk;
     double[] calibratedRadiance;
+    int numberEntries = 0;
 
-    public OTESSpectrumReader(String filename)
+    public OTESSpectrumReader(String filename, int numberEntries)
     {
         super(filename);
+        this.numberEntries = numberEntries;
+        System.out.println("OTESSpectrumReader: OTESSpectrumReader: filename " + filename);
+        System.out.println("OTESSpectrumReader: OTESSpectrumReader: number of entries " + numberEntries);
         // TODO Auto-generated constructor stub
     }
 
@@ -24,20 +28,14 @@ public class OTESSpectrumReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[OTES.bandCenters.length];
+            calibratedRadiance=new double[numberEntries];
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
-//            byte[] sourceFileNameBytes=new byte[36];    // Ray stores the filename as 36 bytes at the beginning of the header
-//            stream.readFully(sourceFileNameBytes);
-//            sourceFileName=new String(sourceFileNameBytes);
-            et=stream.readDouble();
-            //byte[] data=new byte[OTES.bandCenters.length*Double.BYTES];
-            //stream.readFully(data);
-            //ByteBuffer buffer=ByteBuffer.wrap(data);
-            //buffer.asDoubleBuffer().get(calibratedRadiance);
-            //for (int i=0; i<calibratedRadiance.length; i++)
-            //    System.out.println(i+" "+OTES.bandCenters[i]+" "+calibratedRadiance[i]);
-            for (int i=0; i<OTES.bandCenters.length; i++)
+            sclk=stream.readDouble();
+            for (int i=0; i<numberEntries; i++)
+            {
+                System.out.println("OTESSpectrumReader: read: i is " + i);
                 calibratedRadiance[i]=stream.readDouble();
+            }
 
             stream.close();
         }
@@ -53,9 +51,14 @@ public class OTESSpectrumReader extends BasicFileReader
         return calibratedRadiance;
     }
 
-    public double getEt()
+    public double getSclk()
     {
-        return et;
+        return sclk;
+    }
+
+    public static void main(String[] args)
+    {
+//        new OTESSpectrumReader("/Users/steelrj1/.sbmt1orex/cache/earth/osirisrex/otes/spectra/otel220170922t224426.067z_6002.1339.spect").read();
     }
 
 }

@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -24,12 +25,16 @@ import vtk.vtkProperty;
 import vtk.vtkTriangle;
 import vtk.vtksbCellLocator;
 
+import edu.jhuapl.saavtk.colormap.Colormap;
+import edu.jhuapl.saavtk.colormap.Colormaps;
 import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.eros.SpectrumStatistics;
+import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
@@ -40,11 +45,13 @@ public class OTESSpectrum extends BasicSpectrum
     boolean footprintGenerated = false;
     File infoFile, spectrumFile;
     double time;
+    String extension = "";
 
     public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
         super(filename, smallBodyModel, instrument);
+        extension = FilenameUtils.getExtension(serverpath.toString());
     }
 
     @Override
@@ -64,7 +71,7 @@ public class OTESSpectrum extends BasicSpectrum
     public String getSpectrumPathOnServer()
     {
         return Paths.get(serverpath).getParent()
-                .resolve(FilenameUtils.getBaseName(serverpath) + ".spect")
+                .resolve(FilenameUtils.getBaseName(serverpath) + "." + extension)
                 .toString();
     }
 
@@ -195,9 +202,29 @@ public class OTESSpectrum extends BasicSpectrum
         Vector3D boresightUnit = new Vector3D(reader.getBoresightDirection()).normalize();
         Vector3D lookTarget = origin
                 .add(boresightUnit.scalarMultiply(origin.getNorm()));
+
+        double[] intersectPoint = new double[3];
+//        boresightInterceptFaceID = smallBodyModel.computeRayIntersection(origin.toArray(), boresightUnit.toArray(), intersectPoint);
+//        double[] interceptNormal = smallBodyModel.getCellNormals().GetTuple3(boresightInterceptFaceID);
+//        vtkCellCenters centers = new vtkCellCenters();
+//        centers.SetInputData(smallBodyModel.getSmallBodyPolyData());
+//        centers.VertexCellsOn();
+//        centers.Update();
+//        double[] center = centers.GetOutput().GetPoint(boresightInterceptFaceID);
+//
+//        double[] center = smallBodyModel.getSmallBodyPolyData().GetPoint(boresightInterceptFaceID);
+//
+//        System.out.println("OTESSpectrum: readPointingFromInfoFile: intercept normal " + interceptNormal[0] + " " + interceptNormal[1] + " " + interceptNormal[2]);
+//        System.out.println("OTESSpectrum: readPointingFromInfoFile: center " + intersectPoint[0] + " " + intersectPoint[1] + " " + intersectPoint[2]);
+//
+//        Vector3D nmlVec=new Vector3D(interceptNormal).normalize();
+//        Vector3D ctrVec=new Vector3D(intersectPoint).normalize();
+//        Vector3D toScVec=new Vector3D(spacecraftPosition).subtract(ctrVec);
+//        emissionAngle = Math.toDegrees(Math.acos(nmlVec.dotProduct(toScVec.normalize())));
+
+
         double fovDeg = Math
                 .toDegrees(Vector3D.angle(fovUnit, boresightUnit) * 2.);
-        //
         toSunUnitVector = new Vector3D(reader.getSunPosition()).normalize();
         Frustum frustum = new Frustum(origin.toArray(), lookTarget.toArray(),
                 boresightUnit.orthogonal().toArray(), fovDeg, fovDeg);
@@ -221,12 +248,12 @@ public class OTESSpectrum extends BasicSpectrum
     protected void readSpectrumFromFile()
     {
         spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
-        //
-        OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath());
+        System.out.println("OTESSpectrum: readSpectrumFromFile: spectrum file is " + spectrumFile.getAbsolutePath());
+        OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
         reader.read();
         //
         spectrum=reader.getCalibratedRadiance();
-        time = reader.getEt();
+        time = reader.getSclk();
     }
 
     @Override
@@ -355,32 +382,54 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return OTES.bandCenters.length;
+        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+            return OTES.bandCenters.length;
+        else
+            return 208;
     }
 
     @Override
     public double[] getChannelColor()
     {
-        double[] color = new double[3];
-        for (int i=0; i<3; ++i)
-        {
-            double val = 0.0;
-            if (channelsToColorBy[i] < instrument.getBandCenters().length)
-                val = spectrum[channelsToColorBy[i]];
-            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-            else
-                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
+        //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
+        //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
 
-            if (val < 0.0)
-                val = 0.0;
-            else if (val > 1.0)
-                val = 1.0;
+        List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(this, new Vector3D(spacecraftPosition));
+//        System.out.println("OTESSpectrum: getChannelColor: average emission angle " + SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
 
-            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-            color[i] = slope * (val - channelsColoringMinValue[i]);
-        }
+//        Sample sampleEmissionAngle = SpectrumStatistics.getBoresightEmissionAngle(this, new Vector3D(spacecraftPosition), boresightInterceptFaceID);
+//        if (sampleEmissionAngle == null) return new double[] { 1.0, 1.0, 1.0 };
+//        System.out.println("OTESSpectrum: getChannelColor: calculated emission angle " + emissionAngle);
+        Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
+        colormap.setRangeMin(5.4);
+        colormap.setRangeMax(81.7);
+
+        Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
+                double[] color = new double[3];
+        color[0] = color2.getRed()/255.0;
+        color[1] = color2.getGreen()/255.0;
+        color[2] = color2.getBlue()/255.0;
         return color;
+//        double[] color = new double[3];
+//        for (int i=0; i<3; ++i)
+//        {
+//            double val = 0.0;
+//            if (channelsToColorBy[i] < instrument.getBandCenters().length)
+//                val = spectrum[channelsToColorBy[i]];
+//            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
+//                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
+//            else
+//                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
+//
+//            if (val < 0.0)
+//                val = 0.0;
+//            else if (val > 1.0)
+//                val = 1.0;
+//
+//            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
+//            color[i] = slope * (val - channelsColoringMinValue[i]);
+//        }
+//        return color;
     }
 
     public double getTime()

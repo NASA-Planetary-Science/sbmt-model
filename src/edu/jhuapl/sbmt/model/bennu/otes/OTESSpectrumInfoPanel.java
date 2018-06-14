@@ -51,14 +51,14 @@ public class OTESSpectrumInfoPanel extends ModelInfoWindow implements PropertyCh
 
 
         // add the jfreechart graph
-        XYSeries series = new XYSeries("OTES Spectrum");
+        XYSeries series = new XYSeries("OTES Calibrated Radiance");
         double[] wavelengths = spectrum.getBandCenters();
         double[] spect = spectrum.getSpectrum();
         for (int i=0; i<wavelengths.length; ++i)
-            series.add(10000.0/wavelengths[i], spect[i]);
+            series.add(wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory.createXYLineChart
-                ("OTES Calibrated Spectrum", "Wavelength (micron)", "Reflectance",
+                ("OTES Calibrated Radiance", "Wavenumber (1/cm)", "Radiance",
                         xyDataset, PlotOrientation.VERTICAL, true, true, false);
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setMouseWheelEnabled(true);
