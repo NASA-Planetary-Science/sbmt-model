@@ -194,6 +194,16 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
             removeSpectrum(path);
     }
 
+    public void removeAllSpectraForInstrument(SpectralInstrument instrument)
+    {
+        HashMap<String, Spectrum> map = (HashMap<String, Spectrum>)fileToSpectrumMap.clone();
+        for (String path : map.keySet())
+        {
+            if (map.get(path).getInstrument() == instrument)
+                removeSpectrum(path);
+        }
+    }
+
     public void toggleSelect(Spectrum spectrum)
     {
         if (spectrum.isSelected())
