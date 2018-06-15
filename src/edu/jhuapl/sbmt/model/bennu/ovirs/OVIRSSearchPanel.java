@@ -34,7 +34,7 @@ public class OVIRSSearchPanel extends SpectrumSearchController
 
 
         setupComboBoxes();
-
+        setColoringComboBox();
 
         List<JSpinner> spinners=Lists.newArrayList(view.getBlueMaxSpinner(), view.getBlueMinSpinner(), view.getRedMaxSpinner(), view.getRedMinSpinner(),
                 view.getGreenMaxSpinner(), view.getGreenMinSpinner());

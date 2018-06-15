@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -24,24 +25,30 @@ import vtk.vtkProperty;
 import vtk.vtkTriangle;
 import vtk.vtksbCellLocator;
 
+import edu.jhuapl.saavtk.colormap.Colormap;
+import edu.jhuapl.saavtk.colormap.Colormaps;
 import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.eros.SpectrumStatistics;
+import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.SpectrumColoringStyle;
 
 
 public class OVIRSSpectrum extends BasicSpectrum
 {
     boolean footprintGenerated = false;
     File infoFile, spectrumFile;
-    double time;
+    String time;
     double boresightLatDeg, boresightLonDeg;
     double[] calibratedRadianceUncertainty;
+    Vector3D boresightIntercept;
 
     public OVIRSSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
@@ -202,15 +209,17 @@ public class OVIRSSpectrum extends BasicSpectrum
     protected void readSpectrumFromFile()
     {
         spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
-        //
-        OVIRSSpectrumReader reader=new OVIRSSpectrumReader(spectrumFile.getAbsolutePath());
+
+        OVIRSL3SpectrumReader reader=new OVIRSL3SpectrumReader(spectrumFile.getAbsolutePath());
         reader.read();
-        //
-        spectrum=reader.getCalibratedRadiance();
-        time = reader.getEt();
-        calibratedRadianceUncertainty = reader.getCalibratedRadianceUncertainty();
-        boresightLatDeg = reader.getBoresightLatDeg();
-        boresightLonDeg = reader.getBoresightLonDeg();
+
+        xData = reader.getXAxis();
+        spectrum=reader.getData();
+        time = reader.getSclk();
+        boresightIntercept = reader.getBoresightIntercept();
+//        calibratedRadianceUncertainty = reader.getCalibratedRadianceUncertainty();
+//        boresightLatDeg = reader.getBoresightLatDeg();
+//        boresightLonDeg = reader.getBoresightLonDeg();
     }
 
     @Override
@@ -345,6 +354,32 @@ public class OVIRSSpectrum extends BasicSpectrum
     }
 
     @Override
+    public String getxAxisUnits()
+    {
+        return spec.getxAxisUnits();
+    }
+
+    @Override
+    public String getyAxisUnits()
+    {
+        return spec.getyAxisUnits();
+//         if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+//            return "I/F";
+//        else
+//            return "REFF";
+    }
+
+    @Override
+    public String getDataName()
+    {
+        return spec.getDataName();
+//        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+//            return "OVIRS L3 I/F";
+//        else
+//            return "OVIRS L3 REFF";
+    }
+
+    @Override
     public int getNumberOfBands()
     {
         return OVIRS.bandCenters.length;
@@ -353,46 +388,71 @@ public class OVIRSSpectrum extends BasicSpectrum
     @Override
     public double[] getChannelColor()
     {
-        double[] color = new double[3];
-        for (int i=0; i<3; ++i)
+        if (coloringStyle == SpectrumColoringStyle.EMISSION_ANGLE)
         {
-            double val = 0.0;
-            if (channelsToColorBy[i] < instrument.getBandCenters().length)
-                val = spectrum[channelsToColorBy[i]];
-            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-            else
-                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
+            //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
+            //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
 
-            if (val < 0.0)
-                val = 0.0;
-            else if (val > 1.0)
-                val = 1.0;
+            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(this, new Vector3D(spacecraftPosition));
+            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
+            colormap.setRangeMin(0.0);  //was 5.4
+            colormap.setRangeMax(90.00); //was 81.7
 
-            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-            color[i] = slope * (val - channelsColoringMinValue[i]);
+            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
+                    double[] color = new double[3];
+            color[0] = color2.getRed()/255.0;
+            color[1] = color2.getGreen()/255.0;
+            color[2] = color2.getBlue()/255.0;
+            return color;
         }
-        return color;
+        else
+        {
+            double[] color = new double[3];
+            for (int i=0; i<3; ++i)
+            {
+                double val = 0.0;
+                if (channelsToColorBy[i] < instrument.getBandCenters().length)
+                    val = spectrum[channelsToColorBy[i]];
+                else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
+                    val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
+                else
+                    val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
+
+                if (val < 0.0)
+                    val = 0.0;
+                else if (val > 1.0)
+                    val = 1.0;
+
+                double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
+                color[i] = slope * (val - channelsColoringMinValue[i]);
+            }
+            return color;
+        }
     }
 
-    public double getTime()
+    public String getTime()
     {
         return time;
     }
 
-    public double getBoresightLatDeg()
+    public Vector3D getBoresightIntercept()
     {
-        return boresightLatDeg;
+        return boresightIntercept;
     }
 
-    public double getBoresightLonDeg()
-    {
-        return boresightLonDeg;
-    }
-
-    public double[] getCalibratedRadianceUncertainty()
-    {
-        return calibratedRadianceUncertainty;
-    }
+//    public double getBoresightLatDeg()
+//    {
+//        return boresightLatDeg;
+//    }
+//
+//    public double getBoresightLonDeg()
+//    {
+//        return boresightLonDeg;
+//    }
+//
+//    public double[] getCalibratedRadianceUncertainty()
+//    {
+//        return calibratedRadianceUncertainty;
+//    }
 
 }

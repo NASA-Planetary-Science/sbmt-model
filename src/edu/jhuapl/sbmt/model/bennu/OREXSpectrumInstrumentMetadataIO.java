@@ -14,20 +14,30 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.model.bennu.otes.SpectraHierarchicalSearchSpecification;
 
 public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchSpecification
 {
     private static Gson gson = null;
     List<OREXSpectrumInstrumentMetadata<OREXSearchSpec>> info = null;
+    private File path;
 
-    public OREXSpectrumInstrumentMetadataIO(String instrumentName, File file) throws FileNotFoundException
+    public OREXSpectrumInstrumentMetadataIO(String instrumentName, String filePathOnServer) throws FileNotFoundException
     {
         super(instrumentName);
         GsonBuilder builder = new GsonBuilder();
         builder.setPrettyPrinting();
         gson = builder.create();
-        readMetadata(file);
+        try
+        {
+            path = FileCache.getFileFromServer(filePathOnServer);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        readMetadata(path);
     }
 
     public void writeJSON(File file, String json) throws IOException

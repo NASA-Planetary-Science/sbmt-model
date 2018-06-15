@@ -33,6 +33,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 
 
 public abstract class BasicSpectrum extends Spectrum
@@ -98,6 +99,7 @@ public abstract class BasicSpectrum extends Spectrum
     protected String dataName;
     protected String xAxisUnits;
     protected String yAxisUnits;
+    protected SearchSpec spec;
 
     protected SpectrumColoringStyle coloringStyle = SpectrumColoringStyle.RGB;
 
@@ -684,5 +686,10 @@ public abstract class BasicSpectrum extends Spectrum
     public void setColoringStyle(SpectrumColoringStyle coloringStyle)
     {
         this.coloringStyle = coloringStyle;
+    }
+
+    public void setMetadata(SearchSpec spec)
+    {
+        this.spec = spec;
     }
 }

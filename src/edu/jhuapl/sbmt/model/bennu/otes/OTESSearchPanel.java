@@ -31,6 +31,7 @@ public class OTESSearchPanel extends SpectrumSearchController
         super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
 
         setupComboBoxes();
+        setColoringComboBox();
 
         List<JSpinner> spinners=Lists.newArrayList(view.getBlueMaxSpinner(), view.getBlueMinSpinner(), view.getRedMaxSpinner(), view.getRedMinSpinner(),
                 view.getGreenMaxSpinner(), view.getGreenMinSpinner());

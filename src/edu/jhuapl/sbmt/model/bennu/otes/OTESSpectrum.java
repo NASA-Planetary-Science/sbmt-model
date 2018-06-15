@@ -392,25 +392,28 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public String getxAxisUnits()
     {
-        return "Wavenumber (1/cm)";
+        return spec.getxAxisUnits();
+//        return "Wavenumber (1/cm)";
     }
 
     @Override
     public String getyAxisUnits()
     {
-        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
-            return "Calibrated Radiance";
-        else
-            return "Emissivity Spectra";
+        return spec.getyAxisUnits();
+//        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+//            return "Calibrated Radiance";
+//        else
+//            return "Emissivity Spectra";
     }
 
     @Override
     public String getDataName()
     {
-        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
-            return "OTES L2 Calibrated Radiance";
-        else
-            return "OTES L3 Spot Emissivity";
+        return spec.getDataName();
+//        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+//            return "OTES L2 Calibrated Radiance";
+//        else
+//            return "OTES L3 Spot Emissivity";
     }
 
     @Override
