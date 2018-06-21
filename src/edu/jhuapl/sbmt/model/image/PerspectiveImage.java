@@ -233,6 +233,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected double[] maxFrustumDepth;
     protected double[] minFrustumDepth;
 
+    protected boolean transposeFITSData = true;
+
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
@@ -1940,7 +1942,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             }
         }
 
-        rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, false, array2D, array3D);
+        rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, transposeFITSData, array2D, array3D);
     }
 
     protected void loadEnviFile()
