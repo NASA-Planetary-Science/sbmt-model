@@ -1940,7 +1940,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             }
         }
 
-        rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, array2D, array3D);
+        rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, false, array2D, array3D);
     }
 
     protected void loadEnviFile()
