@@ -2,7 +2,10 @@ package edu.jhuapl.sbmt.model.bennu.otes;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -58,7 +61,14 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        new OTESSpectrumWriter(file.getAbsolutePath(), this).write();;
+        new OTESSpectrumWriter(file.getAbsolutePath(), this).write();
+        File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        FileChannel src = new FileInputStream(infoFile).getChannel();
+        File infoFileDestination = new File(file.getParentFile() + File.separator + file.getName() + ".INFO");
+        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
+        dest.transferFrom(src, 0, src.size());
+        src.close();
+        dest.close();
     }
 
     protected String getInfoFilePathOnServer()

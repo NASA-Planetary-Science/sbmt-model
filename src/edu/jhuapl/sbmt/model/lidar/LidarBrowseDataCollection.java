@@ -104,7 +104,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         lidarPerUnitActors.clear();
         actorToFileMap.clear();
         fileToLidarPerUnitMap.clear();
-        System.out.println("LidarBrowseDataCollection.removeAllLidarData()");
+//        System.out.println("LidarBrowseDataCollection.removeAllLidarData()");
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
@@ -113,15 +113,17 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         return fileToLidarPerUnitMap.get(path);
     }
 
+    @Override
     public List<vtkProp> getProps()
     {
         return lidarPerUnitActors;
     }
 
+    @Override
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
         LidarDataPerUnit data = fileToLidarPerUnitMap.get(actorToFileMap.get(prop));
-        return data.getClickStatusBarText(prop, cellId, pickPosition);
+        return data != null ? data.getClickStatusBarText(prop, cellId, pickPosition) : "";
     }
 
     public String getLidarName(vtkActor actor)
@@ -180,11 +182,13 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         return lidarSpecs;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
+    @Override
     public void setOffset(double offset)
     {
         radialOffset = offset;

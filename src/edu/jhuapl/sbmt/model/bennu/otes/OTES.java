@@ -24,7 +24,7 @@ public class OTES implements SpectralInstrument
         return 0.3635;
     }
 
-    // these band centers are taken from 20170925T000010S324_ote_L2_V001.hdf under the xaxis variable
+    // these band centers are taken from 20170925T000010S324_ote_L2_V001.hdf under the xaxis variable.  Unit is cm^-1 (wavenumber)
     static final public double[] bandCenters = {
             8.660700e+00, // 0
             1.732140e+01, // 1
