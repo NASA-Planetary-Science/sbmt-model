@@ -13,7 +13,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.collect.Lists;
 
-import edu.jhuapl.saavtk.gui.Renderer;
+import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
@@ -110,7 +110,7 @@ public class OTESSearchPanel extends SpectrumSearchPanel
     @Override
     public String createSpectrumName(String currentSpectrumRaw)
     {
-        return "/earth/osirisrex/otes/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".cal";
+        return "/earth/osirisrex/otes/spectra/"+currentSpectrumRaw+".spect";
     }
 
 

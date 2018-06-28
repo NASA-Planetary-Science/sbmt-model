@@ -64,8 +64,8 @@ import vtk.vtkUnsignedCharArray;
 import vtk.vtkWindowToImageFilter;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
-import edu.jhuapl.saavtk.gui.Renderer;
-import edu.jhuapl.saavtk.gui.Renderer.LightingType;
+import edu.jhuapl.saavtk.gui.render.Renderer;
+import edu.jhuapl.saavtk.gui.render.Renderer.LightingType;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
@@ -77,7 +77,7 @@ import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
-import edu.jhuapl.sbmt.gui.time.StateHistoryPanel;
+import edu.jhuapl.sbmt.gui.time.version2.IStateHistoryPanel;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
 
@@ -500,6 +500,11 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             showSpacecraft = false;
             updateActorVisibility();
         }
+        if (statusBarActor == null)
+        {
+            setupStatusBar();
+        }
+        updateStatusBarPosition(renderer.getPanelWidth(), renderer.getPanelHeight());
 
         if (timeBarActor == null)
             setupTimeBar();
@@ -694,6 +699,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
             if (timeBarActor != null)
             {
+                updateTimeBarPosition(renderer.getPanelWidth(), renderer.getPanelHeight());
                 updateTimeBarValue(getTime());
             }
 
@@ -999,7 +1005,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         this.showSpacecraft = show;
         //        this.showMonolith = show;
         //        this.showSpacecraftBody = show;
-        this.showSpacecraftFov = show;
+        this.showSpacecraftFov = false;
         this.showSpacecraftLabel = show;
         updateActorVisibility();
     }
@@ -1040,6 +1046,10 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             stateHistoryActors.add(timeBarTextActor);
         }
 
+        stateHistoryActors.add(statusBarActor);
+        stateHistoryActors.add(statusBarTextActor);
+
+
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
@@ -1058,6 +1068,11 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     private vtkPolyDataMapper2D timeBarMapper;
     private vtkActor2D timeBarActor;
     private vtkTextActor timeBarTextActor;
+    private vtkActor2D statusBarActor;
+    private vtkTextActor statusBarTextActor;
+    private vtkPolyDataMapper2D statusBarMapper;
+    private vtkPolyData statusBarPolydata;
+    private int statusBarWidthInPixels = 0;
     private int timeBarWidthInPixels = 0;
     private double timeBarValue = -1.0;
 
@@ -1108,6 +1123,77 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     public int getColoringIndex()
     {
         return coloringIndex;
+    }
+
+    private void setupStatusBar()
+    {
+        statusBarPolydata = new vtkPolyData();
+        vtkPoints points = new vtkPoints();
+        vtkCellArray polys = new vtkCellArray();
+        statusBarPolydata.SetPoints(points);
+        statusBarPolydata.SetPolys(polys);
+
+        points.SetNumberOfPoints(4);
+
+        vtkIdList idList = new vtkIdList();
+        idList.SetNumberOfIds(4);
+        for (int i=0; i<4; ++i)
+            idList.SetId(i, i);
+        polys.InsertNextCell(idList);
+
+        statusBarMapper = new vtkPolyDataMapper2D();
+        statusBarMapper.SetInputData(statusBarPolydata);
+
+        statusBarActor = new vtkActor2D();
+        statusBarActor.SetMapper(statusBarMapper);
+
+        statusBarTextActor = new vtkTextActor();
+
+        stateHistoryActors.add(statusBarActor);
+        stateHistoryActors.add(statusBarTextActor);
+
+        statusBarActor.GetProperty().SetColor(0.0, 0.0, 0.0);
+        statusBarActor.GetProperty().SetOpacity(0.0);
+        statusBarTextActor.GetTextProperty().SetColor(1.0, 1.0, 1.0);
+        statusBarTextActor.GetTextProperty().SetJustificationToCentered();
+        statusBarTextActor.GetTextProperty().BoldOn();
+
+        statusBarActor.VisibilityOn();
+        statusBarTextActor.VisibilityOn();
+    }
+
+    public void updateStatusBarPosition(int windowWidth, int windowHeight)
+    {
+//        vtkPoints points = statusBarPolydata.GetPoints();
+
+        int newStatusBarWidthInPixels = (int)Math.min(0.75*windowWidth, 200.0);
+
+        statusBarWidthInPixels = newStatusBarWidthInPixels;
+        int statusBarHeight = statusBarWidthInPixels/9;
+        int buffer = statusBarWidthInPixels/20;
+//        int x = buffer + 20; // lower left corner x
+//        int x = (int)(0.8*windowWidth);
+//        System.out.println("StateHistoryModel: statusBarPosition: windows Width " + windowWidth);
+        //        int x = windowWidth - timeBarWidthInPixels - buffer; // lower right corner x
+        int y = buffer; // lower left corner y
+
+        int leftside = windowWidth - statusBarWidthInPixels;
+//        points.SetPoint(0, leftside, y, 0.0);
+//        points.SetPoint(1, leftside+statusBarWidthInPixels, y, 0.0);
+//        points.SetPoint(2, leftside+statusBarWidthInPixels, y+statusBarHeight, 0.0);
+//        points.SetPoint(3, leftside, y+statusBarHeight, 0.0);
+
+        statusBarTextActor.SetPosition(leftside, y+2);
+        statusBarTextActor.GetTextProperty().SetFontSize(statusBarHeight-4);
+        statusBarTextActor.GetTextProperty().SetJustificationToCentered();
+
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public void updateStatusBarValue(String text)
+    {
+        statusBarTextActor.SetInput(text);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     private void setupTimeBar()
@@ -1401,7 +1487,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     }
 
     // set time of animation - Alex W
-    public boolean setInputTime(DateTime dt, StateHistoryPanel panel)
+    public boolean setInputTime(DateTime dt, IStateHistoryPanel panel)
     {
         try
         {
@@ -1435,6 +1521,41 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         }
         return true;
     }
+
+//    public boolean setInputTime(DateTime dt, StateHistoryController controller)
+//    {
+//        try
+//        {
+//
+//            String dtString = dt.toString().substring(0, 23);
+//            String start = timeArray.get(0)[0];
+//            String end = timeArray.get(0)[1];
+//
+//            if(dtString.compareTo(start) < 0 || dtString.compareTo(end) > 0)
+//            {
+//                JOptionPane.showMessageDialog(null, "Entered time is outside the range of the selected interval.", "Error",
+//                        JOptionPane.ERROR_MESSAGE);
+//                return false;
+//            }
+//
+//            Interval interval1 = new Interval(startTime, dt);
+//            Interval interval2 = new Interval(startTime, endTime);
+//
+//            org.joda.time.Duration duration1 = interval1.toDuration();
+//            org.joda.time.Duration duration2 = interval2.toDuration();
+//
+//            BigDecimal num1 = new BigDecimal(duration1.getMillis());
+//            BigDecimal num2 = new BigDecimal(duration2.getMillis());
+//            BigDecimal tf = num1.divide(num2,50,RoundingMode.UP);
+//            setTimeFraction(Double.parseDouble(tf.toString()));
+//            controller.setTimeSlider(Double.parseDouble(tf.toString()));
+//        }
+//        catch (Exception e)
+//        {
+//
+//        }
+//        return true;
+//    }
 
     // toggle the visibility of trajectories - Alex W
     public void showTrajectory(boolean show)
@@ -1478,7 +1599,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
      * @return -1 if error thrown on creation, 1 if successfully created
      */
     // returns
-    public int createNewTimeInterval(StateHistoryPanel panel, double length, String name)
+    public int createNewTimeInterval(IStateHistoryPanel panel, double length, String name)
     {
 
         // gets the history file from the server
@@ -1597,6 +1718,134 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         return 1;
     }
 
+//    /***
+//     *  goes to the server and creates a new time history for the body with the given time range.
+//     *
+//     * @param panel - main panel
+//     * @param length - length of interval
+//     * @param name - name of interval
+//     * @return -1 if error thrown on creation, 1 if successfully created
+//     */
+//    // returns
+//    public int createNewTimeInterval(StateHistoryController panel, double length, String name)
+//    {
+//
+//        // gets the history file from the server
+//        SmallBodyViewConfig config = (SmallBodyViewConfig) smallBodyModel.getConfig();
+//        path = FileCache.getFileFromServer(config.timeHistoryFile);
+//
+//        // removes the time zone from the time
+//        String startString = startTime.toString().substring(0,23);
+//        String endString = endTime.toString().substring(0,23);
+//
+//        // searches the file for the specified times
+//        String queryStart = readString(lineLength);
+//        String queryEnd = readString((int)getBinaryFileLength()*lineLength-lineLength);
+//
+//        // error checking
+//        if(startTime.compareTo(endTime) > 0)
+//        {
+//            JOptionPane.showMessageDialog(null, "The entered times are not in the correct order.", "Error",
+//                    JOptionPane.ERROR_MESSAGE);
+//            return -1;
+//        }
+//        if(startString.compareTo(queryStart) < 0 || endString.compareTo(queryEnd) > 0)
+//        {
+//            JOptionPane.showMessageDialog(null, "One or more of the query times are out of range of the available data.", "Error",
+//                    JOptionPane.ERROR_MESSAGE);
+//            return -1;
+//        }
+//
+//        // get start and stop positions in file
+//        int positionStart = binarySearch(1, (int) getBinaryFileLength(), startString, false);
+//        int positionEnd = binarySearch(1, (int) getBinaryFileLength(), endString, true);
+//
+//        // check length of time
+//        if(readString(positionStart).compareTo(readString(positionEnd)) == 0)
+//        {
+//            JOptionPane.showMessageDialog(null, "The queried time interval is too small.", "Error",
+//                    JOptionPane.ERROR_MESSAGE);
+//            return -1;
+//        }
+//
+//        //sets the default name to "startTime_endTime"
+//        if(name.equals(""))
+//        {
+//            name = readString(positionStart) + "_" + readString(positionEnd);
+//        }
+//
+//        // check length of interval
+//        if(length > 10.0)
+//        {
+//            int result = JOptionPane.showConfirmDialog(null, "The interval you selected is longer than 10 days and may take a while to generate. \nAre you sure you want to create it?");
+//            if(result == JOptionPane.CANCEL_OPTION || result == JOptionPane.NO_OPTION)
+//                return -1;
+//        }
+//
+//        // creates the trajectory
+//        Trajectory temp = new StandardTrajectory();
+//        StateHistory history = new StandardStateHistory();
+//
+//        this.currentFlybyStateHistory = history;
+//
+//        //  reads the binary file and writes the data to a CSV file
+//        String[] timeSet = new String[2];
+//        timeArray.add(timeSet);
+//        for(int i = positionStart; i <= positionEnd; i+=lineLength)
+//        {
+//            int[] position = new int[12];
+//            for(int j = 0; j<position.length; j++)
+//            {
+//                position[j] = i + 25 + (j * 8);
+//            }
+//            State flybyState = new CsvState(readString(i),
+//                    readBinary(position[0]), readBinary(position[1]), readBinary(position[2]),
+//                    readBinary(position[3]), readBinary(position[4]), readBinary(position[5]),
+//                    readBinary(position[6]), readBinary(position[7]), readBinary(position[8]),
+//                    readBinary(position[9]), readBinary(position[10]), readBinary(position[11]));
+//
+//            // add to history
+//            history.put(flybyState);
+//
+//            double[] spacecraftPosition = flybyState.getSpacecraftPosition();
+//
+//            temp.getX().add(spacecraftPosition[0]);
+//            temp.getY().add(spacecraftPosition[1]);
+//            temp.getZ().add(spacecraftPosition[2]);
+//
+//            if(com.mysql.jdbc.StringUtils.isNullOrEmpty(timeArray.get(0)[0]))
+//            {
+//                timeArray.get(0)[0] = flybyState.getUtc();
+//            }
+//            timeArray.get(0)[1] = flybyState.getUtc();
+//
+//        }
+//
+//        setCurrentTrajectory(temp);
+//        createTrajectoryPolyData();
+//
+//        trajectoryMapper.SetInputData(trajectoryPolylines);
+//
+//        vtkActor actor = new vtkActor();
+//        trajectoryActor = actor;
+//        trajectoryActor.SetMapper(trajectoryMapper);
+//        trajectoryActor.GetProperty().SetLineWidth(trajectoryLineThickness);
+//        setTimeFraction(0.0);
+//        try
+//        {
+//            panel.initializeRunList();
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//        }
+//
+//        initialize();
+//        spacecraftBody.Modified();
+//        trajectoryActor.Modified();
+//        return 1;
+//    }
+
     private void setCurrentTrajectory(Trajectory temp)
     {
         trajectory = temp;
@@ -1606,7 +1855,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
 
 
     // starts the process for creating the movie frames
-    public void saveAnimation(StateHistoryPanel panel, String start, String end)
+    public void saveAnimation(IStateHistoryPanel panel, String start, String end)
     {
         frames = new JLabel("Number of Frames: ");
         fromLabel = new JLabel("Start: " + start);
@@ -1628,7 +1877,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         time.add(fromLabel);
         time.add(toLabel);
 
-        int result = chooser.showSaveDialog(JOptionPane.getFrameForComponent(panel));
+        int result = chooser.showSaveDialog(JOptionPane.getFrameForComponent(panel.getView()));
 
         if(result == JFileChooser.CANCEL_OPTION || result == JFileChooser.ERROR_OPTION)
         {
@@ -1659,7 +1908,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     }
 
     // creates animation frame with data to move the camera
-    public AnimationFrame createAnimationFrameWithTimeFraction(double tf, File file, int delay, StateHistoryPanel panel)
+    public AnimationFrame createAnimationFrameWithTimeFraction(double tf, File file, int delay, IStateHistoryPanel panel)
     {
         AnimationFrame result = new AnimationFrame();
         result.timeFraction = tf;
@@ -2166,6 +2415,6 @@ class AnimationFrame
     public int delay;
     public double timeFraction;
     public File file;
-    public StateHistoryPanel panel;
+    public IStateHistoryPanel panel;
 
 }

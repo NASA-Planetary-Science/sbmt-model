@@ -6,12 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
-import nom.tam.fits.Header;
-import nom.tam.fits.HeaderCard;
-
 import vtk.vtkCellArray;
 import vtk.vtkDataArray;
 import vtk.vtkFloatArray;
@@ -30,6 +24,12 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.dem.DEMView;
+
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
+import nom.tam.fits.Header;
+import nom.tam.fits.HeaderCard;
 
 public class DEM extends SmallBodyModel implements PropertyChangeListener
 {
@@ -95,6 +95,10 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     /** Class DEM **/
     // Attributes
     protected final DEMKey key;
+    private double latitude;
+    private double longitude;
+    private double halfSize;
+    private double scale;
 
     // Old constructor based on filename only, called all over SBMT
     public DEM(String filename) throws IOException, FitsException
@@ -105,6 +109,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     // Copy constructor
     public DEM(DEM copyDEM)
     {
+        super(copyDEM.getKey().fileName);
         if(copyDEM.dem != null)
         {
             dem = new vtkPolyData();
@@ -158,6 +163,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     // New constructor making use of key
     public DEM(DEMKey key) throws IOException, FitsException
     {
+        super(key.fileName);
         // Store the key for future use
         this.key = key;
 
@@ -408,6 +414,11 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                 planeCount++;
             }
         }
+
+        this.latitude = header.getDoubleValue("LATITUDE");
+        this.longitude = header.getDoubleValue("LONGTUDE");
+        this.halfSize = header.getDoubleValue("HALFSIZE");
+        this.scale = header.getDoubleValue("SCALE");
 
         // Check to see if x,y,z planes were all defined
         if(xIdx < 0)
@@ -900,5 +911,25 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public double getLatitude()
+    {
+        return latitude;
+    }
+
+    public double getLongitude()
+    {
+        return longitude;
+    }
+
+    public double getHalfSize()
+    {
+        return halfSize;
+    }
+
+    public double getScale()
+    {
+        return scale;
     }
 }

@@ -61,7 +61,6 @@ public class ColorImage extends Image implements PropertyChangeListener
     private IntensityRange redIntensityRange = new IntensityRange(0, 255);
     private IntensityRange greenIntensityRange = new IntensityRange(0, 255);
     private IntensityRange blueIntensityRange = new IntensityRange(0, 255);
-    private double offset;
     private double imageOpacity = 1.0;
     private int imageWidth;
     private int imageHeight;
@@ -142,8 +141,6 @@ public class ColorImage extends Image implements PropertyChangeListener
         super(new ImageKey("FalseColorImage", ImageSource.FALSE_COLOR));
         this.colorKey = key;
         this.smallBodyModel = smallBodyModel;
-
-        this.offset = getDefaultOffset();
 
         redImage = createImage(colorKey.redImageKey, smallBodyModel, modelManager);
         greenImage = createImage(colorKey.greenImageKey, smallBodyModel, modelManager);
@@ -261,7 +258,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         PolyDataUtil.generateTextureCoordinates(redFrustum, IMAGE_WIDTH, IMAGE_HEIGHT, footprint);
 
         shiftedFootprint.DeepCopy(footprint);
-        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, offset);
+        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, getOffset());
 
         // Now compute a color image with each channel one of these images.
         // To do that go through each pixel of the red image, and intersect a ray into the asteroid in
@@ -537,24 +534,20 @@ public class ColorImage extends Image implements PropertyChangeListener
         super.setVisible(b);
     }
 
+    @Override
+    public vtkPolyData getShiftedFootprint() {
+        return shiftedFootprint;
+    }
+
+    @Override
+    protected vtkPolyData getUnshiftedFootprint() {
+        return footprint;
+    }
+
+    @Override
     public double getDefaultOffset()
     {
         return 4.0*smallBodyModel.getMinShiftAmount();
-    }
-
-    public void setOffset(double offset)
-    {
-        this.offset = offset;
-
-        shiftedFootprint.DeepCopy(footprint);
-        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, offset);
-
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
-
-    public double getOffset()
-    {
-        return offset;
     }
 
     public void setCurrentMask(int[] masking)

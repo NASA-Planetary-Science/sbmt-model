@@ -1,7 +1,10 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -39,6 +42,9 @@ public class OVIRSSpectrum extends BasicSpectrum
 {
     boolean footprintGenerated = false;
     File infoFile, spectrumFile;
+    double time;
+    double boresightLatDeg, boresightLonDeg;
+    double[] calibratedRadianceUncertainty;
 
     public OVIRSSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
@@ -49,7 +55,14 @@ public class OVIRSSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        throw new IOException("Not implemented.");
+        new OVIRSSpectrumWriter(file.getAbsolutePath(), this).write();
+        File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        FileChannel src = new FileInputStream(infoFile).getChannel();
+        File infoFileDestination = new File(file.getParentFile() + File.separator + file.getName() + ".INFO");
+        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
+        dest.transferFrom(src, 0, src.size());
+        src.close();
+        dest.close();
     }
 
     protected String getInfoFilePathOnServer()
@@ -70,7 +83,6 @@ public class OVIRSSpectrum extends BasicSpectrum
 
             vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
                     spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
-
 
             if (tmp==null)
                 return;
@@ -205,6 +217,10 @@ public class OVIRSSpectrum extends BasicSpectrum
         reader.read();
         //
         spectrum=reader.getCalibratedRadiance();
+        time = reader.getEt();
+        calibratedRadianceUncertainty = reader.getCalibratedRadianceUncertainty();
+        boresightLatDeg = reader.getBoresightLatDeg();
+        boresightLonDeg = reader.getBoresightLonDeg();
     }
 
     @Override
@@ -213,6 +229,13 @@ public class OVIRSSpectrum extends BasicSpectrum
         if (footprintActor == null)
         {
             generateFootprint();
+
+            createSelectionPolyData();
+            createSelectionActor();
+            createToSunVectorPolyData();
+            createToSunVectorActor();
+            createOutlinePolyData();
+            createOutlineActor();
 
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint);
@@ -323,6 +346,7 @@ public class OVIRSSpectrum extends BasicSpectrum
             footprintActors.add(frustumActor);
         }
 
+
         footprintActors.add(selectionActor);
         footprintActors.add(toSunVectorActor);
         footprintActors.add(outlineActor);
@@ -348,7 +372,7 @@ public class OVIRSSpectrum extends BasicSpectrum
             else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                 val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
             else
-                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length);
+                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
 
             if (val < 0.0)
                 val = 0.0;
@@ -359,6 +383,26 @@ public class OVIRSSpectrum extends BasicSpectrum
             color[i] = slope * (val - channelsColoringMinValue[i]);
         }
         return color;
+    }
+
+    public double getTime()
+    {
+        return time;
+    }
+
+    public double getBoresightLatDeg()
+    {
+        return boresightLatDeg;
+    }
+
+    public double getBoresightLonDeg()
+    {
+        return boresightLonDeg;
+    }
+
+    public double[] getCalibratedRadianceUncertainty()
+    {
+        return calibratedRadianceUncertainty;
     }
 
 }

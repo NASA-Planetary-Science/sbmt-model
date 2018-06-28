@@ -171,64 +171,68 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
     //};
     //dataLoader.executeDialog();
 
-   while (isLoading())
-       try
-       {
-           Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
+       initTranslationArray(originalPoints.size());
+
+//       while (isLoading())
+//       {
+//           try
+//           {
+//               Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
+//           }
+//           catch (InterruptedException e)
+//           {
+//               // TODO Auto-generated catch block
+//               e.printStackTrace();
+//           }
+
+                    // Sort points in time order
+    //                Collections.sort(originalPoints);
+
+    //                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
+    //                sw.reset();
+    //                sw.start();
+
+                    radialOffset = 0.0;
+//                    translation[0] = translation[1] = translation[2] = 0.0;
+
+                    computeTracks();
+
+                    sw=new Stopwatch();
+                    System.out.println("Compute Track Time="+sw.elapsedMillis()+" ms");
+                    sw.reset();
+                    sw.start();
+
+                    removeTracksThatAreTooSmall();
+
+                    // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
+                    List<Track> tracksToRemove=Lists.newArrayList();
+                    for (Track t : tracks)
+                        if (t.timeRange[0].length()==0 || t.timeRange[1].length()==0)
+                            tracksToRemove.add(t);
+                    for (Track t : tracksToRemove)
+                        tracks.remove(t);
+
+                    System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+                    sw.reset();
+                    sw.start();
+
+                    assignInitialColorToTrack();
+
+                    System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+                    sw.reset();
+                    sw.start();
+
+
+                    updateTrackPolydata();
+
+                    System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+
+
+            selectPoint(-1);
+
+            pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
        }
-       catch (InterruptedException e)
-       {
-           // TODO Auto-generated catch block
-           e.printStackTrace();
-       }
-
-                // Sort points in time order
-//                Collections.sort(originalPoints);
-
-//                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
-//                sw.reset();
-//                sw.start();
-
-                radialOffset = 0.0;
-                translation[0] = translation[1] = translation[2] = 0.0;
-
-                computeTracks();
-
-                sw=new Stopwatch();
-                System.out.println("Compute Track Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
-
-                removeTracksThatAreTooSmall();
-
-                // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
-                List<Track> tracksToRemove=Lists.newArrayList();
-                for (Track t : tracks)
-                    if (t.timeRange[0].length()==0 || t.timeRange[1].length()==0)
-                        tracksToRemove.add(t);
-                for (Track t : tracksToRemove)
-                    tracks.remove(t);
-
-                System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
-
-                assignInitialColorToTrack();
-
-                System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
-
-
-                updateTrackPolydata();
-
-                System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
-
-
-        selectPoint(-1);
-
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
+//    }
 
     static vtkPoints points=new vtkPoints();
     static vtkCellArray cells=new vtkCellArray();

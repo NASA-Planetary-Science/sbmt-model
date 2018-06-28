@@ -1,7 +1,10 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -39,6 +42,7 @@ public class OTESSpectrum extends BasicSpectrum
 {
     boolean footprintGenerated = false;
     File infoFile, spectrumFile;
+    double time;
 
     public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
@@ -49,7 +53,14 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        throw new IOException("Not implemented.");
+        new OTESSpectrumWriter(file.getAbsolutePath(), this).write();
+        File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        FileChannel src = new FileInputStream(infoFile).getChannel();
+        File infoFileDestination = new File(file.getParentFile() + File.separator + file.getName() + ".INFO");
+        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
+        dest.transferFrom(src, 0, src.size());
+        src.close();
+        dest.close();
     }
 
     protected String getInfoFilePathOnServer()
@@ -57,6 +68,13 @@ public class OTESSpectrum extends BasicSpectrum
         return Paths.get(getSpectrumPathOnServer()).getParent()
                 .resolveSibling("infofiles-corrected")
                 .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+                .toString();
+    }
+
+    public String getSpectrumPathOnServer()
+    {
+        return Paths.get(serverpath).getParent()
+                .resolve(FilenameUtils.getBaseName(serverpath) + ".spect")
                 .toString();
     }
 
@@ -87,24 +105,37 @@ public class OTESSpectrum extends BasicSpectrum
             {
                 vtkPolyData tmp2=new vtkPolyData();
 
-            Rotation rot=new Rotation(lookUnit, Math.toRadians(angles[i]));
-            Vector3D g1=rot.applyTo(f1);
-            Vector3D g2=rot.applyTo(f2);
-            Vector3D g3=rot.applyTo(f3);
-            Vector3D g4=rot.applyTo(f4);
+                Rotation rot=new Rotation(lookUnit, Math.toRadians(angles[i]));
+                Vector3D g1=rot.applyTo(f1);
+                Vector3D g2=rot.applyTo(f2);
+                Vector3D g3=rot.applyTo(f3);
+                Vector3D g4=rot.applyTo(f4);
 
-            vtksbCellLocator tree=new vtksbCellLocator();
-            tree.SetDataSet(tmp);
-            tree.SetTolerance(1e-12);
-            tree.BuildLocator();
+                vtksbCellLocator tree=new vtksbCellLocator();
+                tree.SetDataSet(tmp);
+                tree.SetTolerance(1e-12);
+                tree.BuildLocator();
 
-            vtkPointLocator ploc=new vtkPointLocator();
-            ploc.SetDataSet(tmp);
-            ploc.SetTolerance(1e-12);
-            ploc.BuildLocator();
+                vtkPointLocator ploc=new vtkPointLocator();
+                ploc.SetDataSet(tmp);
+                ploc.SetTolerance(1e-12);
+                ploc.BuildLocator();
 
-            tmp2 = PolyDataUtil.computeFrustumIntersection(tmp, tree, ploc, spacecraftPosition, g1.toArray(), g2.toArray(), g3.toArray(), g4.toArray());
-            tmp.DeepCopy(tmp2);
+                tmp2 = PolyDataUtil.computeFrustumIntersection(tmp, tree, ploc, spacecraftPosition, g1.toArray(), g2.toArray(), g3.toArray(), g4.toArray());
+                if (tmp2 == null)
+                {
+                    try
+                    {
+                        throw new Exception("Frustum intersection is null - this needs to be handled better");
+                    }
+                    catch (Exception e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    continue;
+                }
+                tmp.DeepCopy(tmp2);
             }
 
             if (tmp==null)
@@ -205,6 +236,7 @@ public class OTESSpectrum extends BasicSpectrum
         reader.read();
         //
         spectrum=reader.getCalibratedRadiance();
+        time = reader.getEt();
     }
 
     @Override
@@ -348,7 +380,7 @@ public class OTESSpectrum extends BasicSpectrum
             else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                 val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
             else
-                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length);
+                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
 
             if (val < 0.0)
                 val = 0.0;
@@ -359,6 +391,11 @@ public class OTESSpectrum extends BasicSpectrum
             color[i] = slope * (val - channelsColoringMinValue[i]);
         }
         return color;
+    }
+
+    public double getTime()
+    {
+        return time;
     }
 
 

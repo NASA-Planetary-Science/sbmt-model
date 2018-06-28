@@ -20,7 +20,8 @@ import edu.jhuapl.sbmt.query.QueryBase;
 /**
  * This class provides functions for querying the database.
  */
-public class NisQuery extends QueryBase
+//This must be final because it is a singleton with a clone method.
+public final class NisQuery extends QueryBase
 {
     private static NisQuery ref = null;
 
@@ -58,19 +59,14 @@ public class NisQuery extends QueryBase
     }
 
     @Override
-    public QueryBase clone()
+    public NisQuery clone()
     {
-        return null;
+        return getInstance();
     }
 
     private NisQuery()
     {
-    }
-
-    @Override
-    public String getGalleryPath()
-    {
-        return null;
+        super(null);
     }
 
     @Override
@@ -88,17 +84,17 @@ public class NisQuery extends QueryBase
      */
     @Override
     public List<List<String>> runQuery(
-            String type,
+            @SuppressWarnings("unused") String type,
             DateTime startDate,
             DateTime stopDate,
-            boolean sumOfProductsSearch,
-            List<Integer> camerasSelected,
-            List<Integer> filtersSelected,
+            @SuppressWarnings("unused") boolean sumOfProductsSearch,
+            @SuppressWarnings("unused") List<Integer> camerasSelected,
+            @SuppressWarnings("unused") List<Integer> filtersSelected,
             double startDistance,
             double stopDistance,
-            double startResolution,
-            double stopResolution,
-            String searchString,
+            @SuppressWarnings("unused") double startResolution,
+            @SuppressWarnings("unused") double stopResolution,
+            @SuppressWarnings("unused") String searchString,
             List<Integer> polygonTypes,
             double fromIncidence,
             double toIncidence,
@@ -107,8 +103,8 @@ public class NisQuery extends QueryBase
             double fromPhase,
             double toPhase,
             TreeSet<Integer> cubeList,
-            ImageSource msiSource,
-            int limbType)
+            @SuppressWarnings("unused") ImageSource msiSource,
+            @SuppressWarnings("unused") int limbType)
     {
         List<List<String>> results = null;
 
@@ -225,10 +221,19 @@ public class NisQuery extends QueryBase
         for (Entry<String, List<String>> each: inventory.entrySet())
         {
             List<String> res = each.getValue();
-            String path = this.getNisPath(res);
+            String path = getNisPath(res);
             if (filesFound.containsKey(path))
                 result.add(res);
         }
         return result;
+    }
+
+    protected void changeImagePathToFullPath(List<String> result)
+    {
+        String fullPath = result.get(1) + "/" + result.get(2) + "/" + result.get(0);
+        if (!fullPath.contains("/"))
+        {
+            result.set(0, getDataPath() + "/" + fullPath);
+        }
     }
 }

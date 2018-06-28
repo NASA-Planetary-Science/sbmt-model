@@ -80,7 +80,6 @@ public class PerspectiveImageBoundary extends AbstractModel implements PropertyC
         this.offset=offsetnew;
 
         update();
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     public double getOffset()

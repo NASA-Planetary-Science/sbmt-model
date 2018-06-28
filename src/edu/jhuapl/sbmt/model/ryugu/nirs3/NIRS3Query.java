@@ -8,7 +8,8 @@ import org.joda.time.DateTime;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.query.FixedListQuery;
 
-public class NIRS3Query extends FixedListQuery
+// This must be final because it is a singleton with a clone method.
+public final class NIRS3Query extends FixedListQuery
 {
     private static NIRS3Query instance=new NIRS3Query();
 
@@ -24,6 +25,12 @@ public class NIRS3Query extends FixedListQuery
     }
 
     @Override
+    public NIRS3Query clone()
+    {
+        return getInstance();
+    }
+
+    @Override
     public String getDataPath()
     {
         return rootPath + "/spectra";
@@ -31,29 +38,29 @@ public class NIRS3Query extends FixedListQuery
 
     @Override
     public List<List<String>> runQuery(
-            String type,
-            DateTime startDate,
-            DateTime stopDate,
-            boolean sumOfProductsSearch,
-            List<Integer> camerasSelected,
-            List<Integer> filtersSelected,
-            double startDistance,
-            double stopDistance,
-            double startResolution,
-            double stopResolution,
-            String searchString,
-            List<Integer> polygonTypes,
-            double fromIncidence,
-            double toIncidence,
-            double fromEmission,
-            double toEmission,
-            double fromPhase,
-            double toPhase,
-            TreeSet<Integer> cubeList,
-            ImageSource imageSource,
-            int limbType)
+            @SuppressWarnings("unused") String type,
+            @SuppressWarnings("unused") DateTime startDate,
+            @SuppressWarnings("unused") DateTime stopDate,
+            @SuppressWarnings("unused") boolean sumOfProductsSearch,
+            @SuppressWarnings("unused") List<Integer> camerasSelected,
+            @SuppressWarnings("unused") List<Integer> filtersSelected,
+            @SuppressWarnings("unused") double startDistance,
+            @SuppressWarnings("unused") double stopDistance,
+            @SuppressWarnings("unused") double startResolution,
+            @SuppressWarnings("unused") double stopResolution,
+            @SuppressWarnings("unused") String searchString,
+            @SuppressWarnings("unused") List<Integer> polygonTypes,
+            @SuppressWarnings("unused") double fromIncidence,
+            @SuppressWarnings("unused") double toIncidence,
+            @SuppressWarnings("unused") double fromEmission,
+            @SuppressWarnings("unused") double toEmission,
+            @SuppressWarnings("unused") double fromPhase,
+            @SuppressWarnings("unused") double toPhase,
+            @SuppressWarnings("unused") TreeSet<Integer> cubeList,
+            @SuppressWarnings("unused") ImageSource imageSource,
+            @SuppressWarnings("unused") int limbType)
     {
-        spectrumListPrefix = "";
+        String spectrumListPrefix = "";
 
 //        if (multiSource)
 //        {
@@ -65,7 +72,7 @@ public class NIRS3Query extends FixedListQuery
                 //spectrumListPrefix = "infofiles-corrected";
 //        }
 
-        List<List<String>> result = getResultsFromFileListOnServer(rootPath + "/" + spectrumListPrefix + "/spectrumlist.txt", rootPath + "/spectra/", galleryPath);
+        List<List<String>> result = getResultsFromFileListOnServer(rootPath + "/" + spectrumListPrefix + "/spectrumlist.txt", rootPath + "/spectra/", getGalleryPath(), searchString);
 
         return result;
     }

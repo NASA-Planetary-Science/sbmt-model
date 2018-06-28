@@ -3,8 +3,8 @@ package edu.jhuapl.sbmt.model.image;
 public enum ImageSource
 {
     SPICE("SPICE Derived", "pds"),
-    GASKELL("Gaskell Derived", "gaskell"),
-    GASKELL_UPDATED("Gaskell Updated", "gaskell_updated"),
+    GASKELL("SPC Derived", "gaskell"),
+    GASKELL_UPDATED("SPC Derived", "gaskell_updated"),
     LABEL("Label Derived", "label"),
     CORRECTED("Corrected", "corrected"),
     CORRECTED_SPICE("Corrected SPICE Derived", "corrected_pds"),

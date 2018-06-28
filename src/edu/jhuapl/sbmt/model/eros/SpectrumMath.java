@@ -17,15 +17,15 @@ public abstract class SpectrumMath
     // A list of channels used in one of the user defined derived parameters
     protected List< List<String>> bandsPerUserDefinedDerivedParameters = new ArrayList<List<String>>();
 
-    double[] spectralValues;
+    private boolean loaded = false;
 
-    public double evaluateUserDefinedDerivedParameters(int userDefinedParameter)
+    public double evaluateUserDefinedDerivedParameters(int userDefinedParameter, double[] spectrum)
     {
         List<String> bands = bandsPerUserDefinedDerivedParameters.get(userDefinedParameter);
         for (String c : bands)
         {
             userDefinedDerivedParameters.get(userDefinedParameter).SetScalarVariableValue(
-                    c, spectralValues[Integer.parseInt(c.substring(1))-1]);
+                    c, spectrum[Integer.parseInt(c.substring(1))-1]);
         }
 
         return userDefinedDerivedParameters.get(userDefinedParameter).GetScalarResult();
@@ -39,7 +39,7 @@ public abstract class SpectrumMath
 
         // Find all variables in the expression of the form BXX where X is a digit
         // such as B01, b63, B10
-        String patternString = "[Bb]\\d\\d";
+        String patternString = "[Bb]\\d+\\b";
         Pattern pattern = Pattern.compile(patternString);
         Matcher matcher = pattern.matcher(function);
 
@@ -64,7 +64,7 @@ public abstract class SpectrumMath
         functionParser.ReplaceInvalidValuesOn();
 
         for (String c : bands)
-            functionParser.SetScalarVariableValue(c, 0.0);
+            functionParser.SetScalarVariableValue(c, 1.0);
         if (functionParser.IsScalarResult() == 0)
             return false;
 
@@ -83,19 +83,7 @@ public abstract class SpectrumMath
 
     public boolean addUserDefinedDerivedParameter(String function)
     {
-        vtkFunctionParser functionParser = new vtkFunctionParser();
-        List<String> bands = new ArrayList<String>();
-
-        boolean success = setupUserDefinedDerivedParameter(functionParser, function, bands);
-
-        if (success)
-        {
-            bandsPerUserDefinedDerivedParameters.add(bands);
-            userDefinedDerivedParameters.add(functionParser);
-            saveUserDefinedParametersToPreferences();
-        }
-
-        return success;
+        return addUserDefinedDerivedParameter(function, true);
     }
 
     public boolean editUserDefinedDerivedParameter(int index, String function)
@@ -124,16 +112,21 @@ public abstract class SpectrumMath
 
     public List<vtkFunctionParser> getAllUserDefinedDerivedParameters()
     {
+        loadUserDefinedParametersfromPreferences();
         return userDefinedDerivedParameters;
     }
 
     public void loadUserDefinedParametersfromPreferences()
     {
-        String[] functions = Preferences.getInstance().getAsArray(Preferences.NIS_CUSTOM_FUNCTIONS, ";");
-        if (functions != null)
+        if (!loaded)
         {
-            for (String func : functions)
-                addUserDefinedDerivedParameter(func);
+            String[] functions = Preferences.getInstance().getAsArray(Preferences.NIS_CUSTOM_FUNCTIONS, ";");
+            if (functions != null)
+            {
+                for (String func : functions)
+                    addUserDefinedDerivedParameter(func, false);
+            }
+            loaded = true;
         }
     }
 
@@ -152,4 +145,25 @@ public abstract class SpectrumMath
     }
 
     public abstract String[] getDerivedParameters();
+
+    private boolean addUserDefinedDerivedParameter(String function, boolean save)
+    {
+        vtkFunctionParser functionParser = new vtkFunctionParser();
+        List<String> bands = new ArrayList<>();
+
+        boolean success = setupUserDefinedDerivedParameter(functionParser, function, bands);
+
+        if (success)
+        {
+            bandsPerUserDefinedDerivedParameters.add(bands);
+            userDefinedDerivedParameters.add(functionParser);
+            if (save)
+            {
+                saveUserDefinedParametersToPreferences();
+            }
+        }
+
+        return success;
+    }
+
 }

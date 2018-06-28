@@ -13,12 +13,14 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.collect.Lists;
 
-import edu.jhuapl.saavtk.gui.Renderer;
+import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
+import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchPanel;
+import edu.jhuapl.sbmt.model.eros.SpectraCollection;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class OVIRSSearchPanel extends SpectrumSearchPanel
@@ -105,6 +107,11 @@ public class OVIRSSearchPanel extends SpectrumSearchPanel
         // Show the first set of footprints
         this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.numberOfFootprintsComboBox.getSelectedItem()));
         this.showFootprints(resultIntervalCurrentlyShown);
+
+        SpectraCollection model = (SpectraCollection)modelManager.getModel(ModelNames.SPECTRA);
+        model.toggleSelectAll();
+        model.toggleSelectAll();
+
 
     }
 
