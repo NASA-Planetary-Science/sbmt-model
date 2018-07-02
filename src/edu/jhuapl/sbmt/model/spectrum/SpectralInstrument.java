@@ -8,6 +8,7 @@ public interface SpectralInstrument
     public double[] getBandCenters();
     public String getDisplayName();
     public QueryBase getQueryBase();
+//    public DatabaseQueryBase getDatabaseQueryBase();
     public SpectrumMath getSpectrumMath();
 
 }

@@ -31,6 +31,7 @@ public class OTESSpectrumWriter extends BasicFileWriter
             writer.newLine();
             writer.write("## Wavelength (Band Center), Calibrated Radiance");
             writer.newLine();
+            //TODO needs to be updated to handle L3 data as well
             for (int i=0; i<OTES.bandCenters.length; i++)
             {
                 writer.write(OTES.bandCenters[i] + "," + calibratedRadiance[i]);
