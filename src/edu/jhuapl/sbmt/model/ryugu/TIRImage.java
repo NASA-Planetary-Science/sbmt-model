@@ -4,12 +4,10 @@ import java.io.File;
 import java.io.IOException;
 
 import vtk.vtkImageData;
-import vtk.vtkImageReslice;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
@@ -24,9 +22,7 @@ public class TIRImage extends PerspectiveImage
 
     public TIRImage(ImageKey key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
-        super(key, smallBodyModel, loadPointingOnly);
-
-        transposeFITSData = false;
+        super(key, smallBodyModel, loadPointingOnly, false);
     }
 
     @Override
@@ -54,21 +50,23 @@ public class TIRImage extends PerspectiveImage
     @Override
     protected void processRawImage(vtkImageData rawImage)
     {
-        int[] dims = rawImage.GetDimensions();
-        int originalHeight = dims[1];
-
-        vtkImageReslice reslice = new vtkImageReslice();
-        reslice.SetInputData(rawImage);
-        reslice.SetInterpolationModeToLinear();
-        reslice.SetOutputSpacing((double)dims[0]/(double)RESAMPLED_IMAGE_WIDTH, (double)originalHeight/(double)RESAMPLED_IMAGE_HEIGHT, 1.0);
-        reslice.SetOutputOrigin(0.0, 0.0, 0.0);
-        reslice.SetOutputExtent(0, RESAMPLED_IMAGE_WIDTH-1, 0, RESAMPLED_IMAGE_HEIGHT-1, 0, 0);
-        reslice.Update();
-
-        vtkImageData resliceOutput = reslice.GetOutput();
-        rawImage.DeepCopy(resliceOutput);
-        rawImage.SetSpacing(1, 1, 1);
-
-        ImageDataUtil.rotateImage(rawImage, -180.0);
+//        int[] dims = rawImage.GetDimensions();
+//        int originalHeight = dims[1];
+//
+//        vtkImageReslice reslice = new vtkImageReslice();
+//        reslice.SetInputData(rawImage);
+//        reslice.SetInterpolationModeToLinear();
+//        reslice.SetOutputSpacing((double)dims[0]/(double)RESAMPLED_IMAGE_WIDTH, (double)originalHeight/(double)RESAMPLED_IMAGE_HEIGHT, 1.0);
+//        reslice.SetOutputOrigin(0.0, 0.0, 0.0);
+//        reslice.SetOutputExtent(0, RESAMPLED_IMAGE_WIDTH-1, 0, RESAMPLED_IMAGE_HEIGHT-1, 0, 0);
+//        reslice.Update();
+//
+//        vtkImageData resliceOutput = reslice.GetOutput();
+//        rawImage.DeepCopy(resliceOutput);
+//        rawImage.SetSpacing(1, 1, 1);
+//
+//        ImageDataUtil.rotateImage(rawImage, 90.0);
+//        ImageDataUtil.flipImageXAxis(rawImage);
+//        ImageDataUtil.flipImageYAxis(rawImage);
     }
 }
