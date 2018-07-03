@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
 import edu.jhuapl.sbmt.model.eros.SpectrumMath;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.query.fixedlist.FixedListQueryBase;
 
 
 public class NIRS3 implements SpectralInstrument
@@ -21,7 +21,7 @@ public class NIRS3 implements SpectralInstrument
     }
 
     @Override
-    public QueryBase getQueryBase()
+    public FixedListQueryBase getQueryBase()
     {
         return NIRS3Query.getInstance();
     }
