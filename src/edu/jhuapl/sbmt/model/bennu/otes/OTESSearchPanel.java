@@ -60,7 +60,7 @@ public class OTESSearchPanel extends SpectrumSearchController
 
         List<String> matchedImages=Lists.newArrayList();
         if (matchedImages.size() > 0)
-        fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
+            fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
         for (List<String> res : results)
         {
             String basePath=FilenameUtils.getPath(res.get(0));

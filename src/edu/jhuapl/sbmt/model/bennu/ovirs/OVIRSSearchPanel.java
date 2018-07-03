@@ -24,6 +24,7 @@ import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class OVIRSSearchPanel extends SpectrumSearchController
 {
+    String fileExtension = "";
 
     public OVIRSSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
@@ -64,6 +65,8 @@ public class OVIRSSearchPanel extends SpectrumSearchController
         view.getResultsLabel().setText(results.size() + " spectra matched");
 
         List<String> matchedImages=Lists.newArrayList();
+        if (matchedImages.size() > 0)
+            fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
         for (List<String> res : results)
         {
             //String path = NisQuery.getNisPath(res);
@@ -74,7 +77,7 @@ public class OVIRSSearchPanel extends SpectrumSearchController
 
 //            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
 //            File file=FileCache.getFileFromServer("/"+infoFile.toString());
-            matchedImages.add(basePath + filename);
+            matchedImages.add(basePath + filename + "." + FilenameUtils.getExtension(res.get(0)));
 
 //            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
 
@@ -109,7 +112,7 @@ public class OVIRSSearchPanel extends SpectrumSearchController
     @Override
     public String createSpectrumName(int index)
     {
-        return model.getSpectrumRawResults().get(index) + ".spect";
+        return model.getSpectrumRawResults().get(index);
 //        return "/earth/osirisrex/ovirs/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
     }
 
