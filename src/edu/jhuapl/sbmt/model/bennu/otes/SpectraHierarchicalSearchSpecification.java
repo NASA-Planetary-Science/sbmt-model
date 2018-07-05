@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
+import java.io.FileNotFoundException;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,8 +11,9 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadataIO;
+import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 
-public abstract class SpectraHierarchicalSearchSpecification implements InstrumentMetadataIO
+public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpec> implements InstrumentMetadataIO<S>
 {
     private TreeModel treeModel;
     private List<Integer> selectedDatasets;
@@ -25,6 +27,8 @@ public abstract class SpectraHierarchicalSearchSpecification implements Instrume
         // Initialize container objects
         selectedDatasets = new LinkedList<Integer>();
     }
+
+    public abstract void loadMetadata() throws FileNotFoundException;
 
     // Method used to get the tree model
     public TreeModel getTreeModel()

@@ -18,8 +18,6 @@ import nom.tam.fits.FitsException;
 public class ONCImage extends PerspectiveImage
 {
 
-    private static ImmutableMap<String, String> SUMFILE_MAP = null;
-
     public ONCImage(ImageKey key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
@@ -63,7 +61,6 @@ public class ONCImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        // SUMFILE_MAP = null; // Just for use while debugging.
         ImmutableMap<String, String> sumfileMap = getSumfileMap();
         String imageKey = getImageFileName().replaceFirst(".*/", "");
         String sumfileName = sumfileMap.get(imageKey);
@@ -81,29 +78,25 @@ public class ONCImage extends PerspectiveImage
 
     private ImmutableMap<String, String> getSumfileMap()
     {
-        if (SUMFILE_MAP == null)
+        ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+        File keyFile = new File(getImageFileName());
+        File mapFile = FileCache.getFileFromServer(SafePaths.getString(keyFile.getParentFile().getParent(), "make_sumfiles.in"));
+        try (BufferedReader br = new BufferedReader(new FileReader(mapFile)))
         {
-            ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
-            File keyFile = new File(getImageFileName());
-            File mapFile = FileCache.getFileFromServer(SafePaths.getString(keyFile.getParentFile().getParent(), "make_sumfiles.in"));
-            try (BufferedReader br = new BufferedReader(new FileReader(mapFile)))
+            while (br.ready())
             {
-                while (br.ready())
-                {
-                    String[] line = br.readLine().split("\\s\\s*");
-                    if (line.length < 2) throw new ParseException("Cannot parse line " + String.join(" ", line) + " to get sum file/image file names", line.length > 0 ? line[0].length() : 0);
-                    String sumFile = line[0] + ".SUM";
-                    String imageFile = line[line.length - 1].replace("xx", "");
-                    builder.put(imageFile, sumFile);
-                }
+                String[] line = br.readLine().split("\\s\\s*");
+                if (line.length < 2) throw new ParseException("Cannot parse line " + String.join(" ", line) + " to get sum file/image file names", line.length > 0 ? line[0].length() : 0);
+                String sumFile = line[0] + ".SUM";
+                String imageFile = line[line.length - 1].replace("xx", "");
+                builder.put(imageFile, sumFile);
             }
-            catch (IOException | ParseException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            SUMFILE_MAP = builder.build();
         }
-        return SUMFILE_MAP;
+        catch (IOException | ParseException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return builder.build();
     }
 }

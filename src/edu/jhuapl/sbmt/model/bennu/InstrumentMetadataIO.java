@@ -1,9 +1,9 @@
 package edu.jhuapl.sbmt.model.bennu;
 
-public interface InstrumentMetadataIO
+public interface InstrumentMetadataIO<S extends SearchSpec>
 {
 
-    OREXSpectrumInstrumentMetadata<OREXSearchSpec> getInstrumentMetadata(
+    InstrumentMetadata<S> getInstrumentMetadata(
             String instrumentName);
 
     void readHierarchyForInstrument(String instrumentName);
