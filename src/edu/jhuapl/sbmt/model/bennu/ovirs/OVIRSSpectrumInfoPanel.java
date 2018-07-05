@@ -52,13 +52,13 @@ public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyC
 
         // add the jfreechart graph
         XYSeries series = new XYSeries("OVIRS Spectrum");
-        double[] wavelengths = spectrum.getBandCenters();
+        double[] wavelengths = spectrum.getxData();
         double[] spect = spectrum.getSpectrum();
         for (int i=0; i<wavelengths.length; ++i)
             series.add(wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory.createXYLineChart
-                ("OVIRS Calibrated Spectrum", "Wavelength (micron)", "Radiance (W sr^-1 m^2)",
+                (spectrum.getDataName(), spectrum.getxAxisUnits(), spectrum.getyAxisUnits(),
                         xyDataset, PlotOrientation.VERTICAL, true, true, false);
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setMouseWheelEnabled(true);
@@ -135,7 +135,7 @@ public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyC
         createMenus();
 
         // Finally make the frame visible
-        setTitle("NIS Spectrum Properties");
+        setTitle(spectrum.getDataName());
 
         pack();
         setVisible(true);

@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 
 public abstract class Spectrum extends AbstractModel implements PropertyChangeListener
 {
@@ -54,4 +55,6 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
     public abstract void saveSpectrum(File file) throws IOException;
 
     public static final String faceAreaFractionArrayName="faceAreaFraction";
+    public abstract void setColoringStyle(SpectrumColoringStyle coloringStyle);
+    public abstract void setMetadata(SearchSpec spec);
 }

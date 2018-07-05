@@ -148,6 +148,17 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         {
             return name.hashCode();
         }
+
+        @Override
+        public String toString()
+        {
+            return "ImageKey [name=" + name + ", source=" + source
+                    + ", fileType=" + fileType + ", instrument=" + instrument
+                    + ", imageType=" + imageType + ", band=" + band + ", slice="
+                    + slice + "]";
+        }
+
+
     }
 
 
