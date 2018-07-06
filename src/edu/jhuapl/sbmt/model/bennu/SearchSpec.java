@@ -1,5 +1,8 @@
 package edu.jhuapl.sbmt.model.bennu;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
 
@@ -22,4 +25,7 @@ public interface SearchSpec
 
     String getDataDescription();
 
+    void toFile(BufferedWriter writer) throws IOException;
+
+    public void fromFile(String csvLine);
 }

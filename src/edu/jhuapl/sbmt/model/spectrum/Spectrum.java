@@ -57,4 +57,5 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
     public static final String faceAreaFractionArrayName="faceAreaFraction";
     public abstract void setColoringStyle(SpectrumColoringStyle coloringStyle);
     public abstract void setMetadata(SearchSpec spec);
+    public abstract SearchSpec getMetadata();
 }

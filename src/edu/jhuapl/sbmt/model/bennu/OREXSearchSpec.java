@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.Hashtable;
 
 import edu.jhuapl.sbmt.model.image.ImageSource;
@@ -30,6 +32,25 @@ public class OREXSearchSpec extends Hashtable<String, String> implements SearchS
         put("xAxisUnits", this.xAxisUnits = xAxisUnits);
         put("yAxisUnits", this.yAxisUnits = yAxisUnits);
         put("dataDescription", this.dataDescription = dataDescription);
+    }
+
+    public void fromFile(String csvLine)
+    {
+        String[] parts = csvLine.split(",");
+        put("dataName", dataName = parts[0]);
+        put("dataRootLocation", dataRootLocation = parts[1]);
+        put("dataPath", this.dataPath = parts[2]);
+        put("dataListFilename", this.dataListFilename = parts[3]);
+        put("source", this.source = parts[4]);
+        put("xAxisUnits", this.xAxisUnits = parts[5]);
+        put("yAxisUnits", this.yAxisUnits = parts[6]);
+        put("dataDescription", this.dataDescription = parts[7]);
+    }
+
+    public void toFile(BufferedWriter writer) throws IOException
+    {
+        writer.write(getDataName() + "," + getDataRootLocation() + "," + getDataPath() + "," + getDataListFilename() + "," + getSource() + "," + getxAxisUnits() + "," + getyAxisUnits() + "," + getDataDescription());
+        writer.newLine();
     }
 
     public OREXSearchSpec(Hashtable<String, String> copy)

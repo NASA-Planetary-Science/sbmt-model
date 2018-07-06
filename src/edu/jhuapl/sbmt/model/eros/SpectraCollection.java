@@ -150,7 +150,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         fileToSpectrumMap.put(path, spectrum);
         spectraActors.put(spectrum, new ArrayList<vtkProp>());
 
-        spectrum.setMetadata(fileToSpecMap.get("/" + path));
+        spectrum.setMetadata(fileToSpecMap.get(path));
 
         List<vtkProp> props = spectrum.getProps();
 
@@ -297,6 +297,11 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return fileToSpectrumMap.get(file);
     }
 
+    public SearchSpec getSearchSpec(String file)
+    {
+        return fileToSpecMap.get(file);
+    }
+
     public boolean containsSpectrum(String file)
     {
         return fileToSpectrumMap.containsKey(file);
@@ -305,6 +310,8 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     public void tagSpectraWithMetadata(String filename, SearchSpec spec)
     {
         fileToSpecMap.put(filename, spec);
+        Spectrum spectrum = fileToSpectrumMap.get(filename);
+        if (spectrum != null) spectrum.setMetadata(spec);
     }
 
     public void tagSpectraWithMetadata(List<List<String>> filenames, SearchSpec spec)
@@ -364,5 +371,10 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         for (Spectrum s : spectraActors.keySet())
             allProps.addAll(spectraActors.get(s));
         return allProps;
+    }
+
+    public int getCount()
+    {
+        return fileToSpectrumMap.size();
     }
 }
