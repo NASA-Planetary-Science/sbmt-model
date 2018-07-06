@@ -692,4 +692,9 @@ public abstract class BasicSpectrum extends Spectrum
     {
         this.spec = spec;
     }
+
+    public SearchSpec getMetadata()
+    {
+        return this.spec;
+    }
 }

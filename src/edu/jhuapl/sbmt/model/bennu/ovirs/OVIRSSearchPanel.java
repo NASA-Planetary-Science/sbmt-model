@@ -19,11 +19,13 @@ import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
+import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
 import edu.jhuapl.sbmt.model.eros.SpectraCollection;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 public class OVIRSSearchPanel extends SpectrumSearchController
 {
+    String fileExtension = "";
 
     public OVIRSSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
@@ -64,6 +66,8 @@ public class OVIRSSearchPanel extends SpectrumSearchController
         view.getResultsLabel().setText(results.size() + " spectra matched");
 
         List<String> matchedImages=Lists.newArrayList();
+        if (matchedImages.size() > 0)
+            fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
         for (List<String> res : results)
         {
             //String path = NisQuery.getNisPath(res);
@@ -74,7 +78,7 @@ public class OVIRSSearchPanel extends SpectrumSearchController
 
 //            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
 //            File file=FileCache.getFileFromServer("/"+infoFile.toString());
-            matchedImages.add(basePath + filename);
+            matchedImages.add(basePath + filename + "." + FilenameUtils.getExtension(res.get(0)));
 
 //            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
 
@@ -109,9 +113,19 @@ public class OVIRSSearchPanel extends SpectrumSearchController
     @Override
     public String createSpectrumName(int index)
     {
-        return model.getSpectrumRawResults().get(index) + ".spect";
+        return "/" + model.getSpectrumRawResults().get(index);
 //        return "/earth/osirisrex/ovirs/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
     }
 
+    public void populateSpectrumMetadata(List<String> lines)
+    {
+        SpectraCollection collection = (SpectraCollection)model.getModelManager().getModel(ModelNames.SPECTRA);
+        for (int i=0; i<lines.size(); ++i)
+        {
+            OREXSearchSpec spectrumSpec = new OREXSearchSpec();
+            spectrumSpec.fromFile(lines.get(0));
+            collection.tagSpectraWithMetadata(createSpectrumName(i), spectrumSpec);
+        }
+    }
 
 }
