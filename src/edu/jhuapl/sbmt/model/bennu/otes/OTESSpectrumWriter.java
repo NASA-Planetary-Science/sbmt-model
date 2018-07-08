@@ -24,17 +24,18 @@ public class OTESSpectrumWriter extends BasicFileWriter
         try
         {
             double[] calibratedRadiance = otes.getSpectrum();
+            double[] waveNumber = otes.getxData();
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(filename)));
             writer.write("# ET time");
             writer.newLine();
             writer.write(""+otes.getTime());
             writer.newLine();
-            writer.write("## Wavelength (Band Center), Calibrated Radiance");
+            writer.write("## Wavenumber, Calibrated Radiance");
             writer.newLine();
             //TODO needs to be updated to handle L3 data as well
-            for (int i=0; i<OTES.bandCenters.length; i++)
+            for (int i=0; i<calibratedRadiance.length; i++)
             {
-                writer.write(OTES.bandCenters[i] + "," + calibratedRadiance[i]);
+                writer.write(waveNumber[i] + "," + calibratedRadiance[i]);
                 writer.newLine();
             }
             writer.close();
