@@ -27,6 +27,12 @@ public class NIRS3 implements SpectralInstrument
     }
 
     @Override
+    public String getBandCenterUnit()
+    {
+        return "cm^-1";
+    }
+
+    @Override
     public SpectrumMath getSpectrumMath()
     {
         return NIRS3SpectrumMath.getInstance();

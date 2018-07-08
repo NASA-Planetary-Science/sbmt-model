@@ -18,6 +18,12 @@ public class NIS implements SpectralInstrument
         return "NIS";
     }
 
+    @Override
+    public String getBandCenterUnit()
+    {
+        return "cm^-1";
+    }
+
     // These values were taken from Table 1 of "Spectral properties and geologic
     // processes on Eros from combined NEAR NIS and MSI data sets"
     // by Noam Izenberg et. al.

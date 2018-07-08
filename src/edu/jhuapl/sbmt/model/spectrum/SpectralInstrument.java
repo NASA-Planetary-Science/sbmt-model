@@ -6,6 +6,7 @@ import edu.jhuapl.sbmt.query.QueryBase;
 public interface SpectralInstrument
 {
     public double[] getBandCenters();
+    public String getBandCenterUnit();
     public String getDisplayName();
     public QueryBase getQueryBase();
 //    public DatabaseQueryBase getDatabaseQueryBase();
