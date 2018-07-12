@@ -148,6 +148,8 @@ public final class NisQuery extends DatabaseQueryBase
         catch (Exception e)
         {
             e.printStackTrace();
+            results = getResultsFromFileListOnServer(getDataPath() + "/nisTimes.txt", getDataPath(), getGalleryPath(), "");
+
         }
 
         return SearchResultsMetadata.of("", results);
@@ -283,6 +285,7 @@ public final class NisQuery extends DatabaseQueryBase
     {
     	// Create a map of actual files, with key the segment of the
     	// file name that will match the output of getNisPath.
+        System.out.println("NisQuery: getCachedResults: " + pathToImageFolder);
         final List<File> fileList = getCachedFiles(pathToImageFolder);
         final Map<String, File> filesFound = new TreeMap<>();
         for (File file: fileList)
@@ -299,6 +302,7 @@ public final class NisQuery extends DatabaseQueryBase
         for (Entry<String, List<String>> each: inventory.entrySet())
         {
             List<String> res = each.getValue();
+            if (!res.get(0).contains("NIS")) continue;
             String path = getNisPath(res);
             if (filesFound.containsKey(path))
                 result.add(res);
