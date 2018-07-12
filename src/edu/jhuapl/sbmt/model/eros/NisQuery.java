@@ -31,7 +31,7 @@ public final class NisQuery extends DatabaseQueryBase
 
     public static String getNisPath(List<String> result)
     {
-        int id = Integer.parseInt(result.get(0));
+        int id = Integer.parseInt(result.get(0).split("/")[3]);
         int year = Integer.parseInt(result.get(1));
         int dayOfYear = Integer.parseInt(result.get(2));
 
@@ -76,7 +76,7 @@ public final class NisQuery extends DatabaseQueryBase
     @Override
     public String getDataPath()
     {
-        return "/NIS/";
+        return "/NIS/2000";
     }
 
     @Override
