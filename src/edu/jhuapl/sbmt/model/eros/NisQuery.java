@@ -286,7 +286,7 @@ public final class NisQuery extends DatabaseQueryBase
             )
     {
         JOptionPane.showMessageDialog(null,
-                "SBMT had a problem while performing the search. Ignoring search parameters and listing all cached images.",
+                "SBMT had a problem while performing the search. Ignoring search parameters and listing all cached spectra.",
                 "Warning",
                 JOptionPane.WARNING_MESSAGE);
     	// Create a map of actual files, with key the segment of the
