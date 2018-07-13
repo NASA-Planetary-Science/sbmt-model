@@ -10,6 +10,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.swing.JOptionPane;
+
 import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.metadata.FixedMetadata;
@@ -283,9 +285,12 @@ public final class NisQuery extends DatabaseQueryBase
             String pathToImageFolder
             )
     {
+        JOptionPane.showMessageDialog(null,
+                "SBMT had a problem while performing the search. Ignoring search parameters and listing all cached images.",
+                "Warning",
+                JOptionPane.WARNING_MESSAGE);
     	// Create a map of actual files, with key the segment of the
     	// file name that will match the output of getNisPath.
-        System.out.println("NisQuery: getCachedResults: " + pathToImageFolder);
         final List<File> fileList = getCachedFiles(pathToImageFolder);
         final Map<String, File> filesFound = new TreeMap<>();
         for (File file: fileList)
