@@ -19,8 +19,14 @@ public class OVIRS implements SpectralInstrument
         return "OVIRS";
     }
 
+    @Override
+    public String getBandCenterUnit()
+    {
+        return "um";
+    }
+
     // these band centers are taken from
-    static final public double[] bandCenters = {
+    static final public double[] bandCenters = {    //unit: microns
             0.392000, //0
             0.394000, //1
             0.396000, //2

@@ -1,7 +1,5 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -19,25 +17,29 @@ import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
-import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchPanel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
+import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
 import edu.jhuapl.sbmt.model.eros.SpectraCollection;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
-public class OVIRSSearchPanel extends SpectrumSearchPanel
+public class OVIRSSearchPanel extends SpectrumSearchController
 {
+    String fileExtension = "";
 
-    public OVIRSSearchPanel(ModelManager modelManager,
+    public OVIRSSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
             Renderer renderer, SpectralInstrument instrument)
     {
-        super(modelManager, infoPanelManager, pickManager, renderer, instrument);
+        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
         // TODO Auto-generated constructor stub
 
 
         setupComboBoxes();
+        setColoringComboBox();
 
-
-        List<JSpinner> spinners=Lists.newArrayList(blueMaxSpinner,blueMinSpinner,redMaxSpinner,redMinSpinner,greenMaxSpinner,greenMinSpinner);
+        List<JSpinner> spinners=Lists.newArrayList(view.getBlueMaxSpinner(), view.getBlueMinSpinner(), view.getRedMaxSpinner(), view.getRedMinSpinner(),
+                view.getGreenMaxSpinner(), view.getGreenMinSpinner());
 
         for (JSpinner spinner : spinners)
         {
@@ -47,13 +49,13 @@ public class OVIRSSearchPanel extends SpectrumSearchPanel
             format.setMinimumFractionDigits(6);
         }
 
-        redMaxSpinner.setValue(0.00005);
-        greenMaxSpinner.setValue(0.0001);
-        blueMaxSpinner.setValue(0.002);
+        view.getRedMaxSpinner().setValue(0.00005);
+        view.getGreenMaxSpinner().setValue(0.0001);
+        view.getBlueMaxSpinner().setValue(0.002);
 
-        redComboBox.setSelectedIndex(736);
-        greenComboBox.setSelectedIndex(500);
-        blueComboBox.setSelectedIndex(50);
+        view.getRedComboBox().setSelectedIndex(736);
+        view.getGreenComboBox().setSelectedIndex(500);
+        view.getBlueComboBox().setSelectedIndex(50);
 
     }
 
@@ -61,10 +63,11 @@ public class OVIRSSearchPanel extends SpectrumSearchPanel
     protected void setSpectrumSearchResults(List<List<String>> results)
     {
 
-        spectrumResultsLabelText = results.size() + " spectra matched";
-        resultsLabel.setText(spectrumResultsLabelText);
+        view.getResultsLabel().setText(results.size() + " spectra matched");
 
         List<String> matchedImages=Lists.newArrayList();
+        if (matchedImages.size() > 0)
+            fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
         for (List<String> res : results)
         {
             //String path = NisQuery.getNisPath(res);
@@ -73,15 +76,16 @@ public class OVIRSSearchPanel extends SpectrumSearchPanel
             String basePath=FilenameUtils.getPath(res.get(0));
             String filename=FilenameUtils.getBaseName(res.get(0));
 
-            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
+//            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
 //            File file=FileCache.getFileFromServer("/"+infoFile.toString());
+            matchedImages.add(basePath + filename + "." + FilenameUtils.getExtension(res.get(0)));
 
-            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
+//            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
 
         }
 
 
-        spectrumRawResults = matchedImages;
+        model.setSpectrumRawResults(matchedImages);
 
         String[] formattedResults = new String[results.size()];
 
@@ -89,37 +93,39 @@ public class OVIRSSearchPanel extends SpectrumSearchPanel
         int i=0;
         for (String str : matchedImages)
         {
-            //String fileNum=str.substring(9,str.length()-5);
-            //System.out.println(fileNum);
-//            String strippedFileName=str.replace("/NIS/2000/", "");
-//            String detailedTime=nisFileToObservationzTimeMap.get(strippedFileName);
-//            formattedResults[i] = new String(
- //                   fileNum
-//                    + ", day: " + str.substring(10, 13) + "/" + str.substring(5, 9)+" ("+detailedTime+")"
-//                    );
-            formattedResults[i]=str;//FilenameUtils.getBaseName(str);
+            formattedResults[i] = FilenameUtils.getBaseName(str) + "." + FilenameUtils.getExtension(str);
             ++i;
         }
 
-        resultList.setListData(formattedResults);
+        view.getResultList().setListData(formattedResults);
 
 
         // Show the first set of footprints
-        this.resultIntervalCurrentlyShown = new IdPair(0, Integer.parseInt((String)this.numberOfFootprintsComboBox.getSelectedItem()));
-        this.showFootprints(resultIntervalCurrentlyShown);
+        model.setResultIntervalCurrentlyShown(new IdPair(0, Integer.parseInt((String)view.getNumberOfFootprintsComboBox().getSelectedItem())));
+        this.showFootprints(model.getResultIntervalCurrentlyShown());
 
-        SpectraCollection model = (SpectraCollection)modelManager.getModel(ModelNames.SPECTRA);
-        model.toggleSelectAll();
-        model.toggleSelectAll();
+        SpectraCollection collection = (SpectraCollection)model.getModelManager().getModel(ModelNames.SPECTRA);
+        collection.deselectAll();
 
 
     }
 
     @Override
-    public String createSpectrumName(String currentSpectrumRaw)
+    public String createSpectrumName(int index)
     {
-        return "/earth/osirisrex/ovirs/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
+        return "/" + model.getSpectrumRawResults().get(index);
+//        return "/earth/osirisrex/ovirs/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
     }
 
+    public void populateSpectrumMetadata(List<String> lines)
+    {
+        SpectraCollection collection = (SpectraCollection)model.getModelManager().getModel(ModelNames.SPECTRA);
+        for (int i=0; i<lines.size(); ++i)
+        {
+            OREXSearchSpec spectrumSpec = new OREXSearchSpec();
+            spectrumSpec.fromFile(lines.get(0));
+            collection.tagSpectraWithMetadata(createSpectrumName(i), spectrumSpec);
+        }
+    }
 
 }

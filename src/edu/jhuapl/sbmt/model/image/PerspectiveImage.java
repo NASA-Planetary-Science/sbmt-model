@@ -196,6 +196,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private Frustum[] frusta = new Frustum[1];
 
     private boolean showFrustum = false;
+    private boolean simulateLighting = false;
 
     private String startTime = "";
     private String stopTime = "";
@@ -2326,6 +2327,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public boolean isFrustumShowing()
     {
         return showFrustum;
+    }
+
+    public void setSimulateLighting(boolean b)
+    {
+        simulateLighting = b;
+    }
+
+    public boolean isSimulatingLighingOn()
+    {
+       return simulateLighting;
     }
 
     public double getMinIncidence()

@@ -41,12 +41,13 @@ public class CustomShapeModel extends SmallBodyModel
         }
     }
 
+    @Override
     public boolean isBuiltIn()
     {
         return false;
     }
 
-    private static String getModelFilename(SmallBodyViewConfig config)
+    public static String getModelFilename(SmallBodyViewConfig config)
     {
         if (config.customTemporary)
         {

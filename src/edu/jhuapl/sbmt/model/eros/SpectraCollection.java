@@ -16,6 +16,7 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 import edu.jhuapl.sbmt.model.bennu.otes.OTES;
 import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
@@ -24,13 +25,14 @@ import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
+import edu.jhuapl.sbmt.model.spectrum.SpectrumColoringStyle;
 
 public class SpectraCollection extends AbstractModel implements PropertyChangeListener
 {
     private HashMap<Spectrum, List<vtkProp>> spectraActors = new HashMap<Spectrum, List<vtkProp>>();
 
     private HashMap<String, Spectrum> fileToSpectrumMap = new HashMap<String, Spectrum>();
-
+    private HashMap<String, SearchSpec> fileToSpecMap = new HashMap<String, SearchSpec>();
     private HashMap<vtkProp, String> actorToFileMap = new HashMap<vtkProp, String>();
     private SmallBodyModel shapeModel;
 
@@ -101,6 +103,13 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return minFootprintSeparation;
     }
 
+    public Spectrum addSpectrum(String path, SpectralInstrument instrument, SpectrumColoringStyle coloringStyle) throws IOException
+    {
+        Spectrum spec = addSpectrum(path, instrument);
+        spec.setColoringStyle(coloringStyle);
+        return spec;
+    }
+
 
     public Spectrum addSpectrum(String path, SpectralInstrument instrument) throws IOException
     {
@@ -141,6 +150,8 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         fileToSpectrumMap.put(path, spectrum);
         spectraActors.put(spectrum, new ArrayList<vtkProp>());
 
+        spectrum.setMetadata(fileToSpecMap.get(path));
+
         List<vtkProp> props = spectrum.getProps();
 
         /*
@@ -157,7 +168,6 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
 
         for (vtkProp act : props)
             actorToFileMap.put(act, path);
-
         select(spectrum);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         return spectrum;
@@ -192,6 +202,16 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         HashMap<String, Spectrum> map = (HashMap<String, Spectrum>)fileToSpectrumMap.clone();
         for (String path : map.keySet())
             removeSpectrum(path);
+    }
+
+    public void removeAllSpectraForInstrument(SpectralInstrument instrument)
+    {
+        HashMap<String, Spectrum> map = (HashMap<String, Spectrum>)fileToSpectrumMap.clone();
+        for (String path : map.keySet())
+        {
+            if (map.get(path).getInstrument() == instrument)
+                removeSpectrum(path);
+        }
     }
 
     public void toggleSelect(Spectrum spectrum)
@@ -235,6 +255,14 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
     }
 
+    public void deselectAll()
+    {
+        for (Spectrum spectrum : fileToSpectrumMap.values())
+            spectrum.setUnselected();
+        selectAll=false;
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
+    }
+
     public List<Spectrum> getSelectedSpectra()
     {
         List<Spectrum> spectra=Lists.newArrayList();
@@ -253,9 +281,10 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     {
         String filename = actorToFileMap.get(prop);
         Spectrum spectrum = this.fileToSpectrumMap.get(filename);
+//        System.out.println("SpectraCollection: getClickStatusBarText: time is " + ((OTESSpectrum)spectrum).getTime());
         if (spectrum==null)
             return "";
-        return spectrum.getInstrument().getDisplayName() + " spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString();
+        return spectrum.getInstrument().getDisplayName() + " spectrum " + filename.substring(16, 25) + " acquired at " + spectrum.getDateTime().toString() /*+ "(SCLK: " + ((OTESSpectrum)spectrum).getTime() + ")"*/;
     }
 
     public String getSpectrumName(vtkProp actor)
@@ -268,9 +297,56 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return fileToSpectrumMap.get(file);
     }
 
+    public SearchSpec getSearchSpec(String file)
+    {
+        return fileToSpecMap.get(file);
+    }
+
     public boolean containsSpectrum(String file)
     {
         return fileToSpectrumMap.containsKey(file);
+    }
+
+    public void tagSpectraWithMetadata(String filename, SearchSpec spec)
+    {
+        fileToSpecMap.put(filename, spec);
+        Spectrum spectrum = fileToSpectrumMap.get(filename);
+        if (spectrum != null) spectrum.setMetadata(spec);
+    }
+
+    public void tagSpectraWithMetadata(List<List<String>> filenames, SearchSpec spec)
+    {
+        for (List<String> list : filenames)
+        {
+            fileToSpecMap.put(list.get(0), spec);
+        }
+    }
+
+    public void setColoringStyle(SpectrumColoringStyle style)
+    {
+        for (String file : this.fileToSpectrumMap.keySet())
+        {
+            Spectrum spectrum=this.fileToSpectrumMap.get(file);
+            spectrum.setColoringStyle(style);
+            spectrum.updateChannelColoring();
+        }
+
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public void setColoringStyleForInstrument(SpectrumColoringStyle style, SpectralInstrument instrument)
+    {
+        for (String file : this.fileToSpectrumMap.keySet())
+        {
+            Spectrum spectrum=this.fileToSpectrumMap.get(file);
+            if (spectrum.getInstrument() == instrument)
+            {
+                spectrum.setColoringStyle(style);
+                spectrum.updateChannelColoring();
+            }
+        }
+
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     public void setChannelColoring(int[] channels, double[] mins, double[] maxs, SpectralInstrument instrument)
@@ -295,5 +371,10 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         for (Spectrum s : spectraActors.keySet())
             allProps.addAll(spectraActors.get(s));
         return allProps;
+    }
+
+    public int getCount()
+    {
+        return fileToSpectrumMap.size();
     }
 }
