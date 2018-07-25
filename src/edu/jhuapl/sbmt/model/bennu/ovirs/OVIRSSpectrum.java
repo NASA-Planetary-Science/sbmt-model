@@ -74,10 +74,12 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getSpectrumPathOnServer()).getParent()
-                .resolveSibling("infofiles-corrected")
-                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
-                .toString();
+        return Paths.get(getSpectrumPathOnServer()).getParent().resolveSibling("infofiles").resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO").toString();
+//
+//        return Paths.get(getSpectrumPathOnServer()).getParent()
+//                .resolveSibling("infofiles-corrected")
+//                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+//                .toString();
     }
 
     @Override
@@ -176,7 +178,8 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected void readPointingFromInfoFile()
     {
-        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+//        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        infoFile = new File(getInfoFilePathOnServer());
         //
         InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
@@ -218,8 +221,8 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
-        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
-
+//        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+        spectrumFile = new File(getSpectrumPathOnServer());
         OVIRSL3SpectrumReader reader=new OVIRSL3SpectrumReader(spectrumFile.getAbsolutePath());
         reader.read();
 

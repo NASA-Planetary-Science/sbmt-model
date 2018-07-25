@@ -2,17 +2,22 @@ package edu.jhuapl.sbmt.model.spectrum;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.JComponent;
 
+import vtk.vtkProp;
+
+import edu.jhuapl.saavtk.model.PolyhedralModel;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.sbmt.boudedobject.hyperoctree.BoundedObjectHyperTreeSkeleton;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
 import edu.jhuapl.sbmt.model.boundedobject.BoundedObjectSearchDataCollection;
 
@@ -24,6 +29,9 @@ public class SpectraSearchDataCollection
     private FSHyperTreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
     private boolean loading=false;
+    private BodyViewConfig polyhedralModelConfig;
+    private PolyhedralModel smallBodyModel;
+    private List<vtkProp> actors = new ArrayList<vtkProp>();
 
 
     public boolean isLoading()
@@ -31,9 +39,10 @@ public class SpectraSearchDataCollection
         return loading;
     }
 
-    public SpectraSearchDataCollection(SmallBodyModel smallBodyModel)
+    public SpectraSearchDataCollection(PolyhedralModel smallBodyModel)
     {
         super(smallBodyModel);
+        this.polyhedralModelConfig = (BodyViewConfig)smallBodyModel.getConfig();
     }
 
     public void clearDatasourceSkeletons()
@@ -91,6 +100,11 @@ public class SpectraSearchDataCollection
     {
         double[] bounds=new double[]{bbox.xmin,bbox.xmax,bbox.ymin,bbox.ymax,bbox.zmin,bbox.zmax,tlims[0],tlims[1]};
         return currentSkeleton.getLeavesIntersectingBoundingBox(bounds);
+    }
+
+    public Map<String, String> getSpectraDataSourceMap()
+    {
+        return polyhedralModelConfig.spectraSearchDataSourceMap;
     }
 
 }

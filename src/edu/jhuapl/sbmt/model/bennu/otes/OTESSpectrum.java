@@ -73,10 +73,11 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getSpectrumPathOnServer()).getParent()
-                .resolveSibling("infofiles-corrected")
-                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
-                .toString();
+        return Paths.get(getSpectrumPathOnServer()).getParent().resolveSibling("infofiles").resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO").toString();
+//        return Paths.get(getSpectrumPathOnServer()).getParent()
+//                .resolveSibling("infofiles-corrected")
+//                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+//                .toString();
     }
 
     public String getSpectrumPathOnServer()
@@ -196,7 +197,8 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readPointingFromInfoFile()
     {
-        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+//        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        infoFile = new File(getInfoFilePathOnServer());
         //
         InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
@@ -258,7 +260,8 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
-        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+//        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+        spectrumFile = new File(getSpectrumPathOnServer());
         OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
         reader.read();
         //

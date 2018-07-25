@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.boundedobject;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.BiMap;
@@ -15,7 +16,7 @@ import edu.jhuapl.saavtk.model.PolyhedralModel;
 public class BoundedObjectSearchDataCollection extends AbstractModel
 {
 
-
+    private List<vtkProp> actors = new ArrayList<vtkProp>();
 
     public BoundedObjectSearchDataCollection(PolyhedralModel smallBodyModel)
     {
@@ -114,8 +115,7 @@ public class BoundedObjectSearchDataCollection extends AbstractModel
     @Override
     public List<vtkProp> getProps()
     {
-        // TODO Auto-generated method stub
-        return null;
+       return actors;
     }
 
 //    public double[] getSelectedObject()
