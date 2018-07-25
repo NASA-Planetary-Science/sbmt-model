@@ -13,6 +13,7 @@ import vtk.vtkImageData;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 
@@ -108,6 +109,8 @@ public class ONCImage extends PerspectiveImage
     {
         // Flip image along y axis. For some reason we need to do
         // this so the image is displayed properly.
-        ImageDataUtil.rotateImage(rawImage, -90);
+        ImageKey key = getKey();
+        if (key.source.equals(ImageSource.SPICE))
+            ImageDataUtil.rotateImage(rawImage, -90);
     }
 }
