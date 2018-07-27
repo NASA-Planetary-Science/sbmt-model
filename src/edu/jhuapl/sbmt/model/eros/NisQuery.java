@@ -10,6 +10,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.swing.JOptionPane;
+
 import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.metadata.FixedMetadata;
@@ -31,7 +33,7 @@ public final class NisQuery extends DatabaseQueryBase
 
     public static String getNisPath(List<String> result)
     {
-        int id = Integer.parseInt(result.get(0));
+        int id = Integer.parseInt(result.get(0).split("/")[3]);
         int year = Integer.parseInt(result.get(1));
         int dayOfYear = Integer.parseInt(result.get(2));
 
@@ -76,7 +78,7 @@ public final class NisQuery extends DatabaseQueryBase
     @Override
     public String getDataPath()
     {
-        return "/NIS/";
+        return "/NIS/2000";
     }
 
     @Override
@@ -148,6 +150,8 @@ public final class NisQuery extends DatabaseQueryBase
         catch (Exception e)
         {
             e.printStackTrace();
+            results = getResultsFromFileListOnServer(getDataPath() + "/nisTimes.txt", getDataPath(), getGalleryPath(), "");
+
         }
 
         return SearchResultsMetadata.of("", results);
@@ -281,6 +285,10 @@ public final class NisQuery extends DatabaseQueryBase
             String pathToImageFolder
             )
     {
+        JOptionPane.showMessageDialog(null,
+                "SBMT had a problem while performing the search. Ignoring search parameters and listing all cached spectra.",
+                "Warning",
+                JOptionPane.WARNING_MESSAGE);
     	// Create a map of actual files, with key the segment of the
     	// file name that will match the output of getNisPath.
         final List<File> fileList = getCachedFiles(pathToImageFolder);
@@ -299,6 +307,7 @@ public final class NisQuery extends DatabaseQueryBase
         for (Entry<String, List<String>> each: inventory.entrySet())
         {
             List<String> res = each.getValue();
+            if (!res.get(0).contains("NIS")) continue;
             String path = getNisPath(res);
             if (filesFound.containsKey(path))
                 result.add(res);
