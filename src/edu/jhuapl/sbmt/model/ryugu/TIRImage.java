@@ -3,6 +3,8 @@ package edu.jhuapl.sbmt.model.ryugu;
 import java.io.File;
 import java.io.IOException;
 
+import vtk.vtkImageData;
+
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
@@ -36,5 +38,15 @@ public class TIRImage extends PerspectiveImage
         String sumFilename = keyFile.getParentFile().getParent()
         + "/infofiles/" + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
+    }
+
+    @Override
+    protected void processRawImage(vtkImageData rawImage)
+    {
+        // Flip image along y axis. For some reason we need to do
+        // this so the image is displayed properly.
+        //ImageKey key = getKey();
+        //if (key.source.equals(ImageSource.SPICE))
+            //ImageDataUtil.rotateImage(rawImage, -90);
     }
 }
