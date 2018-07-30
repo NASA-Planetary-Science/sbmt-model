@@ -8,10 +8,13 @@ import java.text.ParseException;
 
 import com.google.common.collect.ImmutableMap;
 
+import vtk.vtkImageData;
+
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
+import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
@@ -98,5 +101,13 @@ public class ONCImage extends PerspectiveImage
             e.printStackTrace();
         }
         return builder.build();
+    }
+
+    @Override
+    protected void processRawImage(vtkImageData rawImage)
+    {
+        // Flip image along y axis. For some reason we need to do
+        // this so the image is displayed properly.
+        ImageDataUtil.rotateImage(rawImage, -90);
     }
 }
