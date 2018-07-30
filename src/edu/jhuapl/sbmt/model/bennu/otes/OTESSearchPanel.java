@@ -29,9 +29,9 @@ public class OTESSearchPanel extends SpectrumSearchController
 
     public OTESSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
-            Renderer renderer, SpectralInstrument instrument)
+            Renderer renderer, SpectralInstrument instrument, boolean isSearchView)
     {
-        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
+        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument, isSearchView);
 
         setupComboBoxes();
         setColoringComboBox();

@@ -29,11 +29,9 @@ public class OVIRSSearchPanel extends SpectrumSearchController
 
     public OVIRSSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
-            Renderer renderer, SpectralInstrument instrument)
+            Renderer renderer, SpectralInstrument instrument, boolean isSearchView)
     {
-        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
-        // TODO Auto-generated constructor stub
-
+        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument, isSearchView);
 
         setupComboBoxes();
         setColoringComboBox();
