@@ -197,8 +197,7 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readPointingFromInfoFile()
     {
-//        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
-        infoFile = new File(getInfoFilePathOnServer());
+        infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
         //
         InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
@@ -260,8 +259,7 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
-//        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
-        spectrumFile = new File(getSpectrumPathOnServer());
+        spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
         OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
         reader.read();
         //

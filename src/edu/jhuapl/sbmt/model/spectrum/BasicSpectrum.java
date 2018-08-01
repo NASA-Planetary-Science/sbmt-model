@@ -26,6 +26,7 @@ import vtk.vtkProperty;
 import vtk.vtkTriangle;
 
 import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
+import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
@@ -106,8 +107,7 @@ public abstract class BasicSpectrum extends Spectrum
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
-//        File file = FileCache.getFileFromServer(filename);
-        File file = new File(filename);
+        File file = FileCache.getFileFromServer(filename);
         this.serverpath = filename; // path on server relative to data
                                     // repository root (e.g. relative to
                                     // /project/nearsdc/data/)
