@@ -11,7 +11,6 @@ import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
-import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
@@ -39,7 +38,6 @@ public class SpectrumBoundsCalculator
 
         SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.EARTH, ShapeModelType.OREX);
         SmallBodyModel earth = SbmtModelFactory.createSmallBodyModel(config);
-        BoundingBox bb = earth.getBoundingBox();
 
         String filename = args[0];  // name of file to write to
         FileWriter fw;
