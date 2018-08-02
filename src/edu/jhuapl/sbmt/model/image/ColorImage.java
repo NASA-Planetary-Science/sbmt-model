@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkActor;
 import vtk.vtkGenericCell;
 import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageData;
+import vtk.vtkImageMapToColors;
 import vtk.vtkImageMask;
+import vtk.vtkLookupTable;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
@@ -33,6 +33,8 @@ import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class ColorImage extends Image implements PropertyChangeListener
 {
@@ -469,19 +471,78 @@ public class ColorImage extends Image implements PropertyChangeListener
         return blueImage;
     }
 
-    /**
-     * Currently, just call updateImageMask
-     */
-    @Override
     public void setDisplayedImageRange(IntensityRange range)
     {
         if (range == null)
         {
-            updateImageMask();
+//            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
+//            if (range != null)
+//                displayedRange[currentSlice] = range;
+
+
+
+            float minValue = Math.min(redImage.getMinValue(), Math.min(greenImage.getMinValue(), blueImage.getMinValue()));
+            float maxValue = Math.max(redImage.getMinValue(), Math.max(greenImage.getMinValue(), blueImage.getMinValue()));
+            float dx = (maxValue-minValue)/255.0f;
+            float min = minValue;// + displayedRange[currentSlice].min*dx;
+            float max = minValue;// + displayedRange[currentSlice].max*dx;
+
+            // Update the displayed image
+            vtkLookupTable lut = new vtkLookupTable();
+            lut.SetTableRange(0, 255);
+            lut.SetValueRange(0.0, 1.0);
+            lut.SetHueRange(0.0, 0.0);
+            lut.SetSaturationRange(0.0, 0.0);
+            //lut.SetNumberOfTableValues(402);
+            lut.SetRampToLinear();
+            lut.Build();
+
+            // for 3D images, take the current slice
+            vtkImageData image2D = displayedImage;
+
+            vtkImageMapToColors mapToColors = new vtkImageMapToColors();
+            mapToColors.SetInputData(image2D);
+            mapToColors.SetOutputFormatToRGBA();
+            mapToColors.SetLookupTable(lut);
+            mapToColors.Update();
+
+            vtkImageData mapToColorsOutput = mapToColors.GetOutput();
+            vtkImageData maskSourceOutput = maskSource.GetOutput();
+
+            vtkImageMask maskFilter = new vtkImageMask();
+            maskFilter.SetImageInputData(mapToColorsOutput);
+            maskFilter.SetMaskInputData(maskSourceOutput);
+            maskFilter.Update();
+
+            if (displayedImage == null)
+                displayedImage = new vtkImageData();
+            vtkImageData maskFilterOutput = maskFilter.GetOutput();
+            displayedImage.DeepCopy(maskFilterOutput);
+
+            maskFilter.Delete();
+            mapToColors.Delete();
+            lut.Delete();
+            mapToColorsOutput.Delete();
+            maskSourceOutput.Delete();
+            maskFilterOutput.Delete();
+
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         }
-        else
-            setDisplayedImageRange(1.0, range);
     }
+
+//    /**
+//     * Currently, just call updateImageMask
+//     */
+//    @Override
+//    public void setDisplayedImageRange(IntensityRange range)
+//    {
+//        if (range == null)
+//        {
+//            updateImageMask();
+//        }
+//        else
+//            setDisplayedImageRange(1.0, range);
+//    }
 
     public void setDisplayedImageRange(double scale, IntensityRange range)
     {
