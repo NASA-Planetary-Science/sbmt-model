@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -15,6 +16,7 @@ import vtk.vtkPolyData;
 import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.util.Configuration;
+import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.saavtk.util.SafePaths;
@@ -23,7 +25,14 @@ import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
 import edu.jhuapl.sbmt.client.SmallBodyMappingToolAPL;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.model.bennu.otes.OTES;
+import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
+import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
+import edu.jhuapl.sbmt.model.eros.SpectrumStatistics;
+import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
+import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
+import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 
 /**
  * Generate an input file for the Spectrum hypertree search.  This will be a file
@@ -51,7 +60,7 @@ public class SpectrumBoundsCalculator
             ImmutableList<Path> passwordFilesToTry = ImmutableList.of(
                     SafePaths.get(Configuration.getApplicationDataDir(), "password.txt"),
                     SafePaths.get(parent, "password.txt")
-            );
+                    );
 
             Configuration.setupPasswordAuthentication(Configuration.getDataRootURL(), "DO_NOT_DELETE.TXT", passwordFilesToTry);
         }
@@ -59,12 +68,22 @@ public class SpectrumBoundsCalculator
         {
         }
 
-        NativeLibraryLoader.loadVtkLibrariesHeadless();
+        NativeLibraryLoader.loadVtkLibraries();
         SmallBodyViewConfig.initialize();
 
         // get earth model
         SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.EARTH, ShapeModelType.OREX);
         SmallBodyModel earth = SbmtModelFactory.createSmallBodyModel(config);
+
+        SpectralInstrument instrument;
+        if (args[2].toUpperCase().equals("OTES"))
+            instrument = new OTES();
+        else if (args[2].toUpperCase().equals("OVIRS"))
+            instrument = new OVIRS();
+        else {
+            System.err.println("No spectral instrument named " + args[2]);
+            return;
+        }
 
         String filename = args[0];  // name of file to write to
         FileWriter fw;
@@ -75,19 +94,23 @@ public class SpectrumBoundsCalculator
             BufferedWriter bw = new BufferedWriter(fw);
 
             String inputDir  = args[1]; // directory of info files
-            File[] infoFiles = new File(inputDir).listFiles();
+            File inputDirs_cache = FileCache.getFileFromServer(inputDir);
+            File[] infoFiles = inputDirs_cache.listFiles();
 
             int iFile = 0;
             for (File infoFile : infoFiles) {
                 // get filename
-                String thisFileName = infoFile.getAbsolutePath();
+                String thisFileName = infoFile.getName();
+                thisFileName = inputDir + "/" + thisFileName;
+
                 // rename to spectrum file
                 String specFileName = thisFileName.replaceAll(".INFO", ".spect").replaceAll("infofiles/", "spectrum/");
 
-
+                // create spectrum
+                BasicSpectrum spectrum = new OTESSpectrum(specFileName, earth, instrument);
 
                 // get x, y, z bounds and time, emission, incidence, phase, s/c distance
-                InfoFileReader reader = new InfoFileReader(thisFileName);
+                InfoFileReader reader = new InfoFileReader(FileCache.getFileFromServer(thisFileName).getAbsolutePath());
                 reader.read();
 
                 Vector3D origin = new Vector3D(reader.getSpacecraftPosition());
@@ -99,35 +122,37 @@ public class SpectrumBoundsCalculator
 
                 double fovDeg = Math
                         .toDegrees(Vector3D.angle(fovUnit, boresightUnit) * 2.);
-                Vector3D toSunUnitVector = new Vector3D(reader.getSunPosition()).normalize();
+                Vector3D toSun = new Vector3D(reader.getSunPosition()).normalize();
                 Frustum frustum = new Frustum(origin.toArray(), lookTarget.toArray(),
                         boresightUnit.orthogonal().toArray(), fovDeg, fovDeg);
                 double[] frustum1 = frustum.ul;
                 double[] frustum2 = frustum.ur;
                 double[] frustum3 = frustum.lr;
                 double[] frustum4 = frustum.ll;
-                double[] spacecraftPosition = frustum.origin;
+                double[] spacecraftPosition = reader.getSpacecraftPosition();
 
+                spectrum.generateFootprint();
+//                double[] spacecraftPosition = spectrum.getSpacecraftPosition();
+//                double[] toSun = spectrum.getToSunUnitVector();
+//                Frustum frustum = new Frustum(spectrum.getFrustumOrigin(),
+//                        spectrum.getFrustumCorner(0), spectrum.getFrustumCorner(1),
+//                        spectrum.getFrustumCorner(2), spectrum.getFrustumCorner(3));
+//                double[] frustum1 = frustum.ul;
+//                double[] frustum2 = frustum.ur;
+//                double[] frustum3 = frustum.lr;
+//                double[] frustum4 = frustum.ll;
 
-                //        double[] intersectPoint = new double[3];
-                //          int boresightInterceptFaceID = earth.computeRayIntersection(origin.toArray(), boresightUnit.toArray(), intersectPoint);
-                //          double[] interceptNormal = earth.getCellNormals().GetTuple3(boresightInterceptFaceID);
-                //          vtkCellCenters centers = new vtkCellCenters();
-                //          centers.SetInputData(earth.getSmallBodyPolyData());
-                //          centers.VertexCellsOn();
-                //          centers.Update();
-                //          double[] center = centers.GetOutput().GetPoint(boresightInterceptFaceID);
-                //
-                ////          double[] center = earth.getSmallBodyPolyData().GetPoint(boresightInterceptFaceID);
-                //
-                //          System.out.println("OTESSpectrum: readPointingFromInfoFile: intercept normal " + interceptNormal[0] + " " + interceptNormal[1] + " " + interceptNormal[2]);
-                //          System.out.println("OTESSpectrum: readPointingFromInfoFile: center " + intersectPoint[0] + " " + intersectPoint[1] + " " + intersectPoint[2]);
-                //
-                //          Vector3D nmlVec=new Vector3D(interceptNormal).normalize();
-                //          Vector3D ctrVec=new Vector3D(intersectPoint).normalize();
-                //          Vector3D toScVec=new Vector3D(spacecraftPosition).subtract(ctrVec);
-                //          double emissionAngle = Math.toDegrees(Math.acos(nmlVec.dotProduct(toScVec.normalize())));
-                //          System.out.println("emission angle: " + emissionAngle);
+                List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(spectrum, new Vector3D(spacecraftPosition));
+                double em = SpectrumStatistics.getWeightedMean(sampleEmergenceAngle);
+                System.out.println(em);
+                List<Sample> sampleIncidenceAngle = SpectrumStatistics.sampleIncidenceAngle(spectrum, toSun);
+                double inc = SpectrumStatistics.getWeightedMean(sampleIncidenceAngle);
+                System.out.println(inc);
+                List<Sample> samplePhaseAngle = SpectrumStatistics.samplePhaseAngle( sampleIncidenceAngle, sampleEmergenceAngle);
+                double ph = SpectrumStatistics.getWeightedMean(samplePhaseAngle);
+                System.out.println(ph);
+                // TODO s/c distance
+                double dist = 0;
 
 
                 vtkPolyData tmp = earth.computeFrustumIntersection(
@@ -135,7 +160,7 @@ public class SpectrumBoundsCalculator
                 if (tmp != null) {
                     double[] bbox = tmp.GetBounds();
                     System.out.println("file " + iFile++ + ": " + bbox[0] + ", " + bbox[1] + ", " + bbox[2] + ", " + bbox[3]);
-                    bw.write(specFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() + " " + reader.getStopTime()+", 0, 0, 0, 0\n");
+                    bw.write(specFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() + " " + reader.getStopTime() +", " + em +", "+ inc+", "+ ph+", "+ dist +" \n");
                 }
 
 
