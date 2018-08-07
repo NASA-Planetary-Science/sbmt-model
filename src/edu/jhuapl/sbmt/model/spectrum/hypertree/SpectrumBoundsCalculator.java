@@ -144,13 +144,10 @@ public class SpectrumBoundsCalculator
 
                 List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(spectrum, new Vector3D(spacecraftPosition));
                 double em = SpectrumStatistics.getWeightedMean(sampleEmergenceAngle);
-                System.out.println(em);
                 List<Sample> sampleIncidenceAngle = SpectrumStatistics.sampleIncidenceAngle(spectrum, toSun);
                 double inc = SpectrumStatistics.getWeightedMean(sampleIncidenceAngle);
-                System.out.println(inc);
                 List<Sample> samplePhaseAngle = SpectrumStatistics.samplePhaseAngle( sampleIncidenceAngle, sampleEmergenceAngle);
                 double ph = SpectrumStatistics.getWeightedMean(samplePhaseAngle);
-                System.out.println(ph);
                 // TODO s/c distance
                 double dist = 0;
 
@@ -160,7 +157,9 @@ public class SpectrumBoundsCalculator
                 if (tmp != null) {
                     double[] bbox = tmp.GetBounds();
                     System.out.println("file " + iFile++ + ": " + bbox[0] + ", " + bbox[1] + ", " + bbox[2] + ", " + bbox[3]);
-                    bw.write(specFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() + " " + reader.getStopTime() +", " + em +", "+ inc+", "+ ph+", "+ dist +" \n");
+                    // write min and max for x, y, z, time, emission, incidence, phase, distance.
+                    bw.write(specFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() +
+                            " " + reader.getStopTime() +" " + em +" " + em + " "+ inc+" " + inc + " "+ ph +" " + ph + " "+ dist + " " + dist +" \n");
                 }
 
 
