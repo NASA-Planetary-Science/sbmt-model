@@ -4,8 +4,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
+import com.google.common.collect.ImmutableList;
 
 import vtk.vtkPolyData;
 
@@ -14,7 +17,10 @@ import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
+import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
+import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
+import edu.jhuapl.sbmt.client.SmallBodyMappingToolAPL;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
@@ -32,10 +38,31 @@ public class SpectrumBoundsCalculator
 
     public static void main(String[] args) throws IOException {
 
-        NativeLibraryLoader.loadVtkLibrariesHeadless();
         Configuration.setAPLVersion(true);
+        SbmtMultiMissionTool.configureMission();
+
+        // need password to access OREX data
+        try
+        {
+            // First try to see if there's a password.txt file in ~/.neartool. Then try the folder
+            // containing the runsbmt script.
+            String jarLocation = SmallBodyMappingToolAPL.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            String parent = new File(jarLocation).getParentFile().getParent();
+            ImmutableList<Path> passwordFilesToTry = ImmutableList.of(
+                    SafePaths.get(Configuration.getApplicationDataDir(), "password.txt"),
+                    SafePaths.get(parent, "password.txt")
+            );
+
+            Configuration.setupPasswordAuthentication(Configuration.getDataRootURL(), "DO_NOT_DELETE.TXT", passwordFilesToTry);
+        }
+        catch (@SuppressWarnings("unused") Exception e)
+        {
+        }
+
+        NativeLibraryLoader.loadVtkLibrariesHeadless();
         SmallBodyViewConfig.initialize();
 
+        // get earth model
         SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.EARTH, ShapeModelType.OREX);
         SmallBodyModel earth = SbmtModelFactory.createSmallBodyModel(config);
 
@@ -117,11 +144,9 @@ public class SpectrumBoundsCalculator
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-        /////////////////
 
     }
 }
