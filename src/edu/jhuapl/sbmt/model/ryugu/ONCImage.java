@@ -89,7 +89,12 @@ public class ONCImage extends PerspectiveImage
         {
             while (br.ready())
             {
-                String[] line = br.readLine().split("\\s\\s*");
+                String wholeLine = br.readLine();
+                String[] line = wholeLine.split("\\s*,\\s*");
+                if (line[0].equals(wholeLine))
+                {
+                    line = wholeLine.split("\\s\\s*");
+                }
                 if (line.length < 2) throw new ParseException("Cannot parse line " + String.join(" ", line) + " to get sum file/image file names", line.length > 0 ? line[0].length() : 0);
                 String sumFile = line[0] + ".SUM";
                 String imageFile = line[line.length - 1].replace("xx", "");
