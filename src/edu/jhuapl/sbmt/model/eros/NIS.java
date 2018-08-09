@@ -1,33 +1,38 @@
 package edu.jhuapl.sbmt.model.eros;
 
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.model.spectrum.BasicSpectrumInstrument;
 
-public class NIS implements SpectralInstrument
+public class NIS extends BasicSpectrumInstrument
 {
 
-    @Override
-    public double[] getBandCenters()
+    public NIS()
     {
-        return bandCenters;
+        super("cm^-1", "NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath());
+        bandCenters = nisBandCenters;
     }
 
-    @Override
-    public String getDisplayName()
-    {
-        return "NIS";
-    }
-
-    @Override
-    public String getBandCenterUnit()
-    {
-        return "cm^-1";
-    }
+//    @Override
+//    public double[] getBandCenters()
+//    {
+//        return bandCenters;
+//    }
+//
+//    @Override
+//    public String getDisplayName()
+//    {
+//        return "NIS";
+//    }
+//
+//    @Override
+//    public String getBandCenterUnit()
+//    {
+//        return "cm^-1";
+//    }
 
     // These values were taken from Table 1 of "Spectral properties and geologic
     // processes on Eros from combined NEAR NIS and MSI data sets"
     // by Noam Izenberg et. al.
-    static final public double[] bandCenters = {
+    static final public double[] nisBandCenters = {
         816.2,  // 0
         837.8,  // 1
         859.4,  // 2
@@ -94,17 +99,17 @@ public class NIS implements SpectralInstrument
         2708.2  // 63
     };
 
-
-    @Override
-    public QueryBase getQueryBase()
-    {
-        return NisQuery.getInstance();
-    }
-
-    @Override
-    public SpectrumMath getSpectrumMath()
-    {
-        return NISSpectrumMath.getSpectrumMath();
-    }
+//
+//    @Override
+//    public QueryBase getQueryBase()
+//    {
+//        return NisQuery.getInstance();
+//    }
+//
+//    @Override
+//    public SpectrumMath getSpectrumMath()
+//    {
+//        return NISSpectrumMath.getSpectrumMath();
+//    }
 
 }
