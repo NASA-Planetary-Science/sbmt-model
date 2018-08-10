@@ -68,6 +68,7 @@ public class SpectrumBoundsCalculator
         {
         }
 
+        System.setProperty("java.awt.headless", "true");
         NativeLibraryLoader.loadVtkLibraries();
         SmallBodyViewConfig.initialize();
 
