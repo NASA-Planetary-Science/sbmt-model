@@ -50,7 +50,7 @@ public class SpectrumBoundsCalculator
         Authenticator.authenticate();
 
         System.setProperty("java.awt.headless", "true");
-        NativeLibraryLoader.loadVtkLibraries();
+        NativeLibraryLoader.loadVtkLibrariesHeadless();
         SmallBodyViewConfig.initialize();
 
         // get earth model
