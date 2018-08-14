@@ -73,11 +73,10 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getSpectrumPathOnServer()).getParent().resolveSibling("infofiles").resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO").toString();
-//        return Paths.get(getSpectrumPathOnServer()).getParent()
-//                .resolveSibling("infofiles-corrected")
-//                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
-//                .toString();
+        return Paths.get(getSpectrumPathOnServer()).getParent()
+                .resolveSibling("infofiles-corrected")
+                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+                .toString();
     }
 
     public String getSpectrumPathOnServer()

@@ -1,11 +1,14 @@
 package edu.jhuapl.sbmt.model.spectrum.hypertree;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import vtk.vtkPolyData;
@@ -25,9 +28,13 @@ import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
 import edu.jhuapl.sbmt.model.eros.SpectrumStatistics;
 import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
+import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
+import edu.jhuapl.sbmt.query.fixedlist.FixedListSearchMetadata;
 import edu.jhuapl.sbmt.tools.Authenticator;
 
 /**
@@ -50,7 +57,7 @@ public class SpectrumBoundsCalculator
         Authenticator.authenticate();
 
         System.setProperty("java.awt.headless", "true");
-        NativeLibraryLoader.loadVtkLibrariesHeadless();
+        NativeLibraryLoader.loadVtkLibraries();
         SmallBodyViewConfig.initialize();
 
         // get earth model
@@ -75,26 +82,33 @@ public class SpectrumBoundsCalculator
 
             BufferedWriter bw = new BufferedWriter(fw);
 
-            String inputDir  = args[1]; // directory of info files
-            File inputDirs_cache = FileCache.getFileFromServer(inputDir);
-            System.out.println("infofiles from: " + inputDirs_cache.getAbsolutePath().toString());
-            File[] infoFiles = inputDirs_cache.listFiles();
-            System.out.println("infoFiles: " + infoFiles.toString());
+            String inputDir  = args[1]; // directory of this instruments spectral data (should contain infofiles-corrected, spectra, and spectrumlist.txt)
+            QueryBase queryType = instrument.getQueryBase();
+            List<List<String>> spectrafiles = new ArrayList<List<String>>();
+            if (queryType instanceof FixedListQuery)
+            {
+                FixedListQuery query = (FixedListQuery)queryType;
+                spectrafiles = instrument.getQueryBase().runQuery(FixedListSearchMetadata.of("Spectrum Search", "spectrumlist.txt", "spectra", inputDir, ImageSource.CORRECTED_SPICE)).getResultlist();
+            }
+
 
             int iFile = 0;
-            for (File infoFile : infoFiles) {
+            for (List<String> spectraFile : spectrafiles) {
                 // get filename
-                String thisFileName = infoFile.getName();
-                thisFileName = inputDir + "/" + thisFileName;
+                String thisFileName = spectraFile.get(0);
 
                 // rename to spectrum file
-                String specFileName = thisFileName.replaceAll(".INFO", ".spect").replaceAll("infofiles/", "spectrum/");
+//                String specFileName = thisFileName.replaceAll(".INFO", ".spect").replaceAll("infofiles/", "spectrum/");
 
                 // create spectrum
-                BasicSpectrum spectrum = new OTESSpectrum(specFileName, earth, instrument);
+                BasicSpectrum spectrum = new OTESSpectrum(thisFileName, earth, instrument);
 
                 // get x, y, z bounds and time, emission, incidence, phase, s/c distance
-                InfoFileReader reader = new InfoFileReader(FileCache.getFileFromServer(thisFileName).getAbsolutePath());
+//                String infoFile = thisFileName.replaceAll("spectrum", "infofiles-corrected").replaceAll(".spectra", ".INFO");
+                String basePath = FilenameUtils.getPath(thisFileName);
+                String fn = FilenameUtils.getBaseName(thisFileName);
+                Path infoFile = Paths.get(basePath).resolveSibling("infofiles-corrected/"+fn+".INFO");
+                InfoFileReader reader = new InfoFileReader(FileCache.getFileFromServer(infoFile.toString()).getAbsolutePath());
                 reader.read();
 
                 Vector3D origin = new Vector3D(reader.getSpacecraftPosition());
@@ -142,7 +156,7 @@ public class SpectrumBoundsCalculator
                     double[] bbox = tmp.GetBounds();
                     System.out.println("file " + iFile++ + ": " + bbox[0] + ", " + bbox[1] + ", " + bbox[2] + ", " + bbox[3]);
                     // write min and max for x, y, z, time, emission, incidence, phase, distance.
-                    bw.write(specFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() +
+                    bw.write(thisFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() +
                             " " + reader.getStopTime() +" " + em +" " + em + " "+ inc+" " + inc + " "+ ph +" " + ph + " "+ dist + " " + dist +" \n");
                 }
 
