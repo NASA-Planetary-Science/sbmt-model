@@ -77,7 +77,9 @@ public class SpectrumBoundsCalculator
 
             String inputDir  = args[1]; // directory of info files
             File inputDirs_cache = FileCache.getFileFromServer(inputDir);
+            System.out.println("infofiles from: " + inputDirs_cache.getAbsolutePath().toString());
             File[] infoFiles = inputDirs_cache.listFiles();
+            System.out.println("infoFiles: " + infoFiles.toString());
 
             int iFile = 0;
             for (File infoFile : infoFiles) {
