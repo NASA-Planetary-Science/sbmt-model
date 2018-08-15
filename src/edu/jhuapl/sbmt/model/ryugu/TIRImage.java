@@ -51,6 +51,11 @@ public class TIRImage extends PerspectiveImage
     @Override
     protected void processRawImage(vtkImageData rawImage)
     {
+        // Flip image along y axis. For some reason we need to do
+        // this so the image is displayed properly.
+        //ImageKey key = getKey();
+        //if (key.source.equals(ImageSource.SPICE))
+            //ImageDataUtil.rotateImage(rawImage, -90);
 //        int[] dims = rawImage.GetDimensions();
 //        int originalHeight = dims[1];
 //

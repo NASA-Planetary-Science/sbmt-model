@@ -13,6 +13,7 @@ import vtk.vtkImageData;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 
@@ -88,7 +89,12 @@ public class ONCImage extends PerspectiveImage
         {
             while (br.ready())
             {
-                String[] line = br.readLine().split("\\s\\s*");
+                String wholeLine = br.readLine();
+                String[] line = wholeLine.split("\\s*,\\s*");
+                if (line[0].equals(wholeLine))
+                {
+                    line = wholeLine.split("\\s\\s*");
+                }
                 if (line.length < 2) throw new ParseException("Cannot parse line " + String.join(" ", line) + " to get sum file/image file names", line.length > 0 ? line[0].length() : 0);
                 String sumFile = line[0] + ".SUM";
                 String imageFile = line[line.length - 1].replace("xx", "");
@@ -108,6 +114,8 @@ public class ONCImage extends PerspectiveImage
     {
         // Flip image along y axis. For some reason we need to do
         // this so the image is displayed properly.
-        ImageDataUtil.rotateImage(rawImage, -90);
+        ImageKey key = getKey();
+        if (key.source.equals(ImageSource.SPICE))
+            ImageDataUtil.rotateImage(rawImage, -90);
     }
 }
