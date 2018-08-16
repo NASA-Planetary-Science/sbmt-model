@@ -56,9 +56,11 @@ public class SpectrumBoundsCalculator
         // need password to access OREX data
         Authenticator.authenticate();
 
+        SmallBodyViewConfig.initialize();
+
         System.setProperty("java.awt.headless", "true");
         NativeLibraryLoader.loadVtkLibrariesHeadless();
-        SmallBodyViewConfig.initialize();
+
 
         // get earth model
         SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.EARTH, ShapeModelType.OREX);
@@ -101,7 +103,7 @@ public class SpectrumBoundsCalculator
 //                String specFileName = thisFileName.replaceAll(".INFO", ".spect").replaceAll("infofiles/", "spectrum/");
 
                 // create spectrum
-                BasicSpectrum spectrum = new OTESSpectrum(thisFileName, earth, instrument);
+                BasicSpectrum spectrum = new OTESSpectrum(thisFileName, earth, instrument, true);
 
                 // get x, y, z bounds and time, emission, incidence, phase, s/c distance
 //                String infoFile = thisFileName.replaceAll("spectrum", "infofiles-corrected").replaceAll(".spectra", ".INFO");
