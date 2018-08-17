@@ -94,8 +94,8 @@ public class SpectrumBoundsCalculator
         String type = args[1];
         String baseDir = bodyName.toLowerCase() + "/osirisrex/" + instName.toLowerCase() + "/" + type.toLowerCase();
 
-        // create a bounds file to write to
-        String boundsFile = "bounds_" + instName.toLowerCase() + "_" + type.toLowerCase() + ".bounds";
+        // create a bounds file to write to                                    remove / in case of input such as l3/if or l3/reff
+        String boundsFile = "bounds_" + instName.toLowerCase() + "_" + type.toLowerCase().replace("/", "") + ".bounds";
         FileWriter fw;
         try
         {
@@ -150,24 +150,29 @@ public class SpectrumBoundsCalculator
 
                 spectrum.generateFootprint();
 
-                List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(spectrum, new Vector3D(spacecraftPosition));
-                double em = SpectrumStatistics.getWeightedMean(sampleEmergenceAngle);
-                List<Sample> sampleIncidenceAngle = SpectrumStatistics.sampleIncidenceAngle(spectrum, toSun);
-                double inc = SpectrumStatistics.getWeightedMean(sampleIncidenceAngle);
-                List<Sample> samplePhaseAngle = SpectrumStatistics.samplePhaseAngle( sampleIncidenceAngle, sampleEmergenceAngle);
-                double ph = SpectrumStatistics.getWeightedMean(samplePhaseAngle);
-                // TODO s/c distance
-                double dist = 0;
+                try {
+                    List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(spectrum, new Vector3D(spacecraftPosition));
+                    double em = SpectrumStatistics.getWeightedMean(sampleEmergenceAngle);
+                    List<Sample> sampleIncidenceAngle = SpectrumStatistics.sampleIncidenceAngle(spectrum, toSun);
+                    double inc = SpectrumStatistics.getWeightedMean(sampleIncidenceAngle);
+                    List<Sample> samplePhaseAngle = SpectrumStatistics.samplePhaseAngle( sampleIncidenceAngle, sampleEmergenceAngle);
+                    double ph = SpectrumStatistics.getWeightedMean(samplePhaseAngle);
+                    // TODO s/c distance
+                    double dist = 0;
 
 
-                vtkPolyData tmp = body.computeFrustumIntersection(
-                        spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
-                if (tmp != null) {
-                    double[] bbox = tmp.GetBounds();
-                    System.out.println("file " + iFile++ + ": " + bbox[0] + ", " + bbox[1] + ", " + bbox[2] + ", " + bbox[3]);
-                    // write min and max for x, y, z, time, emission, incidence, phase, distance.
-                    bw.write(thisFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() +
-                            " " + reader.getStopTime() +" " + em +" " + em + " "+ inc+" " + inc + " "+ ph +" " + ph + " "+ dist + " " + dist +" \n");
+                    vtkPolyData tmp = body.computeFrustumIntersection(
+                            spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
+                    if (tmp != null) {
+                        double[] bbox = tmp.GetBounds();
+                        System.out.println("file " + iFile++ + ": " + bbox[0] + ", " + bbox[1] + ", " + bbox[2] + ", " + bbox[3]);
+                        // write min and max for x, y, z, time, emission, incidence, phase, distance.
+                        bw.write(thisFileName + " " + bbox[0] + " " + bbox[1] + " " + bbox[2] + " " + bbox[3] + " " + bbox[4] + " " + bbox[5] +" " + reader.getStartTime() +
+                                " " + reader.getStopTime() +" " + em +" " + em + " "+ inc+" " + inc + " "+ ph +" " + ph + " "+ dist + " " + dist +" \n");
+
+                    }
+                } catch (Exception e) {
+                    System.err.println("error creating statistics for spectrum " + thisFileName);
                 }
 
 
