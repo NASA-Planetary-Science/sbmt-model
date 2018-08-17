@@ -123,6 +123,8 @@ public class SpectrumBoundsCalculator
                 else  { // only 2 options right now, but may change in the future
                     spectrum = new OVIRSSpectrum(thisFileName, body, instrument, true);
                 }
+
+
                 // get x, y, z bounds and time, emission, incidence, phase, s/c distance
                 String basePath = FilenameUtils.getPath(thisFileName);
                 String fn = FilenameUtils.getBaseName(thisFileName);
