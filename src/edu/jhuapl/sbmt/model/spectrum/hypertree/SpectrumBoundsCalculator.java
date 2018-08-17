@@ -62,51 +62,62 @@ public class SpectrumBoundsCalculator
         NativeLibraryLoader.loadVtkLibrariesHeadless();
 
 
-        // get earth model
-        SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.EARTH, ShapeModelType.OREX);
-        SmallBodyModel earth = SbmtModelFactory.createSmallBodyModel(config);
+        // get body model
+        SmallBodyViewConfig config;
+        String bodyName = args[2];
+        if (bodyName.equalsIgnoreCase("EARTH")) {
+            config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.EARTH, ShapeModelType.OREX);
+        }
+        else if (bodyName.equalsIgnoreCase("BENNU")) {
+            config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.RQ36, ShapeModelType.OREX);
+        }
+        else {
+            System.err.println("No support for body named " + bodyName);
+            return;
+        }
+        SmallBodyModel body = SbmtModelFactory.createSmallBodyModel(config);
 
         SpectralInstrument instrument;
-        if (args[2].toUpperCase().equals("OTES"))
+        String instName = args[0];
+        if (instName.equalsIgnoreCase("OTES")) {
             instrument = new OTES();
-        else if (args[2].toUpperCase().equals("OVIRS"))
+        }
+        else if (instName.equalsIgnoreCase("OVIRS")) {
             instrument = new OVIRS();
+        }
         else {
-            System.err.println("No spectral instrument named " + args[2]);
+            System.err.println("No support for spectral instrument named " + instName);
             return;
         }
 
-        String filename = args[0];  // name of file to write to
+        String type = args[1];
+        String baseDir = bodyName.toLowerCase() + "/osirisrex/" + instName.toLowerCase() + "/" + type.toLowerCase();
+
+        // create a bounds file to write to
+        String boundsFile = "bounds_" + instName.toLowerCase() + "_" + type.toLowerCase() + ".bounds";
         FileWriter fw;
         try
         {
-            fw = new FileWriter(filename);
-
+            fw = new FileWriter(boundsFile);
             BufferedWriter bw = new BufferedWriter(fw);
 
-            String inputDir  = args[1]; // directory of this instruments spectral data (should contain infofiles-corrected, spectra, and spectrumlist.txt)
             QueryBase queryType = instrument.getQueryBase();
             List<List<String>> spectrafiles = new ArrayList<List<String>>();
             if (queryType instanceof FixedListQuery)
             {
                 FixedListQuery query = (FixedListQuery)queryType;
-                spectrafiles = instrument.getQueryBase().runQuery(FixedListSearchMetadata.of("Spectrum Search", "spectrumlist.txt", "spectra", inputDir, ImageSource.CORRECTED_SPICE)).getResultlist();
+                spectrafiles = instrument.getQueryBase().runQuery(FixedListSearchMetadata.of("Spectrum Search", "spectrumlist.txt", "spectra", baseDir, ImageSource.CORRECTED_SPICE)).getResultlist();
             }
-
 
             int iFile = 0;
             for (List<String> spectraFile : spectrafiles) {
                 // get filename
                 String thisFileName = spectraFile.get(0);
 
-                // rename to spectrum file
-//                String specFileName = thisFileName.replaceAll(".INFO", ".spect").replaceAll("infofiles/", "spectrum/");
-
                 // create spectrum
-                BasicSpectrum spectrum = new OTESSpectrum(thisFileName, earth, instrument, true);
+                BasicSpectrum spectrum = new OTESSpectrum(thisFileName, body, instrument, true);
 
                 // get x, y, z bounds and time, emission, incidence, phase, s/c distance
-//                String infoFile = thisFileName.replaceAll("spectrum", "infofiles-corrected").replaceAll(".spectra", ".INFO");
                 String basePath = FilenameUtils.getPath(thisFileName);
                 String fn = FilenameUtils.getBaseName(thisFileName);
                 Path infoFile = Paths.get(basePath).resolveSibling("infofiles-corrected/"+fn+".INFO");
@@ -132,15 +143,6 @@ public class SpectrumBoundsCalculator
                 double[] spacecraftPosition = reader.getSpacecraftPosition();
 
                 spectrum.generateFootprint();
-//                double[] spacecraftPosition = spectrum.getSpacecraftPosition();
-//                double[] toSun = spectrum.getToSunUnitVector();
-//                Frustum frustum = new Frustum(spectrum.getFrustumOrigin(),
-//                        spectrum.getFrustumCorner(0), spectrum.getFrustumCorner(1),
-//                        spectrum.getFrustumCorner(2), spectrum.getFrustumCorner(3));
-//                double[] frustum1 = frustum.ul;
-//                double[] frustum2 = frustum.ur;
-//                double[] frustum3 = frustum.lr;
-//                double[] frustum4 = frustum.ll;
 
                 List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(spectrum, new Vector3D(spacecraftPosition));
                 double em = SpectrumStatistics.getWeightedMean(sampleEmergenceAngle);
@@ -152,7 +154,7 @@ public class SpectrumBoundsCalculator
                 double dist = 0;
 
 
-                vtkPolyData tmp = earth.computeFrustumIntersection(
+                vtkPolyData tmp = body.computeFrustumIntersection(
                         spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
                 if (tmp != null) {
                     double[] bbox = tmp.GetBounds();

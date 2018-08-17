@@ -17,11 +17,20 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 
-import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.model.ShapeModelBody;
+import edu.jhuapl.saavtk.model.ShapeModelType;
+import edu.jhuapl.saavtk.util.BoundingBox;
+import edu.jhuapl.saavtk.util.Configuration;
+import edu.jhuapl.saavtk.util.NativeLibraryLoader;
+import edu.jhuapl.sbmt.client.SbmtModelFactory;
+import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.lidar.DataOutputStreamPool;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperBox;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperException;
 import edu.jhuapl.sbmt.model.spectrum.hypertree.SpectrumHypertreeGenerator;
+import edu.jhuapl.sbmt.tools.Authenticator;
 
 public class BoundedObjectHyperTreeGenerator
 {
@@ -142,59 +151,82 @@ public class BoundedObjectHyperTreeGenerator
     private static void printUsage()
     {
         System.out.println("Arguments:");
-        System.out.println("   (1)   Filename of bounding box info");
-        System.out.println("   (2)   output directory to build the search tree in");
-        System.out.println("   (3)   max number of items per leaf");
-        System.out.println("   (4)   type of object: 'IMAGE' or 'SPECTRA'");
-        System.out.println("  (5-10) bounding box of the body: xmin xmax ymin ymax zmin zmax");
+        System.out.println("   (1)   Intrument");
+        System.out.println("   (2)   Type");
+        System.out.println("   (3)   Body");
+        System.out.println("   (4)   max number of items per leaf");
+        System.out.println("   (5)   type of object: 'IMAGE' or 'SPECTRA'");
     }
 
 
     public static void main(String[] args) throws IOException, HyperException
     {
-        if (args.length!=10)
+        Configuration.setAPLVersion(true);
+        SbmtMultiMissionTool.configureMission();
+
+        // need password to access OREX data
+        Authenticator.authenticate();
+
+        SmallBodyViewConfig.initialize();
+
+        if (args.length!=5)
         {
             printUsage();
             return;
         }
 
-        //String inputDirectoryString=args[0];    // "/Volumes/dumbledore/sbmt/OLA"
-        String inputFile = args[0];
-        String outputDirectoryString = FileCache.getFileInfoFromServer(args[1]).getFile().toString();   // "/Volumes/dumbledore/sbmt/ola_hypertree"
+        String instrument = args[0];
+        String type = args[1];
+        String bodyName = args[2];
+        int maxObjectsPerLeaf = Integer.parseInt(args[3]);
         int maxNumOpenOutputFiles=32;
 
+        /*
+         * Set up
+         */
+        String inputFile = "bounds_" + instrument.toLowerCase() + "_" + type.toLowerCase() + ".bounds";
         System.out.println("Input file = "+ inputFile);
-        System.out.println("Output tree location = "+outputDirectoryString);
-        System.out.println("Max # open output files = "+maxNumOpenOutputFiles);
+        // make a temp hypertree folder
+        String outputDirectoryString = "temp_hypertree/";
+        new File(outputDirectoryString).mkdirs();
+        System.out.println("Output tree location = " + outputDirectoryString);
+        System.out.println("Max # open output files = " + maxNumOpenOutputFiles);
 
-//        NativeLibraryLoader.loadVtkLibrariesHeadless();
+
+
         Path outputDirectory = Paths.get(outputDirectoryString);
-
-        int maxObjectsPerLeaf = Integer.parseInt(args[2]);
         DataOutputStreamPool pool=new DataOutputStreamPool(maxNumOpenOutputFiles);
 
 
-        if (!outputDirectory.toFile().exists())
-        {
-            System.out.println("Error: Output directory \""+outputDirectory.toString()+"\" does not exist");
+        /*
+         * Get body model
+         */
+        System.setProperty("java.awt.headless", "true");
+        NativeLibraryLoader.loadVtkLibrariesHeadless();
+
+        SmallBodyViewConfig config;
+        if (bodyName.equalsIgnoreCase("EARTH")) {
+            config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.EARTH, ShapeModelType.OREX);
+        }
+        else if (bodyName.equalsIgnoreCase("BENNU")) {
+            config = SmallBodyViewConfig.getSmallBodyConfig(ShapeModelBody.RQ36, ShapeModelType.OREX);
+        }
+        else {
+            System.err.println("No support for body named " + bodyName);
             return;
         }
-        else
-        {
-            System.out.println();
-            System.out.println("++++++++++++++++++");
-            System.out.println("Warning: output directory \""+outputDirectoryString.toString()+"\" already exists; if it is not empty this will cause big problems later. ");
-            System.out.println("++++++++++++++++++");
-            System.out.println();
-        }
+        SmallBodyModel body = SbmtModelFactory.createSmallBodyModel(config);
+        BoundingBox bodyBBox = body.getBoundingBox();
+
 
 
         double today = new Date().getTime();
         // bounds from input
-        double[] min = {Double.parseDouble(args[4]), Double.parseDouble(args[6]), Double.parseDouble(args[8]), -Double.MAX_VALUE};
-        double[] max = {Double.parseDouble(args[5]), Double.parseDouble(args[7]), Double.parseDouble(args[9]), today};
+        double[] min = {bodyBBox.xmin, bodyBBox.ymin, bodyBBox.zmin, -Double.MAX_VALUE};
+        double[] max = {bodyBBox.xmax, bodyBBox.ymax, bodyBBox.zmax, today};
         HyperBox hbox = new HyperBox(min, max);
 
+        // TODO not working yet - this will help with the EXTRA search params
         BoundedObjectHyperTreeGenerator generator;
         if (args[3].equalsIgnoreCase("SPECTRA")) {
             generator = new SpectrumHypertreeGenerator(outputDirectory, maxObjectsPerLeaf, hbox, maxNumOpenOutputFiles, pool);
@@ -219,14 +251,6 @@ public class BoundedObjectHyperTreeGenerator
         System.out.println();
         generator.commit(); // clean up any empty or open data files
 
-
-//        Path fileMapPath = outputDirectory.resolve("fileMap.txt");
-//        System.out.print("Writing file map to "+fileMapPath+"... ");
-//        FileWriter writer = new FileWriter(fileMapPath.toFile());
-//        for (int i : generator.fileMap.inverse().keySet())
-//            writer.write(i+" "+generator.fileMap.inverse().get(i)+"\n");
-//        writer.close();
-//        System.out.println("Done.");
     }
 
     public BiMap<String, Integer> getFileMap() {
