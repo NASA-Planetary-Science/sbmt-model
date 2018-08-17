@@ -26,6 +26,7 @@ import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.model.bennu.otes.OTES;
 import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
+import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.model.eros.SpectrumStatistics;
 import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.model.image.ImageSource;
@@ -115,8 +116,13 @@ public class SpectrumBoundsCalculator
                 String thisFileName = spectraFile.get(0);
 
                 // create spectrum
-                BasicSpectrum spectrum = new OTESSpectrum(thisFileName, body, instrument, true);
-
+                BasicSpectrum spectrum;
+                if (instrument instanceof OTES) {
+                    spectrum = new OTESSpectrum(thisFileName, body, instrument, true);
+                }
+                else  { // only 2 options right now, but may change in the future
+                    spectrum = new OVIRSSpectrum(thisFileName, body, instrument, true);
+                }
                 // get x, y, z bounds and time, emission, incidence, phase, s/c distance
                 String basePath = FilenameUtils.getPath(thisFileName);
                 String fn = FilenameUtils.getBaseName(thisFileName);
