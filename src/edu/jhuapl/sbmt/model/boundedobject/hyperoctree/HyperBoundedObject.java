@@ -15,7 +15,7 @@ public class HyperBoundedObject
     protected String name;
     private int fileNum;
     protected HyperBox bbox;
-    int dim; // number of things to search on (i.e. for images, it is 4: x, y, z, time)
+//    int dim; // number of things to search on (i.e. for images, it is 4: x, y, z, time)
 
     public HyperBoundedObject(DataInputStream stream) throws HyperDimensionMismatchException, IOException
     {
@@ -27,7 +27,7 @@ public class HyperBoundedObject
         name = objName;
         setFileNum(objId);
         bbox = objBBox;
-        dim = objBBox.getDimension();
+//        dim = objBBox.getDimension();
     }
 
 
@@ -35,19 +35,21 @@ public class HyperBoundedObject
 
     public void read(DataInputStream inputStream) throws IOException, HyperDimensionMismatchException
     {
-        double[] data = new double[dim * 2]; // min and max for each dimension
+//        double[] data = new double[dim * 2]; // min and max for each dimension
+        double[] data = new double[8];
         for (int i=0; i<data.length; i++)
             data[i]=inputStream.readDouble();
         setFileNum(inputStream.readInt());
 
-        double[] mins = new double[dim];
-        double[] maxs = new double[dim];
-        for (int i = 0; i < dim; i++) {
-            mins[i] = data[i*2];
-            maxs[i] = data[i*2 + 1];
-        }
+//        double[] mins = new double[dim];
+//        double[] maxs = new double[dim];
+//        for (int i = 0; i < dim; i++) {
+//            mins[i] = data[i*2];
+//            maxs[i] = data[i*2 + 1];
+//        }
+//        bbox = new HyperBox(mins, maxs);
+        bbox = new HyperBox(new double[]{data[0], data[2], data[4], data[6]}, new double[]{data[1], data[3], data[5], data[7]});
 
-        bbox = new HyperBox(mins, maxs);
     }
 
     public void write(DataOutputStream outputStream) throws IOException
