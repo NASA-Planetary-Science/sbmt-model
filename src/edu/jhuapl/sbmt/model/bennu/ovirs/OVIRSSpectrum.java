@@ -59,6 +59,12 @@ public class OVIRSSpectrum extends BasicSpectrum
         super(filename, smallBodyModel, instrument);
     }
 
+    public OVIRSSpectrum(String filename, SmallBodyModel smallBodyModel,
+            SpectralInstrument instrument, boolean headless) throws IOException
+    {
+        super(filename, smallBodyModel, instrument, headless);
+    }
+
     @Override
     public void saveSpectrum(File file) throws IOException
     {
@@ -74,12 +80,10 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getSpectrumPathOnServer()).getParent().resolveSibling("infofiles").resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO").toString();
-//
-//        return Paths.get(getSpectrumPathOnServer()).getParent()
-//                .resolveSibling("infofiles-corrected")
-//                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
-//                .toString();
+        return Paths.get(getSpectrumPathOnServer()).getParent()
+                .resolveSibling("infofiles-corrected")
+                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+                .toString();
     }
 
     @Override
