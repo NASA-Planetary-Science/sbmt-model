@@ -11,10 +11,10 @@ import java.util.TreeSet;
 import javax.swing.JComponent;
 
 import edu.jhuapl.saavtk.util.BoundingBox;
-import edu.jhuapl.sbmt.boudedobject.hyperoctree.BoundedObjectHyperTreeSkeleton;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
 import edu.jhuapl.sbmt.model.boundedobject.BoundedObjectSearchDataCollection;
+import edu.jhuapl.sbmt.model.boundedobject.hyperoctree.BoundedObjectHyperTreeSkeleton;
 
 public class ImageSearchDataCollection extends BoundedObjectSearchDataCollection
 {
