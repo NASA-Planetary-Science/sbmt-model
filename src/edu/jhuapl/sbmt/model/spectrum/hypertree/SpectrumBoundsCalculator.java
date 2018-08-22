@@ -183,6 +183,7 @@ public class SpectrumBoundsCalculator
                     }
                 } catch (Exception e) {
                     System.err.println("error creating statistics for spectrum " + thisFileName);
+                    e.printStackTrace();
                 }
 
 
