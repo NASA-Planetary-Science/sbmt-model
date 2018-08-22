@@ -129,7 +129,8 @@ public class SpectrumBoundsCalculator
                 String basePath = FilenameUtils.getPath(thisFileName);
                 String fn = FilenameUtils.getBaseName(thisFileName);
                 Path infoFile = Paths.get(basePath).resolveSibling("infofiles-corrected/"+fn+".INFO");
-                System.out.println("SpectrumBoundsCalculator: main: info file is " + infoFile.toAbsolutePath());
+                System.out.println("SpectrumBoundsCalculator: main: info file is " + infoFile.toString());
+                System.out.println("SpectrumBoundsCalculator: main: getting from server as " + FileCache.getFileFromServer(infoFile.toString()));
                 InfoFileReader reader = new InfoFileReader(FileCache.getFileFromServer(infoFile.toString()).getAbsolutePath());
                 reader.read();
 
