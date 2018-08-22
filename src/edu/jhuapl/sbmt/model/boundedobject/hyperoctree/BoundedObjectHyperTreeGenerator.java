@@ -184,7 +184,7 @@ public class BoundedObjectHyperTreeGenerator
         /*
          * Set up
          */
-        String inputFile = "bounds_" + instrument.toLowerCase() + "_" + type.toLowerCase() + ".bounds";
+        String inputFile = "bounds_" + instrument.toLowerCase() + "_" + type.toLowerCase().replace("/", "") + ".bounds";
         System.out.println("Input file = "+ inputFile);
         // make a temp hypertree folder
         String outputDirectoryString = "temp_hypertree/";
