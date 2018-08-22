@@ -130,6 +130,9 @@ public class SpectrumBoundsCalculator
                 String basePath = FilenameUtils.getPath(thisFileName);
                 String fn = FilenameUtils.getBaseName(thisFileName);
                 Path infoFile = Paths.get(basePath).resolveSibling("infofiles-corrected/"+fn+".INFO");
+
+                FileCache.setOfflineMode(true, "/project/sbmt2/prod/");
+
                 URL createFileURL = FileCache.createFileURL(infoFile.toString());
                 System.out.println("SpectrumBoundsCalculator: main: createFileURL " + createFileURL);
                 System.out.println("SpectrumBoundsCalculator: main: info file is " + infoFile.toString());
