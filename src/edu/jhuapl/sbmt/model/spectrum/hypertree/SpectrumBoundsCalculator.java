@@ -3,6 +3,7 @@ package edu.jhuapl.sbmt.model.spectrum.hypertree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -129,6 +130,8 @@ public class SpectrumBoundsCalculator
                 String basePath = FilenameUtils.getPath(thisFileName);
                 String fn = FilenameUtils.getBaseName(thisFileName);
                 Path infoFile = Paths.get(basePath).resolveSibling("infofiles-corrected/"+fn+".INFO");
+                URL createFileURL = FileCache.createFileURL(infoFile.toString());
+                System.out.println("SpectrumBoundsCalculator: main: createFileURL " + createFileURL);
                 System.out.println("SpectrumBoundsCalculator: main: info file is " + infoFile.toString());
                 System.out.println("SpectrumBoundsCalculator: main: getting from server as " + FileCache.getFileFromServer(infoFile.toString()));
                 InfoFileReader reader = new InfoFileReader(FileCache.getFileFromServer(infoFile.toString()).getAbsolutePath());
