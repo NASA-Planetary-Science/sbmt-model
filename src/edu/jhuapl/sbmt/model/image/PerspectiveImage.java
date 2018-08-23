@@ -3722,7 +3722,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     double horizPixelScale = closestDist * horizScaleFactor;
                     double vertPixelScale = closestDist * vertScaleFactor;
 
-                    double[] coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
+                    double[] coloringValues;
+                    try
+                    {
+                        coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
+                    }
+                    catch (@SuppressWarnings("unused") IOException e)
+                    {
+                        coloringValues = new double[] {};
+                    }
                     int colorValueSize = coloringValues.length;
 
                     data[index(j,i,BackplaneInfo.PIXEL.ordinal())]  = (float)rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
