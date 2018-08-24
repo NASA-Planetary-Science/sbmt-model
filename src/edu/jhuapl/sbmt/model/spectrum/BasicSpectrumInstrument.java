@@ -72,6 +72,8 @@ public class BasicSpectrumInstrument implements SpectralInstrument, MetadataMana
         SpectraType spectraType = SpectraType.findSpectraTypeForDisplayName(displayName);
         this.queryBase = spectraType.getQueryBase();
         this.spectrumMath = spectraType.getSpectrumMath();
+        this.bandCenters = spectraType.getBandCenters();
+        this.bandCenterUnit = spectraType.getBandCenterUnit();
     }
 
     @Override
