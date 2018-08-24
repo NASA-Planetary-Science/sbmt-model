@@ -34,7 +34,6 @@ public enum SpectraType implements ISpectraType
         this.queryBase = queryBase;
         this.spectrumMath = spectrumMath;
         this.bandCenterUnit = bandCenterUnit;
-        System.out.println("SpectraType: SpectraType: band centers " + bandCenters);
         this.bandCenters = bandCenters;
     }
 
@@ -73,9 +72,10 @@ public enum SpectraType implements ISpectraType
         for (SpectraType spectra : values())
         {
             if (spectra.getDisplayName().equals(displayName))
-                return type;
+            {
+                return spectra;
+            }
         }
-
         return type;
     }
 
