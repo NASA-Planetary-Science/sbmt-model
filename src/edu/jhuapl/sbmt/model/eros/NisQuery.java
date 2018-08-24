@@ -94,8 +94,8 @@ public final class NisQuery extends DatabaseQueryBase
         double toEmission = metadata.get(DatabaseSearchMetadata.TO_EMISSION);
         double fromPhase = metadata.get(DatabaseSearchMetadata.FROM_PHASE);
         double toPhase = metadata.get(DatabaseSearchMetadata.TO_PHASE);
-        double startDistance = metadata.get(DatabaseSearchMetadata.DISTANCE_RANGE).lowerEndpoint();
-        double stopDistance = metadata.get(DatabaseSearchMetadata.DISTANCE_RANGE).upperEndpoint();
+        double startDistance = metadata.get(DatabaseSearchMetadata.FROM_DISTANCE);
+        double stopDistance = metadata.get(DatabaseSearchMetadata.TO_DISTANCE);
         DateTime startDate = new DateTime(metadata.get(DatabaseSearchMetadata.START_DATE));
         DateTime stopDate = new DateTime(metadata.get(DatabaseSearchMetadata.STOP_DATE));
         List<Integer> polygonTypes = metadata.get(DatabaseSearchMetadata.POLYGON_TYPES);

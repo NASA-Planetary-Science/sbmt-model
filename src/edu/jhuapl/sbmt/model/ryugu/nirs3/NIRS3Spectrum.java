@@ -332,7 +332,7 @@ public class NIRS3Spectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return NIRS3.bandCenters.length;
+        return NIRS3.nirs3BandCenters.length;
     }
 
     @Override

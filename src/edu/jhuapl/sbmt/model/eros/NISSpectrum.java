@@ -45,7 +45,7 @@ public class NISSpectrum extends BasicSpectrum
     static public final int NUMBER_OF_VERTICES_OFFSET = 259+2;
     static public final int POLYGON_START_COORDINATES_OFFSET = 260+2;
 
-    double[] spectrumEros=new double[NIS.bandCenters.length];
+    double[] spectrumEros=new double[NIS.nisBandCenters.length];
 
     /**
      * Because instances of NISSpectrum can be expensive, we want there to be
@@ -419,7 +419,7 @@ public class NISSpectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return NIS.bandCenters.length;
+        return NIS.nisBandCenters.length;
     }
 
 }

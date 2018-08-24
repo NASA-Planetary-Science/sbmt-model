@@ -1,33 +1,40 @@
 package edu.jhuapl.sbmt.model.eros;
 
-import edu.jhuapl.sbmt.model.spectrum.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.query.QueryBase;
 
-public class NIS extends BasicSpectrumInstrument
+public class NIS implements SpectralInstrument
 {
+
+//    public static double[] bandCenters;
+//    protected String bandCenterUnit;
+//    protected String displayName;
+//    protected QueryBase queryBase;
+//    protected SpectrumMath spectrumMath;
 
     public NIS()
     {
-        super("cm^-1", "NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath());
-        bandCenters = nisBandCenters;
+//        super("cm^-1", "NIS"/*, NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath()*/);
+//        bandCenters = nisBandCenters;
     }
 
 //    @Override
-//    public double[] getBandCenters()
-//    {
-//        return bandCenters;
-//    }
-//
-//    @Override
-//    public String getDisplayName()
-//    {
-//        return "NIS";
-//    }
-//
-//    @Override
-//    public String getBandCenterUnit()
-//    {
-//        return "cm^-1";
-//    }
+    public double[] getBandCenters()
+    {
+        return nisBandCenters;
+    }
+
+    @Override
+    public String getDisplayName()
+    {
+        return "NIS";
+    }
+
+    @Override
+    public String getBandCenterUnit()
+    {
+        return "cm^-1";
+    }
 
     // These values were taken from Table 1 of "Spectral properties and geologic
     // processes on Eros from combined NEAR NIS and MSI data sets"
@@ -99,17 +106,17 @@ public class NIS extends BasicSpectrumInstrument
         2708.2  // 63
     };
 
-//
-//    @Override
-//    public QueryBase getQueryBase()
-//    {
-//        return NisQuery.getInstance();
-//    }
-//
-//    @Override
-//    public SpectrumMath getSpectrumMath()
-//    {
-//        return NISSpectrumMath.getSpectrumMath();
-//    }
+
+    @Override
+    public QueryBase getQueryBase()
+    {
+        return NisQuery.getInstance();
+    }
+
+    @Override
+    public SpectrumMath getSpectrumMath()
+    {
+        return NISSpectrumMath.getSpectrumMath();
+    }
 
 }

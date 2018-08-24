@@ -1,13 +1,17 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
-import edu.jhuapl.sbmt.model.spectrum.BasicSpectrumInstrument;
-
-public class OVIRS extends BasicSpectrumInstrument
+public class OVIRS //implements SpectralInstrument
 {
+//    public static double[] bandCenters;
+//    protected String bandCenterUnit;
+//    protected String displayName;
+//    protected QueryBase queryBase;
+//    protected SpectrumMath spectrumMath;
+
     public OVIRS()
     {
-        super("um", "OVIRS", OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance());
-        bandCenters = ovirsBandCenters;
+//        super("um", "OVIRS"/*, OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance()*/);
+//        bandCenters = ovirsBandCenters;
     }
 
 //    @Override

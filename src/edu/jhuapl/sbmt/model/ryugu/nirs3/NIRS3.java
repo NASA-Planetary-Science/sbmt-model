@@ -1,14 +1,17 @@
 package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
-import edu.jhuapl.sbmt.model.spectrum.BasicSpectrumInstrument;
-
-
-public class NIRS3 extends BasicSpectrumInstrument
+public class NIRS3 //implements SpectralInstrument
 {
+//    public static double[] bandCenters;
+//    protected String bandCenterUnit;
+//    protected String displayName;
+//    protected QueryBase queryBase;
+//    protected SpectrumMath spectrumMath;
+
     public NIRS3()
     {
-        super("cm^-1", "NIRS3", NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance());
-        bandCenters = nirs3BandCenters;
+//        super("cm^-1", "NIRS3"/*, NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance()*/);
+//        bandCenters = nirs3BandCenters;
     }
 
 
@@ -23,7 +26,7 @@ public class NIRS3 extends BasicSpectrumInstrument
 //    {
 //        return "NIRS3";
 //    }
-//
+
 //    @Override
 //    public FixedListQueryBase getQueryBase()
 //    {
