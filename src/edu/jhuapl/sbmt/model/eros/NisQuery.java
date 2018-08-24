@@ -36,11 +36,23 @@ public final class NisQuery extends DatabaseQueryBase
 
     public static String getNisPath(List<String> result)
     {
-        int id = Integer.parseInt(result.get(0).split("/")[3]);
-        int year = Integer.parseInt(result.get(1));
-        int dayOfYear = Integer.parseInt(result.get(2));
+        if (result.size() > 1)
+        {
+            int id = Integer.parseInt(result.get(0).split("/")[3]);
+            int year = Integer.parseInt(result.get(1));
+            int dayOfYear = Integer.parseInt(result.get(2));
+            return getNisPath(id, year, dayOfYear);
+        }
+        else
+        {
+            String[] components = result.get(0).split("/");
+            int id = Integer.parseInt((components[4].split("N0")[1]).split("\\.")[0]);
+            int year = Integer.parseInt(components[2]);
+            int dayOfYear = Integer.parseInt(components[3]);
+            return getNisPath(id, year, dayOfYear);
+        }
 
-        return getNisPath(id, year, dayOfYear);
+
     }
 
     public static String getNisPath(int name, int year, int dayOfYear)
