@@ -111,16 +111,11 @@ public class ImagingInstrument implements MetadataManager
     @Override
     public Metadata store()
     {
-        System.out.println("ImagingInstrument: store: instrument is " + instrumentName);
         SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
         writeEnum(spectralModeKey, spectralMode, configMetadata);
         write(queryType, searchQuery.getClass().getSimpleName(), configMetadata);
         write(queryKey, searchQuery.store(), configMetadata);
         writeEnum(imageTypeKey, type, configMetadata);
-        for (ImageSource src : searchImageSources)
-        {
-            System.out.println("ImagingInstrument: store: src " + src);
-        }
         writeEnums(imageSourcesKey, searchImageSources, configMetadata);
         writeEnum(instrumentKey, instrumentName, configMetadata);
         return configMetadata;
@@ -145,14 +140,12 @@ public class ImagingInstrument implements MetadataManager
 
     private <T> void writeEnums(Key<String[]> key, Enum[] values, SettableMetadata configMetadata)
     {
-        System.out.println("ImagingInstrument: writeEnums: key is " + key + " values size " + values.length);
         if (values != null)
         {
             String[] names = new String[values.length];
             int i=0;
             for (Enum val : values)
             {
-                System.out.println("ImagingInstrument: writeEnums: val is " + val);
                 names[i++] = val.name();
             }
             configMetadata.put(key, names);
