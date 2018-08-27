@@ -30,7 +30,7 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
-import edu.jhuapl.sbmt.lidar.hyperoctree.laser.LaserLidarPoint;
+import edu.jhuapl.sbmt.lidar.hyperoctree.laser.Hayabusa2LaserLidarPoint;
 
 public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
 {
@@ -146,7 +146,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                     for (int i=0; i<pts.size(); i++)
                     {
                         originalPoints.add(pts.get(i));
-                        originalPointsSourceFiles.put(pts.get(i),((LaserLidarPoint)pts.get(i)).getFileNum());
+                        originalPointsSourceFiles.put(pts.get(i),((Hayabusa2LaserLidarPoint)pts.get(i)).getFileNum());
                     }
                     //
                     cnt++;
@@ -242,7 +242,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         try {
             DataInputStream stream=new DataInputStream(new FileInputStream(dataInputFile));
             while (true) {
-                LaserLidarPoint pt=new LaserLidarPoint(stream);
+                Hayabusa2LaserLidarPoint pt=new Hayabusa2LaserLidarPoint(stream);
                 if (pt.getTime()<timeLimits[0] || pt.getTime()>timeLimits[1])   // throw away points outside time limits
                     continue;
                 if (pointInRegionChecker!=null)
@@ -287,7 +287,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         {
             Track track=tracks.get(i);
             for (int j=track.startId; j<=track.stopId; j++)
-                track.registerSourceFileIndex(((LaserLidarPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
+                track.registerSourceFileIndex(((Hayabusa2LaserLidarPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
         }
     }
 
