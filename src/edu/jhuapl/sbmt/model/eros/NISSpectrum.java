@@ -154,7 +154,7 @@ public class NISSpectrum extends BasicSpectrum
                 {
                     vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
                             spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
-
+                    if (tmp == null) return;
                     vtkDoubleArray faceAreaFraction = new vtkDoubleArray();
                     faceAreaFraction.SetName(faceAreaFractionArrayName);
                     Frustum frustum = new Frustum(getFrustumOrigin(),
