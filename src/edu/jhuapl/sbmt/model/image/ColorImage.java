@@ -626,7 +626,8 @@ public class ColorImage extends Image implements PropertyChangeListener
         maskSource.Update();
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-        updateImageMask();
+//        updateImageMask();
+        setDisplayedImageRange(null);
 
         for (int i=0; i<masking.length; ++i)
             currentMask[i] = masking[i];
