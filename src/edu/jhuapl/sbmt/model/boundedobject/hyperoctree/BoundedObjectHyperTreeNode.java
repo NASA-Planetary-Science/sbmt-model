@@ -81,11 +81,11 @@ public class BoundedObjectHyperTreeNode
         return bbox.getDimension();
     }
 
-    public static HyperBoundedObject createNewBoundedObject(DataInputStream stream) throws HyperDimensionMismatchException
+    public static HyperBoundedObject createNewBoundedObject(DataInputStream stream, int dim) throws HyperDimensionMismatchException
     {
         try
         {
-            return new HyperBoundedObject(stream);
+            return new HyperBoundedObject(stream, dim);
         }
         catch (IOException e)
         {
@@ -136,8 +136,8 @@ public class BoundedObjectHyperTreeNode
         DataInputStream instream=new DataInputStream(new BufferedInputStream(new FileInputStream(getDataFilePath().toFile())));
         while (instream.available()>0) // for every object in the node
         {
-            // TODO how does this know what the dimensions are??
-            HyperBoundedObject obj = createNewBoundedObject(instream);
+            int dim = this.getDimension();
+            HyperBoundedObject obj = createNewBoundedObject(instream, dim);
 
             for (int i=0; i<getNumberOfChildren() ; i++)
             {

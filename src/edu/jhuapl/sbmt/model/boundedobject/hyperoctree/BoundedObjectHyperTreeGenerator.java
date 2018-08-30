@@ -221,21 +221,32 @@ public class BoundedObjectHyperTreeGenerator
 
 
         double today = new Date().getTime();
-        // bounds from input
-        double[] min = {bodyBBox.xmin, bodyBBox.ymin, bodyBBox.zmin, -Double.MAX_VALUE};
-        double[] max = {bodyBBox.xmax, bodyBBox.ymax, bodyBBox.zmax, today};
-        HyperBox hbox = new HyperBox(min, max);
 
         // TODO not working yet - this will help with the EXTRA search params
         BoundedObjectHyperTreeGenerator generator;
-        if (args[3].equalsIgnoreCase("SPECTRA")) {
+        if (args[4].equalsIgnoreCase("SPECTRA")) {
+            // bounds from input PLUS min/max angles
+            double[] min = {bodyBBox.xmin, bodyBBox.ymin, bodyBBox.zmin, -Double.MAX_VALUE, 0, 0, 0, 0};
+            double[] max = {bodyBBox.xmax, bodyBBox.ymax, bodyBBox.zmax, today,  180, 180, 180, Double.MAX_VALUE};
+            HyperBox hbox = new HyperBox(min, max);
+
             generator = new SpectrumHypertreeGenerator(outputDirectory, maxObjectsPerLeaf, hbox, maxNumOpenOutputFiles, pool);
         }
         else {
+            // bounds from input
+            double[] min = {bodyBBox.xmin, bodyBBox.ymin, bodyBBox.zmin, -Double.MAX_VALUE};
+            double[] max = {bodyBBox.xmax, bodyBBox.ymax, bodyBBox.zmax, today};
+            HyperBox hbox = new HyperBox(min, max);
+
             generator = new BoundedObjectHyperTreeGenerator(outputDirectory, maxObjectsPerLeaf, hbox, maxNumOpenOutputFiles, pool);
         }
 
-        generator.addAllObjectsFromFile(inputFile);
+        if (generator instanceof SpectrumHypertreeGenerator) {
+            ((SpectrumHypertreeGenerator)generator).addAllObjectsFromFile(inputFile);
+        }
+        else {
+            generator.addAllObjectsFromFile(inputFile);
+        }
         Path fileMapPath = outputDirectory.resolve("fileMap.txt");
         System.out.print("Writing file map to "+fileMapPath+"... ");
         FileWriter writer = new FileWriter(fileMapPath.toFile());

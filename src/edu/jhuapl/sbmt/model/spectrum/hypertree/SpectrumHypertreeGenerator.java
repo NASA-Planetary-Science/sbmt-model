@@ -26,6 +26,7 @@ public class SpectrumHypertreeGenerator extends BoundedObjectHyperTreeGenerator
                 pool);
     }
 
+
     public void addAllObjectsFromFile(String inputPath) throws HyperException, IOException
     {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -39,12 +40,12 @@ public class SpectrumHypertreeGenerator extends BoundedObjectHyperTreeGenerator
                     double minT = minTime.getTime();
                     double maxT = df.parse(toks[8]).getTime();
                     double em   = Double.parseDouble(toks[9]);
-                    double inc  = Double.parseDouble(toks[10]);
-                    double phs  = Double.parseDouble(toks[11]);
-                    double dist = Double.parseDouble(toks[12]);
+                    double inc  = Double.parseDouble(toks[11]);
+                    double phs  = Double.parseDouble(toks[13]);
+                    double dist = Double.parseDouble(toks[15]);
 
-                    HyperBox objBBox = new HyperBox(new double[]{Double.parseDouble(toks[1]), Double.parseDouble(toks[3]), Double.parseDouble(toks[5]), minT, em, inc, phs},
-                            new double[]{Double.parseDouble(toks[2]), Double.parseDouble(toks[4]), Double.parseDouble(toks[6]), maxT, em, inc, phs});
+                    HyperBox objBBox = new HyperBox(new double[]{Double.parseDouble(toks[1]), Double.parseDouble(toks[3]), Double.parseDouble(toks[5]), minT, em, inc, phs, dist},
+                            new double[]{Double.parseDouble(toks[2]), Double.parseDouble(toks[4]), Double.parseDouble(toks[6]), maxT, em, inc, phs, dist});
 
                     int objId = objName.hashCode();
                     getFileMap().put(objName, objId);
