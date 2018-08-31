@@ -1,9 +1,16 @@
 package edu.jhuapl.sbmt.model.image;
 
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.MetadataManager;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
 import edu.jhuapl.sbmt.client.SpectralMode;
 import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.query.database.GenericPhpQuery;
+import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 
-public class ImagingInstrument
+public class ImagingInstrument implements MetadataManager
 {
     public SpectralMode spectralMode;
     public QueryBase searchQuery;
@@ -48,9 +55,109 @@ public class ImagingInstrument
         this.flip = flip;
     }
 
+//    c.imagingInstruments = new ImagingInstrument[] {
+//            new ImagingInstrument(
+//                    SpectralMode.MONO,
+//                    new GenericPhpQuery("/GASKELL/EROS/MSI", "EROS", "/GASKELL/EROS/MSI/gallery"),
+//                    ImageType.MSI_IMAGE,
+//                    new ImageSource[]{ImageSource.GASKELL_UPDATED, ImageSource.SPICE},
+//                    Instrument.MSI
+//                    )
+//    };
+
     public ImagingInstrument clone()
     {
         return new ImagingInstrument(spectralMode, searchQuery.clone(), type, searchImageSources.clone(), instrumentName, rotation, flip);
+    }
+
+    Key<String> spectralModeKey = Key.of("spectralMode");
+    Key<String> queryType = Key.of("queryType");
+    Key<Metadata> queryKey = Key.of("query");
+//    Key<String> rootPathKey = Key.of("rootPath");
+//    Key<String> tablePrefixKey = Key.of("tablePrefix");
+//    Key<String> galleryPrefixKey = Key.of("galleryPrefix");
+    Key<String> imageTypeKey = Key.of("imageType");
+    Key<String[]> imageSourcesKey = Key.of("imageSources");
+    Key<String> instrumentKey = Key.of("instrument");
+
+    @Override
+    public void retrieve(Metadata source)
+    {
+        spectralMode = SpectralMode.valueOf(read(spectralModeKey, source));
+        String searchType = read(queryType, source);
+        Metadata queryMetadata = read(queryKey, source);
+        if (searchType.equals(FixedListQuery.class.getSimpleName()))
+        {
+            searchQuery = new FixedListQuery();
+
+        }
+        else    //it's a GenericPHPQuery
+        {
+            searchQuery = new GenericPhpQuery();
+        }
+        searchQuery.retrieve(queryMetadata);
+
+        type = ImageType.valueOf(read(imageTypeKey, source));
+        String[] imageSources = read(imageSourcesKey, source);
+        searchImageSources = new ImageSource[imageSources.length];
+        int i=0;
+        for (String src : imageSources)
+        {
+            searchImageSources[i++] = ImageSource.valueOf(src);
+        }
+        instrumentName = Instrument.valueOf(read(instrumentKey, source));
+    }
+
+    @Override
+    public Metadata store()
+    {
+        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
+        writeEnum(spectralModeKey, spectralMode, configMetadata);
+        write(queryType, searchQuery.getClass().getSimpleName(), configMetadata);
+        write(queryKey, searchQuery.store(), configMetadata);
+        writeEnum(imageTypeKey, type, configMetadata);
+        writeEnums(imageSourcesKey, searchImageSources, configMetadata);
+        writeEnum(instrumentKey, instrumentName, configMetadata);
+        return configMetadata;
+    }
+
+
+    private <T> void write(Key<T> key, T value, SettableMetadata configMetadata)
+    {
+        if (value != null)
+        {
+            configMetadata.put(key, value);
+        }
+    }
+
+    private <T> void writeEnum(Key<String> key, Enum value, SettableMetadata configMetadata)
+    {
+        if (value != null)
+        {
+            configMetadata.put(key, value.name());
+        }
+    }
+
+    private <T> void writeEnums(Key<String[]> key, Enum[] values, SettableMetadata configMetadata)
+    {
+        if (values != null)
+        {
+            String[] names = new String[values.length];
+            int i=0;
+            for (Enum val : values)
+            {
+                names[i++] = val.name();
+            }
+            configMetadata.put(key, names);
+        }
+    }
+
+    private <T> T read(Key<T> key, Metadata configMetadata)
+    {
+        T value = configMetadata.get(key);
+        if (value != null)
+            return value;
+        return null;
     }
 }
 

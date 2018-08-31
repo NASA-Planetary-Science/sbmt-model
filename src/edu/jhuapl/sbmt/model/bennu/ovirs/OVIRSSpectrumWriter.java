@@ -43,9 +43,9 @@ public class OVIRSSpectrumWriter extends BasicFileWriter
             writer.newLine();
             writer.write("## Wavelength (Band Center), Spectrum Value");
             writer.newLine();
-            for (int i=0; i<OVIRS.bandCenters.length; i++)
+            for (int i=0; i<OVIRS.ovirsBandCenters.length; i++)
             {
-                writer.write(OVIRS.bandCenters[i] + "," + yData[i]);
+                writer.write(OVIRS.ovirsBandCenters[i] + "," + yData[i]);
                 writer.newLine();
             }
 

@@ -1,44 +1,51 @@
 package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.query.fixedlist.FixedListQueryBase;
-
-
-public class NIRS3 implements SpectralInstrument
+public class NIRS3 //implements SpectralInstrument
 {
+//    public static double[] bandCenters;
+//    protected String bandCenterUnit;
+//    protected String displayName;
+//    protected QueryBase queryBase;
+//    protected SpectrumMath spectrumMath;
 
-    @Override
-    public double[] getBandCenters()
+    public NIRS3()
     {
-        return bandCenters;
+//        super("cm^-1", "NIRS3"/*, NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance()*/);
+//        bandCenters = nirs3BandCenters;
     }
 
-    @Override
-    public String getDisplayName()
-    {
-        return "NIRS3";
-    }
 
-    @Override
-    public FixedListQueryBase getQueryBase()
-    {
-        return NIRS3Query.getInstance();
-    }
+//    @Override
+//    public double[] getBandCenters()
+//    {
+//        return bandCenters;
+//    }
+//
+//    @Override
+//    public String getDisplayName()
+//    {
+//        return "NIRS3";
+//    }
 
-    @Override
-    public String getBandCenterUnit()
-    {
-        return "cm^-1";
-    }
+//    @Override
+//    public FixedListQueryBase getQueryBase()
+//    {
+//        return NIRS3Query.getInstance();
+//    }
+//
+//    @Override
+//    public String getBandCenterUnit()
+//    {
+//        return "cm^-1";
+//    }
+//
+//    @Override
+//    public SpectrumMath getSpectrumMath()
+//    {
+//        return NIRS3SpectrumMath.getInstance();
+//    }
 
-    @Override
-    public SpectrumMath getSpectrumMath()
-    {
-        return NIRS3SpectrumMath.getInstance();
-    }
-
-    static final public double[] bandCenters = { 1249.11, // 0
+    static final public double[] nirs3BandCenters = { 1249.11, // 0
             1267.65, // 1
             1286.19, // 2
             1304.71, // 3

@@ -15,6 +15,9 @@ import javax.swing.JOptionPane;
 import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.metadata.FixedMetadata;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.SearchResultsMetadata;
@@ -33,11 +36,23 @@ public final class NisQuery extends DatabaseQueryBase
 
     public static String getNisPath(List<String> result)
     {
-        int id = Integer.parseInt(result.get(0).split("/")[3]);
-        int year = Integer.parseInt(result.get(1));
-        int dayOfYear = Integer.parseInt(result.get(2));
+        if (result.size() > 1)
+        {
+            int id = Integer.parseInt(result.get(0).split("/")[3]);
+            int year = Integer.parseInt(result.get(1));
+            int dayOfYear = Integer.parseInt(result.get(2));
+            return getNisPath(id, year, dayOfYear);
+        }
+        else
+        {
+            String[] components = result.get(0).split("/");
+            int id = Integer.parseInt((components[4].split("N0")[1]).split("\\.")[0]);
+            int year = Integer.parseInt(components[2]);
+            int dayOfYear = Integer.parseInt(components[3]);
+            return getNisPath(id, year, dayOfYear);
+        }
 
-        return getNisPath(id, year, dayOfYear);
+
     }
 
     public static String getNisPath(int name, int year, int dayOfYear)
@@ -85,16 +100,16 @@ public final class NisQuery extends DatabaseQueryBase
     public SearchResultsMetadata runQuery(SearchMetadata queryMetadata)
     {
         FixedMetadata metadata = queryMetadata.getMetadata();
-        double fromIncidence = metadata.get(DatabaseSearchMetadata.INCIDENCE_RANGE).lowerEndpoint();
-        double toIncidence = metadata.get(DatabaseSearchMetadata.INCIDENCE_RANGE).upperEndpoint();
-        double fromEmission = metadata.get(DatabaseSearchMetadata.EMISSION_RANGE).lowerEndpoint();
-        double toEmission = metadata.get(DatabaseSearchMetadata.EMISSION_RANGE).upperEndpoint();
-        double fromPhase = metadata.get(DatabaseSearchMetadata.PHASE_RANGE).lowerEndpoint();
-        double toPhase = metadata.get(DatabaseSearchMetadata.PHASE_RANGE).upperEndpoint();
-        double startDistance = metadata.get(DatabaseSearchMetadata.DISTANCE_RANGE).lowerEndpoint();
-        double stopDistance = metadata.get(DatabaseSearchMetadata.DISTANCE_RANGE).upperEndpoint();
-        DateTime startDate = metadata.get(DatabaseSearchMetadata.START_DATE);
-        DateTime stopDate = metadata.get(DatabaseSearchMetadata.STOP_DATE);
+        double fromIncidence = metadata.get(DatabaseSearchMetadata.FROM_INCIDENCE);
+        double toIncidence = metadata.get(DatabaseSearchMetadata.TO_INCIDENCE);
+        double fromEmission = metadata.get(DatabaseSearchMetadata.FROM_EMISSION);
+        double toEmission = metadata.get(DatabaseSearchMetadata.TO_EMISSION);
+        double fromPhase = metadata.get(DatabaseSearchMetadata.FROM_PHASE);
+        double toPhase = metadata.get(DatabaseSearchMetadata.TO_PHASE);
+        double startDistance = metadata.get(DatabaseSearchMetadata.FROM_DISTANCE);
+        double stopDistance = metadata.get(DatabaseSearchMetadata.TO_DISTANCE);
+        DateTime startDate = new DateTime(metadata.get(DatabaseSearchMetadata.START_DATE));
+        DateTime stopDate = new DateTime(metadata.get(DatabaseSearchMetadata.STOP_DATE));
         List<Integer> polygonTypes = metadata.get(DatabaseSearchMetadata.POLYGON_TYPES);
         TreeSet<Integer> cubeList = metadata.get(SpectraDatabaseSearchMetadata.CUBE_LIST);
 
@@ -322,5 +337,18 @@ public final class NisQuery extends DatabaseQueryBase
         {
             result.set(0, getDataPath() + "/" + fullPath);
         }
+    }
+
+    @Override
+    public Metadata store()
+    {
+        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
+        return configMetadata;
+    }
+
+    @Override
+    public void retrieve(Metadata source)
+    {
+
     }
 }
