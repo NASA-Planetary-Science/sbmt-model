@@ -19,6 +19,7 @@ import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
+import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
@@ -167,8 +168,8 @@ public class SpectrumBoundsCalculator
                     double inc = SpectrumStatistics.getWeightedMean(sampleIncidenceAngle);
                     List<Sample> samplePhaseAngle = SpectrumStatistics.samplePhaseAngle( sampleIncidenceAngle, sampleEmergenceAngle);
                     double ph = SpectrumStatistics.getWeightedMean(samplePhaseAngle);
-                    // TODO s/c distance
-                    double dist = 0;
+                    // TODO s/c distance relative to body in info file?
+                    double dist = MathUtil.vnorm(spacecraftPosition);
 
 
                     vtkPolyData tmp = body.computeFrustumIntersection(
