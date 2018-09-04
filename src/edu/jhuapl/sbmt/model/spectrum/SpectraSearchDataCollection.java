@@ -102,6 +102,15 @@ public class SpectraSearchDataCollection
         return currentSkeleton.getLeavesIntersectingBoundingBox(bounds);
     }
 
+    public TreeSet<Integer> getLeavesIntersectingBoundingBox(BoundingBox bbox, double[] tlims, double[] spectraLims)
+    {
+        // assumes this is a spectra search with phase, emission, incidence angles, and spacecraft distance
+        double[] bounds=new double[]{bbox.xmin,bbox.xmax,bbox.ymin,bbox.ymax,bbox.zmin,bbox.zmax,tlims[0],tlims[1],
+                spectraLims[0], spectraLims[1],spectraLims[2], spectraLims[3],spectraLims[4], spectraLims[5],spectraLims[6], spectraLims[7]};
+        return currentSkeleton.getLeavesIntersectingBoundingBox(bounds);
+    }
+
+
     public Map<String, String> getSpectraDataSourceMap()
     {
         return polyhedralModelConfig.spectraSearchDataSourceMap;
