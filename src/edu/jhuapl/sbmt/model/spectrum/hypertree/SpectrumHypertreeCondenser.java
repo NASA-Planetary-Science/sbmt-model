@@ -23,7 +23,7 @@ public class SpectrumHypertreeCondenser extends FSHyperTreeCondenser
     {
         // assumes this is being run from misc/scripts/generate_spectra_hypertree.sh
         // so the temp_hypertree/ directory has been created in working directory.
-        Path rootPath=Paths.get("/Users/osheacm1/Documents/SAA/SBMT/testSpectrum/otes_l2/hypertree/");
+        Path rootPath=Paths.get("temp_hypertree/");
         Path outFilePath=rootPath.resolve("dataSource.spectra");
         System.out.println("Root path = "+rootPath);
         System.out.println("Output path = "+outFilePath);
@@ -32,7 +32,6 @@ public class SpectrumHypertreeCondenser extends FSHyperTreeCondenser
         System.out.println("Wrote tree structure to "+outFilePath);
     }
 
-    @Override
     public int getDimension() {
         return 8;
     }
