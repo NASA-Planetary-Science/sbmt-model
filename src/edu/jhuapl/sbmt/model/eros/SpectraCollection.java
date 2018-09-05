@@ -17,12 +17,10 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
-import edu.jhuapl.sbmt.model.bennu.otes.OTES;
 import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
-import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
-import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3Spectrum;
+import edu.jhuapl.sbmt.model.spectrum.SpectraType;
 import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectrumColoringStyle;
@@ -122,19 +120,19 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         Spectrum spectrum=null;
         try
         {
-        if (instrument instanceof NIS)
+        if (instrument.getDisplayName().equals(SpectraType.NIS_SPECTRA.getDisplayName()))
         {
             spectrum=new NISSpectrum(path, shapeModel, instrument);
         }
-        else if (instrument instanceof OTES)
+        else if (instrument.getDisplayName().equals(SpectraType.OTES_SPECTRA.getDisplayName()))
         {
             spectrum=new OTESSpectrum(path, shapeModel, instrument);
         }
-        else if (instrument instanceof OVIRS)
+        else if (instrument.getDisplayName().equals(SpectraType.OVIRS_SPECTRA.getDisplayName()))
         {
             spectrum=new OVIRSSpectrum(path, shapeModel, instrument);
         }
-        else if (instrument instanceof NIRS3)
+        else if (instrument.getDisplayName().equals(SpectraType.NIRS3_SPECTRA.getDisplayName()))
         {
             spectrum=new NIRS3Spectrum(path, shapeModel, instrument);
         }

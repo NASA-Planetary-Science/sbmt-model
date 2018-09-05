@@ -6,10 +6,22 @@ import edu.jhuapl.sbmt.query.QueryBase;
 public class NIS implements SpectralInstrument
 {
 
-    @Override
+//    public static double[] bandCenters;
+//    protected String bandCenterUnit;
+//    protected String displayName;
+//    protected QueryBase queryBase;
+//    protected SpectrumMath spectrumMath;
+
+    public NIS()
+    {
+//        super("cm^-1", "NIS"/*, NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath()*/);
+//        bandCenters = nisBandCenters;
+    }
+
+//    @Override
     public double[] getBandCenters()
     {
-        return bandCenters;
+        return nisBandCenters;
     }
 
     @Override
@@ -27,7 +39,7 @@ public class NIS implements SpectralInstrument
     // These values were taken from Table 1 of "Spectral properties and geologic
     // processes on Eros from combined NEAR NIS and MSI data sets"
     // by Noam Izenberg et. al.
-    static final public double[] bandCenters = {
+    static final public double[] nisBandCenters = {
         816.2,  // 0
         837.8,  // 1
         859.4,  // 2

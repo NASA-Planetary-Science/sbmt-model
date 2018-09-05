@@ -1,38 +1,43 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.query.fixedlist.FixedListQueryBase;
-
-public class OTES implements SpectralInstrument
+public class OTES // implements SpectralInstrument
 {
+//    public static double[] bandCenters;
+    // protected String bandCenterUnit;
+    // protected String displayName;
+    // protected QueryBase queryBase;
+    // protected SpectrumMath spectrumMath;
 
-    @Override
-    public double[] getBandCenters()
+    public OTES()
     {
-        return bandCenters;
+        // super("cm^-1", "OTES"/*, OTESQuery.getInstance(),
+        // OTESSpectrumMath.getInstance()*/);
+//        bandCenters = otesBandCenters;
     }
 
-    @Override
-    public String getDisplayName()
-    {
-        return "OTES";
-    }
+    // public double[] getBandCenters()
+    // {
+    // return bandCenters;
+    // }
+    //
+    // public String getDisplayName()
+    // {
+    // return "OTES";
+    // }
+    //
+    // public static double getFovDeg()
+    // {
+    // return 0.3635;
+    // }
+    //
+    // public String getBandCenterUnit()
+    // {
+    // return "cm^-1";
+    // }
 
-    public static double getFovDeg()
-    {
-        return 0.3635;
-    }
-
-    @Override
-    public String getBandCenterUnit()
-    {
-        return "cm^-1";
-    }
-
-    // these band centers are taken from 20170925T000010S324_ote_L2_V001.hdf under the xaxis variable.  Unit is cm^-1 (wavenumber)
-    static final public double[] bandCenters = {
-            8.660700e+00, // 0
+    // these band centers are taken from 20170925T000010S324_ote_L2_V001.hdf
+    // under the xaxis variable. Unit is cm^-1 (wavenumber)
+    static final public double[] otesBandCenters = { 8.660700e+00, // 0
             1.732140e+01, // 1
             2.598210e+01, // 2
             3.464280e+01, // 3
@@ -381,18 +386,18 @@ public class OTES implements SpectralInstrument
             3.005266e+03, // 346
             3.013927e+03, // 347
             3.022587e+03 // 348
-        };
-
-    @Override
-    public FixedListQueryBase getQueryBase()
-    {
-        return OTESQuery.getInstance();
-    }
-
-    @Override
-    public SpectrumMath getSpectrumMath()
-    {
-        return OTESSpectrumMath.getInstance();
-    }
+    };
+    //
+    // @Override
+    // public FixedListQueryBase getQueryBase()
+    // {
+    // return OTESQuery.getInstance();
+    // }
+    //
+    // @Override
+    // public SpectrumMath getSpectrumMath()
+    // {
+    // return OTESSpectrumMath.getInstance();
+    // }
 
 }

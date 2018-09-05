@@ -1,32 +1,39 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.query.QueryBase;
-
-public class OVIRS implements SpectralInstrument
+public class OVIRS //implements SpectralInstrument
 {
+//    public static double[] bandCenters;
+//    protected String bandCenterUnit;
+//    protected String displayName;
+//    protected QueryBase queryBase;
+//    protected SpectrumMath spectrumMath;
 
-    @Override
-    public double[] getBandCenters()
+    public OVIRS()
     {
-        return bandCenters;
+//        super("um", "OVIRS"/*, OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance()*/);
+//        bandCenters = ovirsBandCenters;
     }
 
-    @Override
-    public String getDisplayName()
-    {
-        return "OVIRS";
-    }
-
-    @Override
-    public String getBandCenterUnit()
-    {
-        return "um";
-    }
+//    @Override
+//    public double[] getBandCenters()
+//    {
+//        return bandCenters;
+//    }
+//
+//    @Override
+//    public String getDisplayName()
+//    {
+//        return "OVIRS";
+//    }
+//
+//    @Override
+//    public String getBandCenterUnit()
+//    {
+//        return "um";
+//    }
 
     // these band centers are taken from
-    static final public double[] bandCenters = {    //unit: microns
+    static final public double[] ovirsBandCenters = {    //unit: microns
             0.392000, //0
             0.394000, //1
             0.396000, //2
@@ -1422,16 +1429,16 @@ public class OVIRS implements SpectralInstrument
             4.340000 //1392
         };
 
-    @Override
-    public QueryBase getQueryBase()
-    {
-        return OVIRSQuery.getInstance();
-    }
-
-    @Override
-    public SpectrumMath getSpectrumMath()
-    {
-        return OVIRSSpectrumMath.getInstance();
-    }
+//    @Override
+//    public QueryBase getQueryBase()
+//    {
+//        return OVIRSQuery.getInstance();
+//    }
+//
+//    @Override
+//    public SpectrumMath getSpectrumMath()
+//    {
+//        return OVIRSSpectrumMath.getInstance();
+//    }
 
 }

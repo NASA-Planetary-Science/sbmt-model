@@ -24,7 +24,7 @@ public class NISSpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return NIS.bandCenters.length;
+        return NIS.nisBandCenters.length;
     }
 
     @Override
