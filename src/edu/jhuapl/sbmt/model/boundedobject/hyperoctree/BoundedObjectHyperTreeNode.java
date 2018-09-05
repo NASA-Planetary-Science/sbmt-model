@@ -139,11 +139,14 @@ public class BoundedObjectHyperTreeNode
             int dim = this.getDimension();
             HyperBoundedObject obj = createNewBoundedObject(instream, dim);
 
+            System.out.println("object created");
+
             for (int i=0; i<getNumberOfChildren() ; i++)
             {
                 if (children[i].getBoundingBox().intersects(obj.getBbox()))
                 {
                     children[i].add(obj);
+                    System.out.println("object added to child node");
                 }
             }
         }

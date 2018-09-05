@@ -222,7 +222,6 @@ public class BoundedObjectHyperTreeGenerator
 
         double today = new Date().getTime();
 
-        // TODO not working yet - this will help with the EXTRA search params
         BoundedObjectHyperTreeGenerator generator;
         if (args[4].equalsIgnoreCase("SPECTRA")) {
             // bounds from input PLUS min/max angles
