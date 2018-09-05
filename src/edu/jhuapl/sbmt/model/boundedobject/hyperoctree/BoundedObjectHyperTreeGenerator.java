@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -260,6 +261,16 @@ public class BoundedObjectHyperTreeGenerator
         generator.expand();
         System.out.println();
         generator.commit(); // clean up any empty or open data files
+
+
+
+        // get all non-empty leaf nodes and list the contents
+        List<BoundedObjectHyperTreeNode> nodeList = new ArrayList<BoundedObjectHyperTreeNode>();
+        generator.getAllNonEmptyLeafNodes(generator.getRoot(),nodeList);
+        System.out.println("Number of leaves with files: " + nodeList.size());
+        for(BoundedObjectHyperTreeNode node : nodeList) {
+           System.out.println("Number of objects in node " + node.getPath() + ": " + node.getNumberOfObjects());
+        }
 
     }
 
