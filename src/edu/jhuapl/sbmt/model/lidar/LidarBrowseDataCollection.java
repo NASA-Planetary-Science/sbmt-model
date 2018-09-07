@@ -18,6 +18,7 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.FileCache.UnauthorizedAccessException;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -140,15 +141,24 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
     {
         List<LidarDataFileSpec> lidarSpecs = new ArrayList<LidarDataFileSpec>();
 
-        InputStream is;
+        InputStream is = null;
         if (polyhedralModelConfig.lidarBrowseFileListResourcePath.startsWith("/edu"))
         {
             is = getClass().getResourceAsStream(polyhedralModelConfig.lidarBrowseFileListResourcePath);
         }
         else
         {
-            is = new FileInputStream(FileCache.getFileFromServer(polyhedralModelConfig.lidarBrowseFileListResourcePath));
+            try
+            {
+                if (FileCache.isFileGettable(polyhedralModelConfig.lidarBrowseFileListResourcePath))
+                    is = new FileInputStream(FileCache.getFileFromServer(polyhedralModelConfig.lidarBrowseFileListResourcePath));
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                return lidarSpecs;
+            }
         }
+
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader in = new BufferedReader(isr);
 
@@ -241,5 +251,10 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
     public double getOffsetScale()
     {
         return polyhedralModelConfig.lidarOffsetScale;
+    }
+
+    public String getBrowseFileResourcePath()
+    {
+        return polyhedralModelConfig.lidarBrowseFileListResourcePath;
     }
 }
