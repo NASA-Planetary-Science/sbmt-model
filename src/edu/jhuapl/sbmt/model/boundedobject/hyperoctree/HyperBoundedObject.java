@@ -10,8 +10,6 @@ import edu.jhuapl.sbmt.lidar.hyperoctree.HyperException.HyperDimensionMismatchEx
 public class HyperBoundedObject
 {
 
-//    protected double[] data = new double[8]; // TODO how are the position/dimensions of pictures defined?
-    // data = {minx, maxx, miny, maxy, minz, maxz, mint, maxt};
     protected String name;
     private int fileNum;
     protected HyperBox bbox;
@@ -74,8 +72,7 @@ public class HyperBoundedObject
 
     public double getCoordinate(int i)
     {
-//        return data[i];
-        return 0;
+        return getData()[i];
     }
 
     public HyperBox getBbox()
