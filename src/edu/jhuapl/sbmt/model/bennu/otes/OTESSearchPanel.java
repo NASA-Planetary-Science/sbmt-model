@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JSpinner;
@@ -86,6 +87,7 @@ public class OTESSearchPanel extends SpectrumSearchController
             ++i;
         }
 
+        Arrays.sort(formattedResults);
         view.getResultList().setListData(formattedResults);
 
         // Show the first set of footprints

@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JSpinner;
@@ -94,6 +95,8 @@ public class OVIRSSearchPanel extends SpectrumSearchController
             formattedResults[i] = FilenameUtils.getBaseName(str) + "." + FilenameUtils.getExtension(str);
             ++i;
         }
+
+        Arrays.sort(formattedResults);
 
         view.getResultList().setListData(formattedResults);
 
