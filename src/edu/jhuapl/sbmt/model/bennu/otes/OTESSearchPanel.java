@@ -63,18 +63,20 @@ public class OTESSearchPanel extends SpectrumSearchController
         view.getResultsLabel().setText(results.size() + " spectra matched");
 
         List<String> matchedImages=Lists.newArrayList();
-        if (matchedImages.size() > 0)
-            fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
+        String[] matched = new String[results.size()];
+
+        int j = 0;
         for (List<String> res : results)
         {
             String basePath=FilenameUtils.getPath(res.get(0));
             String filename=FilenameUtils.getBaseName(res.get(0));
-//            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
 
-            matchedImages.add(basePath + filename + "." + FilenameUtils.getExtension(res.get(0)));
-//            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
+            matched[j] = basePath + filename + "." + FilenameUtils.getExtension(res.get(0));
+            ++j;
         }
 
+        Arrays.sort(matched);
+        matchedImages = Arrays.asList(matched);
         model.setSpectrumRawResults(matchedImages);
 
         String[] formattedResults = new String[results.size()];
@@ -87,7 +89,6 @@ public class OTESSearchPanel extends SpectrumSearchController
             ++i;
         }
 
-        Arrays.sort(formattedResults);
         view.getResultList().setListData(formattedResults);
 
         // Show the first set of footprints
