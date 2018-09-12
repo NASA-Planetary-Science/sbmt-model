@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.phobos;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,20 +10,22 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 public abstract class HierarchicalSearchSpecification
 {
-    private TreeModel treeModel;
-    private List<Integer> selectedCameras;
-    private List<Integer> selectedFilters;
+    private final TreeModel treeModel;
+    private final List<HierarchicalSearchLeafNode> allLeafNodes;
+    private ImmutableSet<HierarchicalSearchLeafNode> selection;
 
     public HierarchicalSearchSpecification(String rootName)
     {
         // Create a tree model with just the root
-        treeModel = new DefaultTreeModel(new DefaultMutableTreeNode(rootName));
-
-        // Initialize container objects
-        selectedCameras = new LinkedList<Integer>();
-        selectedFilters = new LinkedList<Integer>();
+        this.treeModel = new DefaultTreeModel(new DefaultMutableTreeNode(rootName));
+        this.allLeafNodes = new ArrayList<>();
+        this.selection = ImmutableSet.of();
     }
 
     // Method used to get the tree model
@@ -32,6 +35,7 @@ public abstract class HierarchicalSearchSpecification
     }
 
     // Deep copy of the search specification
+    @Override
     public HierarchicalSearchSpecification clone()
     {
         // TBD, do nothing for now
@@ -49,11 +53,12 @@ public abstract class HierarchicalSearchSpecification
         for(int i=0; i<path.length-1; i++)
         {
             // See if node has a child called path[i]
-            Enumeration e = currNode.children();
+            @SuppressWarnings("unchecked")
+            Enumeration<DefaultMutableTreeNode> e = currNode.children();
             boolean childFound = false;
             while(e.hasMoreElements())
             {
-                DefaultMutableTreeNode childNode = (DefaultMutableTreeNode)e.nextElement();
+                DefaultMutableTreeNode childNode = e.nextElement();
                 if(childNode.toString().equals(path[i]))
                 {
                     childFound = true;
@@ -75,18 +80,15 @@ public abstract class HierarchicalSearchSpecification
         }
 
         // Always insert the child node
-        DefaultMutableTreeNode newLeafNode = new DefaultMutableTreeNode(
-                new HierarchicalSearchLeafNode(path[path.length-1],cameraCheckbox,filterCheckbox));
-        currNode.add(newLeafNode);
+        HierarchicalSearchLeafNode newLeafNode = new HierarchicalSearchLeafNode(path, cameraCheckbox, filterCheckbox);
+        currNode.add(new DefaultMutableTreeNode(newLeafNode));
+        allLeafNodes.add(newLeafNode);
     }
 
     // Method for processing tree selections
     public void processTreeSelections(TreePath[] selectedPaths)
     {
-        // Clear storage for selected (camera,filter) pairs
-        selectedCameras.clear();
-        selectedFilters.clear();
-
+        ImmutableSet.Builder<HierarchicalSearchLeafNode> builder = ImmutableSet.builder();
         // Iterate through the selected paths
         for(TreePath tp : selectedPaths)
         {
@@ -96,55 +98,116 @@ public abstract class HierarchicalSearchSpecification
             DefaultMutableTreeNode selectedParentNode = (DefaultMutableTreeNode)tp.getLastPathComponent();
 
             // Get all leaves from the selected parent node
-            Enumeration en = selectedParentNode.depthFirstEnumeration();
+            @SuppressWarnings("unchecked")
+            Enumeration<DefaultMutableTreeNode> en = selectedParentNode.depthFirstEnumeration();
             while(en.hasMoreElements())
             {
                 // Information that we want is located at the leaf nodes
-                DefaultMutableTreeNode tempNode = (DefaultMutableTreeNode)en.nextElement();
+                DefaultMutableTreeNode tempNode = en.nextElement();
                 if(tempNode.isLeaf())
                 {
                     // Extract the saved object at the leaf node containing camera and filter checkbox numbers
-                    HierarchicalSearchLeafNode ln = (HierarchicalSearchLeafNode)tempNode.getUserObject();
-                    selectedCameras.add(ln.cameraCheckbox);
-                    selectedFilters.add(ln.filterCheckbox);
+                    builder.add((HierarchicalSearchLeafNode)tempNode.getUserObject());
                 }
             }
         }
+        selection = builder.build();
     }
 
     // Get camera portion of selected (camera,filter) pairs
     public List<Integer> getSelectedCameras()
     {
-        return new LinkedList<Integer>(selectedCameras);
+        LinkedList<Integer> result = new LinkedList<>();
+        for (HierarchicalSearchLeafNode node : allLeafNodes)
+        {
+            if (selection.contains(node))
+            {
+                result.add(node.cameraCheckbox);
+            }
+        }
+        return result;
     }
 
     // Get filter portion of selected (camera,filter) pairs
     public List<Integer> getSelectedFilters()
     {
-        return new LinkedList<Integer>(selectedFilters);
+        LinkedList<Integer> result = new LinkedList<>();
+        for (HierarchicalSearchLeafNode node : allLeafNodes)
+        {
+            if (selection.contains(node))
+            {
+                result.add(node.filterCheckbox);
+            }
+        }
+        return result;
+    }
+
+    public ImmutableList<HierarchicalSearchLeafNode> getAllLeafNodes()
+    {
+        return ImmutableList.copyOf(allLeafNodes);
+    }
+
+    public ImmutableSet<HierarchicalSearchLeafNode> getSelectedLeafNodes()
+    {
+        return selection;
     }
 
     /**
      * Helper class for storing data at TreeModel leaf nodes
      */
-    private class HierarchicalSearchLeafNode
+    public class HierarchicalSearchLeafNode
     {
-        public String name;
-        public int cameraCheckbox;
-        public int filterCheckbox;
+        private final ImmutableList<String> path;
+        private final int cameraCheckbox;
+        private final int filterCheckbox;
 
-        public HierarchicalSearchLeafNode(String name, int cameraCheckbox, int filterCheckbox)
+        private HierarchicalSearchLeafNode(String[] path, int cameraCheckbox, int filterCheckbox)
         {
-            this.name = name;
+            Preconditions.checkNotNull(path);
+            Preconditions.checkArgument(path.length > 0);
+            this.path = ImmutableList.copyOf(path);
             this.cameraCheckbox = cameraCheckbox;
             this.filterCheckbox = filterCheckbox;
+        }
+
+        public ImmutableList<String> getPath()
+        {
+            return path;
+        }
+
+        public int getCameraCheckbox()
+        {
+            return cameraCheckbox;
+        }
+
+        public int getFilterCheckbox()
+        {
+            return filterCheckbox;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return path.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object other)
+        {
+            if (this == other) return true;
+            if (other instanceof HierarchicalSearchLeafNode)
+            {
+                HierarchicalSearchLeafNode that = (HierarchicalSearchLeafNode) other;
+                return this.path.equals(that.path);
+            }
+            return false;
         }
 
         // This method must return what we want to be displayed for the leaf node in the GUI
         @Override
         public String toString()
         {
-            return name;
+            return path.get(path.size() - 1);
         }
     }
 }
