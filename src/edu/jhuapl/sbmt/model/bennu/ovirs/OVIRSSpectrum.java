@@ -397,7 +397,7 @@ public class OVIRSSpectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return OVIRS.bandCenters.length;
+        return OVIRS.bandCentersLength;
     }
 
     @Override

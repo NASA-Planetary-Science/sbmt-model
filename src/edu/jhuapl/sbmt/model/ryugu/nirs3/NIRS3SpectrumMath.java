@@ -19,7 +19,7 @@ public class NIRS3SpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return NIRS3.bandCenters.length;
+        return NIRS3.nirs3BandCenters.length;
     }
 
     @Override

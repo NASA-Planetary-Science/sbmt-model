@@ -23,7 +23,7 @@ import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
-import edu.jhuapl.sbmt.lidar.hyperoctree.laser.LaserRawLidarFile;
+import edu.jhuapl.sbmt.lidar.hyperoctree.laser.Hayabusa2LaserRawLidarFile;
 
 public class LaserLidarDataPerUnit extends LidarDataPerUnit
 {
@@ -61,7 +61,7 @@ public class LaserLidarDataPerUnit extends LidarDataPerUnit
         double maxIntensity = Double.NEGATIVE_INFINITY;
         List<Double> intensityList = new LinkedList<Double>();
 
-        LaserRawLidarFile lidarFile=new LaserRawLidarFile(file.getAbsolutePath());
+        Hayabusa2LaserRawLidarFile lidarFile=new Hayabusa2LaserRawLidarFile(file.getAbsolutePath());
         Iterator<LidarPoint> it=lidarFile.iterator();
         int cnt=0;
         while (it.hasNext())

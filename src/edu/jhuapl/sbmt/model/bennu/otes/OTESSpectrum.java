@@ -400,7 +400,7 @@ public class OTESSpectrum extends BasicSpectrum
     public int getNumberOfBands()
     {
         if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
-            return OTES.bandCenters.length;
+            return OTES.bandCentersLength;
         else
             return 208;
     }
