@@ -1,38 +1,52 @@
-package edu.jhuapl.sbmt.model.spectrum;
+package edu.jhuapl.sbmt.model.spectrum.instruments;
 
 import edu.jhuapl.saavtk.metadata.Key;
 import edu.jhuapl.saavtk.metadata.Metadata;
-import edu.jhuapl.saavtk.metadata.MetadataManager;
 import edu.jhuapl.saavtk.metadata.SettableMetadata;
 import edu.jhuapl.saavtk.metadata.Version;
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
+import edu.jhuapl.sbmt.model.spectrum.SpectraType;
+import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 import edu.jhuapl.sbmt.query.QueryBase;
 
-public class BasicSpectrumInstrument implements SpectralInstrument, MetadataManager
+public abstract class BasicSpectrumInstrument implements SpectralInstrument
 {
     protected String bandCenterUnit;
     protected String displayName;
     protected QueryBase queryBase;
     protected SpectrumMath spectrumMath;
-    public double[] bandCenters;
+    protected double[] bandCenters;
 
-    public BasicSpectrumInstrument()
+//    public BasicSpectrumInstrument()
+//    {
+//
+//    }
+
+    public BasicSpectrumInstrument(String bandCenterUnit, String displayName,
+            QueryBase queryBase, SpectrumMath spectrumMath)
     {
-
+        super();
+        this.bandCenterUnit = bandCenterUnit;
+        this.displayName = displayName;
+        this.queryBase = queryBase;
+        this.spectrumMath = spectrumMath;
+//        System.out.println(
+//                "BasicSpectrumInstrument: BasicSpectrumInstrument: band centers " + bandCenters + " for " + displayName);
+//        this.bandCenters = bandCenters;
     }
 
-    public BasicSpectrumInstrument(SpectraType spectraType)
-    {
-        this.bandCenterUnit = spectraType.getBandCenterUnit();
-        this.displayName = spectraType.getDisplayName();
-        this.queryBase = spectraType.getQueryBase();
-        this.spectrumMath = spectraType.getSpectrumMath();
-        this.bandCenters = spectraType.getBandCenters();
-    }
+//    public BasicSpectrumInstrument(SpectraType spectraType)
+//    {
+//        this.bandCenterUnit = spectraType.getBandCenterUnit();
+//        this.displayName = spectraType.getDisplayName();
+//        this.queryBase = spectraType.getQueryBase();
+//        this.spectrumMath = spectraType.getSpectrumMath();
+//        this.bandCenters = spectraType.getBandCenters();
+//    }
 
-    @Override
+//    @Override
     public double[] getBandCenters()
     {
+//        System.out.println("BasicSpectrumInstrument: getBandCenters: getting bandcenters " + bandCenters);
         return bandCenters;
     }
 
@@ -60,6 +74,9 @@ public class BasicSpectrumInstrument implements SpectralInstrument, MetadataMana
         return spectrumMath;
     }
 
+//    abstract public Spectrum getSpectrumInstance(String filename,
+//            SmallBodyModel smallBodyModel) throws IOException;
+
 
     //metadata interface
 //    Key<String> bandCenterUnitKey = Key.of("bandwidthCenterUnits");
@@ -75,6 +92,8 @@ public class BasicSpectrumInstrument implements SpectralInstrument, MetadataMana
         this.bandCenters = spectraType.getBandCenters();
         this.bandCenterUnit = spectraType.getBandCenterUnit();
     }
+
+
 
     @Override
     public Metadata store()

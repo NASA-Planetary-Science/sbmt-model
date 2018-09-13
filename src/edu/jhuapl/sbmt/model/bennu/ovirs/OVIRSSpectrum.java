@@ -36,12 +36,12 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.eros.SpectrumStatistics;
-import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
-import edu.jhuapl.sbmt.model.spectrum.SpectrumColoringStyle;
+import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics;
+import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics.Sample;
 
 
 public class OVIRSSpectrum extends BasicSpectrum
@@ -392,7 +392,7 @@ public class OVIRSSpectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return OVIRS.ovirsBandCenters.length;
+        return OVIRS.bandCentersLength;
     }
 
     @Override

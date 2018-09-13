@@ -20,8 +20,8 @@ import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
 import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
-import edu.jhuapl.sbmt.model.eros.SpectraCollection;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.SpectraCollection;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 public class OTESSearchPanel extends SpectrumSearchController
 {
@@ -46,7 +46,6 @@ public class OTESSearchPanel extends SpectrumSearchController
             DecimalFormat format = editor.getFormat();
             format.setMinimumFractionDigits(8);
         }
-
         view.getRedMaxSpinner().setValue(0.000001);
         view.getGreenMaxSpinner().setValue(0.000001);
         view.getBlueMaxSpinner().setValue(0.000001);

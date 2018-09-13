@@ -1,8 +1,8 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
-import java.io.DataInputStream;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.model.image.BasicFileReader;
@@ -29,18 +29,32 @@ public class OTESSpectrumReader extends BasicFileReader
         {
             xValues=new double[numberEntries];
             yValues=new double[numberEntries];
-            DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
-            sclk=stream.readDouble();
+//            System.out.println("OTESSpectrumReader: read: reading " + filename);
+            BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
+            String line = reader.readLine();
+            line = reader.readLine();
+//            System.out.println("OTESSpectrumReader: read: sclk line is " + line);
+            sclk = Double.parseDouble(line);
+            line = reader.readLine();
             for (int i=0; i<numberEntries; i++)
             {
-                yValues[i]=stream.readDouble();
+                line = reader.readLine();
+                String[] parts = line.split(",");
+                xValues[i] = Double.parseDouble(parts[0]);
+                yValues[i] = Double.parseDouble(parts[1]);
             }
-            for (int i=0; i<numberEntries; i++)
-            {
-                xValues[i]=stream.readDouble();
-            }
+//            DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
+//            sclk=stream.readDouble();
+//            for (int i=0; i<numberEntries; i++)
+//            {
+//                yValues[i]=stream.readDouble();
+//            }
+//            for (int i=0; i<numberEntries; i++)
+//            {
+//                xValues[i]=stream.readDouble();
+//            }
 
-            stream.close();
+            reader.close();
         }
         catch (IOException e)
         {

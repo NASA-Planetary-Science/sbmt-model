@@ -34,6 +34,8 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
+import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 
 public abstract class BasicSpectrum extends Spectrum
@@ -119,7 +121,7 @@ public abstract class BasicSpectrum extends Spectrum
 
         footprintHeight=smallBodyModel.getMinShiftAmount();
 
-
+        key = new SpectrumKey(filename, instrument);
     }
 
     public abstract int getNumberOfBands();

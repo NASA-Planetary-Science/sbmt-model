@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.spectrum;
 
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
+import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 import edu.jhuapl.sbmt.query.QueryBase;
 
 public interface ISpectraType

@@ -9,18 +9,18 @@ import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrumMath;
 import edu.jhuapl.sbmt.model.eros.NIS;
 import edu.jhuapl.sbmt.model.eros.NISSpectrumMath;
 import edu.jhuapl.sbmt.model.eros.NisQuery;
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3Query;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3SpectrumMath;
+import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 import edu.jhuapl.sbmt.query.QueryBase;
 
 public enum SpectraType implements ISpectraType
 {
-    OTES_SPECTRA("OTES", OTESQuery.getInstance(), OTESSpectrumMath.getInstance(), "cm^-1", OTES.otesBandCenters),
-    OVIRS_SPECTRA("OVIRS", OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance(), "um", OVIRS.ovirsBandCenters),
-    NIS_SPECTRA("NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath(), "cm^-1", NIS.nisBandCenters),
-    NIRS3_SPECTRA("NIRS3", NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance(), "cm^-1", NIRS3.nirs3BandCenters);
+    OTES_SPECTRA("OTES", OTESQuery.getInstance(), OTESSpectrumMath.getInstance(), "cm^-1", new OTES().getBandCenters()),
+    OVIRS_SPECTRA("OVIRS", OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance(), "um", new OVIRS().getBandCenters()),
+    NIS_SPECTRA("NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath(), "cm^-1", new NIS().getBandCenters()),
+    NIRS3_SPECTRA("NIRS3", NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance(), "cm^-1", new NIRS3().getBandCenters());
 
     private QueryBase queryBase;
     private SpectrumMath spectrumMath;
