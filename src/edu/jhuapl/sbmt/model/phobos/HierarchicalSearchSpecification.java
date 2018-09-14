@@ -10,25 +10,42 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.MetadataManager;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
 
 public abstract class HierarchicalSearchSpecification
 {
+    private static final Key<List<String[]>> TREE_PATH_KEY = Key.of("selection");
+
     private final TreeModel treeModel;
     private final Map<List<Object>, CameraInfo> cameraMap;
+    private TreeSelectionModel selectionModel;
 
     public HierarchicalSearchSpecification(String rootName)
     {
         // Create a tree model with just the root
         this.treeModel = new DefaultTreeModel(createTreeNode(rootName));
         this.cameraMap = new HashMap<>();
+        this.selectionModel = null;
     }
 
     // Method used to get the tree model
     public TreeModel getTreeModel()
     {
         return treeModel;
+    }
+
+    public void setSelectionModel(TreeSelectionModel selectionModel)
+    {
+        this.selectionModel = selectionModel;
     }
 
     // Deep copy of the search specification
@@ -86,8 +103,12 @@ public abstract class HierarchicalSearchSpecification
     }
 
     // Method for processing tree selections
-    public Selection processTreeSelections(TreePath[] selectedPaths)
+    public Selection processTreeSelections()
     {
+        Preconditions.checkState(selectionModel != null, "Set the selection model for the tree search before processing selections");
+
+        TreePath[] selectedPaths = selectionModel.getSelectionPaths();
+
         ImmutableList.Builder<CameraInfo> builder = ImmutableList.builder();
         // Iterate through the selected paths
         for(TreePath tp : selectedPaths)
@@ -173,5 +194,70 @@ public abstract class HierarchicalSearchSpecification
         {
             return filters;
         }
+    }
+
+    public MetadataManager getMetadataManager()
+    {
+        return new MetadataManager() {
+
+            @Override
+            public Metadata store()
+            {
+                Preconditions.checkState(selectionModel != null, "Set selection model prior to storing tree search metadata");
+
+                SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+                ImmutableList.Builder<String[]> builder = ImmutableList.builder();
+
+                TreePath[] treePaths = selectionModel.getSelectionPaths();
+                for (TreePath treePath : treePaths)
+                {
+                    Object[] pathObjects = treePath.getPath();
+                    String[] pathStrings = new String[pathObjects.length];
+                    for (int index = 0; index < pathObjects.length; ++index)
+                    {
+                        // For serializing, it's OK just to rely on the fact that
+                        // each of these nodes looks like the string it wraps.
+                        pathStrings[index] = pathObjects[index].toString();
+                    }
+                    builder.add(pathStrings);
+                }
+                result.put(TREE_PATH_KEY, builder.build());
+                return result;
+            }
+
+            @Override
+            public void retrieve(Metadata source)
+            {
+                Preconditions.checkState(selectionModel != null, "Set selection model prior to retrieving tree search metadata");
+
+                List<String[]> pathStringList = source.get(TREE_PATH_KEY);
+                TreePath[] treePaths = new TreePath[pathStringList.size()];
+
+                for (int treeIndex = 0; treeIndex < pathStringList.size(); ++treeIndex)
+                {
+                    String[] pathStrings = pathStringList.get(treeIndex);
+                    DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[pathStrings.length];
+                    DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) treeModel.getRoot();
+                    nodes[0] = currentNode;
+                    for (int index = 0; index < pathStrings.length; ++index)
+                    {
+                        @SuppressWarnings("unchecked")
+                        Enumeration<DefaultMutableTreeNode> children = currentNode.children();
+                        while (children.hasMoreElements())
+                        {
+                            DefaultMutableTreeNode child = children.nextElement();
+                            if (child.getUserObject().equals(pathStrings[index]))
+                            {
+                                nodes[index] = child;
+                                currentNode = child;
+                                break;
+                            }
+                        }
+                    }
+                    treePaths[treeIndex] = new TreePath(nodes);
+                }
+                selectionModel.setSelectionPaths(treePaths);
+            }
+        };
     }
 }
