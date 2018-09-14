@@ -23,7 +23,7 @@ import edu.jhuapl.saavtk.metadata.Version;
 
 public abstract class HierarchicalSearchSpecification
 {
-    private static final Key<List<String[]>> TREE_PATH_KEY = Key.of("selection");
+    private static final Key<List<String[]>> TREE_PATH_KEY = Key.of("selectionTree");
 
     private final TreeModel treeModel;
     private final Map<List<Object>, CameraInfo> cameraMap;
