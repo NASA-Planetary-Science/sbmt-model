@@ -130,6 +130,11 @@ public class ColorImage extends Image implements PropertyChangeListener
             "G: " + new File(greenImageKey.name).getName().substring(ind0, ind1) + ", " +
             "B: " + new File(blueImageKey.name).getName().substring(ind0, ind1);
         }
+
+        public ImageKey getImageKey()
+        {
+            return redImageKey;
+        }
     }
 
 

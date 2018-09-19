@@ -2506,7 +2506,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean[] ato = new boolean[1];
             ato[0] = true;
 
-            System.out.println("Loading image: " + infoFileNames[k]);
+//            System.out.println("Loading image: " + infoFileNames[k]);
 
             loadImageInfo(
                     infoFileNames[k],

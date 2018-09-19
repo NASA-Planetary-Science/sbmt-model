@@ -176,6 +176,11 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 
             return result;
         }
+
+        public PerspectiveImage.ImageKey getFirstImageKey()
+        {
+            return firstImageKey;
+        }
 }
 
 
