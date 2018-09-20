@@ -124,6 +124,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
             // Find the start and stop indices of number part of the name. Should be
             // the same for all 3 images.
             String name = new File(firstImageKey.name).getName();
+            System.out.println("ImageCube.ImageCubeKey: toString: name is " + name);
             char[] buf = name.toCharArray();
             int ind0 = -1;
             int ind1 = -1;
@@ -137,7 +138,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
                     break;
                 }
             }
-
+            if (ind1 == -1) ind1 = buf.length;
             if (buf[ind0] == '0')
                 ++ind0;
 
