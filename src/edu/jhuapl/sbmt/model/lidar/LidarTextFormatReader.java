@@ -116,7 +116,8 @@ enum LIDARTextInputType
         default:
             break;
         }
-        LidarPoint pt=new BasicLidarPoint(target, scpos, time, albedo);
+        double range = 0; // TODO
+        LidarPoint pt=new BasicLidarPoint(target, scpos, time, range, albedo);
         originalPoints.add(pt);
         originalPointsSourceFiles.put(pt, fileId);
     }

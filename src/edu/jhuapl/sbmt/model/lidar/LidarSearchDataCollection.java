@@ -347,10 +347,11 @@ public class LidarSearchDataCollection extends AbstractModel
                 scpos[0] = Double.parseDouble(vals[scxindex]);
                 scpos[1] = Double.parseDouble(vals[scyindex]);
                 scpos[2] = Double.parseDouble(vals[sczindex]);
+                double range = 0; // TODO
 
                 if (pointInRegionChecker==null) // if this part of the code has been reached and the point-checker is null then this is a time-only search, and the time criterion has already been met (cf. continue statement a few lines above)
                 {
-                    LidarPoint p=new BasicLidarPoint(target, scpos, time, 0);
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, range, 0);
                     originalPoints.add(p);
                     originalPointsSourceFiles.put(p, fileId);
                     continue;
@@ -359,7 +360,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
                 if (pointInRegionChecker.checkPointIsInRegion(target))  // here, the point is known to be within the specified time bounds, and since the point checker exists the target coordinates are filtered against
                 {
-                    LidarPoint p=new BasicLidarPoint(target, scpos, time, 0);
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, range, 0);
                     originalPoints.add(p);
                     originalPointsSourceFiles.put(p, fileId);
                     continue;
@@ -508,7 +509,8 @@ public class LidarSearchDataCollection extends AbstractModel
                 throw e;
             }
 
-            LidarPoint pt=new BasicLidarPoint(target, scpos, time, 0);
+            double range = 0; // TODO
+            LidarPoint pt=new BasicLidarPoint(target, scpos, time, range, 0);
             originalPoints.add(pt);
             originalPointsSourceFiles.put(pt,fileId);
         }
@@ -560,11 +562,13 @@ public class LidarSearchDataCollection extends AbstractModel
 
         int fileId=localFileMap.inverse().get(file.toString());
 
+        double range =0; // TODO
         LidarPoint lidarPt = null;
         for (int i=0; i<polyData.GetNumberOfPoints(); i+=10)
         {
             double[] pt=polyData.GetPoint(i);
-            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, polyData.GetPointData().GetArray(0).GetTuple1(i), fileId);
+
+            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, polyData.GetPointData().GetArray(0).GetTuple1(i), range,  fileId);
             originalPointsSourceFiles.put(lidarPt,fileId);
             originalPoints.add(lidarPt);
         }
