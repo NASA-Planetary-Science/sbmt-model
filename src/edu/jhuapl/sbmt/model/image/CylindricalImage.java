@@ -103,6 +103,8 @@ public class CylindricalImage extends Image
             // corresponds to. The config file is located in the same folder
             // as the image file
             String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+            System.out.println(
+                    "CylindricalImage: loadImageInfoFromConfigFile: config filename " + configFilename);
             MapUtil configMap = new MapUtil(configFilename);
             String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
             for (int i=0; i<imageFilenames.length; ++i)
