@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -19,6 +17,8 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.Image.ImageKey;
+
+import nom.tam.fits.FitsException;
 
 public class ImageCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -35,6 +35,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 
     protected Image createImage(ImageKey key, SmallBodyModel smallBodyModel) throws FitsException, IOException
     {
+        System.out.println("ImageCollection: createImage: key is " + key);
         return SbmtModelFactory.createImage(key, smallBodyModel, false);
     }
 

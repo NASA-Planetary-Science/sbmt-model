@@ -1426,6 +1426,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected String initLocalInfoFileFullPath()
     {
         String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+        System.out
+                .println("PerspectiveImage: initLocalInfoFileFullPath: config file name " + configFilename + " and key name " + getKey().name);
         MapUtil configMap = new MapUtil(configFilename);
         String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
         for (int i=0; i<imageFilenames.length; ++i)
