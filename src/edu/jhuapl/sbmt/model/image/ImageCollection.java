@@ -35,7 +35,6 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 
     protected Image createImage(ImageKey key, SmallBodyModel smallBodyModel) throws FitsException, IOException
     {
-        System.out.println("ImageCollection: createImage: key is " + key);
         return SbmtModelFactory.createImage(key, smallBodyModel, false);
     }
 

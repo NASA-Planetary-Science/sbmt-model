@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -19,6 +17,8 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.Image.ImageKey;
+
+import nom.tam.fits.FitsException;
 
 public class PerspectiveImageBoundaryCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -162,7 +162,6 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
         {
-//            System.out.println("BoundaryCollection MODEL_CHANGED event: " + evt.getSource().getClass().getSimpleName());
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         }
     }

@@ -33,12 +33,14 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     private HashMap<vtkProp, ColorImage> actorToImageMap = new HashMap<vtkProp, ColorImage>();
 
     private Vector<ColorImage> loadedImages;
+    private Vector<ColorImageKey> loadedImageKeys;
 
     public ColorImageCollection(SmallBodyModel smallBodyModel, ModelManager modelManager)
     {
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadedImages = new Vector<ColorImage>();
+        this.loadedImageKeys = new Vector<ColorImageKey>();
     }
 
     protected ColorImage createImage(ColorImageKey key,
@@ -80,7 +82,15 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
             return;
 
         ColorImage image = createImage(key, smallBodyModel);
-        loadedImages.add(image);
+        if (!loadedImageKeys.contains(key))
+        {
+            loadedImageKeys.add(key);
+            loadedImages.add(image);
+        }
+        else
+        {
+            image = loadedImages.get(loadedImageKeys.indexOf(key));
+        }
 
         smallBodyModel.addPropertyChangeListener(image);
         image.addPropertyChangeListener(this);
@@ -100,7 +110,7 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     public void removeImage(ColorImageKey key)
     {
         ColorImage image = getImageFromKey(key);
-        loadedImages.remove(image);
+//        loadedImages.remove(image);
 
         List<vtkProp> actors = imageToActorsMap.get(image);
 
@@ -177,5 +187,10 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     public Vector<ColorImage> getLoadedImages()
     {
         return loadedImages;
+    }
+
+    public Vector<ColorImageKey> getLoadedImageKeys()
+    {
+        return loadedImageKeys;
     }
 }

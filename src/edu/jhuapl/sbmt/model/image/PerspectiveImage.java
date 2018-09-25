@@ -356,7 +356,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             setLabelFileFullPath(initializeLabelFileFullPath());
         else
             sumFileFullPath = initializeSumfileFullPath();
-        System.out.println("PerspectiveImage: initialize: fit path " + fitFileFullPath + " num slices " + loadNumSlices());
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
@@ -949,7 +948,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[] targetPixelCoordinates,
             boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
     {
-        System.out.println("PerspectiveImage: loadImageInfo: pad is " + pad);
         if (infoFilename == null || infoFilename.endsWith("null"))
             throw new FileNotFoundException();
 
@@ -2477,8 +2475,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private void initSpacecraftStateVariables()
     {
         int nslices = getNumberBands();
-        System.out.println(
-                "PerspectiveImage: initSpacecraftStateVariables: number slices " + nslices);
         spacecraftPositionOriginal = new double[nslices][3];
         frustum1Original = new double[nslices][3];
         frustum2Original = new double[nslices][3];
@@ -2496,7 +2492,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private void loadImageInfo() throws NumberFormatException, IOException
     {
         String[] infoFileNames = getInfoFilesFullPath();
-        for (String name : infoFileNames) System.out.println("PerspectiveImage: loadImageInfo: name is " + name);
+//        for (String name : infoFileNames) System.out.println("PerspectiveImage: loadImageInfo: name is " + name);
         if (infoFileNames == null)
             System.out.println("infoFileNames is null");
 
