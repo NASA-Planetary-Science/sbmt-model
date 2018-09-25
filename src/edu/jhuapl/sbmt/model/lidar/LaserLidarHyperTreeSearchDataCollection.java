@@ -110,7 +110,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
 
     public TreeSet<Integer> getLeavesIntersectingBoundingBox(BoundingBox bbox, double[] tlims, double[] scrangeLims)
     {
-        double[] bounds=new double[]{bbox.xmin,bbox.xmax,bbox.ymin,bbox.ymax,bbox.zmin,bbox.zmax,scrangeLims[0],scrangeLims[1],tlims[0],tlims[1]};
+        double[] bounds=new double[]{bbox.xmin,bbox.xmax,bbox.ymin,bbox.ymax,bbox.zmin,bbox.zmax,tlims[0],tlims[1],scrangeLims[0],scrangeLims[1]};
         return currentSkeleton.getLeavesIntersectingBoundingBox(bounds);
     }
 
