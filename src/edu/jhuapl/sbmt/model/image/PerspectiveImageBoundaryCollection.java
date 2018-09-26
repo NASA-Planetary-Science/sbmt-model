@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import nom.tam.fits.FitsException;
+import com.google.common.collect.ImmutableSet;
 
 import vtk.vtkActor;
 import vtk.vtkProp;
@@ -19,6 +19,8 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.Image.ImageKey;
+
+import nom.tam.fits.FitsException;
 
 public class PerspectiveImageBoundaryCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -141,6 +143,16 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     public String getBoundaryName(vtkActor actor)
     {
         return actorToBoundaryMap.get(actor).getKey().name;
+    }
+
+    public ImmutableSet<ImageKey> getImageKeys()
+    {
+        ImmutableSet.Builder<ImageKey> builder = ImmutableSet.builder();
+        for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
+        {
+            builder.add(boundary.getKey());
+        }
+        return builder.build();
     }
 
     public PerspectiveImageBoundary getBoundary(vtkActor actor)
