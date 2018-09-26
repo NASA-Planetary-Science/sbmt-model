@@ -89,9 +89,10 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 
     public void removeImage(ImageKey key)
     {
+        System.out.println("ImageCollection: removeImage: removing image");
         if (!containsKey(key))
             return;
-
+        System.out.println("ImageCollection: removeImage: finding image");
         Image image = getImageFromKey(key);
 
         List<vtkProp> actors = imageToActorsMap.get(image);
