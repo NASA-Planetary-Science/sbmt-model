@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import vtk.vtkCellArray;
 import vtk.vtkPoints;
 
+import edu.jhuapl.saavtk.gui.ProgressBarSwingWorker;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.FileCache;
@@ -119,6 +120,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         this.parentForProgressMonitor=component;
     }
 
+
     @Override
     public void setLidarData(String dataSource, final double startDate,
             final double stopDate, final TreeSet<Integer> cubeList,
@@ -129,11 +131,11 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
         // Here it corresponds to the list of leaves of an octree that intersect the bounding box of the user selection area.
 
-     //   ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading LASER datapoints ("+cubeList.size()+" individual chunks)")
-     //   {
-     //       @Override
-     //       protected Void doInBackground() throws Exception
-     //      {
+        ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading Hayabusa2 Lidar datapoints ("+cubeList.size()+" individual chunks)")
+        {
+            @Override
+            protected Void doInBackground() throws Exception
+           {
                 Stopwatch sw=new Stopwatch();
                 sw.start();
                 loading=true;
@@ -143,7 +145,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                 for (Integer cidx : cubeList)
                 {
                     Path leafPath=currentSkeleton.getNodeById(cidx).getPath();
-                    System.out.println("Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
+                    System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData: Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
                     Path dataFilePath=leafPath.resolve("data");
                     File dataFile=FileCache.getFileFromServer(dataFilePath.toString());
                     if (!dataFile.exists())
@@ -157,54 +159,35 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                     //
                     cnt++;
                     double progressPercentage=((double)cnt/(double)cubeList.size()*100);
-      //             setProgress((int)progressPercentage);
-      //              if (isCancelled())
-      //                  break;
+                   setProgress((int)progressPercentage);
+                    if (isCancelled())
+                        break;
                }
-      //          cancel(true);
+                cancel(true);
                 loading=false;
 
                 System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
-      //          return null;
-      //     }
+                return null;
+           }
 
 
 //            return null;
   //     }
-    //};
-    //dataLoader.executeDialog();
-
-       initTranslationArray(originalPoints.size());
-
-//       while (isLoading())
-//       {
-//           try
-//           {
-//               Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
-//           }
-//           catch (InterruptedException e)
-//           {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//           }
-
-                    // Sort points in time order
-    //                Collections.sort(originalPoints);
-
-    //                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
-    //                sw.reset();
-    //                sw.start();
+        };
+        dataLoader.executeDialog();
+        initTranslationArray(originalPoints.size());
+        System.out.println(
+                "Hayabusa2LidarSearchDataCollection: setLidarData: before while loop");
 
                     radialOffset = 0.0;
-//                    translation[0] = translation[1] = translation[2] = 0.0;
 
                     computeTracks();
 
-                    sw=new Stopwatch();
-                    System.out.println("Compute Track Time="+sw.elapsedMillis()+" ms");
+                    Stopwatch sw=new Stopwatch();
+                    System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
                     sw.reset();
                     sw.start();
 
@@ -237,8 +220,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
             selectPoint(-1);
 
             pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-       }
-//    }
+    }
 
     static vtkPoints points=new vtkPoints();
     static vtkCellArray cells=new vtkCellArray();
@@ -296,7 +278,6 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                 track.registerSourceFileIndex(((Hayabusa2LaserLidarPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
         }
     }
-
     public FSHyperTreeSkeleton getCurrentSkeleton()
     {
         return currentSkeleton;
