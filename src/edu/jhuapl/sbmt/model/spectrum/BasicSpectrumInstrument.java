@@ -11,6 +11,17 @@ import edu.jhuapl.sbmt.query.QueryBase;
 public class BasicSpectrumInstrument implements SpectralInstrument, MetadataManager
 {
     protected String bandCenterUnit;
+    public BasicSpectrumInstrument(String bandCenterUnit, String displayName,
+            QueryBase queryBase, SpectrumMath spectrumMath)
+    {
+        super();
+        this.bandCenterUnit = bandCenterUnit;
+        this.displayName = displayName;
+        this.queryBase = queryBase;
+        this.spectrumMath = spectrumMath;
+    }
+
+
     protected String displayName;
     protected QueryBase queryBase;
     protected SpectrumMath spectrumMath;

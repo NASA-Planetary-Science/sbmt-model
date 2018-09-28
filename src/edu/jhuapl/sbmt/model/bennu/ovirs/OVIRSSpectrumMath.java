@@ -19,7 +19,7 @@ public class OVIRSSpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return OVIRS.ovirsBandCenters.length;
+        return OVIRS.bandCentersLength;
     }
 
     @Override
