@@ -105,7 +105,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return minFootprintSeparation;
     }
 
-    private boolean containsKey(SpectrumKey key)
+    public boolean containsKey(SpectrumKey key)
     {
         for (Spectrum spectrum : spectrumToActorsMap.keySet())
         {
