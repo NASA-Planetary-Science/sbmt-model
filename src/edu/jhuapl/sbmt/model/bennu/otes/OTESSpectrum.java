@@ -32,7 +32,6 @@ import edu.jhuapl.saavtk.colormap.Colormap;
 import edu.jhuapl.saavtk.colormap.Colormaps;
 import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.FileCache.FileInfo.YesOrNo;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
@@ -74,34 +73,49 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        String path = Paths.get(getSpectrumPathOnServer()).getParent()
+        return Paths.get(getSpectrumPathOnServer()).getParent()
                 .resolveSibling("infofiles-corrected")
                 .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
                 .toString();
-        String path2 = Paths.get(serverpath).getParent()
-                .resolve(FilenameUtils.getBaseName(serverpath) + ".INFO")
-                .toString();
-        if (FileCache.getFileInfoFromServer(path).isExistsOnServer() == YesOrNo.NO)
-        {
-            return  FilenameUtils.getBaseName(serverpath) + ".INFO";
-        }
-        else if (FileCache.isFileInCustomData(path2) == true)
-        {
-            return path2;
-        }
-        else
-        {
-            return path;
-        }
     }
 
     public String getSpectrumPathOnServer()
     {
-        String path = Paths.get(serverpath).getParent()
+        return Paths.get(serverpath).getParent()
                 .resolve(FilenameUtils.getBaseName(serverpath) + "." + extension)
                 .toString();
-        return path;
     }
+
+//    protected String getInfoFilePathOnServer()
+//    {
+//        String path = Paths.get(getSpectrumPathOnServer()).getParent()
+//                .resolveSibling("infofiles-corrected")
+//                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+//                .toString();
+//        String path2 = Paths.get(serverpath).getParent()
+//                .resolve(FilenameUtils.getBaseName(serverpath) + ".INFO")
+//                .toString();
+//        if (FileCache.getFileInfoFromServer(path).isExistsOnServer() == YesOrNo.NO)
+//        {
+//            return  FilenameUtils.getBaseName(serverpath) + ".INFO";
+//        }
+//        else if (FileCache.isFileInCustomData(path2) == true)
+//        {
+//            return path2;
+//        }
+//        else
+//        {
+//            return path;
+//        }
+//    }
+//
+//    public String getSpectrumPathOnServer()
+//    {
+//        String path = Paths.get(serverpath).getParent()
+//                .resolve(FilenameUtils.getBaseName(serverpath) + "." + extension)
+//                .toString();
+//        return path;
+//    }
 
     @Override
     public void generateFootprint()
@@ -213,11 +227,12 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readPointingFromInfoFile()
     {
-        String infoFilePath = getInfoFilePathOnServer();
-        if (FileCache.isFileInCustomData(infoFilePath) == false)
-            infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
-        else
-            infoFile = new File(infoFilePath);
+    	infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+//        String infoFilePath = getInfoFilePathOnServer();
+//        if (FileCache.isFileInCustomData(infoFilePath) == false)
+//            infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+//        else
+//            infoFile = new File(infoFilePath);
         //
         InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
@@ -279,12 +294,12 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
-        String spectrumFilePath = getSpectrumPathOnServer();
-        if (FileCache.isFileInCustomData(spectrumFilePath) == false)
-            spectrumFile = FileCache.getFileFromServer(getSpectrumPathOnServer());
-        else
-            spectrumFile = new File(spectrumFilePath);
-
+    	spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+//        String spectrumFilePath = getSpectrumPathOnServer();
+//        if (FileCache.isFileInCustomData(spectrumFilePath) == false)
+//            spectrumFile = FileCache.getFileFromServer(getSpectrumPathOnServer());
+//        else
+//            spectrumFile = new File(spectrumFilePath);
         OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
         reader.read();
         //
@@ -445,14 +460,15 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public String getDataName()
     {
-        if (spec != null)
-            return spec.getDataName();
-        else
-            return key.name;
-//        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
-//            return "OTES L2 Calibrated Radiance";
+    	return spec.getDataName();
+//        if (spec != null)
+//            return spec.getDataName();
 //        else
-//            return "OTES L3 Spot Emissivity";
+//            return key.name;
+////        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+////            return "OTES L2 Calibrated Radiance";
+////        else
+////            return "OTES L3 Spot Emissivity";
     }
 
     @Override

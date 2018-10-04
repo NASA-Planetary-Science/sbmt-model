@@ -11,7 +11,6 @@ import vtk.vtkPolyData;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
-import edu.jhuapl.sbmt.model.image.Image.ImageKey;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
 import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
@@ -92,7 +91,6 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
 
     public String getSpectrumName()
     {
-        System.out.println("Spectrum: getSpectrumName: key is " + key);
         return new File(key.name).getName();
     }
 
@@ -117,7 +115,7 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
 
         public SpectralInstrument instrument;
 
-        public SpectraType imageType;
+        public SpectraType spectrumType;
 
         public String band;
 
@@ -139,14 +137,14 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
             this.name = name;
 //            this.source = source;
             this.fileType = fileType;
-            this.imageType = imageType;
+            this.spectrumType = imageType;
             this.instrument = instrument;
         }
 
         @Override
         public boolean equals(Object obj)
         {
-            return name.equals(((ImageKey)obj).name);
+            return name.equals(((SpectrumKey)obj).name);
                    // && source.equals(((ImageKey)obj).source);
         }
 
@@ -161,7 +159,7 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
         {
             return "SpectrumKey [name=" + name
                     + ", fileType=" + fileType + ", instrument=" + instrument
-                    + ", imageType=" + imageType + ", band=" + band + ", slice="
+                    + ", imageType=" + spectrumType + ", band=" + band + ", slice="
                     + slice + "]";
         }
     }

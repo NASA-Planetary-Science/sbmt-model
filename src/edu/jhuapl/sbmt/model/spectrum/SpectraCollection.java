@@ -122,7 +122,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     }
 
 
-    private Spectrum getSpectrumFromKey(SpectrumKey key)
+    public Spectrum getSpectrumFromKey(SpectrumKey key)
     {
         for (Spectrum spectrum : spectrumToActorsMap.keySet())
         {
@@ -135,7 +135,6 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
 
     public Spectrum addSpectrum(SpectrumKey key) throws IOException
     {
-
         return addSpectrum(getSpectrumFromKey(key).getFullPath(), key.instrument);
     }
 
@@ -150,7 +149,12 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     public Spectrum addSpectrum(String path, SpectralInstrument instrument) throws IOException
     {
         if (fileToSpectrumMap.containsKey(path))
-            return fileToSpectrumMap.get(path);
+        {
+            Spectrum spec = fileToSpectrumMap.get(path);
+            select(spec);
+            spec.setVisible(true);
+            return spec;
+        }
 
 
         //NISSpectrum spectrum = NISSpectrum.NISSpectrumFactory.createSpectrum(path, erosModel);
@@ -222,8 +226,11 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         if (!containsKey(key))
             return;
 
-        Spectrum image = getSpectrumFromKey(key);
-        removeSpectrum(image.getFullPath());
+//        Spectrum image = getSpectrumFromKey(key);
+//        System.out.println("SpectraCollection: removeSpectrum: file to spectrum map " + fileToSpectrumMap);
+//        System.out.println("SpectraCollection: removeSpectrum: image full path "+ image.getFullPath());
+//        System.out.println("SpectraCollection: removeSpectrum: key is " + key);
+        removeSpectrum(key.name);
     }
 
     public void removeSpectrum(String path)
@@ -270,6 +277,18 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
             if (map.get(path).getInstrument() == instrument)
                 removeSpectrum(path);
         }
+    }
+
+    public void setVisibility(Spectrum spectrum, boolean visibility)
+    {
+        spectrum.setVisible(visibility);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
+    }
+
+    public void setFrustumVisibility(Spectrum spectrum, boolean visibility)
+    {
+        spectrum.setShowFrustum(visibility);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED,null,null);
     }
 
     public void toggleSelect(Spectrum spectrum)
@@ -432,6 +451,24 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     public String getSpectrumName(vtkActor actor)
     {
         return actorToSpectrumMap.get(actor).getSpectrumName();
+    }
+
+    public boolean containsSpectrumName(String name)
+    {
+        for (Spectrum spec : actorToSpectrumMap.values())
+        {
+            if (spec.getSpectrumName().equals(name)) return true;
+        }
+        return false;
+    }
+
+    public Spectrum getSpectrumForName(String name)
+    {
+        for (Spectrum spec : actorToSpectrumMap.values())
+        {
+            if (spec.getSpectrumName().equals(name)) return spec;
+        }
+        return null;
     }
 
     @Override

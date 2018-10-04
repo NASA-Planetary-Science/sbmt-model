@@ -530,6 +530,27 @@ public abstract class BasicSpectrum extends Spectrum
     }
 
     @Override
+    public void setVisible(boolean b)
+    {
+        // TODO Auto-generated method stub
+        if (b)
+        {
+            footprintActor.VisibilityOn();
+        }
+        else
+        {
+            footprintActor.VisibilityOff();
+        }
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isVisible()
+    {
+        return footprintActor.GetVisibility() == 0 ? false : true;
+    }
+
+    @Override
     public void updateChannelColoring()
     {
         vtkProperty footprintProperty = footprintActor.GetProperty();
