@@ -126,7 +126,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
     public void setLidarData(String dataSource, final double startDate,
             final double stopDate, final TreeSet<Integer> cubeList,
             final PointInRegionChecker pointInRegionChecker,
-            double timeSeparationBetweenTracks, int minTrackLength)
+            double timeSeparationBetweenTracks, int minTrackLength, final double minRange, final double maxRange)
                     throws IOException, ParseException
     {
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
@@ -154,8 +154,11 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                     List<LidarPoint> pts=readDataFile(dataFile,pointInRegionChecker,new double[]{startDate,stopDate});
                     for (int i=0; i<pts.size(); i++)
                     {
-                        originalPoints.add(pts.get(i));
-                        originalPointsSourceFiles.put(pts.get(i),((Hayabusa2LaserLidarPoint)pts.get(i)).getFileNum());
+                        LidarPoint currPt = pts.get(i);
+                        if (currPt.getRangeToSC() > minRange && currPt.getRangeToSC() < maxRange) {
+                            originalPoints.add(pts.get(i));
+                            originalPointsSourceFiles.put(pts.get(i),((Hayabusa2LaserLidarPoint)pts.get(i)).getFileNum());
+                        }
                     }
                     //
                     cnt++;
