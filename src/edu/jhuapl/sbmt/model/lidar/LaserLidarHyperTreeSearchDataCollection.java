@@ -32,6 +32,7 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
 import edu.jhuapl.sbmt.lidar.hyperoctree.laser.Hayabusa2LaserLidarPoint;
+import edu.jhuapl.sbmt.lidar.hyperoctree.laser.Hayabusa2LidarHypertreeSkeleton;
 
 public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
 {
@@ -40,8 +41,8 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         TEXT
     };
 
-    private Map<String, FSHyperTreeSkeleton> skeletons = new HashMap<String, FSHyperTreeSkeleton>();
-    private FSHyperTreeSkeleton currentSkeleton;
+    private Map<String, Hayabusa2LidarHypertreeSkeleton> skeletons = new HashMap<String, Hayabusa2LidarHypertreeSkeleton>();
+    private Hayabusa2LidarHypertreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
     private boolean loading=false;
 
@@ -72,10 +73,10 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         {
             System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
             Path basePath = Paths.get(datasourcePath);
-            FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
+            Hayabusa2LidarHypertreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
             {
-                skeleton = new FSHyperTreeSkeleton(basePath);
+                skeleton = new Hayabusa2LidarHypertreeSkeleton(basePath);
                 skeletons.put(datasourceName, skeleton);
             }
         }
@@ -86,7 +87,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         if (datasourceName != null && datasourceName.length() > 0)
         {
             System.out.println("Setting current datasource: " + datasourceName);
-            FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
+            Hayabusa2LidarHypertreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton != null)
                 currentSkeleton = skeleton;
         }
@@ -173,9 +174,6 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                 return null;
            }
 
-
-//            return null;
-  //     }
         };
         dataLoader.executeDialog();
         initTranslationArray(originalPoints.size());
@@ -278,7 +276,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                 track.registerSourceFileIndex(((Hayabusa2LaserLidarPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
         }
     }
-    public FSHyperTreeSkeleton getCurrentSkeleton()
+    public Hayabusa2LidarHypertreeSkeleton getCurrentSkeleton()
     {
         return currentSkeleton;
     }
