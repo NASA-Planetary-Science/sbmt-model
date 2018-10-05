@@ -71,19 +71,45 @@ public class OTESSpectrum extends BasicSpectrum
         dest.close();
     }
 
+    protected String getLocalInfoFilePathOnServer()
+    {
+        return Paths.get(getLocalSpectrumFilePathOnServer()).getParent().resolve(FilenameUtils.getBaseName(getLocalSpectrumFilePathOnServer()) + ".INFO").toString();
+    }
+
+    protected String getLocalSpectrumFilePathOnServer()
+    {
+        return serverpath;
+    }
+
     protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getSpectrumPathOnServer()).getParent()
-                .resolveSibling("infofiles-corrected")
-                .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
-                .toString();
+        System.out.println("OTESSpectrum: getInfoFilePathOnServer: is custom spectra is " + isCustomSpectra);
+        if (isCustomSpectra)
+        {
+            return getLocalInfoFilePathOnServer();
+        }
+        else
+        {
+            System.out.println("OTESSpectrum: getInfoFilePathOnServer: spectrum path " + getSpectrumPathOnServer());
+            return Paths.get(getSpectrumPathOnServer()).getParent()
+                    .resolveSibling("infofiles-corrected")
+                    .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+                    .toString();
+        }
     }
 
     public String getSpectrumPathOnServer()
     {
-        return Paths.get(serverpath).getParent()
-                .resolve(FilenameUtils.getBaseName(serverpath) + "." + extension)
-                .toString();
+        if (isCustomSpectra)
+        {
+            return serverpath;
+        }
+        else
+        {
+            return Paths.get(serverpath).getParent()
+                    .resolve(FilenameUtils.getBaseName(serverpath) + "." + extension)
+                    .toString();
+        }
     }
 
 //    protected String getInfoFilePathOnServer()
@@ -227,13 +253,17 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readPointingFromInfoFile()
     {
-    	infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        if (!isCustomSpectra)
+            infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        else
+            infoFile = new File(getInfoFilePathOnServer());
 //        String infoFilePath = getInfoFilePathOnServer();
 //        if (FileCache.isFileInCustomData(infoFilePath) == false)
 //            infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
 //        else
 //            infoFile = new File(infoFilePath);
         //
+
         InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
         //
@@ -294,7 +324,10 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
-    	spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+        if (!isCustomSpectra)
+            spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+        else
+            spectrumFile = new File(getSpectrumPathOnServer());
 //        String spectrumFilePath = getSpectrumPathOnServer();
 //        if (FileCache.isFileInCustomData(spectrumFilePath) == false)
 //            spectrumFile = FileCache.getFileFromServer(getSpectrumPathOnServer());

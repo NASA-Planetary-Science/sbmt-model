@@ -107,15 +107,35 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected SpectrumColoringStyle coloringStyle = SpectrumColoringStyle.RGB;
 
+    public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
+            SpectralInstrument instrument, boolean isCustom) throws IOException
+    {
+        File file = null;
+        file = FileCache.getFileFromServer(filename);
+        this.serverpath = filename; // path on server relative to data
+                                    // repository root (e.g. relative to
+                                    // /project/nearsdc/data/)
+        this.instrument = instrument; //
+        this.fullpath = file.getAbsolutePath();
+        this.smallBodyModel = smallBodyModel;
+
+        spectrum=new double[getNumberOfBands()];
+
+        footprintHeight=smallBodyModel.getMinShiftAmount();
+
+        key = new SpectrumKey(filename, instrument);
+        this.isCustomSpectra = isCustom;
+    }
+
 
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
         File file = null;
-        String isCustom = initLocalSpectrumFileFullPath();
-        if (isCustom != null)
-            file = FileCache.getFileFromServer(isCustom);
-        else
+//        String isCustom = initLocalSpectrumFileFullPath();
+//        if (isCustom != null)
+//            file = FileCache.getFileFromServer(isCustom);
+//        else
             file = FileCache.getFileFromServer(filename);
         this.serverpath = filename; // path on server relative to data
                                     // repository root (e.g. relative to

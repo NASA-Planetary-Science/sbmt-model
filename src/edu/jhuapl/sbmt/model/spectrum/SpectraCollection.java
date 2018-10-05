@@ -135,18 +135,24 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
 
     public Spectrum addSpectrum(SpectrumKey key) throws IOException
     {
-        return addSpectrum(getSpectrumFromKey(key).getFullPath(), key.instrument);
+        return addSpectrum(getSpectrumFromKey(key).getFullPath(), key.instrument, false);
     }
 
     public Spectrum addSpectrum(String path, SpectralInstrument instrument, SpectrumColoringStyle coloringStyle) throws IOException
     {
-        Spectrum spec = addSpectrum(path, instrument);
+        return addSpectrum(path, instrument, coloringStyle, false);
+    }
+
+    public Spectrum addSpectrum(String path, SpectralInstrument instrument, SpectrumColoringStyle coloringStyle, boolean isCustom) throws IOException
+    {
+        Spectrum spec = addSpectrum(path, instrument, isCustom);
+        System.out.println("SpectraCollection: addSpectrum: is custom " + isCustom + " " + spec.getKey());
         spec.setColoringStyle(coloringStyle);
         return spec;
     }
 
 
-    public Spectrum addSpectrum(String path, SpectralInstrument instrument) throws IOException
+    public Spectrum addSpectrum(String path, SpectralInstrument instrument, boolean isCustom) throws IOException
     {
         if (fileToSpectrumMap.containsKey(path))
         {
@@ -183,7 +189,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         catch (Exception e) {
             e.printStackTrace();
         }
-
+        spectrum.isCustomSpectra = isCustom;
         shapeModel.addPropertyChangeListener(spectrum);
         spectrum.addPropertyChangeListener(this);
 

@@ -21,6 +21,7 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
     public static final String SPECTRUM_MAP_PATHS = "SpectrumMapPaths"; // For backwards compatibility, still read this in
 //    public static final String PROJECTION_TYPES = "ProjectionTypes";
     public static final String SPECTRUM_TYPES = "SpectrumTypes";
+    public boolean isCustomSpectra = false;
 
     public abstract DateTime getDateTime();
     public abstract SpectralInstrument getInstrument();
