@@ -31,10 +31,10 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
-import edu.jhuapl.sbmt.lidar.hyperoctree.laser.Hayabusa2LaserLidarPoint;
-import edu.jhuapl.sbmt.lidar.hyperoctree.laser.Hayabusa2LidarHypertreeSkeleton;
+import edu.jhuapl.sbmt.lidar.hyperoctree.hayabusa2.Hayabusa2LidarHypertreeSkeleton;
+import edu.jhuapl.sbmt.lidar.hyperoctree.hayabusa2.Hayabusa2LidarPoint;
 
-public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
+public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
 {
     public enum TrackFileType
     {
@@ -52,7 +52,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         return loading;
     }
 
-    public LaserLidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
+    public Hayabusa2LidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
         super(smallBodyModel);
     }
@@ -157,7 +157,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
                         LidarPoint currPt = pts.get(i);
                         if (currPt.getRangeToSC() > minRange && currPt.getRangeToSC() < maxRange) {
                             originalPoints.add(pts.get(i));
-                            originalPointsSourceFiles.put(pts.get(i),((Hayabusa2LaserLidarPoint)pts.get(i)).getFileNum());
+                            originalPointsSourceFiles.put(pts.get(i),((Hayabusa2LidarPoint)pts.get(i)).getFileNum());
                         }
                     }
                     //
@@ -231,7 +231,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         try {
             DataInputStream stream=new DataInputStream(new FileInputStream(dataInputFile));
             while (true) {
-                Hayabusa2LaserLidarPoint pt=new Hayabusa2LaserLidarPoint(stream);
+                Hayabusa2LidarPoint pt=new Hayabusa2LidarPoint(stream);
                 if (pt.getTime()<timeLimits[0] || pt.getTime()>timeLimits[1])   // throw away points outside time limits
                     continue;
                 if (pointInRegionChecker!=null)
@@ -276,7 +276,7 @@ public class LaserLidarHyperTreeSearchDataCollection extends LidarSearchDataColl
         {
             Track track=tracks.get(i);
             for (int j=track.startId; j<=track.stopId; j++)
-                track.registerSourceFileIndex(((Hayabusa2LaserLidarPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
+                track.registerSourceFileIndex(((Hayabusa2LidarPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
         }
     }
     public Hayabusa2LidarHypertreeSkeleton getCurrentSkeleton()
