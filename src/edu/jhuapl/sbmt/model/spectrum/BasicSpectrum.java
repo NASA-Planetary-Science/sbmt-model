@@ -29,11 +29,13 @@ import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
+import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
+import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
 import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
@@ -109,7 +111,12 @@ public abstract class BasicSpectrum extends Spectrum
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
-        File file = FileCache.getFileFromServer(filename);
+        File file = null;
+        String isCustom = initLocalSpectrumFileFullPath();
+        if (isCustom != null)
+            file = FileCache.getFileFromServer(isCustom);
+        else
+            file = FileCache.getFileFromServer(filename);
         this.serverpath = filename; // path on server relative to data
                                     // repository root (e.g. relative to
                                     // /project/nearsdc/data/)
@@ -719,5 +726,39 @@ public abstract class BasicSpectrum extends Spectrum
     public SearchSpec getMetadata()
     {
         return this.spec;
+    }
+
+    protected String initLocalInfoFileFullPath()
+    {
+        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+        MapUtil configMap = new MapUtil(configFilename);
+        String[] spectrumFilenames = configMap.getAsArray(SPECTRUM_FILENAMES);
+        for (int i=0; i<spectrumFilenames.length; ++i)
+        {
+            String filename = new File(getKey().name).getName();
+            if (filename.equals(spectrumFilenames[i]))
+            {
+                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(PerspectiveImage.INFOFILENAMES)[i];
+            }
+        }
+
+        return null;
+    }
+
+    protected String initLocalSpectrumFileFullPath()
+    {
+        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+        MapUtil configMap = new MapUtil(configFilename);
+        String[] spectrumFilenames = configMap.getAsArray(SPECTRUM_FILENAMES);
+        for (int i=0; i<spectrumFilenames.length; ++i)
+        {
+            String filename = new File(getKey().name).getName();
+            if (filename.equals(spectrumFilenames[i]))
+            {
+                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(SPECTRUM_NAMES)[i];
+            }
+        }
+
+        return null;
     }
 }
