@@ -4269,8 +4269,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             int ip0 = (int)Math.round(pickPosition[0]);
             int ip1 = (int)Math.round(pickPosition[1]);
-            float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
-            status += pixelColumn[currentSlice];
+            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            {
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+                status += pixelColumn[currentSlice];
+            }
+            else
+            {
+                status += "N/A";
+            }
         }
 
         return status;
