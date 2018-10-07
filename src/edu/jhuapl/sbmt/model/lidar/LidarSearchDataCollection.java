@@ -78,6 +78,7 @@ public class LidarSearchDataCollection extends AbstractModel
         TIME_LIDAR_SC_ALBEDO("Time, Lidar (X,Y,Z), S/C (SCx, SCy, SCz), Albedo"),
         BINARY("Binary"),
         OLA_LEVEL_2("OLA Level 2"),
+        HAYABUSA2_LEVEL_2("Hayabusa2 Level 2"),
         PLY("PLY");
 
         String name;

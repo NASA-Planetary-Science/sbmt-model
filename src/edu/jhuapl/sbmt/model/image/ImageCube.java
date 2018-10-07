@@ -137,7 +137,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
                     break;
                 }
             }
-
+            if (ind1 == -1) ind1 = buf.length;
             if (buf[ind0] == '0')
                 ++ind0;
             if (ind1 == -1 || ind1 == ind0) ind1 = buf.length;
