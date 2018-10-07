@@ -792,4 +792,9 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         appendString += "}";
         return appendString;
     }
+
+    public int getNimages()
+    {
+        return nimages;
+    }
 }
