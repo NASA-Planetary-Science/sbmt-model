@@ -146,7 +146,6 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     public Spectrum addSpectrum(String path, SpectralInstrument instrument, SpectrumColoringStyle coloringStyle, boolean isCustom) throws IOException
     {
         Spectrum spec = addSpectrum(path, instrument, isCustom);
-        System.out.println("SpectraCollection: addSpectrum: is custom " + isCustom + " " + spec.getKey());
         spec.setColoringStyle(coloringStyle);
         return spec;
     }
