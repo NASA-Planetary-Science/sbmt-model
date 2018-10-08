@@ -100,8 +100,8 @@ public class OVIRSSearchPanel extends SpectrumSearchController
         model.setResultIntervalCurrentlyShown(new IdPair(0, Integer.parseInt((String)view.getNumberOfFootprintsComboBox().getSelectedItem())));
         this.showFootprints(model.getResultIntervalCurrentlyShown());
 
-        SpectraCollection collection = (SpectraCollection)model.getModelManager().getModel(ModelNames.SPECTRA);
-        collection.deselectAll();
+//        SpectraCollection collection = (SpectraCollection)model.getModelManager().getModel(ModelNames.SPECTRA);
+//        collection.deselectAll();
 
 
     }

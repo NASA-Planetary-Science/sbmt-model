@@ -36,7 +36,8 @@ enum LIDARTextInputType
     TIME_LIDAR_ALBEDO("Time, Lidar, Albedo"),
     LIDAR_SC("Lidar and SC Points"),
     TIME_LIDAR_SC("Time, Lidar and SC Points"),
-    TIME_LIDAR_SC_ALBEDO("Time, Lidar, SC, Albedo");
+    TIME_LIDAR_SC_ALBEDO("Time, Lidar, SC, Albedo"),
+    HAYABUSA2_LEVEL_2("Hayabusa 2");
 
     String name;
 
@@ -111,6 +112,16 @@ enum LIDARTextInputType
             scpos[1] = Double.parseDouble(vals[5]);
             scpos[2] = Double.parseDouble(vals[6]);
             albedo = Double.parseDouble(vals[7]);
+            break;
+        case HAYABUSA2_LEVEL_2:
+            vals = line.trim().split(",");
+            time = getTime(vals, in);
+            target[0] = Double.parseDouble(vals[5])/1000.0;
+            target[1] = Double.parseDouble(vals[6])/1000.0;
+            target[2] = Double.parseDouble(vals[7])/1000.0;
+            scpos[0] = Double.parseDouble(vals[8])/1000.0;
+            scpos[1] = Double.parseDouble(vals[9])/1000.0;
+            scpos[2] = Double.parseDouble(vals[10])/1000.0;
             break;
 
         default:
