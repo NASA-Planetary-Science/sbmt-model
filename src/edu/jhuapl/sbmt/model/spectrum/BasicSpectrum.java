@@ -105,38 +105,20 @@ public abstract class BasicSpectrum extends Spectrum
     protected String yAxisUnits;
     protected SearchSpec spec;
 
+    protected boolean headless = false;
+
     protected SpectrumColoringStyle coloringStyle = SpectrumColoringStyle.RGB;
-
-    public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument, boolean isCustom) throws IOException
-    {
-        File file = null;
-        file = FileCache.getFileFromServer(filename);
-        this.serverpath = filename; // path on server relative to data
-                                    // repository root (e.g. relative to
-                                    // /project/nearsdc/data/)
-        this.instrument = instrument; //
-        this.fullpath = file.getAbsolutePath();
-        this.smallBodyModel = smallBodyModel;
-
-        spectrum=new double[getNumberOfBands()];
-
-        footprintHeight=smallBodyModel.getMinShiftAmount();
-
-        key = new SpectrumKey(filename, instrument);
-        this.isCustomSpectra = isCustom;
-    }
-
 
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
-        File file = null;
-//        String isCustom = initLocalSpectrumFileFullPath();
-//        if (isCustom != null)
-//            file = FileCache.getFileFromServer(isCustom);
-//        else
-            file = FileCache.getFileFromServer(filename);
+        this(filename, smallBodyModel, instrument, false, false);
+    }
+
+    public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
+            SpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    {
+        File file = FileCache.getFileFromServer(filename);
         this.serverpath = filename; // path on server relative to data
                                     // repository root (e.g. relative to
                                     // /project/nearsdc/data/)
@@ -147,9 +129,18 @@ public abstract class BasicSpectrum extends Spectrum
         spectrum=new double[getNumberOfBands()];
 
         footprintHeight=smallBodyModel.getMinShiftAmount();
-
+        this.headless = headless;
+        if (headless == false)
+        {
+            selectionActor = new vtkActor();
+            outlineActor = new vtkActor();
+            toSunVectorActor = new vtkActor();
+        }
+        this.isCustomSpectra = isCustom;
         key = new SpectrumKey(filename, instrument);
     }
+
+        
 
     public abstract int getNumberOfBands();
 
@@ -421,14 +412,17 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected void createSelectionActor()
     {
-        vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-        mapper.SetInputData(selectionPolyData);
-        mapper.Update();
-        selectionActor.SetMapper(mapper);
-        selectionActor.VisibilityOff();
-        selectionActor.GetProperty().EdgeVisibilityOn();
-        selectionActor.GetProperty().SetEdgeColor(0.5, 1, 0.5);
-        selectionActor.GetProperty().SetLineWidth(5);
+        if (headless == false)
+        {
+        	vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+        	mapper.SetInputData(selectionPolyData);
+        	mapper.Update();
+        	selectionActor.SetMapper(mapper);
+        	selectionActor.VisibilityOff();
+        	selectionActor.GetProperty().EdgeVisibilityOn();
+        	selectionActor.GetProperty().SetEdgeColor(0.5, 1, 0.5);
+        	selectionActor.GetProperty().SetLineWidth(5);
+    	}
     }
 
     protected void createOutlinePolyData()
@@ -445,14 +439,17 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected void createOutlineActor()
     {
-        vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-        mapper.SetInputData(outlinePolyData);
-        mapper.Update();
-        outlineActor.SetMapper(mapper);
-        outlineActor.VisibilityOff();
-        outlineActor.GetProperty().EdgeVisibilityOn();
-        outlineActor.GetProperty().SetEdgeColor(0.4, 0.4, 1);
-        outlineActor.GetProperty().SetLineWidth(2);
+        if (headless == false)
+        {
+        	vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+        	mapper.SetInputData(outlinePolyData);
+        	mapper.Update();
+        	outlineActor.SetMapper(mapper);
+        	outlineActor.VisibilityOff();
+        	outlineActor.GetProperty().EdgeVisibilityOn();
+        	outlineActor.GetProperty().SetEdgeColor(0.4, 0.4, 1);
+        	outlineActor.GetProperty().SetLineWidth(2);
+   	 	}
     }
 
     public double[] getToSunUnitVector()
@@ -480,12 +477,15 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected void createToSunVectorActor()
     {
-        vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-        mapper.SetInputData(toSunVectorPolyData);
-        mapper.Update();
-        toSunVectorActor.SetMapper(mapper);
-        toSunVectorActor.VisibilityOff();
-        toSunVectorActor.GetProperty().SetColor(1, 1, 0.5);
+        if (headless == false)
+        {
+        	vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+        	mapper.SetInputData(toSunVectorPolyData);
+        	mapper.Update();
+        	toSunVectorActor.SetMapper(mapper);
+        	toSunVectorActor.VisibilityOff();
+        	toSunVectorActor.GetProperty().SetColor(1, 1, 0.5);
+    	}
     }
 
     /**

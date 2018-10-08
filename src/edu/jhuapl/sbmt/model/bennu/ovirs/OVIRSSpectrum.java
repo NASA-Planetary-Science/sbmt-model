@@ -56,7 +56,13 @@ public class OVIRSSpectrum extends BasicSpectrum
     public OVIRSSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
-        super(filename, smallBodyModel, instrument);
+        super(filename, smallBodyModel, instrument, false, false);
+    }
+
+    public OVIRSSpectrum(String filename, SmallBodyModel smallBodyModel,
+            SpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    {
+        super(filename, smallBodyModel, instrument, headless, isCustom);
     }
 
     @Override
@@ -219,7 +225,6 @@ public class OVIRSSpectrum extends BasicSpectrum
     protected void readSpectrumFromFile()
     {
         spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
-
         OVIRSL3SpectrumReader reader=new OVIRSL3SpectrumReader(spectrumFile.getAbsolutePath());
         reader.read();
 

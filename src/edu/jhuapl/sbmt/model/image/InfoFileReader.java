@@ -1,7 +1,6 @@
 package edu.jhuapl.sbmt.model.image;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -72,7 +71,7 @@ public class InfoFileReader extends BasicFileReader
             boolean offset = true;
 
             BufferedReader in = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(new File(getFileName()))));
+                    new FileInputStream(getFileName())));
 
             String str;
             while ((str = in.readLine()) != null)

@@ -54,7 +54,13 @@ public class OTESSpectrum extends BasicSpectrum
     public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
-        super(filename, smallBodyModel, instrument);
+        this(filename, smallBodyModel, instrument, false, false);
+    }
+
+    public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
+            SpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    {
+        super(filename, smallBodyModel, instrument, headless, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());
     }
 
