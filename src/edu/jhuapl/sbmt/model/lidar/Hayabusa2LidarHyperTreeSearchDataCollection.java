@@ -154,6 +154,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
                     List<LidarPoint> pts=readDataFile(dataFile,pointInRegionChecker,new double[]{startDate,stopDate});
                     for (int i=0; i<pts.size(); i++)
                     {
+
                         LidarPoint currPt = pts.get(i);
                         if (currPt.getRangeToSC() > minRange && currPt.getRangeToSC() < maxRange) {
                             originalPoints.add(pts.get(i));

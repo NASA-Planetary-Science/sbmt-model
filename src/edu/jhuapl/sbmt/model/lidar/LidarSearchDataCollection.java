@@ -72,7 +72,7 @@ public class LidarSearchDataCollection extends AbstractModel
         LIDAR_ONLY("Lidar Point Only (X,Y,Z)"),
         LIDAR_WITH_INTENSITY("Lidar Point (X,Y,Z) with Intensity (Albedo)"),
         TIME_WITH_LIDAR("Time, Lidar Point (X,Y,Z)"),
-        TIME_LIDAR_RANGE("Time, Lidar (X,Y,Z), Albedo"),
+        TIME_LIDAR_RANGE("Time, Lidar (X,Y,Z), Range"),
         TIME_LIDAR_ALBEDO("Time, Lidar (X,Y,Z), Albedo"),
         LIDAR_SC("Lidar (X,Y,Z), S/C (SCx, SCy, SCz)"),
         TIME_LIDAR_SC("Time, Lidar (X,Y,Z), S/C (SCx, SCy, SCz)"),
@@ -149,7 +149,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
     protected List<Track> tracks = new ArrayList<Track>();
     private double timeSeparationBetweenTracks = 10.0; // In seconds
-    private int minTrackLength = 1;
+    private int minTrackLength = 5;
     int[] defaultColor = {0, 0, 255, 255};
     private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
     private boolean enableTrackErrorComputation = false;
