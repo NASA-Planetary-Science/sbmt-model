@@ -1243,23 +1243,23 @@ public class LidarSearchDataCollection extends AbstractModel
 
     private void removeTrack(int trackId)
     {
-        Track track = tracks.get(trackId);
-        int trackSize = track.getNumberOfPoints();
+//        Track track = tracks.get(trackId);
+//        int trackSize = track.getNumberOfPoints();
 
-        for (int i=track.stopId; i>=track.startId; i--)
-            originalPoints.remove(i);
+//        for (int i=track.stopId; i>=track.startId; i--)
+//            originalPoints.remove(i);
 
         tracks.remove(trackId);
 
         // Go through all tracks that follow the deleted track and shift
         // all the start and stop ids down by the size of the deleted track
-        int numberOfTracks = tracks.size();
-        for (int i=trackId; i<numberOfTracks; ++i)
-        {
-            track = tracks.get(i);
-            track.startId -= trackSize;
-            track.stopId -= trackSize;
-        }
+//        int numberOfTracks = tracks.size();
+//        for (int i=trackId; i<numberOfTracks; ++i)
+//        {
+//            track = tracks.get(i);
+//            track.startId -= trackSize;
+//            track.stopId -= trackSize;
+//        }
     }
 
     protected void removeTracksThatAreTooSmall()

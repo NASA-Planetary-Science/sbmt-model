@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -164,7 +165,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 
                         Hayabusa2LidarPoint currPt = (Hayabusa2LidarPoint)pts.get(i);
                         if (currPt.getRangeToSC() > minRange && currPt.getRangeToSC() < maxRange) {
-                            originalPoints.add(currPt);
                             int fileNum = currPt.getFileNum();
                             originalPointsSourceFiles.put(currPt, fileNum);
 
@@ -189,6 +189,12 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
                     if (isCancelled())
                         break;
                 }
+
+                // now build originalpoints from all of the unique lists
+                for (Integer key : filesWithPoints.keySet()) {
+                    originalPoints.addAll(filesWithPoints.get(key));
+                }
+
                 cancel(true);
                 loading=false;
 
@@ -235,7 +241,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         sw.start();
 
 
-        System.out.println("number points: " + originalPoints.size());
         updateTrackPolydata();
 
         System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
@@ -300,26 +305,20 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         if (size == 0)
             return;
 
-        // Sort points in time order
-        Collections.sort(originalPoints);
 
-
-
+        System.out.println("total points: " + originalPoints.size());
+        int totalpoints = 0;
         Set<Integer> keys = filesWithPoints.keySet();
         for (Integer key : keys) {
             Track track = new Track();
 
             track.registerSourceFileIndex(key, localFileMap);
             List<Hayabusa2LidarPoint> currPoints = filesWithPoints.get(key);
-            Collections.sort(currPoints); // TODO sort by time?
+            Collections.sort(currPoints);
             Hayabusa2LidarPoint start = currPoints.get(0);
             Hayabusa2LidarPoint stop = currPoints.get(currPoints.size() - 1);
 
             int istart = originalPoints.indexOf(start);
-            if (istart == -1) {
-                System.out.println("oops!");
-                System.out.println(start);
-            }
             int istop = originalPoints.indexOf(stop);
             track.timeRange = new String[]
                     {TimeUtil.et2str(start.getTime()),
@@ -328,49 +327,25 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
             track.startId = istart;
             track.stopId = istop;
             tracks.add(track);
+            totalpoints += (istop - istart + 1);
+
         }
 
+        System.out.println("total points in tracks: " + totalpoints);
 
 
-//        track.startId = 0;
-//        tracks.add(track);
-//        for (int i=1; i<size; ++i)
-//        {
-//            double currentTime = originalPoints.get(i).getTime();
-//            if (currentTime - prevTime >= timeSeparationBetweenTracks)
-//            {
-//                track.stopId = i-1;
-//                double t0 = originalPoints.get(track.startId).getTime();
-//                double t1 = originalPoints.get(track.stopId).getTime();
-//                track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
-//
-//                track = new Track();
-//                track.registerSourceFileIndex(originalPointsSourceFiles.get(originalPoints.get(i)), localFileMap);
-//                track.startId = i;
-//
-//                tracks.add(track);
-//            }
-//
-//            prevTime = currentTime;
-//
-//        }
-//
-//        track.stopId = size-1;
-//        double t0 = originalPoints.get(track.startId).getTime();
-//        double t1 = originalPoints.get(track.stopId).getTime();
-//        track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
+        // sort tracks by their starting time
+        Collections.sort(tracks, new Comparator<Track>() {
+            public int compare(Track track1, Track track2) {
+                double track1Start = TimeUtil.str2et(track1.timeRange[0]);
+                double track2Start = TimeUtil.str2et(track2.timeRange[0]);
+                return track1Start > track2Start ? 1 : track1Start < track2Start ? -1 : 0;
+            }
+        });
 
 
     }
 
-    //        super.computeTracks();
-    //        //
-    //        for (int i=0; i<tracks.size(); i++)
-    //        {
-    //            Track track=tracks.get(i);
-    //            for (int j=track.startId; j<=track.stopId; j++)
-    //                track.registerSourceFileIndex(((Hayabusa2LidarPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
-    //        }
 
 
 
