@@ -907,6 +907,9 @@ public class LidarSearchDataCollection extends AbstractModel
 
     }
 
+
+
+
     /**
      * If transformPoint is true, then the lidar points (not scpos) are translated using the current
      * radial offset and translation before being saved out. If false, the original points
@@ -1185,7 +1188,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 List<Double> intensityList = new LinkedList<Double>();
 
                 // Go through each point in the track
-                for (int i=startId; i<=stopId; ++i)
+                for (int i=startId; i<=stopId; i++)
                 {
 
                     double[] pt = originalPoints.get(i).getTargetPosition().toArray();
@@ -1243,7 +1246,7 @@ public class LidarSearchDataCollection extends AbstractModel
         Track track = tracks.get(trackId);
         int trackSize = track.getNumberOfPoints();
 
-        for (int i=track.stopId; i>=track.startId; --i)
+        for (int i=track.stopId; i>=track.startId; i--)
             originalPoints.remove(i);
 
         tracks.remove(trackId);
