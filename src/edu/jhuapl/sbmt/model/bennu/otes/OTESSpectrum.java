@@ -89,14 +89,12 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        System.out.println("OTESSpectrum: getInfoFilePathOnServer: is custom spectra is " + isCustomSpectra);
         if (isCustomSpectra)
         {
             return getLocalInfoFilePathOnServer();
         }
         else
         {
-            System.out.println("OTESSpectrum: getInfoFilePathOnServer: spectrum path " + getSpectrumPathOnServer());
             return Paths.get(getSpectrumPathOnServer()).getParent()
                     .resolveSibling("infofiles-corrected")
                     .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
