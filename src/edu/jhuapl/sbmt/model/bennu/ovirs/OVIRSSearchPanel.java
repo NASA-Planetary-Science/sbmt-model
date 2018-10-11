@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JSpinner;
@@ -29,11 +30,9 @@ public class OVIRSSearchPanel extends SpectrumSearchController
 
     public OVIRSSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
-            Renderer renderer, SpectralInstrument instrument)
+            Renderer renderer, SpectralInstrument instrument, boolean isSearchView)
     {
-        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
-        // TODO Auto-generated constructor stub
-
+        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument, isSearchView);
 
         setupComboBoxes();
         setColoringComboBox();
@@ -64,28 +63,23 @@ public class OVIRSSearchPanel extends SpectrumSearchController
     {
 
         view.getResultsLabel().setText(results.size() + " spectra matched");
-
         List<String> matchedImages=Lists.newArrayList();
-        if (matchedImages.size() > 0)
-            fileExtension = FilenameUtils.getExtension(matchedImages.get(0));
+        String[] matched = new String[results.size()];
+
+        int j = 0;
         for (List<String> res : results)
         {
-            //String path = NisQuery.getNisPath(res);
-            //matchedImages.add(path);
-
             String basePath=FilenameUtils.getPath(res.get(0));
             String filename=FilenameUtils.getBaseName(res.get(0));
 
-//            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
-//            File file=FileCache.getFileFromServer("/"+infoFile.toString());
-            matchedImages.add(basePath + filename + "." + FilenameUtils.getExtension(res.get(0)));
-
-//            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
-
+            matched[j] = basePath + filename + "." + FilenameUtils.getExtension(res.get(0));
+            ++j;
         }
 
-
+        Arrays.sort(matched);
+        matchedImages = Arrays.asList(matched);
         model.setSpectrumRawResults(matchedImages);
+
 
         String[] formattedResults = new String[results.size()];
 
@@ -96,6 +90,8 @@ public class OVIRSSearchPanel extends SpectrumSearchController
             formattedResults[i] = FilenameUtils.getBaseName(str) + "." + FilenameUtils.getExtension(str);
             ++i;
         }
+
+        Arrays.sort(formattedResults);
 
         view.getResultList().setListData(formattedResults);
 

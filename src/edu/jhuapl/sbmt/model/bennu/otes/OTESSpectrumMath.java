@@ -19,7 +19,7 @@ public class OTESSpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return OTES.otesBandCenters.length;
+        return OTES.bandCentersLength;
     }
 
     @Override

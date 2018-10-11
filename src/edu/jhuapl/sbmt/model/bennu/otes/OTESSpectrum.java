@@ -54,7 +54,13 @@ public class OTESSpectrum extends BasicSpectrum
     public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
-        super(filename, smallBodyModel, instrument);
+        this(filename, smallBodyModel, instrument, false);
+    }
+
+    public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
+            SpectralInstrument instrument, boolean headless) throws IOException
+    {
+        super(filename, smallBodyModel, instrument, headless);
         extension = FilenameUtils.getExtension(serverpath.toString());
     }
 
@@ -394,7 +400,7 @@ public class OTESSpectrum extends BasicSpectrum
     public int getNumberOfBands()
     {
         if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
-            return OTES.otesBandCenters.length;
+            return OTES.bandCentersLength;
         else
             return 208;
     }

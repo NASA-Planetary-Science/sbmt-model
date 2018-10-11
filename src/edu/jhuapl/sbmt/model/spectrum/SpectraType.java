@@ -17,8 +17,8 @@ import edu.jhuapl.sbmt.query.QueryBase;
 
 public enum SpectraType implements ISpectraType
 {
-    OTES_SPECTRA("OTES", OTESQuery.getInstance(), OTESSpectrumMath.getInstance(), "cm^-1", OTES.otesBandCenters),
-    OVIRS_SPECTRA("OVIRS", OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance(), "um", OVIRS.ovirsBandCenters),
+    OTES_SPECTRA("OTES", OTESQuery.getInstance(), OTESSpectrumMath.getInstance(), "cm^-1", new OTES().getBandCenters()),
+    OVIRS_SPECTRA("OVIRS", OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance(), "um", new OVIRS().getBandCenters()),
     NIS_SPECTRA("NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath(), "cm^-1", NIS.nisBandCenters),
     NIRS3_SPECTRA("NIRS3", NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance(), "cm^-1", NIRS3.nirs3BandCenters);
 
