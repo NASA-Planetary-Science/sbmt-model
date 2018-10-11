@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
-import nom.tam.fits.FitsException;
+import java.util.Vector;
 
 import vtk.vtkActor;
 import vtk.vtkProp;
@@ -19,6 +18,8 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageCube.ImageCubeKey;
+
+import nom.tam.fits.FitsException;
 
 public class ImageCubeCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -30,10 +31,13 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
 
     private HashMap<vtkProp, ImageCube> actorToImageMap = new HashMap<vtkProp, ImageCube>();
 
+    private Vector<ImageCube> loadedImages;
+
     public ImageCubeCollection(SmallBodyModel smallBodyModel, ModelManager modelManager)
     {
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
+        this.loadedImages = new Vector<ImageCube>();
     }
 
     protected ImageCube createImage(ImageCubeKey key,
@@ -70,6 +74,8 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
             return;
 
         ImageCube image = createImage(key, smallBodyModel);
+        loadedImages.add(image);
+
 
         smallBodyModel.addPropertyChangeListener(image);
         image.addPropertyChangeListener(this);
@@ -89,6 +95,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     public void removeImage(ImageCubeKey key)
     {
         ImageCube image = getImageFromKey(key);
+//        loadedImages.remove(image);
 
         List<vtkProp> actors = imageToActorsMap.get(image);
 
@@ -165,6 +172,11 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
 
         // Return status message for display
         return status;
+    }
+
+    public Vector<ImageCube> getLoadedImages()
+    {
+        return loadedImages;
     }
 
 //    public void setShowFrustums(boolean b)

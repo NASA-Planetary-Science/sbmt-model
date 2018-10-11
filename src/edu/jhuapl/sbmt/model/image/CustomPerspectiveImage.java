@@ -2,12 +2,12 @@ package edu.jhuapl.sbmt.model.image;
 
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class CustomPerspectiveImage extends PerspectiveImage
 {
@@ -55,8 +55,4 @@ public class CustomPerspectiveImage extends PerspectiveImage
     {
         return new int[]{0, 0, 0, 0};
     }
-
-//    public int getDefaultSlice() { return this.imageDepth > 1 ? 127 : 0; }
-//
-//    public boolean shiftBands() { return this.imageDepth > 1 ? true : false; }
 }

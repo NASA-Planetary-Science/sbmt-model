@@ -356,7 +356,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             setLabelFileFullPath(initializeLabelFileFullPath());
         else
             sumFileFullPath = initializeSumfileFullPath();
-
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
@@ -1132,6 +1131,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             int nslices = getNumberBands();
             for (int i=slice+1; i<nslices; i++)
             {
+                System.out.println("PerspectiveImage: loadImageInfo: num slices " + nslices + " and slice is " + slice + " and i is " + i + " and spacecraft pos length" + spacecraftPosition.length);
+
                 spacecraftPosition[i][0] = spacecraftPosition[slice][0];
                 spacecraftPosition[i][1] = spacecraftPosition[slice][1];
                 spacecraftPosition[i][2] = spacecraftPosition[slice][2];
@@ -2129,6 +2130,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             catch(IOException ex)
             {
                 System.out.println("INFO file not available");
+                ex.printStackTrace();
             }
         }
         else if (key.source.equals(ImageSource.LABEL))
@@ -2488,6 +2490,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private void loadImageInfo() throws NumberFormatException, IOException
     {
         String[] infoFileNames = getInfoFilesFullPath();
+//        for (String name : infoFileNames) System.out.println("PerspectiveImage: loadImageInfo: name is " + name);
         if (infoFileNames == null)
             System.out.println("infoFileNames is null");
 
@@ -2506,7 +2509,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean[] ato = new boolean[1];
             ato[0] = true;
 
-            System.out.println("Loading image: " + infoFileNames[k]);
+//            System.out.println("Loading image: " + infoFileNames[k]);
 
             loadImageInfo(
                     infoFileNames[k],
@@ -4269,8 +4272,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             int ip0 = (int)Math.round(pickPosition[0]);
             int ip1 = (int)Math.round(pickPosition[1]);
-            float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
-            status += pixelColumn[currentSlice];
+            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            {
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+                status += pixelColumn[currentSlice];
+            }
+            else
+            {
+                status += "N/A";
+            }
         }
 
         return status;
