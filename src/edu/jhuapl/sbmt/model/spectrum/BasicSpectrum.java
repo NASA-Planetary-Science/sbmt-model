@@ -132,15 +132,15 @@ public abstract class BasicSpectrum extends Spectrum
         this.headless = headless;
         if (headless == false)
         {
-            selectionActor = new vtkActor();
-            outlineActor = new vtkActor();
-            toSunVectorActor = new vtkActor();
+            createSelectionActor();
+            createOutlineActor();
+            createToSunVectorActor();
         }
         this.isCustomSpectra = isCustom;
         key = new SpectrumKey(filename, instrument);
     }
 
-        
+
 
     public abstract int getNumberOfBands();
 

@@ -161,7 +161,6 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
             return spec;
         }
 
-
         //NISSpectrum spectrum = NISSpectrum.NISSpectrumFactory.createSpectrum(path, erosModel);
         //NISSpectrum spectrum = new NISSpectrum(path, erosModel, instrument);
         Spectrum spectrum=null;
