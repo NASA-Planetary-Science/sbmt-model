@@ -400,6 +400,8 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         for (List<String> list : filenames)
         {
             fileToSpecMap.put(list.get(0), spec);
+            Spectrum spectrum = fileToSpectrumMap.get(list.get(0));
+            if (spectrum != null) spectrum.setMetadata(spec);
         }
     }
 
