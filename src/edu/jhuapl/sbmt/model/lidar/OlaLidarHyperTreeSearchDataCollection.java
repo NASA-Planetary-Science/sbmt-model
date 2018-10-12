@@ -73,7 +73,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
+//            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
             Path basePath = Paths.get(datasourcePath);
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
@@ -88,7 +88,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Setting current datasource: " + datasourceName);
+//            System.out.println("Setting current datasource: " + datasourceName);
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton != null)
                 currentSkeleton = skeleton;
@@ -141,7 +141,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 for (Integer cidx : cubeList)
                 {
                     Path leafPath=currentSkeleton.getNodeById(cidx).getPath();
-                    System.out.println("OlaLidarHyperTreeSearchDataCollection: setLidarData: Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
+//                    System.out.println("OlaLidarHyperTreeSearchDataCollection: setLidarData: Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
                     Path dataFilePath=leafPath.resolve("data");
                     File dataFile=FileCache.getFileFromServer(dataFilePath.toString());
                     if (!dataFile.exists())
@@ -162,7 +162,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 cancel(true);
                 loading=false;
 
-                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
@@ -175,8 +175,8 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         };
         dataLoader.executeDialog();
         initTranslationArray(originalPoints.size());
-        System.out.println(
-                "OlaLidarHyperTreeSearchDataCollection: setLidarData: before while loop");
+//        System.out.println(
+//                "OlaLidarHyperTreeSearchDataCollection: setLidarData: before while loop");
 //       while (isLoading())
 //       {
 //           System.out.println(
@@ -204,7 +204,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     computeTracks();
 
                     Stopwatch sw=new Stopwatch();
-                    System.out.println("OlaLidarHyperTreeSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
+//                    System.out.println("OlaLidarHyperTreeSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
                     sw.reset();
                     sw.start();
 
@@ -218,20 +218,20 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     for (Track t : tracksToRemove)
                         tracks.remove(t);
 
-                    System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+//                    System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
                     sw.reset();
                     sw.start();
 
                     assignInitialColorToTrack();
 
-                    System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+//                    System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
                     sw.reset();
                     sw.start();
 
 
                     updateTrackPolydata();
 
-                    System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+//                    System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
 
 
             selectPoint(-1);
@@ -287,8 +287,8 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
     @Override
     protected void computeTracks()
     {
-        System.out.println(
-                "OlaLidarHyperTreeSearchDataCollection: computeTracks: OLA compute tracks");
+//        System.out.println(
+//                "OlaLidarHyperTreeSearchDataCollection: computeTracks: OLA compute tracks");
         localFileMap.clear();
         localFileMap.putAll(getCurrentSkeleton().getFileMap());
         super.computeTracks();
