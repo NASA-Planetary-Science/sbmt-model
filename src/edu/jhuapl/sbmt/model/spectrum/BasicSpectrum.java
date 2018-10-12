@@ -29,11 +29,15 @@ import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
+import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
+import edu.jhuapl.sbmt.model.image.PerspectiveImage;
+import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 
 public abstract class BasicSpectrum extends Spectrum
@@ -53,7 +57,7 @@ public abstract class BasicSpectrum extends Spectrum
     protected boolean isSelected;
     protected double footprintHeight;
 
-    protected vtkActor selectionActor = null; //new vtkActor();
+    protected vtkActor selectionActor = new vtkActor();
     protected vtkPolyData selectionPolyData = new vtkPolyData();
     protected vtkPolyData footprint;
     protected vtkPolyData shiftedFootprint;
@@ -61,12 +65,12 @@ public abstract class BasicSpectrum extends Spectrum
     protected vtkActor frustumActor;
     protected List<vtkProp> footprintActors = new ArrayList<vtkProp>();
     protected double[] frustumCenter;
-    protected vtkActor outlineActor = null; //new vtkActor();
+    protected vtkActor outlineActor = new vtkActor();
     protected vtkPolyData outlinePolyData = new vtkPolyData();
     boolean isOutlineShowing;
 
     protected Vector3D toSunUnitVector;
-    protected vtkActor toSunVectorActor = null; //new vtkActor();
+    protected vtkActor toSunVectorActor = new vtkActor();
     protected vtkPolyData toSunVectorPolyData = new vtkPolyData();
     protected boolean isToSunVectorShowing;
     protected double toSunVectorLength;
@@ -105,15 +109,14 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected SpectrumColoringStyle coloringStyle = SpectrumColoringStyle.RGB;
 
-
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
             SpectralInstrument instrument) throws IOException
     {
-        this(filename, smallBodyModel, instrument, false);
+        this(filename, smallBodyModel, instrument, false, false);
     }
 
     public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument, boolean headless) throws IOException
+            SpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         File file = FileCache.getFileFromServer(filename);
         this.serverpath = filename; // path on server relative to data
@@ -129,10 +132,12 @@ public abstract class BasicSpectrum extends Spectrum
         this.headless = headless;
         if (headless == false)
         {
-            selectionActor = new vtkActor();
-            outlineActor = new vtkActor();
-            toSunVectorActor = new vtkActor();
+            createSelectionActor();
+            createOutlineActor();
+            createToSunVectorActor();
         }
+        this.isCustomSpectra = isCustom;
+        key = new SpectrumKey(filename, instrument);
     }
 
 
@@ -409,15 +414,15 @@ public abstract class BasicSpectrum extends Spectrum
     {
         if (headless == false)
         {
-            vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-            mapper.SetInputData(selectionPolyData);
-            mapper.Update();
-            selectionActor.SetMapper(mapper);
-            selectionActor.VisibilityOff();
-            selectionActor.GetProperty().EdgeVisibilityOn();
-            selectionActor.GetProperty().SetEdgeColor(0.5, 1, 0.5);
-            selectionActor.GetProperty().SetLineWidth(5);
-        }
+        	vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+        	mapper.SetInputData(selectionPolyData);
+        	mapper.Update();
+        	selectionActor.SetMapper(mapper);
+        	selectionActor.VisibilityOff();
+        	selectionActor.GetProperty().EdgeVisibilityOn();
+        	selectionActor.GetProperty().SetEdgeColor(0.5, 1, 0.5);
+        	selectionActor.GetProperty().SetLineWidth(5);
+    	}
     }
 
     protected void createOutlinePolyData()
@@ -436,15 +441,15 @@ public abstract class BasicSpectrum extends Spectrum
     {
         if (headless == false)
         {
-            vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-            mapper.SetInputData(outlinePolyData);
-            mapper.Update();
-            outlineActor.SetMapper(mapper);
-            outlineActor.VisibilityOff();
-            outlineActor.GetProperty().EdgeVisibilityOn();
-            outlineActor.GetProperty().SetEdgeColor(0.4, 0.4, 1);
-            outlineActor.GetProperty().SetLineWidth(2);
-        }
+        	vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+        	mapper.SetInputData(outlinePolyData);
+        	mapper.Update();
+        	outlineActor.SetMapper(mapper);
+        	outlineActor.VisibilityOff();
+        	outlineActor.GetProperty().EdgeVisibilityOn();
+        	outlineActor.GetProperty().SetEdgeColor(0.4, 0.4, 1);
+        	outlineActor.GetProperty().SetLineWidth(2);
+   	 	}
     }
 
     public double[] getToSunUnitVector()
@@ -474,13 +479,13 @@ public abstract class BasicSpectrum extends Spectrum
     {
         if (headless == false)
         {
-            vtkPolyDataMapper mapper = new vtkPolyDataMapper();
-            mapper.SetInputData(toSunVectorPolyData);
-            mapper.Update();
-            toSunVectorActor.SetMapper(mapper);
-            toSunVectorActor.VisibilityOff();
-            toSunVectorActor.GetProperty().SetColor(1, 1, 0.5);
-        }
+        	vtkPolyDataMapper mapper = new vtkPolyDataMapper();
+        	mapper.SetInputData(toSunVectorPolyData);
+        	mapper.Update();
+        	toSunVectorActor.SetMapper(mapper);
+        	toSunVectorActor.VisibilityOff();
+        	toSunVectorActor.GetProperty().SetColor(1, 1, 0.5);
+    	}
     }
 
     /**
@@ -549,6 +554,27 @@ public abstract class BasicSpectrum extends Spectrum
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 
+    }
+
+    @Override
+    public void setVisible(boolean b)
+    {
+        // TODO Auto-generated method stub
+        if (b)
+        {
+            footprintActor.VisibilityOn();
+        }
+        else
+        {
+            footprintActor.VisibilityOff();
+        }
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean isVisible()
+    {
+        return footprintActor.GetVisibility() == 0 ? false : true;
     }
 
     @Override
@@ -720,5 +746,39 @@ public abstract class BasicSpectrum extends Spectrum
     public SearchSpec getMetadata()
     {
         return this.spec;
+    }
+
+    protected String initLocalInfoFileFullPath()
+    {
+        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+        MapUtil configMap = new MapUtil(configFilename);
+        String[] spectrumFilenames = configMap.getAsArray(SPECTRUM_FILENAMES);
+        for (int i=0; i<spectrumFilenames.length; ++i)
+        {
+            String filename = new File(getKey().name).getName();
+            if (filename.equals(spectrumFilenames[i]))
+            {
+                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(PerspectiveImage.INFOFILENAMES)[i];
+            }
+        }
+
+        return null;
+    }
+
+    protected String initLocalSpectrumFileFullPath()
+    {
+        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+        MapUtil configMap = new MapUtil(configFilename);
+        String[] spectrumFilenames = configMap.getAsArray(SPECTRUM_FILENAMES);
+        for (int i=0; i<spectrumFilenames.length; ++i)
+        {
+            String filename = new File(getKey().name).getName();
+            if (filename.equals(spectrumFilenames[i]))
+            {
+                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(SPECTRUM_NAMES)[i];
+            }
+        }
+
+        return null;
     }
 }

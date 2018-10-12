@@ -1,11 +1,21 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
-import edu.jhuapl.sbmt.model.spectrum.BasicSpectrumInstrument;
+import java.io.IOException;
+
+import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.spectrum.Spectrum;
+import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
+import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
 
 public class OVIRS extends BasicSpectrumInstrument
 {
-
     public static int bandCentersLength = 1393;
+
+
+    static
+    {
+        SpectrumInstrumentFactory.registerType("OVIRS", new OVIRS());
+    }
 
     public OVIRS()
     {
@@ -1407,26 +1417,8 @@ public class OVIRS extends BasicSpectrumInstrument
             };
     }
 
-//    @Override
-//    public double[] getBandCenters()
-//    {
-//        return bandCenters;
-//    }
-//
-//    @Override
-//    public String getDisplayName()
-//    {
-//        return "OVIRS";
-//    }
-//
-//    @Override
-//    public String getBandCenterUnit()
-//    {
-//        return "um";
-//    }
-
     // these band centers are taken from
-//    static final public double[] ovirsBandCenters = {    //unit: microns
+//    static public double[] bandCenters = {    //unit: microns
 //            0.392000, //0
 //            0.394000, //1
 //            0.396000, //2
@@ -2822,16 +2814,11 @@ public class OVIRS extends BasicSpectrumInstrument
 //            4.340000 //1392
 //        };
 
-//    @Override
-//    public QueryBase getQueryBase()
-//    {
-//        return OVIRSQuery.getInstance();
-//    }
-//
-//    @Override
-//    public SpectrumMath getSpectrumMath()
-//    {
-//        return OVIRSSpectrumMath.getInstance();
-//    }
-
+    @Override
+    public Spectrum getSpectrumInstance(String filename,
+            SmallBodyModel smallBodyModel)
+            throws IOException
+    {
+        return new OVIRSSpectrum(filename, smallBodyModel, this);
+    }
 }
