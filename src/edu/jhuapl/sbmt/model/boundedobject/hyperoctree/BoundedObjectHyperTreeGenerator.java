@@ -72,7 +72,7 @@ public class BoundedObjectHyperTreeGenerator
                     double maxT = df.parse(toks[8]).getTime();
 
                     HyperBox objBBox = new HyperBox(new double[]{Double.parseDouble(toks[1]), Double.parseDouble(toks[3]), Double.parseDouble(toks[5]), minT},
-                            new double[]{Double.parseDouble(toks[2]), Double.parseDouble(toks[4]), Double.parseDouble(toks[6]), maxT});
+                            new double[]{Double.parseDouble(toks[2]), Double.parseDouble(toks[4]), Double.parseDouble(toks[6]), maxT}); //emission, incidence, phase, distance
 
                     int objId = objName.hashCode();
                     fileMap.put(objName, objId);
