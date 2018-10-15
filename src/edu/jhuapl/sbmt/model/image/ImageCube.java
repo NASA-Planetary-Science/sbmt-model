@@ -204,7 +204,6 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
     @Override
     protected String initializeInfoFileFullPath()
     {
-        System.out.println("ImageCube: initializeInfoFileFullPath: returning " + ((ImageCubeKey)getKey()).infoFileFullPath);
         return ((ImageCubeKey)getKey()).infoFileFullPath;
     }
 
@@ -337,7 +336,6 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         List<IntensityRange> intensityRanges = new ArrayList<IntensityRange>();
         List<Frustum> frustums = new ArrayList<Frustum>();
         nimages = images.size();
-        System.out.println("ImageCube: computeFootprintAndImageCube: number of images " + nimages);
         double[] mins = new double[nimages];
         double[] maxes = new double[nimages];
         double[] stretchRanges = new double[nimages];
