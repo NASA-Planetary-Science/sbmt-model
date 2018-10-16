@@ -29,6 +29,22 @@ public class OTESSpectrumReader extends BasicFileReader
         {
             xValues=new double[numberEntries];
             yValues=new double[numberEntries];
+//            System.out.println("OTESSpectrumReader: read: reading " + filename);
+//            BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
+//            String line = reader.readLine();
+//            line = reader.readLine();
+//            System.out.println("OTESSpectrumReader: read: sclk line is " + line);
+//            sclk = Double.parseDouble(line);
+//            line = reader.readLine();
+//            for (int i=0; i<numberEntries; i++)
+//            {
+//                line = reader.readLine();
+//                String[] parts = line.split(",");
+//                xValues[i] = Double.parseDouble(parts[0]);
+//                yValues[i] = Double.parseDouble(parts[1]);
+//            }
+//            reader.close();
+
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
             sclk=stream.readDouble();
             for (int i=0; i<numberEntries; i++)
@@ -39,7 +55,6 @@ public class OTESSpectrumReader extends BasicFileReader
             {
                 xValues[i]=stream.readDouble();
             }
-
             stream.close();
         }
         catch (IOException e)

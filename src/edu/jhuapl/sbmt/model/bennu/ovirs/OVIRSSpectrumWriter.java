@@ -43,6 +43,7 @@ public class OVIRSSpectrumWriter extends BasicFileWriter
             writer.newLine();
             writer.write("## Wavelength (Band Center), Spectrum Value");
             writer.newLine();
+            OVIRS ovirs = new OVIRS();
             for (int i=0; i<OVIRS.bandCentersLength; i++)
             {
                 writer.write(ovirs.getBandCenters()[i] + "," + yData[i]);

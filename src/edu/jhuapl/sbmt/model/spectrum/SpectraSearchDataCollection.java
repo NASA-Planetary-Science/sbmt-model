@@ -59,7 +59,7 @@ public class SpectraSearchDataCollection
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
+//            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
             Path basePath = Paths.get(datasourcePath);
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
@@ -74,7 +74,7 @@ public class SpectraSearchDataCollection
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Setting current datasource: " + datasourceName);
+//            System.out.println("Setting current datasource: " + datasourceName);
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton != null)
                 currentSkeleton = skeleton;

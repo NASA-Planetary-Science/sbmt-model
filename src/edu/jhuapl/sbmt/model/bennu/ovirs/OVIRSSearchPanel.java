@@ -21,8 +21,8 @@ import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
 import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
-import edu.jhuapl.sbmt.model.eros.SpectraCollection;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.SpectraCollection;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 public class OVIRSSearchPanel extends SpectrumSearchController
 {

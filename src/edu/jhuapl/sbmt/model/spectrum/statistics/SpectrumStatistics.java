@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.spectrum.statistics;
 
 import java.util.Collections;
 import java.util.Comparator;

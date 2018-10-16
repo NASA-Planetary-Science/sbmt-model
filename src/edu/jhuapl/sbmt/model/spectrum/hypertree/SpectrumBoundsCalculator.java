@@ -29,12 +29,12 @@ import edu.jhuapl.sbmt.model.bennu.otes.OTES;
 import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
-import edu.jhuapl.sbmt.model.eros.SpectrumStatistics;
-import edu.jhuapl.sbmt.model.eros.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics;
+import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics.Sample;
 import edu.jhuapl.sbmt.query.QueryBase;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListSearchMetadata;
@@ -120,10 +120,10 @@ public class SpectrumBoundsCalculator
                 // create spectrum
                 BasicSpectrum spectrum;
                 if (instrument instanceof OTES) {
-                    spectrum = new OTESSpectrum(thisFileName, body, instrument, true);
+                    spectrum = new OTESSpectrum(thisFileName, body, instrument, true, false);
                 }
                 else  { // only 2 options right now, but may change in the future
-                    spectrum = new OVIRSSpectrum(thisFileName, body, instrument, true);
+                    spectrum = new OVIRSSpectrum(thisFileName, body, instrument, true, false);
                 }
 
 

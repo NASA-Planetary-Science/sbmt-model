@@ -39,8 +39,6 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
     public void setRootName(String name)
     {
         DefaultMutableTreeNode currNode = (DefaultMutableTreeNode)treeModel.getRoot();
-        System.out.println(
-                "SpectraHierarchicalSearchSpecification: setRootName: setting user name to " + name);
         currNode.setUserObject(name);
     }
 

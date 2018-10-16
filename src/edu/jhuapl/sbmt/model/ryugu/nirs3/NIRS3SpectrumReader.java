@@ -23,10 +23,10 @@ public class NIRS3SpectrumReader extends BasicFileReader
     {
         try
         {
-            spectrum=new double[NIRS3.nirs3BandCenters.length];
+            spectrum=new double[NIRS3.bandCentersLength];
             Scanner scanner=new Scanner(new File(filename));    // cf. NIRS3Preprocessor class to see how these files were written out in the first place
             et=scanner.nextDouble();
-            for (int i=0; i<NIRS3.nirs3BandCenters.length; i++)
+            for (int i=0; i<NIRS3.bandCentersLength; i++)
                 spectrum[i]=scanner.nextDouble();
             scanner.close();
         }

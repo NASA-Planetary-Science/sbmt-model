@@ -25,7 +25,8 @@ public class OTESRawReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[OTES.bandCentersLength];
+            int length = OTES.bandCentersLength;
+            calibratedRadiance=new double[length];
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
 
 
@@ -41,7 +42,7 @@ public class OTESRawReader extends BasicFileReader
                 stream.read(new byte[2]); //gets the ick
                 stream.read(new byte[2]); //gets the flags
 
-                for (int i=0; i<OTES.bandCentersLength; i++)
+                for (int i=0; i<length; i++)
                 {
                     byte[] val = new byte[4];
                     stream.read(val);
@@ -54,7 +55,7 @@ public class OTESRawReader extends BasicFileReader
                 stream.read(val2);  //brightness temp uncertainty
                 stream.read(val2);  //max brightness temp
 
-                for (int i=0; i<OTES.bandCentersLength; i++)
+                for (int i=0; i<length; i++)
                 {
                     byte[] val = new byte[4];
                     stream.read(val);

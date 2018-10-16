@@ -13,7 +13,7 @@ public class HyperBoundedObject
     protected String name;
     private int fileNum;
     protected HyperBox bbox;
-    int dim; // number of things to search on (i.e. for images, it is 4: x, y, z, time)
+    int dim; // number of things to search on (i.e. for images, it is 4: x, y, z, time)   TODO order is important here, but it probably shouldn't be
 
     public HyperBoundedObject(DataInputStream stream, int dim) throws HyperDimensionMismatchException, IOException
     {
@@ -88,6 +88,11 @@ public class HyperBoundedObject
     public void setFileNum(int fileNum)
     {
         this.fileNum = fileNum;
+    }
+
+    public double getDate()
+    {
+        return getCoordinate(6);
     }
 
 }

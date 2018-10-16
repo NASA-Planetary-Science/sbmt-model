@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.ovirs;
 
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
+import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 
 public class OVIRSSpectrumMath extends SpectrumMath
 {

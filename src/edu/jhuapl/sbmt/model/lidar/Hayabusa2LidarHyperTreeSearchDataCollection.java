@@ -76,7 +76,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
+//            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
             Path basePath = Paths.get(datasourcePath);
             Hayabusa2LidarHypertreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
@@ -91,7 +91,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Setting current datasource: " + datasourceName);
+//            System.out.println("Setting current datasource: " + datasourceName);
             Hayabusa2LidarHypertreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton != null)
                 currentSkeleton = skeleton;
@@ -154,7 +154,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
                 for (Integer cidx : cubeList)
                 {
                     Path leafPath=currentSkeleton.getNodeById(cidx).getPath();
-                    System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData: Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
+//                    System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData: Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
                     Path dataFilePath=leafPath.resolve("data");
                     File dataFile=FileCache.getFileFromServer(dataFilePath.toString());
                     if (!dataFile.exists())
@@ -198,7 +198,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
                 cancel(true);
                 loading=false;
 
-                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
@@ -208,15 +208,15 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         };
         dataLoader.executeDialog();
         initTranslationArray(originalPoints.size());
-        System.out.println(
-                "Hayabusa2LidarSearchDataCollection: setLidarData: before while loop");
+//        System.out.println(
+//                "Hayabusa2LidarSearchDataCollection: setLidarData: before while loop");
 
         radialOffset = 0.0;
 
         computeTracks();
 
         Stopwatch sw=new Stopwatch();
-        System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
+//        System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
         sw.reset();
         sw.start();
 
@@ -230,20 +230,20 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         for (Track t : tracksToRemove)
             tracks.remove(t);
 
-        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+//        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
         sw.reset();
         sw.start();
 
         assignInitialColorToTrack();
 
-        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+//        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
         sw.reset();
         sw.start();
 
 
         updateTrackPolydata();
 
-        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+//        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
 
 
         selectPoint(-1);
@@ -306,7 +306,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
             return;
 
 
-        System.out.println("total points: " + originalPoints.size());
+//        System.out.println("total points: " + originalPoints.size());
         int totalpoints = 0;
         Set<Integer> keys = filesWithPoints.keySet();
         for (Integer key : keys) {
@@ -331,7 +331,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 
         }
 
-        System.out.println("total points in tracks: " + totalpoints);
+//        System.out.println("total points in tracks: " + totalpoints);
 
 
         // sort tracks by their starting time

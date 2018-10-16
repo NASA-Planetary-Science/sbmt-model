@@ -67,7 +67,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
+//            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
             Path basePath = Paths.get(datasourcePath);
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
@@ -82,7 +82,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
     {
         if (datasourceName != null && datasourceName.length() > 0)
         {
-            System.out.println("Setting current datasource: " + datasourceName);
+//            System.out.println("Setting current datasource: " + datasourceName);
             FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton != null)
                 currentSkeleton = skeleton;
@@ -135,7 +135,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                 for (Integer cidx : cubeList)
                 {
                     Path leafPath=currentSkeleton.getNodeById(cidx).getPath();
-                    System.out.println("Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
+//                    System.out.println("Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
                     Path dataFilePath=leafPath.resolve("data");
                     File dataFile=FileCache.getFileFromServer(dataFilePath.toString());
                     if (!dataFile.exists())
@@ -152,14 +152,14 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                 cancel(true);
                 initTranslationArray(originalPoints.size());
 
-                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
                 // Sort points in time order
                 Collections.sort(originalPoints);
 
-                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
@@ -168,26 +168,26 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
 
                 computeTracks();
 
-                System.out.println("Compute Track Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("Compute Track Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
                 removeTracksThatAreTooSmall();
 
-                System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
                 assignInitialColorToTrack();
 
-                System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
 
                 updateTrackPolydata();
 
-                System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+//                System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
 
                 loading=false;
 
