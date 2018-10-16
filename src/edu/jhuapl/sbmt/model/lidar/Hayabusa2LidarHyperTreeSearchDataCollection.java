@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,22 +34,22 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
-import edu.jhuapl.sbmt.lidar.hyperoctree.ola.OlaFSHyperPoint;
-import edu.jhuapl.sbmt.lidar.hyperoctree.ola.OlaFSHyperTreeSkeleton;
+import edu.jhuapl.sbmt.lidar.hyperoctree.hayabusa2.Hayabusa2LidarHypertreeSkeleton;
+import edu.jhuapl.sbmt.lidar.hyperoctree.hayabusa2.Hayabusa2LidarPoint;
+import edu.jhuapl.sbmt.util.TimeUtil;
 
-public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
+public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
 {
     public enum TrackFileType
     {
-        TEXT,
-        BINARY,
-        OLA_LEVEL_2
+        TEXT
     };
 
-    private Map<String, FSHyperTreeSkeleton> skeletons = new HashMap<String, FSHyperTreeSkeleton>();
-    private FSHyperTreeSkeleton currentSkeleton;
+    private Map<String, Hayabusa2LidarHypertreeSkeleton> skeletons = new HashMap<String, Hayabusa2LidarHypertreeSkeleton>();
+    private Hayabusa2LidarHypertreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
     private boolean loading=false;
+    Map<Integer, List<Hayabusa2LidarPoint>> filesWithPoints = new HashMap<Integer, List<Hayabusa2LidarPoint>>();
 
     @Override
     public boolean isLoading()
@@ -54,7 +57,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         return loading;
     }
 
-    public OlaLidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
+    public Hayabusa2LidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
         super(smallBodyModel);
     }
@@ -75,10 +78,10 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         {
 //            System.out.println("Adding datasource: " + datasourceName + " - " + datasourcePath);
             Path basePath = Paths.get(datasourcePath);
-            FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
+            Hayabusa2LidarHypertreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton == null)
             {
-                skeleton = new OlaFSHyperTreeSkeleton(basePath);
+                skeleton = new Hayabusa2LidarHypertreeSkeleton(basePath);
                 skeletons.put(datasourceName, skeleton);
             }
         }
@@ -89,7 +92,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         if (datasourceName != null && datasourceName.length() > 0)
         {
 //            System.out.println("Setting current datasource: " + datasourceName);
-            FSHyperTreeSkeleton skeleton = skeletons.get(datasourceName);
+            Hayabusa2LidarHypertreeSkeleton skeleton = skeletons.get(datasourceName);
             if (skeleton != null)
                 currentSkeleton = skeleton;
         }
@@ -112,36 +115,46 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         return currentSkeleton.getLeavesIntersectingBoundingBox(bounds);
     }
 
+    public TreeSet<Integer> getLeavesIntersectingBoundingBox(BoundingBox bbox, double[] tlims, double[] scrangeLims)
+    {
+        double[] bounds=new double[]{bbox.xmin,bbox.xmax,bbox.ymin,bbox.ymax,bbox.zmin,bbox.zmax,tlims[0],tlims[1],scrangeLims[0],scrangeLims[1]};
+        return currentSkeleton.getLeavesIntersectingBoundingBox(bounds);
+    }
+
     public void setParentForProgressMonitor(JComponent component)
     {
         this.parentForProgressMonitor=component;
     }
 
+
     @Override
     public void setLidarData(String dataSource, final double startDate,
             final double stopDate, final TreeSet<Integer> cubeList,
             final PointInRegionChecker pointInRegionChecker,
-            double timeSeparationBetweenTracks, int minTrackLength)
+            double timeSeparationBetweenTracks, int minTrackLength, final double minRange, final double maxRange)
                     throws IOException, ParseException
     {
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
         // Here it corresponds to the list of leaves of an octree that intersect the bounding box of the user selection area.
 
-        ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading OLA datapoints ("+cubeList.size()+" individual chunks)")
+
+        ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading Hayabusa2 Lidar datapoints ("+cubeList.size()+" individual chunks)")
         {
             @Override
             protected Void doInBackground() throws Exception
-           {
+            {
                 Stopwatch sw=new Stopwatch();
                 sw.start();
                 loading=true;
 
-//                originalPoints.clear();
+                 originalPoints.clear();
+                 filesWithPoints.clear();
+
                 int cnt=0;
                 for (Integer cidx : cubeList)
                 {
                     Path leafPath=currentSkeleton.getNodeById(cidx).getPath();
-//                    System.out.println("OlaLidarHyperTreeSearchDataCollection: setLidarData: Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
+//                    System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData: Loading data partition "+(cnt+1)+"/"+cubeList.size()+" (id="+cidx+") \""+leafPath+"\"");
                     Path dataFilePath=leafPath.resolve("data");
                     File dataFile=FileCache.getFileFromServer(dataFilePath.toString());
                     if (!dataFile.exists())
@@ -149,16 +162,39 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     List<LidarPoint> pts=readDataFile(dataFile,pointInRegionChecker,new double[]{startDate,stopDate});
                     for (int i=0; i<pts.size(); i++)
                     {
-                        originalPoints.add(pts.get(i));
-                        originalPointsSourceFiles.put(pts.get(i),((OlaFSHyperPoint)pts.get(i)).getFileNum());
+
+                        Hayabusa2LidarPoint currPt = (Hayabusa2LidarPoint)pts.get(i);
+                        if (currPt.getRangeToSC() > minRange && currPt.getRangeToSC() < maxRange) {
+                            int fileNum = currPt.getFileNum();
+                            originalPointsSourceFiles.put(currPt, fileNum);
+
+                            // if list already exists, just add point
+                            if(filesWithPoints.containsKey(fileNum)) {
+                                List<Hayabusa2LidarPoint> currList = filesWithPoints.get(fileNum);
+                                if (!currList.contains(currPt)) {
+                                    currList.add(currPt);
+                                }
+                                filesWithPoints.put(fileNum, currList);
+                            } else { // otherwise, create list and add point
+                                List<Hayabusa2LidarPoint> currList = new ArrayList<Hayabusa2LidarPoint>();
+                                currList.add(currPt);
+                                filesWithPoints.put(fileNum, currList);
+                            }
+                        }
                     }
                     //
                     cnt++;
                     double progressPercentage=((double)cnt/(double)cubeList.size()*100);
-                   setProgress((int)progressPercentage);
+                    setProgress((int)progressPercentage);
                     if (isCancelled())
                         break;
-               }
+                }
+
+                // now build originalpoints from all of the unique lists
+                for (Integer key : filesWithPoints.keySet()) {
+                    originalPoints.addAll(filesWithPoints.get(key));
+                }
+
                 cancel(true);
                 loading=false;
 
@@ -167,79 +203,52 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 sw.start();
 
                 return null;
-           }
+            }
 
-
-//            return null;
-  //     }
         };
         dataLoader.executeDialog();
         initTranslationArray(originalPoints.size());
 //        System.out.println(
-//                "OlaLidarHyperTreeSearchDataCollection: setLidarData: before while loop");
-//       while (isLoading())
-//       {
-//           System.out.println(
-//                "OlaLidarHyperTreeSearchDataCollection: setLidarData: while loop");
-//           try
-//           {
-//               Thread.sleep(100);  // check every fraction of a second whether the data loading is complete
-//           }
-//           catch (InterruptedException e)
-//           {
-//               // TODO Auto-generated catch block
-//               e.printStackTrace();
-//           }
+//                "Hayabusa2LidarSearchDataCollection: setLidarData: before while loop");
 
-                    // Sort points in time order
-    //                Collections.sort(originalPoints);
+        radialOffset = 0.0;
 
-    //                System.out.println("Sorting Time="+sw.elapsedMillis()+" ms");
-    //                sw.reset();
-    //                sw.start();
+        computeTracks();
 
-                    radialOffset = 0.0;
-    //                translation[0] = translation[1] = translation[2] = 0.0;
+        Stopwatch sw=new Stopwatch();
+//        System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
+        sw.reset();
+        sw.start();
 
-                    computeTracks();
+        removeTracksThatAreTooSmall();
 
-                    Stopwatch sw=new Stopwatch();
-//                    System.out.println("OlaLidarHyperTreeSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
-                    sw.reset();
-                    sw.start();
+        // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
+        List<Track> tracksToRemove=Lists.newArrayList();
+        for (Track t : tracks)
+            if (t.timeRange[0].length()==0 || t.timeRange[1].length()==0)
+                tracksToRemove.add(t);
+        for (Track t : tracksToRemove)
+            tracks.remove(t);
 
-                    removeTracksThatAreTooSmall();
+//        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+        sw.reset();
+        sw.start();
 
-                    // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
-                    List<Track> tracksToRemove=Lists.newArrayList();
-                    for (Track t : tracks)
-                        if (t.timeRange[0].length()==0 || t.timeRange[1].length()==0)
-                            tracksToRemove.add(t);
-                    for (Track t : tracksToRemove)
-                        tracks.remove(t);
+        assignInitialColorToTrack();
 
-//                    System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
-                    sw.reset();
-                    sw.start();
-
-                    assignInitialColorToTrack();
-
-//                    System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-                    sw.reset();
-                    sw.start();
+//        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+        sw.reset();
+        sw.start();
 
 
-                    updateTrackPolydata();
+        updateTrackPolydata();
 
-//                    System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+//        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
 
 
-            selectPoint(-1);
+        selectPoint(-1);
 
-            pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//       }
-//       System.out.println(
-//            "OlaLidarHyperTreeSearchDataCollection: setLidarData: after while loop");
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     static vtkPoints points=new vtkPoints();
@@ -250,7 +259,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         try {
             DataInputStream stream=new DataInputStream(new FileInputStream(dataInputFile));
             while (true) {
-                OlaFSHyperPoint pt=new OlaFSHyperPoint(stream);                                         // TODO: this is OLA-specific
+                Hayabusa2LidarPoint pt=new Hayabusa2LidarPoint(stream);
                 if (pt.getTime()<timeLimits[0] || pt.getTime()>timeLimits[1])   // throw away points outside time limits
                     continue;
                 if (pointInRegionChecker!=null)
@@ -260,7 +269,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     continue;
                 }
                 //
-/*                int id=points.InsertNextPoint(pt.getTargetPosition().toArray());
+                /*                int id=points.InsertNextPoint(pt.getTargetPosition().toArray());
                 vtkVertex vert=new vtkVertex();
                 vert.GetPointIds().SetId(0, id);
                 cells.InsertNextCell(vert);*/
@@ -271,7 +280,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
             if (!e.getClass().equals(EOFException.class))
                 e.printStackTrace();
         }
-/*        //
+        /*        //
         vtkPolyData polyData=new vtkPolyData();
         polyData.SetPoints(points);
         polyData.SetVerts(cells);
@@ -287,21 +296,63 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
     @Override
     protected void computeTracks()
     {
-//        System.out.println(
-//                "OlaLidarHyperTreeSearchDataCollection: computeTracks: OLA compute tracks");
         localFileMap.clear();
         localFileMap.putAll(getCurrentSkeleton().getFileMap());
-        super.computeTracks();
-        //
-        for (int i=0; i<tracks.size(); i++)
-        {
-            Track track=tracks.get(i);
-            for (int j=track.startId; j<=track.stopId; j++)
-                track.registerSourceFileIndex(((OlaFSHyperPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
+
+        tracks.clear();
+
+        int size = originalPoints.size();
+        if (size == 0)
+            return;
+
+
+//        System.out.println("total points: " + originalPoints.size());
+        int totalpoints = 0;
+        Set<Integer> keys = filesWithPoints.keySet();
+        for (Integer key : keys) {
+            Track track = new Track();
+
+            track.registerSourceFileIndex(key, localFileMap);
+            List<Hayabusa2LidarPoint> currPoints = filesWithPoints.get(key);
+            Collections.sort(currPoints);
+            Hayabusa2LidarPoint start = currPoints.get(0);
+            Hayabusa2LidarPoint stop = currPoints.get(currPoints.size() - 1);
+
+            int istart = originalPoints.indexOf(start);
+            int istop = originalPoints.indexOf(stop);
+            track.timeRange = new String[]
+                    {TimeUtil.et2str(start.getTime()),
+                     TimeUtil.et2str(stop.getTime())};
+            // get start id and stop id from original points
+            track.startId = istart;
+            track.stopId = istop;
+            tracks.add(track);
+            totalpoints += (istop - istart + 1);
+
         }
+
+//        System.out.println("total points in tracks: " + totalpoints);
+
+
+        // sort tracks by their starting time
+        Collections.sort(tracks, new Comparator<Track>() {
+            public int compare(Track track1, Track track2) {
+                double track1Start = TimeUtil.str2et(track1.timeRange[0]);
+                double track2Start = TimeUtil.str2et(track2.timeRange[0]);
+                return track1Start > track2Start ? 1 : track1Start < track2Start ? -1 : 0;
+            }
+        });
+
+
     }
 
-    public FSHyperTreeSkeleton getCurrentSkeleton()
+
+
+
+
+
+
+    public Hayabusa2LidarHypertreeSkeleton getCurrentSkeleton()
     {
         return currentSkeleton;
     }

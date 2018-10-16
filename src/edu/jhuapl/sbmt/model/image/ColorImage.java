@@ -130,6 +130,11 @@ public class ColorImage extends Image implements PropertyChangeListener
             "G: " + new File(greenImageKey.name).getName().substring(ind0, ind1) + ", " +
             "B: " + new File(blueImageKey.name).getName().substring(ind0, ind1);
         }
+
+        public ImageKey getImageKey()
+        {
+            return redImageKey;
+        }
     }
 
 
@@ -222,19 +227,19 @@ public class ColorImage extends Image implements PropertyChangeListener
         double[] blueRange = blueImage.getScalarRange(blueImageSlice);
 
         double redfullRange = redRange[1] - redRange[0];
-        double reddx = redfullRange / 255.0f;
+        double reddx = redfullRange / 255.0;
         double redmin = redRange[0] + redIntensityRange.min*reddx;
         double redmax = redRange[0] + redIntensityRange.max*reddx;
         double redstretchRange = redmax - redmin;
 
         double greenfullRange = greenRange[1] - greenRange[0];
-        double greendx = greenfullRange / 255.0f;
+        double greendx = greenfullRange / 255.0;
         double greenmin = greenRange[0] + greenIntensityRange.min*greendx;
         double greenmax = greenRange[0] + greenIntensityRange.max*greendx;
         double greenstretchRange = greenmax - greenmin;
 
         double bluefullRange = blueRange[1] - blueRange[0];
-        double bluedx = bluefullRange / 255.0f;
+        double bluedx = bluefullRange / 255.0;
         double bluemin = blueRange[0] + blueIntensityRange.min*bluedx;
         double bluemax = blueRange[0] + blueIntensityRange.max*bluedx;
         double bluestretchRange = bluemax - bluemin;
@@ -400,6 +405,14 @@ public class ColorImage extends Image implements PropertyChangeListener
                     colorImage.SetScalarComponentFromFloat(j, i, 0, 0, redComponent);
                     colorImage.SetScalarComponentFromFloat(j, i, 0, 1, greenComponent);
                     colorImage.SetScalarComponentFromFloat(j, i, 0, 2, blueComponent);
+                }
+                // If there is no intersection then set the pixel to black. The
+                // memory associated with vtkImageData is not cleared by default.
+                else
+                {
+                    colorImage.SetScalarComponentFromFloat(j, i, 0, 0, 0.00);
+                    colorImage.SetScalarComponentFromFloat(j, i, 0, 1, 0.00);
+                    colorImage.SetScalarComponentFromFloat(j, i, 0, 2, 0.00);
                 }
             }
         }

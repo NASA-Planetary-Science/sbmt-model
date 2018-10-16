@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.spectrum;
+package edu.jhuapl.sbmt.model.spectrum.coloring;
 
 public enum SpectrumColoringStyle
 {

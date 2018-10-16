@@ -174,7 +174,6 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
         {
-//            System.out.println("BoundaryCollection MODEL_CHANGED event: " + evt.getSource().getClass().getSimpleName());
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         }
     }

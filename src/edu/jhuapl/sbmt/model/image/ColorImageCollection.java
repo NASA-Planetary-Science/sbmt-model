@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import nom.tam.fits.FitsException;
+import java.util.Set;
+import java.util.Vector;
 
 import vtk.vtkActor;
 import vtk.vtkProp;
@@ -20,6 +20,8 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ColorImage.ColorImageKey;
 import edu.jhuapl.sbmt.model.image.ColorImage.NoOverlapException;
 
+import nom.tam.fits.FitsException;
+
 public class ColorImageCollection extends AbstractModel implements PropertyChangeListener
 {
     private SmallBodyModel smallBodyModel;
@@ -30,16 +32,26 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
 
     private HashMap<vtkProp, ColorImage> actorToImageMap = new HashMap<vtkProp, ColorImage>();
 
+    private Vector<ColorImage> loadedImages;
+    private Vector<ColorImageKey> loadedImageKeys;
+
     public ColorImageCollection(SmallBodyModel smallBodyModel, ModelManager modelManager)
     {
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
+        this.loadedImages = new Vector<ColorImage>();
+        this.loadedImageKeys = new Vector<ColorImageKey>();
     }
 
     protected ColorImage createImage(ColorImageKey key,
             SmallBodyModel smallBodyModel) throws FitsException, IOException, NoOverlapException
     {
         return new ColorImage(key, smallBodyModel, modelManager);
+    }
+
+    public Set<ColorImage> getImages()
+    {
+        return imageToActorsMap.keySet();
     }
 
     private boolean containsKey(ColorImageKey key)
@@ -70,6 +82,15 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
             return;
 
         ColorImage image = createImage(key, smallBodyModel);
+        if (!loadedImageKeys.contains(key))
+        {
+            loadedImageKeys.add(key);
+            loadedImages.add(image);
+        }
+        else
+        {
+            image = loadedImages.get(loadedImageKeys.indexOf(key));
+        }
 
         smallBodyModel.addPropertyChangeListener(image);
         image.addPropertyChangeListener(this);
@@ -89,6 +110,7 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     public void removeImage(ColorImageKey key)
     {
         ColorImage image = getImageFromKey(key);
+//        loadedImages.remove(image);
 
         List<vtkProp> actors = imageToActorsMap.get(image);
 
@@ -160,5 +182,15 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
 
         // Return status message for display
         return status;
+    }
+
+    public Vector<ColorImage> getLoadedImages()
+    {
+        return loadedImages;
+    }
+
+    public Vector<ColorImageKey> getLoadedImageKeys()
+    {
+        return loadedImageKeys;
     }
 }

@@ -72,6 +72,7 @@ public class LidarSearchDataCollection extends AbstractModel
         LIDAR_ONLY("Lidar Point Only (X,Y,Z)"),
         LIDAR_WITH_INTENSITY("Lidar Point (X,Y,Z) with Intensity (Albedo)"),
         TIME_WITH_LIDAR("Time, Lidar Point (X,Y,Z)"),
+        TIME_LIDAR_RANGE("Time, Lidar (X,Y,Z), Range"),
         TIME_LIDAR_ALBEDO("Time, Lidar (X,Y,Z), Albedo"),
         LIDAR_SC("Lidar (X,Y,Z), S/C (SCx, SCy, SCz)"),
         TIME_LIDAR_SC("Time, Lidar (X,Y,Z), S/C (SCx, SCy, SCz)"),
@@ -141,13 +142,15 @@ public class LidarSearchDataCollection extends AbstractModel
     private String dataSource;
     private double startDate;
     private double stopDate;
+    private double minRange;
+    private double maxRange;
     private TreeSet<Integer> cubeList;
 
     private int selectedPoint = -1;
 
     protected List<Track> tracks = new ArrayList<Track>();
     private double timeSeparationBetweenTracks = 10.0; // In seconds
-    private int minTrackLength = 1;
+    private int minTrackLength = 5;
     int[] defaultColor = {0, 0, 255, 255};
     private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
     private boolean enableTrackErrorComputation = false;
@@ -264,6 +267,32 @@ public class LidarSearchDataCollection extends AbstractModel
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
+    public void setLidarData(String dataSource,
+            double startDate,
+            double stopDate,
+            TreeSet<Integer> cubeList,
+            PointInRegionChecker pointInRegionChecker,
+            double timeSeparationBetweenTracks,
+            int minTrackLength,
+            double minRange, double maxRange) throws IOException, ParseException
+    {
+        runQuery(
+                dataSource,
+                startDate,
+                stopDate,
+                cubeList,
+                pointInRegionChecker,
+                timeSeparationBetweenTracks,
+                minTrackLength,
+                minRange,
+                maxRange);
+
+        selectPoint(-1);
+
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+
 
     protected void runQuery(
             String dataSource,
@@ -348,10 +377,11 @@ public class LidarSearchDataCollection extends AbstractModel
                 scpos[0] = Double.parseDouble(vals[scxindex]);
                 scpos[1] = Double.parseDouble(vals[scyindex]);
                 scpos[2] = Double.parseDouble(vals[sczindex]);
+                double range = 0; // TODO
 
                 if (pointInRegionChecker==null) // if this part of the code has been reached and the point-checker is null then this is a time-only search, and the time criterion has already been met (cf. continue statement a few lines above)
                 {
-                    LidarPoint p=new BasicLidarPoint(target, scpos, time, 0);
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, range, 0);
                     originalPoints.add(p);
                     originalPointsSourceFiles.put(p, fileId);
                     continue;
@@ -360,7 +390,133 @@ public class LidarSearchDataCollection extends AbstractModel
 
                 if (pointInRegionChecker.checkPointIsInRegion(target))  // here, the point is known to be within the specified time bounds, and since the point checker exists the target coordinates are filtered against
                 {
-                    LidarPoint p=new BasicLidarPoint(target, scpos, time, 0);
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, range, 0);
+                    originalPoints.add(p);
+                    originalPointsSourceFiles.put(p, fileId);
+                    continue;
+                }
+            }
+            initTranslationArray(originalPoints.size());
+            in.close();
+        }
+
+
+        radialOffset = 0.0;
+//        translation[0] = translation[1] = translation[2] = 0.0;
+
+        computeTracks();
+        removeTracksThatAreTooSmall();
+
+        assignInitialColorToTrack();
+
+        updateTrackPolydata();
+    }
+
+
+
+    protected void runQuery(
+            String dataSource,
+            double startDate,
+            double stopDate,
+            TreeSet<Integer> cubeList,
+            PointInRegionChecker pointInRegionChecker,
+            double timeSeparationBetweenTracks,
+            int minTrackLength,
+            double minRange,
+            double maxRange) throws IOException, ParseException
+    {
+
+        if (dataSource.equals(this.dataSource) &&
+                startDate == this.startDate &&
+                stopDate == this.stopDate &&
+                cubeList.equals(this.cubeList) &&
+                timeSeparationBetweenTracks == this.timeSeparationBetweenTracks &&
+                minTrackLength == this.minTrackLength &&
+                minRange == this.minRange &&
+                this.maxRange == this.maxRange)
+        {
+            return;
+        }
+
+        // Make clones since otherwise the previous if statement might
+        // evaluate to true even if something changed.
+        this.dataSource = new String(dataSource);
+        this.startDate = startDate;
+        this.stopDate = stopDate;
+        this.cubeList = (TreeSet<Integer>)cubeList.clone();
+        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+        this.minTrackLength = minTrackLength;
+        this.minRange = minRange;
+        this.maxRange = maxRange;
+
+
+        double start = startDate;
+        double stop = stopDate;
+
+        originalPoints.clear();
+        originalPointsSourceFiles.clear();  // this is only used when generating file ids upon loading from local disk
+
+
+        int timeindex = 0;
+        int xindex = 1;
+        int yindex = 2;
+        int zindex = 3;
+        int scxindex = 4;
+        int scyindex = 5;
+        int sczindex = 6;
+
+        for (Integer cubeid : cubeList)
+        {
+            String filename = getLidarDataSourceMap().get(dataSource) + "/" + cubeid + ".lidarcube";
+            File file = FileCache.getFileFromServer(filename);
+
+            int fileId;
+            if (!localFileMap.containsValue(file.toString()))
+            {
+                fileId=localFileMap.size();
+                localFileMap.put(fileId, file.toString());
+            }
+            else
+                fileId=localFileMap.inverse().get(file.toString());
+
+            if (file == null)
+                continue;
+
+            InputStream fs = new FileInputStream(file.getAbsolutePath());
+            InputStreamReader isr = new InputStreamReader(fs);
+            BufferedReader in = new BufferedReader(isr);
+
+            String lineRead;
+            while ((lineRead = in.readLine()) != null)
+            {
+                String[] vals = lineRead.trim().split("\\s+");
+
+                double time = TimeUtil.str2et(vals[timeindex]);
+                if (time < start || time > stop)
+                    continue;
+
+                double[] scpos = new double[3];
+                double[] target = new double[3];
+                target[0] = Double.parseDouble(vals[xindex]);
+                target[1] = Double.parseDouble(vals[yindex]);
+                target[2] = Double.parseDouble(vals[zindex]);
+                scpos[0] = Double.parseDouble(vals[scxindex]);
+                scpos[1] = Double.parseDouble(vals[scyindex]);
+                scpos[2] = Double.parseDouble(vals[sczindex]);
+                double range = 0; // TODO
+
+                if (pointInRegionChecker==null) // if this part of the code has been reached and the point-checker is null then this is a time-only search, and the time criterion has already been met (cf. continue statement a few lines above)
+                {
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, range, 0);
+                    originalPoints.add(p);
+                    originalPointsSourceFiles.put(p, fileId);
+                    continue;
+                }
+
+
+                if (pointInRegionChecker.checkPointIsInRegion(target))  // here, the point is known to be within the specified time bounds, and since the point checker exists the target coordinates are filtered against
+                {
+                    LidarPoint p=new BasicLidarPoint(target, scpos, time, range, 0);
                     originalPoints.add(p);
                     originalPointsSourceFiles.put(p, fileId);
                     continue;
@@ -509,7 +665,8 @@ public class LidarSearchDataCollection extends AbstractModel
                 throw e;
             }
 
-            LidarPoint pt=new BasicLidarPoint(target, scpos, time, 0);
+            double range = 0; // TODO
+            LidarPoint pt=new BasicLidarPoint(target, scpos, time, range, 0);
             originalPoints.add(pt);
             originalPointsSourceFiles.put(pt,fileId);
         }
@@ -561,11 +718,13 @@ public class LidarSearchDataCollection extends AbstractModel
 
         int fileId=localFileMap.inverse().get(file.toString());
 
+        double range =0; // TODO
         LidarPoint lidarPt = null;
         for (int i=0; i<polyData.GetNumberOfPoints(); i+=10)
         {
             double[] pt=polyData.GetPoint(i);
-            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, polyData.GetPointData().GetArray(0).GetTuple1(i), fileId);
+
+            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, polyData.GetPointData().GetArray(0).GetTuple1(i), range,  fileId);
             originalPointsSourceFiles.put(lidarPt,fileId);
             originalPoints.add(lidarPt);
         }
@@ -748,6 +907,9 @@ public class LidarSearchDataCollection extends AbstractModel
 
 
     }
+
+
+
 
     /**
      * If transformPoint is true, then the lidar points (not scpos) are translated using the current
@@ -1027,7 +1189,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 List<Double> intensityList = new LinkedList<Double>();
 
                 // Go through each point in the track
-                for (int i=startId; i<=stopId; ++i)
+                for (int i=startId; i<=stopId; i++)
                 {
 
                     double[] pt = originalPoints.get(i).getTargetPosition().toArray();
@@ -1082,23 +1244,23 @@ public class LidarSearchDataCollection extends AbstractModel
 
     private void removeTrack(int trackId)
     {
-        Track track = tracks.get(trackId);
-        int trackSize = track.getNumberOfPoints();
+//        Track track = tracks.get(trackId);
+//        int trackSize = track.getNumberOfPoints();
 
-        for (int i=track.stopId; i>=track.startId; --i)
-            originalPoints.remove(i);
+//        for (int i=track.stopId; i>=track.startId; i--)
+//            originalPoints.remove(i);
 
         tracks.remove(trackId);
 
         // Go through all tracks that follow the deleted track and shift
         // all the start and stop ids down by the size of the deleted track
-        int numberOfTracks = tracks.size();
-        for (int i=trackId; i<numberOfTracks; ++i)
-        {
-            track = tracks.get(i);
-            track.startId -= trackSize;
-            track.stopId -= trackSize;
-        }
+//        int numberOfTracks = tracks.size();
+//        for (int i=trackId; i<numberOfTracks; ++i)
+//        {
+//            track = tracks.get(i);
+//            track.startId -= trackSize;
+//            track.stopId -= trackSize;
+//        }
     }
 
     protected void removeTracksThatAreTooSmall()
@@ -1693,4 +1855,5 @@ public class LidarSearchDataCollection extends AbstractModel
         updateSelectedPoint();
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
+
 }

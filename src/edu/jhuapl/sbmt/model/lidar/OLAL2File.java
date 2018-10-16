@@ -56,6 +56,7 @@ public class OLAL2File
             while (true)
             {
                 double intensityReceived = 0;
+                double rangeToSC = 0; // TODO range to s/c
 
                 in.readFully(readBuffer);
                 double time=ByteBuffer.wrap(readBuffer,timeAddx,Double.BYTES).order(ByteOrder.LITTLE_ENDIAN).getDouble();
@@ -69,7 +70,7 @@ public class OLAL2File
                 //
                 boolean noise = ((flagStatus == 0 || flagStatus == 1) ? false : true);
                 if (!noise)
-                    points.add(new OlaFSHyperPoint(tgPos[0]*scale, tgPos[1]*scale, tgPos[2]*scale, time, scPos[0]*scale, scPos[1]*scale, scPos[2]*scale, intensityReceived, id));
+                    points.add(new OlaFSHyperPoint(tgPos[0]*scale, tgPos[1]*scale, tgPos[2]*scale, time, scPos[0]*scale, scPos[1]*scale, scPos[2]*scale, rangeToSC, intensityReceived, id));
             }
 
         }
