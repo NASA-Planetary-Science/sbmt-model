@@ -68,7 +68,10 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     public void addImage(ImageKey key) throws FitsException, IOException
     {
         if (containsKey(key))
+        {
+            System.out.println("ImageCollection: addImage: already contains key");
             return;
+        }
 
         Image image = createImage(key, smallBodyModel);
 
