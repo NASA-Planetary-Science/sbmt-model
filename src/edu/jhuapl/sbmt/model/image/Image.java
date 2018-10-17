@@ -112,6 +112,11 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
 
         public int slice;
 
+        public ImageKey(ImageKey key, ImageSource source, ImageType type, String name)
+        {
+            this(name, source, key.fileType, type, key.instrument, key.band, key.slice);
+        }
+
         public ImageKey(String name, ImageSource source)
         {
             this(name, source, null, null, null, null, 0);
