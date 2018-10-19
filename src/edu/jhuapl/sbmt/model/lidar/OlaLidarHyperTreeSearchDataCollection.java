@@ -132,6 +132,10 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
         // Here it corresponds to the list of leaves of an octree that intersect the bounding box of the user selection area.
 
+        setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
+        setMinTrackLength(minTrackLength);
+
+
         ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading Hayabusa2 Lidar datapoints ("+cubeList.size()+" individual chunks)")
         {
             @Override
