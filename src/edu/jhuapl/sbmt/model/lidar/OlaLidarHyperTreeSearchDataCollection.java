@@ -311,12 +311,12 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         return pts;
     }
 
+
+
+
     @Override
     protected void computeTracks()
     {
-
-//        System.out.println(
-//                "OlaLidarHyperTreeSearchDataCollection: computeTracks: OLA compute tracks");
         localFileMap.clear();
         localFileMap.putAll(getCurrentSkeleton().getFileMap());
 
@@ -326,28 +326,54 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         if (size == 0)
             return;
 
-
+        double prevTime;
         Set<Integer> keys = filesWithPoints.keySet();
         for (Integer key : keys) {
             Track track = new Track();
 
             track.registerSourceFileIndex(key, localFileMap);
             List<OlaFSHyperPoint> currPoints = filesWithPoints.get(key);
+            // sort by time and check track separation
             Collections.sort(currPoints);
-            OlaFSHyperPoint start = currPoints.get(0);
+            OlaFSHyperPoint start = currPoints.get(0); // start and stop time of tracks in this file
+            prevTime = start.getTime();
             OlaFSHyperPoint stop = currPoints.get(currPoints.size() - 1);
 
+            // original start and stop points are first and last.
+            // this will change if points are separated by more than
+            // time separation between tracks
             int istart = originalPoints.indexOf(start);
             int istop = originalPoints.indexOf(stop);
-            track.timeRange = new String[]
-                    {TimeUtil.et2str(start.getTime()),
-                     TimeUtil.et2str(stop.getTime())};
-            // get start id and stop id from original points
-            track.startId = istart;
-            track.stopId = istop;
-            tracks.add(track);
 
+            for (OlaFSHyperPoint point : currPoints) {
+                double currentTime = point.getTime();
+                double diff = currentTime - prevTime;
+                if (diff >= getTimeSeparationBetweenTracks()) {
+                    // start a new track
+                    int iLastPoint = currPoints.indexOf(point) - 1;
+                    istop = originalPoints.indexOf(currPoints.get(iLastPoint)); // get index of last point in original points
+                    stop = (OlaFSHyperPoint) originalPoints.get(istop); // get last point
+
+                    // create the current track and add to tracks
+                    track.timeRange = new String[]
+                            {TimeUtil.et2str(start.getTime()),
+                             TimeUtil.et2str(stop.getTime())};
+                    track.startId = istart;
+                    track.stopId = istop;
+                    tracks.add(track);
+
+                    // start new track with this current point
+                    track = new Track();
+                    track.registerSourceFileIndex(key, localFileMap);
+                    istart = originalPoints.indexOf(point);
+                    start = point;
+                }
+                prevTime = currentTime;
+            }
         }
+
+//        System.out.println("total points in tracks: " + totalpoints);
+
 
         // sort tracks by their starting time
         Collections.sort(tracks, new Comparator<Track>() {
@@ -360,6 +386,9 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
 
     }
+
+
+
 
     public FSHyperTreeSkeleton getCurrentSkeleton()
     {

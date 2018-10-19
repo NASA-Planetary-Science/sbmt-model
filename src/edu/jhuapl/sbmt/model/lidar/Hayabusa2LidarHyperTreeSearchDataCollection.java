@@ -136,7 +136,8 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
     {
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
         // Here it corresponds to the list of leaves of an octree that intersect the bounding box of the user selection area.
-
+        setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
+        setMinTrackLength(minTrackLength);
 
         ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading Hayabusa2 Lidar datapoints ("+cubeList.size()+" individual chunks)")
         {
@@ -305,30 +306,50 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         if (size == 0)
             return;
 
-
-//        System.out.println("total points: " + originalPoints.size());
-        int totalpoints = 0;
+        double prevTime;
         Set<Integer> keys = filesWithPoints.keySet();
         for (Integer key : keys) {
             Track track = new Track();
 
             track.registerSourceFileIndex(key, localFileMap);
             List<Hayabusa2LidarPoint> currPoints = filesWithPoints.get(key);
+            // sort by time and check track separation
             Collections.sort(currPoints);
-            Hayabusa2LidarPoint start = currPoints.get(0);
+            Hayabusa2LidarPoint start = currPoints.get(0); // start and stop time of tracks in this file
+            prevTime = start.getTime();
             Hayabusa2LidarPoint stop = currPoints.get(currPoints.size() - 1);
 
+            // original start and stop points are first and last.
+            // this will change if points are separated by more than
+            // time separation between tracks
             int istart = originalPoints.indexOf(start);
             int istop = originalPoints.indexOf(stop);
-            track.timeRange = new String[]
-                    {TimeUtil.et2str(start.getTime()),
-                     TimeUtil.et2str(stop.getTime())};
-            // get start id and stop id from original points
-            track.startId = istart;
-            track.stopId = istop;
-            tracks.add(track);
-            totalpoints += (istop - istart + 1);
 
+            for (Hayabusa2LidarPoint point : currPoints) {
+                double currentTime = point.getTime();
+                double diff = currentTime - prevTime;
+                if (diff >= getTimeSeparationBetweenTracks()) {
+                    // start a new track
+                    int iLastPoint = currPoints.indexOf(point) - 1;
+                    istop = originalPoints.indexOf(currPoints.get(iLastPoint)); // get index of last point in original points
+                    stop = (Hayabusa2LidarPoint) originalPoints.get(istop); // get last point
+
+                    // create the current track and add to tracks
+                    track.timeRange = new String[]
+                            {TimeUtil.et2str(start.getTime()),
+                             TimeUtil.et2str(stop.getTime())};
+                    track.startId = istart;
+                    track.stopId = istop;
+                    tracks.add(track);
+
+                    // start new track with this current point
+                    track = new Track();
+                    track.registerSourceFileIndex(key, localFileMap);
+                    istart = originalPoints.indexOf(point);
+                    start = point;
+                }
+                prevTime = currentTime;
+            }
         }
 
 //        System.out.println("total points in tracks: " + totalpoints);
@@ -345,10 +366,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 
 
     }
-
-
-
-
 
 
 

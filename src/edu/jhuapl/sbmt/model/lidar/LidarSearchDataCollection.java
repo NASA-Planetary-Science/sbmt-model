@@ -308,7 +308,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 startDate == this.startDate &&
                 stopDate == this.stopDate &&
                 cubeList.equals(this.cubeList) &&
-                timeSeparationBetweenTracks == this.timeSeparationBetweenTracks &&
+                timeSeparationBetweenTracks == this.getTimeSeparationBetweenTracks() &&
                 minTrackLength == this.minTrackLength)
         {
             return;
@@ -320,7 +320,7 @@ public class LidarSearchDataCollection extends AbstractModel
         this.startDate = startDate;
         this.stopDate = stopDate;
         this.cubeList = (TreeSet<Integer>)cubeList.clone();
-        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+        this.setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
         this.minTrackLength = minTrackLength;
 
 
@@ -430,7 +430,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 startDate == this.startDate &&
                 stopDate == this.stopDate &&
                 cubeList.equals(this.cubeList) &&
-                timeSeparationBetweenTracks == this.timeSeparationBetweenTracks &&
+                timeSeparationBetweenTracks == this.getTimeSeparationBetweenTracks() &&
                 minTrackLength == this.minTrackLength &&
                 minRange == this.minRange &&
                 this.maxRange == this.maxRange)
@@ -444,7 +444,7 @@ public class LidarSearchDataCollection extends AbstractModel
         this.startDate = startDate;
         this.stopDate = stopDate;
         this.cubeList = (TreeSet<Integer>)cubeList.clone();
-        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+        this.setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
         this.minTrackLength = minTrackLength;
         this.minRange = minRange;
         this.maxRange = maxRange;
@@ -882,7 +882,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=1; i<size; ++i)
         {
             double currentTime = originalPoints.get(i).getTime();
-            if (currentTime - prevTime >= timeSeparationBetweenTracks)
+            if (currentTime - prevTime >= getTimeSeparationBetweenTracks())
             {
                 track.stopId = i-1;
                 double t0 = originalPoints.get(track.startId).getTime();
@@ -1839,6 +1839,26 @@ public class LidarSearchDataCollection extends AbstractModel
         //selectedPoint=-1;
         updateSelectedPoint();
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public double getTimeSeparationBetweenTracks()
+    {
+        return timeSeparationBetweenTracks;
+    }
+
+    public void setTimeSeparationBetweenTracks(double timeSeparationBetweenTracks)
+    {
+        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+    }
+
+    public int getMinTrackLength()
+    {
+        return minTrackLength;
+    }
+
+    public void setMinTrackLength(int value)
+    {
+        this.minTrackLength = value;
     }
 
 }
