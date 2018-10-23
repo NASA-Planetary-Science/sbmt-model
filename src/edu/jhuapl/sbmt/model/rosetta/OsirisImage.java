@@ -40,9 +40,12 @@ public class OsirisImage extends PerspectiveImage
     {
         super(key, smallBodyModel, loadPointingOnly);
         offLimbVisibility=true;
+        offLimbBoundaryVisibility = true;
     }
 
     boolean offLimbVisibility;
+    private boolean offLimbBoundaryVisibility;
+
 
     @Override
     protected void processRawImage(vtkImageData rawImage)
@@ -466,7 +469,7 @@ public class OsirisImage extends PerspectiveImage
 
             // set initial visibilities
             offLimbActor.SetVisibility(offLimbVisibility?1:0);
-            offLimbBoundaryActor.SetVisibility(offLimbVisibility?1:0);
+            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
 
         }
 
@@ -522,6 +525,32 @@ public class OsirisImage extends PerspectiveImage
         else
         {
             offLimbActor.VisibilityOff();
+            offLimbBoundaryActor.VisibilityOff();
+        }
+
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    /**
+     * Set visibility of the off-limb footprint boundary
+     *
+     * Checks if offLimbActor has been instantiated; if not then call loadOffLimbPlane() before showing/hiding actors.
+     *
+     * @param visible
+     */
+    public void setOffLimbBoundaryVisibility(boolean visible)
+    {
+
+        offLimbVisibility=visible;
+        if (offLimbActor==null)
+            loadOffLimbPlane();
+
+        if (visible)
+        {
+            offLimbBoundaryActor.VisibilityOn();
+        }
+        else
+        {
             offLimbBoundaryActor.VisibilityOff();
         }
 
