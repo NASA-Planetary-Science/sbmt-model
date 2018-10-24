@@ -47,6 +47,7 @@ public class DEMTable extends MapAndShowTable {
 				DEMTable.Columns.Bndr,
 				MapAndShowTable.Columns.Desc
 		}));
+
 	}
 
 	@Deprecated
@@ -186,6 +187,10 @@ public class DEMTable extends MapAndShowTable {
 		final TableSwingWrapper swingTableWrapper=new TableSwingWrapper(table);
 		swingTableWrapper.setColumnEditable(MapAndShowTable.Columns.Show, false);
 		swingTableWrapper.setColumnEditable(DEMTable.Columns.Bndr, true);
+		swingTableWrapper.setColumnWidth(0, 31);
+		swingTableWrapper.setColumnWidth(1, 31);
+		swingTableWrapper.setColumnWidth(2, 31);
+		swingTableWrapper.setColumnWidth(3, 200);
 		table.addListener(table.new MapAndShowBehavior(swingTableWrapper));
 		return swingTableWrapper;
 	}
