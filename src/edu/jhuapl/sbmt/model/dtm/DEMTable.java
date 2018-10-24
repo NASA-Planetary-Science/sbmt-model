@@ -8,8 +8,8 @@ import edu.jhuapl.saavtk2.event.Event;
 import edu.jhuapl.saavtk2.event.EventListener;
 import edu.jhuapl.saavtk2.table.MapAndShowTable;
 import edu.jhuapl.saavtk2.table.TableColumn;
-import edu.jhuapl.saavtk2.table.TableEntryChangedEvent;
 import edu.jhuapl.saavtk2.table.TableSwingWrapper;
+import edu.jhuapl.saavtk2.table.TableSwingWrapper.TableEntryChangedEvent;
 import edu.jhuapl.sbmt.model.dem.DEMKey;
 
 public class DEMTable extends MapAndShowTable {
