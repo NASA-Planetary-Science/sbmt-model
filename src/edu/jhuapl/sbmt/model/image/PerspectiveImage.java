@@ -4304,8 +4304,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 
 
-    /* FOR OFF-LIMB IMAGES
-     *
+    /*
+     * FOR OFF-LIMB IMAGES
      */
     public double getOffLimbPlaneDepth()
     {
@@ -4322,7 +4322,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void setOffLimbPlaneDepth(double footprintDepth)
     {
         this.offLimbFootprintDepth=footprintDepth;
-        loadOffLimbPlane(footprintDepth);
+//        loadOffLimbPlane(footprintDepth);
     }
 
     /**
@@ -4497,9 +4497,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             {
                 // create the texture first
                 setOffLimbTexture(new vtkTexture());
-                getOffLimbTexture().InterpolateOn();
-                getOffLimbTexture().RepeatOff();
-                getOffLimbTexture().EdgeClampOn();
+                offLimbTexture.InterpolateOn();
+                offLimbTexture.RepeatOff();
+                offLimbTexture.EdgeClampOn();
             }
             //offLimbTexture.SetBlendingMode(3);
             this.setDisplayedImageRange(getDisplayedRange()); // match off-limb image intensity range to that of the on-body footprint; the "this" method call also takes care of syncing the off-limb vtkTexture object with the displayed raw image, above and beyond what the parent class has to do for the on-body geometry
@@ -4507,10 +4507,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             // setup off-limb mapper and actor
             vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
             offLimbMapper.SetInputData(offLimbPlane);
-            if (getOffLimbActor()==null)
+            if (offLimbActor==null)
                 setOffLimbActor(new vtkActor());
-            getOffLimbActor().SetMapper(offLimbMapper);
-            getOffLimbActor().SetTexture(getOffLimbTexture());
+            offLimbActor.SetMapper(offLimbMapper);
+            offLimbActor.SetTexture(offLimbTexture);
 
             // generate off-limb edge geometry, with mapper and actor
             vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
@@ -4523,15 +4523,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             offLimbBoundary.DeepCopy(edgeFilter.GetOutput());
             vtkPolyDataMapper boundaryMapper=new vtkPolyDataMapper();
             boundaryMapper.SetInputData(offLimbBoundary);
-            if (getOffLimbBoundaryActor()==null)
+            if (offLimbBoundaryActor==null)
                 setOffLimbBoundaryActor(new vtkActor());
-            getOffLimbBoundaryActor().SetMapper(boundaryMapper);
-            getOffLimbBoundaryActor().GetProperty().SetColor(0, 0, 1);
-            getOffLimbBoundaryActor().GetProperty().SetLineWidth(1);
+            offLimbBoundaryActor.SetMapper(boundaryMapper);
+            offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
+            offLimbBoundaryActor.GetProperty().SetLineWidth(1);
 
             // set initial visibilities
-            getOffLimbActor().SetVisibility(offLimbFootprintIsVisible()?1:0);
-            getOffLimbBoundaryActor().SetVisibility(offLimbBoundaryVisibility?1:0);
+            offLimbActor.SetVisibility(offLimbVisibility?1:0);
+            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
 
         }
 
@@ -4570,16 +4570,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
       if (getOffLimbActor()==null)
           loadOffLimbPlane();
 
-      if (visible)
-      {
-          getOffLimbActor().VisibilityOn();
-          getOffLimbBoundaryActor().VisibilityOn();
-      }
-      else
-      {
-          getOffLimbActor().VisibilityOff();
-          getOffLimbBoundaryActor().VisibilityOff();
-      }
+      int vis = visible?1:0;
+      offLimbActor.SetVisibility(vis);
+      offLimbBoundaryActor.SetVisibility(vis);
+
 
       pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
   }
@@ -4598,14 +4592,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
       if (getOffLimbActor()==null)
           loadOffLimbPlane();
 
-      if (visible)
-      {
-          getOffLimbBoundaryActor().VisibilityOn();
-      }
-      else
-      {
-          getOffLimbBoundaryActor().VisibilityOff();
-      }
+      int vis = visible?1:0;
+      offLimbBoundaryActor.SetVisibility(vis);
 
       pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
   }
