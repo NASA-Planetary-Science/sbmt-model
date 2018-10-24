@@ -2,16 +2,12 @@ package edu.jhuapl.sbmt.model.rosetta;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import vtk.vtkImageConstantPad;
 import vtk.vtkImageData;
 import vtk.vtkImageTranslateExtent;
-import vtk.vtkProp;
-import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
@@ -458,30 +454,30 @@ public class OsirisImage extends PerspectiveImage
 //        }
 //
 //    }
-
-    @Override
-    /**
-     * This is called by a Renderer to get vtkActors to show in the 3D window.
-     *
-     * In the case of OsirisImage getProps() checks for (1) off-limb visibility, and if visible (2) checks if off-limb geometry has been generated (3) if not creates it by calling loadOffLimbPlane(), and (4) replaces actor references held by the Renderer with the latest (possibly updated) ones contained here.
-     */
-    public List<vtkProp> getProps()
-    {
-        List<vtkProp> props=super.getProps();
-        if (offLimbFootprintIsVisible())
-        {
-            if (getOffLimbActor()==null)
-                loadOffLimbPlane();
-            if (props.contains(getOffLimbActor()))
-                props.remove(getOffLimbActor());
-            props.add(getOffLimbActor());
-            if (props.contains(getOffLimbBoundaryActor()))
-                props.remove(getOffLimbBoundaryActor());
-            props.add(getOffLimbBoundaryActor());
-        }
-        return props;
-    }
-
+//
+//    @Override
+//    /**
+//     * This is called by a Renderer to get vtkActors to show in the 3D window.
+//     *
+//     * In the case of OsirisImage getProps() checks for (1) off-limb visibility, and if visible (2) checks if off-limb geometry has been generated (3) if not creates it by calling loadOffLimbPlane(), and (4) replaces actor references held by the Renderer with the latest (possibly updated) ones contained here.
+//     */
+//    public List<vtkProp> getProps()
+//    {
+//        List<vtkProp> props=super.getProps();
+//        if (offLimbFootprintIsVisible())
+//        {
+//            if (getOffLimbActor()==null)
+//                loadOffLimbPlane();
+//            if (props.contains(getOffLimbActor()))
+//                props.remove(getOffLimbActor());
+//            props.add(getOffLimbActor());
+//            if (props.contains(getOffLimbBoundaryActor()))
+//                props.remove(getOffLimbBoundaryActor());
+//            props.add(getOffLimbBoundaryActor());
+//        }
+//        return props;
+//    }
+//
 //    public boolean offLimbFootprintIsVisible()
 //    {
 //        return offLimbVisibility;
@@ -540,19 +536,19 @@ public class OsirisImage extends PerspectiveImage
 //
 //        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 //    }
-
-    @Override
-    public void setDisplayedImageRange(IntensityRange range)
-    {
-        super.setDisplayedImageRange(range);
-        if (getOffLimbTexture()==null)
-            setOffLimbTexture(new vtkTexture());
-        vtkImageData image=new vtkImageData();
-        image.DeepCopy(getDisplayedImage());
-        getOffLimbTexture().SetInputData(image);
-        getOffLimbTexture().Modified();
-    }
-
+//
+//    @Override
+//    public void setDisplayedImageRange(IntensityRange range)
+//    {
+//        super.setDisplayedImageRange(range);
+//        if (getOffLimbTexture()==null)
+//            setOffLimbTexture(new vtkTexture());
+//        vtkImageData image=new vtkImageData();
+//        image.DeepCopy(getDisplayedImage());
+//        getOffLimbTexture().SetInputData(image);
+//        getOffLimbTexture().Modified();
+//    }
+//
 //    public void setOffLimbFootprintAlpha(double alpha)  // between 0-1
 //    {
 ///*        vtkImageData image=offLimbTexture.GetImageDataInput(0);

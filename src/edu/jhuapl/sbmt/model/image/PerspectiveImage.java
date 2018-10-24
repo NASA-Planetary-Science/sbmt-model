@@ -238,8 +238,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected boolean transposeFITSData = true;
 
 
-    /* For off-limb images
-     *
+    /*
+     * For off-limb images
      */
     vtkPolyData offLimbPlane=null;
     private vtkActor offLimbActor;
@@ -2298,6 +2298,19 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             footprintActors.add(frustumActor);
         }
 
+        // for offlimb
+        if (offLimbVisibility)
+        {
+            if (offLimbActor==null)
+                loadOffLimbPlane();
+            if (footprintActors.contains(offLimbActor))
+                footprintActors.remove(offLimbActor);
+            footprintActors.add(offLimbActor);
+            if (footprintActors.contains(offLimbBoundaryActor))
+                footprintActors.remove(offLimbBoundaryActor);
+            footprintActors.add(offLimbBoundaryActor);
+        }
+
         return footprintActors;
     }
 
@@ -2477,8 +2490,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             //writer.SetInput(displayedImage);
             //writer.Write();
 
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null); // move this down?
         }
+        // for offlimb
+        if (offLimbTexture==null)
+            offLimbTexture=new vtkTexture();
+        vtkImageData image=new vtkImageData();
+        image.DeepCopy(getDisplayedImage());
+        offLimbTexture.SetInputData(image);
+        offLimbTexture.Modified();
     }
 
 //    private static void printpt(double[] p, String s)
@@ -4341,6 +4361,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         loadOffLimbPlane(offLimbFootprintDepth);
     }
 
+
     /**
      * Core off-limb geometry creation happens here.
      *
@@ -4493,10 +4514,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             //        for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
             //            for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
             //                image.SetScalarComponentFromDouble(i, j, 0, 3, 0.7*255);    // set alpha manually per pixel; is there a faster way to do this?
-            if (getOffLimbTexture()==null)
+            if (offLimbTexture==null)
             {
                 // create the texture first
-                setOffLimbTexture(new vtkTexture());
+                offLimbTexture = new vtkTexture();
                 offLimbTexture.InterpolateOn();
                 offLimbTexture.RepeatOff();
                 offLimbTexture.EdgeClampOn();
@@ -4508,7 +4529,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
             offLimbMapper.SetInputData(offLimbPlane);
             if (offLimbActor==null)
-                setOffLimbActor(new vtkActor());
+                offLimbActor=new vtkActor();
             offLimbActor.SetMapper(offLimbMapper);
             offLimbActor.SetTexture(offLimbTexture);
 
@@ -4524,7 +4545,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             vtkPolyDataMapper boundaryMapper=new vtkPolyDataMapper();
             boundaryMapper.SetInputData(offLimbBoundary);
             if (offLimbBoundaryActor==null)
-                setOffLimbBoundaryActor(new vtkActor());
+                offLimbBoundaryActor=new vtkActor();
             offLimbBoundaryActor.SetMapper(boundaryMapper);
             offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
@@ -4534,21 +4555,20 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
 
         }
-
     }
 
-  public void setOffLimbFootprintAlpha(double alpha)  // between 0-1
-  {
+    public void setOffLimbFootprintAlpha(double alpha)  // between 0-1
+    {
 /*        vtkImageData image=offLimbTexture.GetImageDataInput(0);
-      for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
-          for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
-              image.SetScalarComponentFromDouble(i, j, 0, 3, value*255);    // set alpha manually per pixel; is there a faster way to do this?
-      offLimbTexture.Modified();*/
-      if (getOffLimbActor()==null)
-          loadOffLimbPlane();
-      getOffLimbActor().GetProperty().SetOpacity(alpha);
-      //offLimbBoundaryActor.GetProperty().SetOpacity(alpha);
-  }
+        for (int i=image.GetExtent()[0]; i<=image.GetExtent()[1]; i++)
+            for (int j=image.GetExtent()[2]; j<=image.GetExtent()[3]; j++)
+                image.SetScalarComponentFromDouble(i, j, 0, 3, value*255);    // set alpha manually per pixel; is there a faster way to do this?
+        offLimbTexture.Modified();*/
+        if (offLimbActor==null)
+            loadOffLimbPlane();
+        offLimbActor.GetProperty().SetOpacity(alpha);
+        //offLimbBoundaryActor.GetProperty().SetOpacity(alpha);
+    }
 
 
   public boolean offLimbFootprintIsVisible()
@@ -4570,10 +4590,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
       if (getOffLimbActor()==null)
           loadOffLimbPlane();
 
-      int vis = visible?1:0;
-      offLimbActor.SetVisibility(vis);
-      offLimbBoundaryActor.SetVisibility(vis);
-
+      if (visible)
+      {
+          offLimbActor.VisibilityOn();
+          offLimbBoundaryActor.VisibilityOn();
+      }
+      else
+      {
+          offLimbActor.VisibilityOff();
+          offLimbBoundaryActor.VisibilityOff();
+      }
 
       pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
   }
@@ -4589,11 +4615,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
   {
 
       offLimbVisibility=visible;
-      if (getOffLimbActor()==null)
+      if (offLimbActor==null)
           loadOffLimbPlane();
 
-      int vis = visible?1:0;
-      offLimbBoundaryActor.SetVisibility(vis);
+      if (visible)
+      {
+          offLimbBoundaryActor.VisibilityOn();
+      }
+      else
+      {
+          offLimbBoundaryActor.VisibilityOff();
+      }
 
       pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
   }
