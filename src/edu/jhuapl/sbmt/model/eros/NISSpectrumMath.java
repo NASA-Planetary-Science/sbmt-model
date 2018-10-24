@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.eros;
 
+import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
+
 public class NISSpectrumMath extends SpectrumMath
 {
 
@@ -24,7 +26,7 @@ public class NISSpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return NIS.bandCenters.length;
+        return NIS.bandCentersLength;
     }
 
     @Override

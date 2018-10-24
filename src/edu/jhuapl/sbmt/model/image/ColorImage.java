@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkActor;
 import vtk.vtkGenericCell;
 import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageData;
+import vtk.vtkImageMapToColors;
 import vtk.vtkImageMask;
+import vtk.vtkLookupTable;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
@@ -33,6 +33,8 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+
+import nom.tam.fits.FitsException;
 
 public class ColorImage extends Image implements PropertyChangeListener
 {
@@ -128,6 +130,11 @@ public class ColorImage extends Image implements PropertyChangeListener
             "G: " + new File(greenImageKey.name).getName().substring(ind0, ind1) + ", " +
             "B: " + new File(blueImageKey.name).getName().substring(ind0, ind1);
         }
+
+        public ImageKey getImageKey()
+        {
+            return redImageKey;
+        }
     }
 
 
@@ -220,19 +227,19 @@ public class ColorImage extends Image implements PropertyChangeListener
         double[] blueRange = blueImage.getScalarRange(blueImageSlice);
 
         double redfullRange = redRange[1] - redRange[0];
-        double reddx = redfullRange / 255.0f;
+        double reddx = redfullRange / 255.0;
         double redmin = redRange[0] + redIntensityRange.min*reddx;
         double redmax = redRange[0] + redIntensityRange.max*reddx;
         double redstretchRange = redmax - redmin;
 
         double greenfullRange = greenRange[1] - greenRange[0];
-        double greendx = greenfullRange / 255.0f;
+        double greendx = greenfullRange / 255.0;
         double greenmin = greenRange[0] + greenIntensityRange.min*greendx;
         double greenmax = greenRange[0] + greenIntensityRange.max*greendx;
         double greenstretchRange = greenmax - greenmin;
 
         double bluefullRange = blueRange[1] - blueRange[0];
-        double bluedx = bluefullRange / 255.0f;
+        double bluedx = bluefullRange / 255.0;
         double bluemin = blueRange[0] + blueIntensityRange.min*bluedx;
         double bluemax = blueRange[0] + blueIntensityRange.max*bluedx;
         double bluestretchRange = bluemax - bluemin;
@@ -399,6 +406,14 @@ public class ColorImage extends Image implements PropertyChangeListener
                     colorImage.SetScalarComponentFromFloat(j, i, 0, 1, greenComponent);
                     colorImage.SetScalarComponentFromFloat(j, i, 0, 2, blueComponent);
                 }
+                // If there is no intersection then set the pixel to black. The
+                // memory associated with vtkImageData is not cleared by default.
+                else
+                {
+                    colorImage.SetScalarComponentFromFloat(j, i, 0, 0, 0.00);
+                    colorImage.SetScalarComponentFromFloat(j, i, 0, 1, 0.00);
+                    colorImage.SetScalarComponentFromFloat(j, i, 0, 2, 0.00);
+                }
             }
         }
 
@@ -469,19 +484,78 @@ public class ColorImage extends Image implements PropertyChangeListener
         return blueImage;
     }
 
-    /**
-     * Currently, just call updateImageMask
-     */
-    @Override
     public void setDisplayedImageRange(IntensityRange range)
     {
         if (range == null)
         {
-            updateImageMask();
+//            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
+//            if (range != null)
+//                displayedRange[currentSlice] = range;
+
+
+
+            float minValue = Math.min(redImage.getMinValue(), Math.min(greenImage.getMinValue(), blueImage.getMinValue()));
+            float maxValue = Math.max(redImage.getMinValue(), Math.max(greenImage.getMinValue(), blueImage.getMinValue()));
+            float dx = (maxValue-minValue)/255.0f;
+            float min = minValue;// + displayedRange[currentSlice].min*dx;
+            float max = minValue;// + displayedRange[currentSlice].max*dx;
+
+            // Update the displayed image
+            vtkLookupTable lut = new vtkLookupTable();
+            lut.SetTableRange(0, 255);
+            lut.SetValueRange(0.0, 1.0);
+            lut.SetHueRange(0.0, 0.0);
+            lut.SetSaturationRange(0.0, 0.0);
+            //lut.SetNumberOfTableValues(402);
+            lut.SetRampToLinear();
+            lut.Build();
+
+            // for 3D images, take the current slice
+            vtkImageData image2D = displayedImage;
+
+            vtkImageMapToColors mapToColors = new vtkImageMapToColors();
+            mapToColors.SetInputData(image2D);
+            mapToColors.SetOutputFormatToRGBA();
+            mapToColors.SetLookupTable(lut);
+            mapToColors.Update();
+
+            vtkImageData mapToColorsOutput = mapToColors.GetOutput();
+            vtkImageData maskSourceOutput = maskSource.GetOutput();
+
+            vtkImageMask maskFilter = new vtkImageMask();
+            maskFilter.SetImageInputData(mapToColorsOutput);
+            maskFilter.SetMaskInputData(maskSourceOutput);
+            maskFilter.Update();
+
+            if (displayedImage == null)
+                displayedImage = new vtkImageData();
+            vtkImageData maskFilterOutput = maskFilter.GetOutput();
+            displayedImage.DeepCopy(maskFilterOutput);
+
+            maskFilter.Delete();
+            mapToColors.Delete();
+            lut.Delete();
+            mapToColorsOutput.Delete();
+            maskSourceOutput.Delete();
+            maskFilterOutput.Delete();
+
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         }
-        else
-            setDisplayedImageRange(1.0, range);
     }
+
+//    /**
+//     * Currently, just call updateImageMask
+//     */
+//    @Override
+//    public void setDisplayedImageRange(IntensityRange range)
+//    {
+//        if (range == null)
+//        {
+//            updateImageMask();
+//        }
+//        else
+//            setDisplayedImageRange(1.0, range);
+//    }
 
     public void setDisplayedImageRange(double scale, IntensityRange range)
     {
@@ -565,7 +639,8 @@ public class ColorImage extends Image implements PropertyChangeListener
         maskSource.Update();
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-        updateImageMask();
+//        updateImageMask();
+        setDisplayedImageRange(null);
 
         for (int i=0; i<masking.length; ++i)
             currentMask[i] = masking[i];

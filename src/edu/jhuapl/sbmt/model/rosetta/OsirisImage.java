@@ -264,7 +264,7 @@ public class OsirisImage extends PerspectiveImage
         loadOffLimbPlane(offLimbFootprintDepth);
     }
 
-    protected void loadOffLimbPlane(double footprintDepth)
+    public void loadOffLimbPlane(double footprintDepth)
     {
 
         double[] spacecraftPosition=new double[3];

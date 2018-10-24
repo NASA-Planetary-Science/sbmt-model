@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
+import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 
 public class OTESSpectrumMath extends SpectrumMath
 {
@@ -19,7 +19,7 @@ public class OTESSpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return OTES.bandCenters.length;
+        return OTES.bandCentersLength;
     }
 
     @Override

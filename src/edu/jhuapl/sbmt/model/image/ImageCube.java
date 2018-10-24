@@ -137,13 +137,16 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
                     break;
                 }
             }
-
+            if (ind1 == -1) ind1 = buf.length;
             if (buf[ind0] == '0')
                 ++ind0;
+            if (ind1 == -1 || ind1 == ind0) ind1 = buf.length;
 
             String result = "";
             for (ImageKey key : imageKeys)
+            {
                 result = result + new File(key.name).getName().substring(ind0, ind1).toString() + ", ";
+            }
 
             return result;
         }
@@ -166,7 +169,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
                     break;
                 }
             }
-
+            if (ind1 == -1) ind1 = buf.length;
             if (buf[ind0] == '0')
                 ++ind0;
 
@@ -175,6 +178,11 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
                 result = result + new File(key.name).getName().substring(ind0, ind1).toString() + "-";
 
             return result;
+        }
+
+        public PerspectiveImage.ImageKey getFirstImageKey()
+        {
+            return firstImageKey;
         }
 }
 
@@ -186,7 +194,19 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
     }
 
     protected String initializeLabelFileFullPath() { return ((ImageCubeKey)getKey()).labelFileFullPath; }
-    protected String initializeInfoFileFullPath() { return ((ImageCubeKey)getKey()).infoFileFullPath; }
+
+    @Override
+    protected String initLocalInfoFileFullPath()
+    {
+        return initializeInfoFileFullPath();
+    }
+
+    @Override
+    protected String initializeInfoFileFullPath()
+    {
+        return ((ImageCubeKey)getKey()).infoFileFullPath;
+    }
+
     protected String initializeSumfileFullPath() { return ((ImageCubeKey)getKey()).sumFileFullPath; }
 
     protected String initializeFitFileFullPath() { return null; }
@@ -769,5 +789,10 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         }
         appendString += "}";
         return appendString;
+    }
+
+    public int getNimages()
+    {
+        return nimages;
     }
 }

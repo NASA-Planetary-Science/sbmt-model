@@ -23,7 +23,7 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 public class NISSpectrum extends BasicSpectrum
 {
@@ -45,7 +45,7 @@ public class NISSpectrum extends BasicSpectrum
     static public final int NUMBER_OF_VERTICES_OFFSET = 259+2;
     static public final int POLYGON_START_COORDINATES_OFFSET = 260+2;
 
-    double[] spectrumEros=new double[NIS.bandCenters.length];
+    double[] spectrumEros=new double[NIS.bandCentersLength];
 
     /**
      * Because instances of NISSpectrum can be expensive, we want there to be
@@ -154,7 +154,7 @@ public class NISSpectrum extends BasicSpectrum
                 {
                     vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
                             spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
-
+                    if (tmp == null) return;
                     vtkDoubleArray faceAreaFraction = new vtkDoubleArray();
                     faceAreaFraction.SetName(faceAreaFractionArrayName);
                     Frustum frustum = new Frustum(getFrustumOrigin(),
@@ -419,7 +419,7 @@ public class NISSpectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return NIS.bandCenters.length;
+        return NIS.bandCentersLength;
     }
 
 }

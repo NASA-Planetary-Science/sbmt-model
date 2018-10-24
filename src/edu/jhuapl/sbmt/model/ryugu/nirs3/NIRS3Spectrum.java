@@ -32,7 +32,7 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 
 public class NIRS3Spectrum extends BasicSpectrum
@@ -332,7 +332,7 @@ public class NIRS3Spectrum extends BasicSpectrum
     @Override
     public int getNumberOfBands()
     {
-        return NIRS3.bandCenters.length;
+        return NIRS3.bandCentersLength;
     }
 
     @Override

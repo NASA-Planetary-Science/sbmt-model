@@ -189,7 +189,7 @@ public class MSIImage extends PerspectiveImage
      */
     public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
     {
-        if (FilenameUtils.getExtension(imgName.getAbsolutePath()).toUpperCase().compareTo(BackplanesFileFormat.IMG.getExtension().toUpperCase()) == 0)
+        if (("." + FilenameUtils.getExtension(imgName.getAbsolutePath()).toUpperCase()).compareTo(BackplanesFileFormat.IMG.getExtension().toUpperCase()) == 0)
         {
             System.err.println("PDS4 MSI backplanes label generator requires a FITS backplanes image. Input file " + imgName + " is IMG format.");
             System.err.println("Writing PDS3 label, not PDS4.");

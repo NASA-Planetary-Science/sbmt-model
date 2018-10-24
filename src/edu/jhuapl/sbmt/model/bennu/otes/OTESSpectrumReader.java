@@ -10,12 +10,15 @@ import edu.jhuapl.sbmt.model.image.BasicFileReader;
 public class OTESSpectrumReader extends BasicFileReader
 {
 //    String sourceFileName;
-    double et;
-    double[] calibratedRadiance;
+    double sclk;
+    double[] yValues;
+    double[] xValues;
+    int numberEntries = 0;
 
-    public OTESSpectrumReader(String filename)
+    public OTESSpectrumReader(String filename, int numberEntries)
     {
         super(filename);
+        this.numberEntries = numberEntries;
         // TODO Auto-generated constructor stub
     }
 
@@ -24,21 +27,34 @@ public class OTESSpectrumReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[OTES.bandCenters.length];
-            DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
-//            byte[] sourceFileNameBytes=new byte[36];    // Ray stores the filename as 36 bytes at the beginning of the header
-//            stream.readFully(sourceFileNameBytes);
-//            sourceFileName=new String(sourceFileNameBytes);
-            et=stream.readDouble();
-            //byte[] data=new byte[OTES.bandCenters.length*Double.BYTES];
-            //stream.readFully(data);
-            //ByteBuffer buffer=ByteBuffer.wrap(data);
-            //buffer.asDoubleBuffer().get(calibratedRadiance);
-            //for (int i=0; i<calibratedRadiance.length; i++)
-            //    System.out.println(i+" "+OTES.bandCenters[i]+" "+calibratedRadiance[i]);
-            for (int i=0; i<OTES.bandCenters.length; i++)
-                calibratedRadiance[i]=stream.readDouble();
+            xValues=new double[numberEntries];
+            yValues=new double[numberEntries];
+//            System.out.println("OTESSpectrumReader: read: reading " + filename);
+//            BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
+//            String line = reader.readLine();
+//            line = reader.readLine();
+//            System.out.println("OTESSpectrumReader: read: sclk line is " + line);
+//            sclk = Double.parseDouble(line);
+//            line = reader.readLine();
+//            for (int i=0; i<numberEntries; i++)
+//            {
+//                line = reader.readLine();
+//                String[] parts = line.split(",");
+//                xValues[i] = Double.parseDouble(parts[0]);
+//                yValues[i] = Double.parseDouble(parts[1]);
+//            }
+//            reader.close();
 
+            DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
+            sclk=stream.readDouble();
+            for (int i=0; i<numberEntries; i++)
+            {
+                yValues[i]=stream.readDouble();
+            }
+            for (int i=0; i<numberEntries; i++)
+            {
+                xValues[i]=stream.readDouble();
+            }
             stream.close();
         }
         catch (IOException e)
@@ -48,14 +64,24 @@ public class OTESSpectrumReader extends BasicFileReader
         }
     }
 
-    public double[] getCalibratedRadiance()
+    public double[] getData()
     {
-        return calibratedRadiance;
+        return yValues;
     }
 
-    public double getEt()
+    public double[] getXAxis()
     {
-        return et;
+        return xValues;
+    }
+
+    public double getSclk()
+    {
+        return sclk;
+    }
+
+    public static void main(String[] args)
+    {
+//        new OTESSpectrumReader("/Users/steelrj1/.sbmt1orex/cache/earth/osirisrex/otes/spectra/otel220170922t224426.067z_6002.1339.spect").read();
     }
 
 }

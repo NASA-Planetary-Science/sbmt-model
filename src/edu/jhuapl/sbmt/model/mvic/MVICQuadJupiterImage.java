@@ -3,8 +3,6 @@ package edu.jhuapl.sbmt.model.mvic;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.model.FileType;
@@ -12,6 +10,8 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
+
+import nom.tam.fits.FitsException;
 
 public class MVICQuadJupiterImage extends PerspectiveImage
 {
@@ -37,6 +37,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
             IOException
     {
         super(key, smallBodyModel, loadPointingOnly, INITIAL_BAND);
+        System.out.println("MVICQuadJupiterImage: MVICQuadJupiterImage: making image");
     }
 
     protected void initialize() throws FitsException, IOException
@@ -46,7 +47,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     }
 
 
-        @Override
+    @Override
     protected void processRawImage(vtkImageData rawImage)
     {
         // Flip image along y axis and y axis. For some reason we need to do
@@ -55,16 +56,26 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         ImageDataUtil.flipImageXAxis(rawImage);
     }
 
+    @Override
     protected int getNumberBands()
     {
         return 4;
     }
+
+    @Override
+    protected int loadNumSlices()
+    {
+        // TODO Auto-generated method stub
+        return getNumberBands();
+    }
+
     @Override
     protected int[] getMaskSizes()
     {
         return new int[]{0, 0, 0, 0};
     }
 
+    @Override
     public String[] getFitFilesFullPath()
     {
         String path = getFitFileFullPath();
@@ -85,10 +96,11 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         return result;
     }
 
+    @Override
     public String[] getInfoFilesFullPath()
     {
         String path = getInfoFileFullPath();
-
+        System.out.println("MVICQuadJupiterImage: getInfoFilesFullPath: path is " + path);
         String[] pathArray = path.split("/");
         int size = pathArray.length;
         String fileNameSuffix = pathArray[size-1].substring(4);
@@ -101,14 +113,19 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         {
             String fileName = "mc" + i + "_" + fileNameSuffix;
             result[i] = resultPath + fileName;
+            System.out.println(
+                    "MVICQuadJupiterImage: getInfoFilesFullPath: returning " + result[i]);
         }
         return result;
     }
 
+    @Override
     protected double getFocalLength() { return 657.5; }    // in mm
 
+    @Override
     protected double getPixelWidth() { return 0.013; }    // in mm
 
+    @Override
     protected double getPixelHeight() { return 0.013; }   // in mm
 
     @Override
@@ -165,12 +182,15 @@ public class MVICQuadJupiterImage extends PerspectiveImage
             String path = key.name;
             String[] pathArray = path.split("/");
             int size = pathArray.length;
-            String fileName = "mc" + band + "_" + pathArray[size-1];
-            String resultPath = "/";
+            String fileName = /*"mc" + band + "_" +*/ pathArray[size-1];
+            String resultPath = "";
             for (int i=0; i<size-2; i++)
                 resultPath += pathArray[i] + "/";
-
+            System.out.println(
+                    "MVICQuadJupiterImage: initializeInfoFileFullPath: result path " + resultPath);
             String fullPath = FileCache.getFileFromServer(resultPath + "infofiles/" + fileName + ".INFO").getAbsolutePath();
+            System.out.println(
+                    "MVICQuadJupiterImage: initializeInfoFileFullPath: full path " + fullPath);
             if (band == defaultBand)
                 result = fullPath;
         }
@@ -192,6 +212,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
     }
 
+    @Override
     protected vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)
     {
         return createRawImage(height, width, depth, false, array2D, array3D);

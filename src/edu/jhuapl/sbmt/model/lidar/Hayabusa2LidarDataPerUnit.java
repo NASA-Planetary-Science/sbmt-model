@@ -23,9 +23,9 @@ import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.saavtk.util.SafePaths;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
-import edu.jhuapl.sbmt.lidar.hyperoctree.laser.LaserRawLidarFile;
+import edu.jhuapl.sbmt.lidar.hyperoctree.hayabusa2.Hayabusa2RawLidarFile;
 
-public class LaserLidarDataPerUnit extends LidarDataPerUnit
+public class Hayabusa2LidarDataPerUnit extends LidarDataPerUnit
 {
 
     @Override
@@ -61,7 +61,7 @@ public class LaserLidarDataPerUnit extends LidarDataPerUnit
         double maxIntensity = Double.NEGATIVE_INFINITY;
         List<Double> intensityList = new LinkedList<Double>();
 
-        LaserRawLidarFile lidarFile=new LaserRawLidarFile(file.getAbsolutePath());
+        Hayabusa2RawLidarFile lidarFile=new Hayabusa2RawLidarFile(file.getAbsolutePath());
         Iterator<LidarPoint> it=lidarFile.iterator();
         int cnt=0;
         while (it.hasNext())
@@ -152,11 +152,11 @@ public class LaserLidarDataPerUnit extends LidarDataPerUnit
         actors.add(actorSpacecraft);
     }
 
-    public LaserLidarDataPerUnit(String path,
+    public Hayabusa2LidarDataPerUnit(String path,
             BodyViewConfig polyhedralModelConfig) throws IOException
     {
         super(path, polyhedralModelConfig);
-        offsetMultiplier=1e6;
+        offsetMultiplier=10.;
     }
 
 }

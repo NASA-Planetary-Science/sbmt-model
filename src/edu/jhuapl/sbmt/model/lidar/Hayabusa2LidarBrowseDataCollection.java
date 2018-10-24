@@ -5,10 +5,10 @@ import java.io.IOException;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 
-public class LaserLidarBrowseDataCollection extends LidarBrowseDataCollection
+public class Hayabusa2LidarBrowseDataCollection extends LidarBrowseDataCollection
 {
 
-    public LaserLidarBrowseDataCollection(SmallBodyModel smallBodyModel)
+    public Hayabusa2LidarBrowseDataCollection(SmallBodyModel smallBodyModel)
     {
         super(smallBodyModel);
         // TODO Auto-generated constructor stub
@@ -18,7 +18,7 @@ public class LaserLidarBrowseDataCollection extends LidarBrowseDataCollection
     protected LidarDataPerUnit createLidarDataPerUnitWhateverThatIs(String path,
             BodyViewConfig config) throws IOException
     {
-        return new LaserLidarDataPerUnit(path, config);
+        return new Hayabusa2LidarDataPerUnit(path, config);
     }
 
 }

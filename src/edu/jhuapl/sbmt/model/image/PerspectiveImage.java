@@ -196,6 +196,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private Frustum[] frusta = new Frustum[1];
 
     private boolean showFrustum = false;
+    private boolean simulateLighting = false;
 
     private String startTime = "";
     private String stopTime = "";
@@ -233,6 +234,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected double[] maxFrustumDepth;
     protected double[] minFrustumDepth;
 
+    protected boolean transposeFITSData = true;
+
+    public PerspectiveImage(ImageKey key,
+            SmallBodyModel smallBodyModel,
+            boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
+    {
+        this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
+    }
+
+
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
@@ -259,6 +270,28 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean loadPointingOnly) throws FitsException, IOException
     {
             this(key, smallBodyModel, modelManager, loadPointingOnly, 0);
+    }
+
+    /**
+     * If loadPointingOnly is true then only pointing information about this
+     * image will be downloaded/loaded. The image itself will not be loaded.
+     * Used by ImageBoundary to get pointing info.
+     */
+    public PerspectiveImage(ImageKey key,
+            SmallBodyModel smallBodyModel,
+            ModelManager modelManager,
+            boolean loadPointingOnly, int currentSlice, boolean transposeData) throws FitsException, IOException
+    {
+        super(key);
+        this.currentSlice = currentSlice;
+        this.smallBodyModel = smallBodyModel;
+        this.modelManager = modelManager;
+        this.loadPointingOnly = loadPointingOnly;
+        this.rotation = key.instrument != null ? key.instrument.rotation : 0.0;
+        this.flip = key.instrument != null ? key.instrument.flip : "None";
+        this.transposeFITSData = transposeData;
+
+        initialize();
     }
 
     /**
@@ -323,7 +356,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             setLabelFileFullPath(initializeLabelFileFullPath());
         else
             sumFileFullPath = initializeSumfileFullPath();
-
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
@@ -1099,6 +1131,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             int nslices = getNumberBands();
             for (int i=slice+1; i<nslices; i++)
             {
+                System.out.println("PerspectiveImage: loadImageInfo: num slices " + nslices + " and slice is " + slice + " and i is " + i + " and spacecraft pos length" + spacecraftPosition.length);
+
                 spacecraftPosition[i][0] = spacecraftPosition[slice][0];
                 spacecraftPosition[i][1] = spacecraftPosition[slice][1];
                 spacecraftPosition[i][2] = spacecraftPosition[slice][2];
@@ -1940,7 +1974,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             }
         }
 
-        rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, array2D, array3D);
+        rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, transposeFITSData, array2D, array3D);
     }
 
     protected void loadEnviFile()
@@ -2096,6 +2130,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             catch(IOException ex)
             {
                 System.out.println("INFO file not available");
+                ex.printStackTrace();
             }
         }
         else if (key.source.equals(ImageSource.LABEL))
@@ -2296,6 +2331,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return showFrustum;
     }
 
+    public void setSimulateLighting(boolean b)
+    {
+        simulateLighting = b;
+    }
+
+    public boolean isSimulatingLighingOn()
+    {
+       return simulateLighting;
+    }
+
     public double getMinIncidence()
     {
         return minIncidence;
@@ -2445,6 +2490,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private void loadImageInfo() throws NumberFormatException, IOException
     {
         String[] infoFileNames = getInfoFilesFullPath();
+//        for (String name : infoFileNames) System.out.println("PerspectiveImage: loadImageInfo: name is " + name);
         if (infoFileNames == null)
             System.out.println("infoFileNames is null");
 
@@ -2463,7 +2509,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean[] ato = new boolean[1];
             ato[0] = true;
 
-            System.out.println("Loading image: " + infoFileNames[k]);
+//            System.out.println("Loading image: " + infoFileNames[k]);
 
             loadImageInfo(
                     infoFileNames[k],
@@ -3679,7 +3725,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     double horizPixelScale = closestDist * horizScaleFactor;
                     double vertPixelScale = closestDist * vertScaleFactor;
 
-                    double[] coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
+                    double[] coloringValues;
+                    try
+                    {
+                        coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
+                    }
+                    catch (@SuppressWarnings("unused") IOException e)
+                    {
+                        coloringValues = new double[] {};
+                    }
                     int colorValueSize = coloringValues.length;
 
                     data[index(j,i,BackplaneInfo.PIXEL.ordinal())]  = (float)rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
@@ -4218,8 +4272,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             int ip0 = (int)Math.round(pickPosition[0]);
             int ip1 = (int)Math.round(pickPosition[1]);
-            float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
-            status += pixelColumn[currentSlice];
+            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            {
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+                status += pixelColumn[currentSlice];
+            }
+            else
+            {
+                status += "N/A";
+            }
         }
 
         return status;

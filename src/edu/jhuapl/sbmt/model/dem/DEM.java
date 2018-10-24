@@ -926,4 +926,9 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     {
         return scale;
     }
+
+    public vtkPolyData getDem()
+    {
+        return dem;
+    }
 }

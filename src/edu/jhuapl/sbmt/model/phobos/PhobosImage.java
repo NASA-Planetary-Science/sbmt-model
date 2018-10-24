@@ -118,7 +118,7 @@ public class PhobosImage extends PerspectiveImage
         else //if (keyFile.getName().startsWith("f"))
             labelFilename = key.name + ".lbl";
 
-        return FileCache.getFileFromServer(labelFilename).getAbsolutePath();
+        return FileCache.isFileGettable(labelFilename) ? FileCache.getFileFromServer(labelFilename).getAbsolutePath() : null;
     }
 
     @Override
@@ -127,9 +127,10 @@ public class PhobosImage extends PerspectiveImage
         ImageKey key = getKey();
 
         File keyFile = new File(key.name);
-        String sumFilename = keyFile.getParentFile().getParent() + "/infofiles/"
+        String fileName = keyFile.getParentFile().getParent() + "/infofiles/"
         + keyFile.getName() + ".INFO";
-        return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
+
+        return FileCache.getFileFromServer(fileName).getAbsolutePath();
     }
 
     @Override
@@ -140,10 +141,10 @@ public class PhobosImage extends PerspectiveImage
         if (key.source == ImageSource.CORRECTED)
             sumfilesdir += "-corrected";
         File keyFile = new File(key.name);
-        String sumFilename = keyFile.getParentFile().getParent() + "/" + sumfilesdir + "/"
+        String fileName = keyFile.getParentFile().getParent() + "/" + sumfilesdir + "/"
         + keyFile.getName() + ".SUM";
 
-        return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
+        return FileCache.getFileFromServer(fileName).getAbsolutePath();
     }
 
     @Override

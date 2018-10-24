@@ -27,8 +27,9 @@ public class OVIRSSpectrumReader extends BasicFileReader
     {
         try
         {
-            calibratedRadiance=new double[OVIRS.bandCenters.length];
-            calibratedRadianceUncertainty=new double[OVIRS.bandCenters.length];
+            int length = OVIRS.bandCentersLength;
+            calibratedRadiance=new double[length];
+            calibratedRadianceUncertainty=new double[length];
             DataInputStream stream=new DataInputStream(new FileInputStream(new File(filename)));
             byte[] junk=new byte[4];
             stream.readFully(junk);
@@ -37,12 +38,12 @@ public class OVIRSSpectrumReader extends BasicFileReader
             et=Double.valueOf(new String(sclkStr));
             boresightLatDeg=stream.readDouble();
             boresightLonDeg=stream.readDouble();
-            byte[] data=new byte[OVIRS.bandCenters.length*Double.BYTES];
+            byte[] data=new byte[length*Double.BYTES];
             stream.readFully(data);
             ByteBuffer buffer=ByteBuffer.wrap(data);
             buffer.asDoubleBuffer().get(calibratedRadiance);
 
-            byte[] data2=new byte[OVIRS.bandCenters.length*Double.BYTES];
+            byte[] data2=new byte[length*Double.BYTES];
             stream.readFully(data2);
             ByteBuffer buffer2=ByteBuffer.wrap(data2);
             buffer2.asDoubleBuffer().get(calibratedRadianceUncertainty);

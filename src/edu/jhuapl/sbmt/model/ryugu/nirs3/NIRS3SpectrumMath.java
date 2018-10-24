@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
-import edu.jhuapl.sbmt.model.eros.SpectrumMath;
+import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 
 public class NIRS3SpectrumMath extends SpectrumMath
 {
@@ -19,7 +19,7 @@ public class NIRS3SpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return NIRS3.bandCenters.length;
+        return NIRS3.bandCentersLength;
     }
 
     @Override

@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.rosetta;
 
 import edu.jhuapl.saavtk.gui.StatusBar;
 import edu.jhuapl.saavtk.util.IntensityRange;
-import edu.jhuapl.sbmt.gui.image.ImageInfoPanel;
+import edu.jhuapl.sbmt.gui.image.ui.images.ImageInfoPanel;
 import edu.jhuapl.sbmt.model.image.Image;
 import edu.jhuapl.sbmt.model.image.ImageCollection;
 import edu.jhuapl.sbmt.model.image.PerspectiveImageBoundaryCollection;

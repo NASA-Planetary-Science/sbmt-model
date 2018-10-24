@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.spectrum.math;
 
 import java.util.ArrayList;
 import java.util.List;
