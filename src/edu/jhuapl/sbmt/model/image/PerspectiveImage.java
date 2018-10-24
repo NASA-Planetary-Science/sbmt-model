@@ -322,6 +322,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         shiftedFootprint[0] = new vtkPolyData();
         displayedRange[0] = new IntensityRange(1,0);
 
+
+        //why is this called for Custom images with INFO files?
         if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
         {
             loadImageInfoFromConfigFile();
