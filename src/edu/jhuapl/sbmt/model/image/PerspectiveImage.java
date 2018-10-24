@@ -4486,22 +4486,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
         }
 
-/*        vtkPolyDataWriter writer=new vtkPolyDataWriter();
-        writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
-        writer.SetFileTypeToBinary();
-        writer.SetInputData(imagePolyData);
-        writer.Write();*/
-
-/*        vtkAppendPolyData piAppendFilter=new vtkAppendPolyData();
-        piAppendFilter.AddInputData(imagePolyData);
-        piAppendFilter.AddInputData(getSmallBodyModel().getSmallBodyPolyData());
-        piAppendFilter.Update();
-
-        vtkPolyDataWriter piWriter=new vtkPolyDataWriter();
-        piWriter.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
-        piWriter.SetFileTypeToBinary();
-        piWriter.SetInputData(piAppendFilter.GetOutput());
-        piWriter.Write();*/
 
         // keep a reference to a copy of the polydata
         offLimbPlane=new vtkPolyData();
