@@ -20,9 +20,6 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 public class OffLimbPlaneCalculator
 {
 
-
-
-
     // vtk actors for offlimb plane, texture, and boundary
     private vtkPolyData offLimbPlane=null;
     private vtkActor offLimbActor;
