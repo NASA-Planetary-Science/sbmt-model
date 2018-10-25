@@ -164,7 +164,7 @@ public class OffLimbPlaneCalculator
             if (offLimbTexture==null)
             {
                 // create the texture first
-                offLimbTexture = new vtkTexture();
+                offLimbTexture = img.getOffLimbTexture();
                 offLimbTexture.InterpolateOn();
                 offLimbTexture.RepeatOff();
                 offLimbTexture.EdgeClampOn();
@@ -178,6 +178,7 @@ public class OffLimbPlaneCalculator
                 offLimbActor=new vtkActor();
             offLimbActor.SetMapper(offLimbMapper);
             offLimbActor.SetTexture(offLimbTexture);
+            offLimbActor.Modified();
 
             // generate off-limb edge geometry, with mapper and actor
             vtkFeatureEdges edgeFilter=new vtkFeatureEdges();
@@ -195,7 +196,7 @@ public class OffLimbPlaneCalculator
             offLimbBoundaryActor.SetMapper(boundaryMapper);
             offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
-
+            offLimbBoundaryActor.Modified();
         }
 
     }
