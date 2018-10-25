@@ -4389,6 +4389,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
 
         offLimbVisibility=visible;
+        offLimbBoundaryVisibility = visible;
         if (offLimbActor==null)
             loadOffLimbPlane();
 
@@ -4408,7 +4409,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void setOffLimbBoundaryVisibility(boolean visible)
     {
 
-        offLimbVisibility=visible;
+        offLimbBoundaryVisibility=visible;
         if (offLimbActor==null)
             loadOffLimbPlane();
         offLimbBoundaryActor.SetVisibility(visible?1:0);
