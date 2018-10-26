@@ -248,6 +248,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     double offLimbFootprintDepth;
     private boolean offLimbVisibility;
     private boolean offLimbBoundaryVisibility;
+    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
+
 
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
@@ -4343,7 +4345,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         double[] upVector=new double[3];
         this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
         this.offLimbFootprintDepth=new Vector3D(spacecraftPosition).getNorm();
-        OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
         calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
         offLimbActor=calculator.getOffLimbActor();
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
@@ -4363,6 +4364,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void setOffLimbPlaneDepth(double footprintDepth)
     {
         this.offLimbFootprintDepth=footprintDepth;
+        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
     }
 
     public void setOffLimbFootprintAlpha(double alpha)  // between 0-1
