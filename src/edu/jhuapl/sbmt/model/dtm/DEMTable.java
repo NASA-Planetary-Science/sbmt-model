@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
+import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.FileCache.FileInfo;
 import edu.jhuapl.saavtk2.event.Event;
 import edu.jhuapl.saavtk2.event.EventListener;
 import edu.jhuapl.saavtk2.table.MapAndShowTable;
@@ -11,6 +13,7 @@ import edu.jhuapl.saavtk2.table.TableColumn;
 import edu.jhuapl.saavtk2.table.TableSwingWrapper;
 import edu.jhuapl.saavtk2.table.TableSwingWrapper.TableEntryChangedEvent;
 import edu.jhuapl.sbmt.model.dem.DEMKey;
+
 
 public class DEMTable extends MapAndShowTable {
 
@@ -76,6 +79,12 @@ public class DEMTable extends MapAndShowTable {
 
 	public void signalDemMapped(int row)
 	{
+		DEMKey key = availableKeys.get(row);
+		FileInfo fileInfo = FileCache.getFileInfoFromServer(key.fileName);
+		if (fileInfo.isNeedToDownload())
+		{
+			FileCache.getFileFromServer(key.fileName);
+		}
 	    fire(new CreateDEMEvent(this, availableKeys.get(row)));
 	}
 
@@ -188,9 +197,9 @@ public class DEMTable extends MapAndShowTable {
 		swingTableWrapper.setColumnEditable(MapAndShowTable.Columns.Show, false);
 		swingTableWrapper.setColumnEditable(DEMTable.Columns.Bndr, true);
 		swingTableWrapper.setColumnWidth(0, 31);
-		swingTableWrapper.setColumnWidth(1, 31);
+		swingTableWrapper.setColumnWidth(1, 35);
 		swingTableWrapper.setColumnWidth(2, 31);
-		swingTableWrapper.setColumnWidth(3, 200);
+		swingTableWrapper.setColumnWidth(3, 300);
 		table.addListener(table.new MapAndShowBehavior(swingTableWrapper));
 		return swingTableWrapper;
 	}
