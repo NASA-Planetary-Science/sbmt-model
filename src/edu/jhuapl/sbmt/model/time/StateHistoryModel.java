@@ -1370,7 +1370,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
     }
 
     // sets the renderer to the earth position and plays the animation with camera fixed to earth - Alex W
-    public void setEarthView(boolean move)
+    public void setEarthView(boolean move, boolean showSpacecraft)
     {
         this.earthView = move;
         if(earthView)
@@ -1383,10 +1383,13 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             MathUtil.vscl(scalingFactor, newEarthPos, newEarthPos);
             renderer.setCameraOrientation(newEarthPos, renderer.getCameraFocalPoint(), upVector, 5);
         }
+        if (showSpacecraft) {
+            this.setActorVisibility("Spacecraft", true);
+        }
     }
 
     // sets the renderer to the sun position and plays the animation with camera fixed to sun - Alex W
-    public void setSunView(boolean move)
+    public void setSunView(boolean move, boolean showSpacecraft)
     {
         this.sunView = move;
         if(sunView)
@@ -1398,6 +1401,9 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             MathUtil.unorm(sunPos, newSunPos);
             MathUtil.vscl(scalingFactor, newSunPos, newSunPos);
             renderer.setCameraOrientation(newSunPos, renderer.getCameraFocalPoint(), upVector, 5);
+        }
+        if (showSpacecraft) {
+            this.setActorVisibility("Spacecraft", true);
         }
     }
 
