@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.google.common.collect.ImmutableSet;
+
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -141,6 +143,16 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     public String getBoundaryName(vtkActor actor)
     {
         return actorToBoundaryMap.get(actor).getKey().name;
+    }
+
+    public ImmutableSet<ImageKey> getImageKeys()
+    {
+        ImmutableSet.Builder<ImageKey> builder = ImmutableSet.builder();
+        for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
+        {
+            builder.add(boundary.getKey());
+        }
+        return builder.build();
     }
 
     public PerspectiveImageBoundary getBoundary(vtkActor actor)

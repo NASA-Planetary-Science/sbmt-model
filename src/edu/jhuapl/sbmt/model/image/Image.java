@@ -7,6 +7,8 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 
+import com.google.common.base.Preconditions;
+
 import vtk.vtkPolyData;
 import vtk.vtkProp;
 import vtk.vtkTexture;
@@ -96,20 +98,19 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         // The path of the image as passed into the constructor. This is not the
         // same as fullpath but instead corresponds to the name needed to download
         // the file from the server (excluding the hostname and extension).
-        public String name;
+        public final String name;
 
-        public ImageSource source;
+        public final ImageSource source;
 
-        public FileType fileType;
+        public final FileType fileType;
 
-        public ImagingInstrument instrument;
+        public final ImagingInstrument instrument;
 
-        public ImageType imageType;
+        public final ImageType imageType;
 
         public String band;
 
         public int slice;
-
 
         public ImageKey(String name, ImageSource source)
         {
@@ -123,15 +124,15 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
 
         public ImageKey(String name, ImageSource source, FileType fileType, ImageType imageType, ImagingInstrument instrument, String band, int slice)
         {
+            Preconditions.checkNotNull(name);
+            Preconditions.checkNotNull(source);
             this.name = name;
             this.source = source;
             this.fileType = fileType;
-            this.imageType = imageType;
+            this.imageType = instrument != null ? instrument.type : imageType;
             this.instrument = instrument;
             this.band = band;
             this.slice = slice;
-            if (instrument != null)
-                this.imageType = instrument.type;
         }
 
         @Override
