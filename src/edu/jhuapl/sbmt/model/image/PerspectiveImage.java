@@ -2491,13 +2491,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             //writer.Write();
 
         }
-        // for offlimb
-        if (offLimbTexture==null)
-            offLimbTexture=new vtkTexture();
         vtkImageData image=new vtkImageData();
         image.DeepCopy(getDisplayedImage());
-        offLimbTexture.SetInputData(image);
-        offLimbTexture.Modified();
+        // for offlimb
+        if ((System.getProperty("java.awt.headless") == null) || System.getProperty("java.awt.headless").equalsIgnoreCase("false"))
+        {
+            if (offLimbTexture==null )
+            {
+                offLimbTexture=new vtkTexture();
+                offLimbTexture.SetInputData(image);
+                offLimbTexture.Modified();
+            }
+        }
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 
