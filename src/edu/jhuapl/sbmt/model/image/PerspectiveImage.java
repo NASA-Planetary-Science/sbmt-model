@@ -4355,8 +4355,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
 
         // set initial visibilities
-        offLimbActor.SetVisibility(offLimbVisibility?1:0);
-        offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
+        if (offLimbActor != null)
+        {
+            offLimbActor.SetVisibility(offLimbVisibility?1:0);
+            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
+        }
     }
 
 
@@ -4400,8 +4403,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (offLimbActor==null)
             loadOffLimbPlane();
 
-        offLimbActor.SetVisibility(visible?1:0);
-        offLimbBoundaryActor.SetVisibility(visible?1:0);
+        if (offLimbActor != null)
+        {
+            offLimbActor.SetVisibility(visible?1:0);
+            offLimbBoundaryActor.SetVisibility(visible?1:0);
+        }
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
