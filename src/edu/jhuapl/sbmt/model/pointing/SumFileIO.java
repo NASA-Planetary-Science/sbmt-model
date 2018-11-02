@@ -7,4 +7,6 @@ public interface SumFileIO
     public void loadAdjustedSumfile() throws NumberFormatException, IOException;
 
     public void loadSumfile() throws NumberFormatException, IOException;
+
+    public String initLocalSumfileFullPath();
 }

@@ -41,6 +41,7 @@ public class FitsFileFormatIO
         // single file images (e.g. LORRI and LEISA)
         if (filenames.length == 1)
         {
+            System.out.println("FitsFileFormatIO: loadFitsFiles: file name is " + filename);
             Fits f = new Fits(filename);
             BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 

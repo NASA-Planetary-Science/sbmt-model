@@ -14,27 +14,29 @@ public class BaseSumFileIO implements SumFileIO
 {
     PerspectiveImage image;
 
-    public BaseSumFileIO()
+    public BaseSumFileIO(PerspectiveImage image)
     {
-        // TODO Auto-generated constructor stub
+        this.image = image;
     }
 
     public void loadAdjustedSumfile() throws NumberFormatException, IOException
     {
-//        // Looks for either SUM or INFO files with the following priority scheme:
-//        // - if a SUM file is specified, look first for an adjusted INFO file, then look for the SUM file
-//        // - if an INFO file is specified, look first for an adjusted INFO file, the the INFO file
-//        String filePath = image.getSumfileFullPath();
-//        if (filePath != null && filePath.endsWith("SUM"))
-//            filePath = filePath.substring(0, filePath.length()-3) + "INFO";
-//        else
-//            filePath = "";
-//
-//        String[] start = new String[1];
-//        String[] stop = new String[1];
-//        boolean[] ato = new boolean[1];
-//        ato[0] = true;
-//
+        // Looks for either SUM or INFO files with the following priority scheme:
+        // - if a SUM file is specified, look first for an adjusted INFO file, then look for the SUM file
+        // - if an INFO file is specified, look first for an adjusted INFO file, the the INFO file
+        String filePath = image.getSumfileFullPath();
+        if (filePath != null && filePath.endsWith("SUM"))
+            filePath = filePath.substring(0, filePath.length()-3) + "INFO";
+        else
+            filePath = "";
+
+        String[] start = new String[1];
+        String[] stop = new String[1];
+        boolean[] ato = new boolean[1];
+        ato[0] = true;
+
+        System.out.println("BaseSumFileIO: loadAdjustedSumfile: file path " + filePath);
+
 //        loadImageInfo(
 //                filePath,
 //                0,
@@ -114,6 +116,7 @@ public class BaseSumFileIO implements SumFileIO
         spacecraftPosition[slice][0] = -Double.parseDouble(tmp[0]);
         spacecraftPosition[slice][1] = -Double.parseDouble(tmp[1]);
         spacecraftPosition[slice][2] = -Double.parseDouble(tmp[2]);
+        System.out.println("BaseSumFileIO: loadSumfile: set to " + spacecraftPosition[slice][0] );
 
         double[] cx = new double[3];
         double[] cy = new double[3];
@@ -212,6 +215,7 @@ public class BaseSumFileIO implements SumFileIO
 
     public void loadSumfile() throws NumberFormatException, IOException
     {
+        System.out.println("BaseSumFileIO: loadSumfile: loading sum file");
         String[] start = new String[1];
         String[] stop = new String[1];
 
@@ -231,6 +235,7 @@ public class BaseSumFileIO implements SumFileIO
         image.setStartTime(start[0]);
         image.setStopTime(stop[0]);
 
+        System.out.println("BaseSumFileIO: loadSumfile: image sc pos " + image.getSpacecraftPositionOriginal()[0][0]);
         //        printpt(frustum1, "gas frustum1 ");
         //        printpt(frustum2, "gas frustum2 ");
         //        printpt(frustum3, "gas frustum3 ");
@@ -245,6 +250,13 @@ public class BaseSumFileIO implements SumFileIO
     public void setImage(PerspectiveImage image)
     {
         this.image = image;
+    }
+
+    @Override
+    public String initLocalSumfileFullPath()
+    {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

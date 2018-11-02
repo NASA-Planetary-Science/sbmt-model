@@ -65,6 +65,7 @@ public class MSIImage extends PerspectiveImage
     @Override
     protected void processRawImage(vtkImageData rawImage)
     {
+        System.out.println("MSIImage: processRawImage: processing raw image");
         int[] dims = rawImage.GetDimensions();
         int originalHeight = dims[1];
 
@@ -92,14 +93,14 @@ public class MSIImage extends PerspectiveImage
     protected String initializeFitFileFullPath()
     {
         ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
+        return FileCache.getFileFromServer(key.name /*+ ".FIT"*/).getAbsolutePath();
     }
 
     @Override
     protected String initializeLabelFileFullPath()
     {
         ImageKey key = getKey();
-        String imgLblFilename = key.name + ".LBL";
+        String imgLblFilename = key.name.substring(0, key.name.length()-4) + ".LBL";
         return FileCache.getFileFromServer(imgLblFilename).getAbsolutePath();
     }
 
