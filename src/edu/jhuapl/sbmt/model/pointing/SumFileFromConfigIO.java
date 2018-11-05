@@ -13,12 +13,6 @@ public class SumFileFromConfigIO implements SumFileIO
         this.image = image;
     }
 
-    @Override
-    public void loadAdjustedSumfile() throws NumberFormatException, IOException
-    {
-        // TODO Auto-generated method stub
-        System.out.println("SumFileFromConfigIO: loadAdjustedSumfile: loading adjusted sum file ");
-    }
 
     @Override
     public void loadSumfile() throws NumberFormatException, IOException

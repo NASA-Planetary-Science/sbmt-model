@@ -62,7 +62,7 @@ public class ImageInfoFromConfigIO implements InfoFileIO
         }
     }
 
-    protected String initLocalInfoFileFullPath()
+    public String initLocalInfoFileFullPath()
     {
         String configFilename = new File(image.getKey().name).getParent() + File.separator + "config.txt";
         MapUtil configMap = new MapUtil(configFilename);
@@ -76,7 +76,14 @@ public class ImageInfoFromConfigIO implements InfoFileIO
             }
         }
 
-        return null;
+        return "";
+    }
+
+    @Override
+    public void loadAdjustedSumfile() throws NumberFormatException, IOException
+    {
+        // TODO Auto-generated method stub
+        System.out.println("SumFileFromConfigIO: loadAdjustedSumfile: loading adjusted sum file ");
     }
 
 }

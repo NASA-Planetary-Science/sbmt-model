@@ -216,8 +216,7 @@ public class BaseSumFileIO implements SumFileIO
     @Override
     public String initLocalSumfileFullPath()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return "";
     }
 
 }

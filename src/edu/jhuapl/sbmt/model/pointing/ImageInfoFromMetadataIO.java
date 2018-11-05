@@ -38,4 +38,17 @@ public class ImageInfoFromMetadataIO implements InfoFileIO
 
     }
 
+    @Override
+    public void loadAdjustedSumfile() throws NumberFormatException, IOException
+    {
+        // TODO Auto-generated method stub
+        System.out.println("SumFileFromConfigIO: loadAdjustedSumfile: loading adjusted sum file ");
+    }
+
+    @Override
+    public String initLocalInfoFileFullPath()
+    {
+        return "";
+    }
+
 }

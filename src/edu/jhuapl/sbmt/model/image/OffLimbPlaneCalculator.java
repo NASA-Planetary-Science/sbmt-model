@@ -165,7 +165,7 @@ public class OffLimbPlaneCalculator
             if (offLimbTexture==null)
             {
                 // create the texture first
-                offLimbTexture = img.getOffLimbTexture();
+                offLimbTexture = img.getOfflimb().getOffLimbTexture();
                 offLimbTexture.InterpolateOn();
                 offLimbTexture.RepeatOff();
                 offLimbTexture.EdgeClampOn();

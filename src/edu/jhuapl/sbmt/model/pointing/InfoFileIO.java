@@ -14,4 +14,6 @@ public interface InfoFileIO
 
     public void loadAdjustedSumfile() throws NumberFormatException, IOException;
 
+    public String initLocalInfoFileFullPath();
+
 }

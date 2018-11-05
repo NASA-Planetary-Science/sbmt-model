@@ -195,7 +195,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 
     protected String initializeLabelFileFullPath() { return ((ImageCubeKey)getKey()).labelFileFullPath; }
 
-    @Override
+//    @Override
     protected String initLocalInfoFileFullPath()
     {
         return initializeInfoFileFullPath();
@@ -775,8 +775,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         return 0;
     }
 
-    @Override
-    protected String getEnviHeaderAppend()
+    public String getEnviHeaderAppend()
     {
         String appendString = "band names = {";
         for(int i=0; i<images.size(); i++)

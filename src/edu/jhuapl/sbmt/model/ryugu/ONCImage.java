@@ -35,7 +35,8 @@ public class ONCImage extends PerspectiveImage
         // Note this is a really bad idea in general (overriding something that is called
         // from the base class constructor), but this kind of thing is done
         // a lot in SBMT, so for now, just conforming to the pattern.
-        fitFileImageExtension = 1;
+        getFileIO().getFitsIO().setFitFileImageExtension(1);
+//        fitFileImageExtension = 1;
         super.initialize();
     }
 

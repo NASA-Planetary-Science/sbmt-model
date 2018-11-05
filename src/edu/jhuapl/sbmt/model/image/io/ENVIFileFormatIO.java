@@ -166,7 +166,7 @@ public class ENVIFileFormatIO
 
     protected String getEnviHeaderAppend()
     {
-        return "";
+        return image.getEnviHeaderAppend();
     }
 
     public int loadNumSlices(String filename)

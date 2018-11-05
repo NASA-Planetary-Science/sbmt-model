@@ -373,5 +373,11 @@ public class BaseLabelFileIO implements LabelFileIO
         this.image = image;
     }
 
+    @Override
+    public String initLocalLabelFileFullPath()
+    {
+        return "";
+    }
+
 
 }

@@ -635,5 +635,12 @@ public class BaseInfoFileIO implements InfoFileIO
         image.setApplyFrameAdjustments(ato[0]);
     }
 
+    @Override
+    public String initLocalInfoFileFullPath()
+    {
+        return "";
+    }
+
+
 
 }

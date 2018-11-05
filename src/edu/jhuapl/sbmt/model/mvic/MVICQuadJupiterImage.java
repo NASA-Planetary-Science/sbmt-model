@@ -62,7 +62,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         return 4;
     }
 
-    @Override
+//    @Override
     protected int loadNumSlices()
     {
         // TODO Auto-generated method stub

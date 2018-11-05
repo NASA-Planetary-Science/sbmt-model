@@ -21,6 +21,7 @@ public class PerspectiveImageIO
         this.fitsIO = new FitsFileFormatIO(image);
     }
 
+
     public void loadFromFile(String filename) throws FitsException, IOException
     {
         PerspectiveImageIOSupportedFiletypes type = PerspectiveImageIOSupportedFiletypes.getTypeForExtension(FilenameUtils.getExtension(filename));
@@ -33,7 +34,7 @@ public class PerspectiveImageIO
             enviIO.loadEnviFile(filename);
             enviIO.loadNumSlices(filename);
         case FITS:
-            fitsIO.loadFitsFiles(new String[] { filename }, false);
+            fitsIO.loadFitsFiles(new String[] { filename }, true);
             fitsIO.loadNumSlices(filename);
         default:
             break;
@@ -44,6 +45,18 @@ public class PerspectiveImageIO
     {
         fitsIO.loadFitsFiles(filenames, transposeData);
         fitsIO.loadNumSlices(filenames[0]);
+    }
+
+
+    public ENVIFileFormatIO getEnviIO()
+    {
+        return enviIO;
+    }
+
+
+    public FitsFileFormatIO getFitsIO()
+    {
+        return fitsIO;
     }
 
 }
