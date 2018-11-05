@@ -32,9 +32,9 @@ public class BaseInfoFileIO implements InfoFileIO
     public static final String TARGET_ZOOM_FACTOR = "TARGET_ZOOM_FACTOR";
     public static final String UP_DIRECTION = "UP_DIRECTION";
 
-    public BaseInfoFileIO()
+    public BaseInfoFileIO(PerspectiveImage image)
     {
-        // TODO Auto-generated constructor stub
+        this.image = image;
     }
 
     public void saveImageInfo()
@@ -198,7 +198,7 @@ public class BaseInfoFileIO implements InfoFileIO
         }
     }
 
-    protected static void loadImageInfo(
+    protected void loadImageInfo(
             String infoFilename,
             int startSlice,        // for loading multiple info files, the starting array index to put the info into
             boolean pad,           // if true, will pad out the rest of the array with the same info
@@ -213,8 +213,7 @@ public class BaseInfoFileIO implements InfoFileIO
             double[][] boresightDirection,
             double[][] upVector,
             double[] targetPixelCoordinates,
-            boolean[] applyFrameAdjustments,
-            PerspectiveImage image) throws NumberFormatException, IOException, FileNotFoundException
+            boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
     {
         if (infoFilename == null || infoFilename.endsWith("null"))
             throw new FileNotFoundException();
@@ -460,25 +459,25 @@ public class BaseInfoFileIO implements InfoFileIO
 //        PerspectiveImageIOHelpers.saveImageInfo(infoFilename, slice, startTime, stopTime, spacecraftPosition, sunPosition, frustum1, frustum2, frustum3, frustum4, boresightDirection, upVector, targetPixelCoordinates, zoomFactor, rotationOffset, applyFrameAdjustments, flatten);
 //    }
 
-    protected void loadImageInfo(
-            String infoFilename,
-            int startSlice,        // for loading multiple info files, the starting array index to put the info into
-            boolean pad,           // if true, will pad out the rest of the array with the same info
-            String[] startTime,
-            String[] stopTime,
-            double[][] spacecraftPosition,
-            double[][] sunPosition,
-            double[][] frustum1,
-            double[][] frustum2,
-            double[][] frustum3,
-            double[][] frustum4,
-            double[][] boresightDirection,
-            double[][] upVector,
-            double[] targetPixelCoordinates,
-            boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
-    {
-        loadImageInfo(infoFilename, startSlice, pad, startTime, stopTime, spacecraftPosition, sunPosition, frustum1, frustum2, frustum3, frustum4, boresightDirection, upVector, targetPixelCoordinates, applyFrameAdjustments);
-    }
+//    protected void loadImageInfo(
+//            String infoFilename,
+//            int startSlice,        // for loading multiple info files, the starting array index to put the info into
+//            boolean pad,           // if true, will pad out the rest of the array with the same info
+//            String[] startTime,
+//            String[] stopTime,
+//            double[][] spacecraftPosition,
+//            double[][] sunPosition,
+//            double[][] frustum1,
+//            double[][] frustum2,
+//            double[][] frustum3,
+//            double[][] frustum4,
+//            double[][] boresightDirection,
+//            double[][] upVector,
+//            double[] targetPixelCoordinates,
+//            boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
+//    {
+//        loadImageInfo(infoFilename, startSlice, pad, startTime, stopTime, spacecraftPosition, sunPosition, frustum1, frustum2, frustum3, frustum4, boresightDirection, upVector, targetPixelCoordinates, applyFrameAdjustments);
+//    }
 
     private void deleteAdjustedImageInfo(String filePath)
     {
@@ -593,6 +592,47 @@ public class BaseInfoFileIO implements InfoFileIO
     public void setImage(PerspectiveImage image)
     {
         this.image = image;
+    }
+
+    public void loadAdjustedSumfile() throws NumberFormatException, IOException
+    {
+        // Looks for either SUM or INFO files with the following priority scheme:
+        // - if a SUM file is specified, look first for an adjusted INFO file, then look for the SUM file
+        // - if an INFO file is specified, look first for an adjusted INFO file, the the INFO file
+        String filePath = image.getSumfileFullPath();
+        if (filePath != null && filePath.endsWith("SUM"))
+            filePath = filePath.substring(0, filePath.length()-3) + "INFO";
+        else
+            filePath = "";
+
+        String[] start = new String[1];
+        String[] stop = new String[1];
+        boolean[] ato = new boolean[1];
+        ato[0] = true;
+
+        System.out.println("BaseSumFileIO: loadAdjustedSumfile: file path " + filePath);
+
+        loadImageInfo(
+                filePath,
+                0,
+                false,
+                start,
+                stop,
+                image.getSpacecraftPositionOriginal(),
+                image.getSunPositionOriginal(),
+                image.getFrustum1Original(),
+                image.getFrustum2Original(),
+                image.getFrustum3Original(),
+                image.getFrustum4Original(),
+                image.getBoresightDirectionOriginal(),
+                image.getUpVectorOriginal(),
+                image.getTargetPixelCoordinates(),
+                ato);
+
+        // should startTime and stopTime be an array? -turnerj1
+        image.setStartTime(start[0]);
+        image.setStopTime(stop[0]);
+        image.setApplyFrameAdjustments(ato[0]);
     }
 
 

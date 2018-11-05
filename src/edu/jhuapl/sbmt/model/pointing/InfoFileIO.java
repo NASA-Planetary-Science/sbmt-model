@@ -11,4 +11,7 @@ public interface InfoFileIO
     public void saveImageInfo(String filename);
 
     public void loadImageInfo() throws IOException;
+
+    public void loadAdjustedSumfile() throws NumberFormatException, IOException;
+
 }

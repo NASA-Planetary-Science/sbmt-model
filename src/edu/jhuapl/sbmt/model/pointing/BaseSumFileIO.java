@@ -19,46 +19,7 @@ public class BaseSumFileIO implements SumFileIO
         this.image = image;
     }
 
-    public void loadAdjustedSumfile() throws NumberFormatException, IOException
-    {
-        // Looks for either SUM or INFO files with the following priority scheme:
-        // - if a SUM file is specified, look first for an adjusted INFO file, then look for the SUM file
-        // - if an INFO file is specified, look first for an adjusted INFO file, the the INFO file
-        String filePath = image.getSumfileFullPath();
-        if (filePath != null && filePath.endsWith("SUM"))
-            filePath = filePath.substring(0, filePath.length()-3) + "INFO";
-        else
-            filePath = "";
 
-        String[] start = new String[1];
-        String[] stop = new String[1];
-        boolean[] ato = new boolean[1];
-        ato[0] = true;
-
-        System.out.println("BaseSumFileIO: loadAdjustedSumfile: file path " + filePath);
-
-//        loadImageInfo(
-//                filePath,
-//                0,
-//                false,
-//                start,
-//                stop,
-//                image.getSpacecraftPositionOriginal(),
-//                image.getSunPositionOriginal(),
-//                image.getFrustum1Original(),
-//                image.getFrustum2Original(),
-//                image.getFrustum3Original(),
-//                image.getFrustum4Original(),
-//                image.getBoresightDirectionOriginal(),
-//                image.getUpVectorOriginal(),
-//                image.getTargetPixelCoordinates(),
-//                ato);
-//
-//        // should startTime and stopTime be an array? -turnerj1
-//        image.setStartTime(start[0]);
-//        image.setStopTime(stop[0]);
-//        image.setApplyFrameAdjustments(ato[0]);
-    }
 
     /**
      * Sometimes Bob Gaskell sumfiles contain numbers of the form
@@ -235,7 +196,7 @@ public class BaseSumFileIO implements SumFileIO
         image.setStartTime(start[0]);
         image.setStopTime(stop[0]);
 
-        System.out.println("BaseSumFileIO: loadSumfile: image sc pos " + image.getSpacecraftPositionOriginal()[0][0]);
+//        System.out.println("BaseSumFileIO: loadSumfile: image sc pos " + image.getSpacecraftPositionOriginal()[0][0]);
         //        printpt(frustum1, "gas frustum1 ");
         //        printpt(frustum2, "gas frustum2 ");
         //        printpt(frustum3, "gas frustum3 ");
