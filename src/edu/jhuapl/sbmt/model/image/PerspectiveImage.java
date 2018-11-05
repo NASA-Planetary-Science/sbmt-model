@@ -317,7 +317,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.flip = key.instrument != null ? key.instrument.flip : "None";
         this.transposeFITSData = transposeData;
         this.fileIO = new PerspectiveImageIO(this);
-        infoFileIO = new BaseInfoFileIO();
+        infoFileIO = new BaseInfoFileIO(this);
         sumFileIO = new BaseSumFileIO(this);
         labelFileIO = new BaseLabelFileIO();
         initialize();
@@ -341,7 +341,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.rotation = key.instrument != null ? key.instrument.rotation : 0.0;
         this.flip = key.instrument != null ? key.instrument.flip : "None";
         this.fileIO = new PerspectiveImageIO(this);
-        infoFileIO = new BaseInfoFileIO();
+        infoFileIO = new BaseInfoFileIO(this);
         sumFileIO = new BaseSumFileIO(this);
         labelFileIO = new BaseLabelFileIO();
         System.out.println("PerspectiveImage: PerspectiveImage: key is " + key);
@@ -1085,7 +1085,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             boolean loaded = false;
             try {
-                sumFileIO.loadAdjustedSumfile();
+                infoFileIO.loadAdjustedSumfile();
                 loaded = true;
             } catch (FileNotFoundException e) {
                 loaded = false;
@@ -1107,13 +1107,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         else
         {
             boolean loaded = false;
-//            try {
-//                System.out.println("PerspectiveImage: loadPointing: loading adjusted sum file");
-//                sumFileIO.loadAdjustedSumfile();
-//                loaded = true;
-//            } catch (FileNotFoundException e) {
-//                loaded = false;
-//            }
+            try {
+                System.out.println("PerspectiveImage: loadPointing: loading adjusted sum file");
+                infoFileIO.loadAdjustedSumfile();
+                loaded = true;
+            } catch (FileNotFoundException e) {
+                loaded = false;
+            }
             if (!loaded)
             {
                 try {
