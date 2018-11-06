@@ -281,24 +281,25 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         // Check dimensions of actual data
         final int NUM_PLANES = numBackPlanes + 3;
         int[] axes = hdu.getAxes();
-        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
-        {
-            throw new IOException("FITS file has incorrect dimensions");
-        }
+//        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
+//        {
+//            throw new IOException("FITS file has incorrect dimensions");
+//        }
 
         int liveSize = axes[1];
+        int liveSize2 = axes[2];
 
         float[][][] data = (float[][][])hdu.getData().getData();
         f.getStream().close();
 
-        int[][] indices = new int[liveSize][liveSize];
+        int[][] indices = new int[liveSize][liveSize2];
         int c = 0;
         float x, y, z;
         float d;
 
         // First add points to the vtkPoints array
         for (int m=0; m<liveSize; ++m)
-            for (int n=0; n<liveSize; ++n)
+            for (int n=0; n<liveSize2; ++n)
             {
                 indices[m][n] = -1;
 
@@ -463,12 +464,13 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         // Check dimensions of actual data
         final int NUM_PLANES = numBackPlanes + 3;
         int[] axes = hdu.getAxes();
-        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
-        {
-            throw new IOException("FITS file has incorrect dimensions");
-        }
+//        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
+//        {
+//            throw new IOException("FITS file has incorrect dimensions");
+//        }
 
         int liveSize = axes[1];
+        int liveSize2 = axes[2];
 
         float[][][] data = (float[][][])hdu.getData().getData();
         f.getStream().close();
@@ -480,7 +482,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 
         // First add points to the vtkPoints array
         for (int m=0; m<liveSize; ++m)
-            for (int n=0; n<liveSize; ++n)
+            for (int n=0; n<liveSize2; ++n)
             {
                 indices[m][n] = -1;
 
@@ -519,7 +521,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         // Now add connectivity information
         int i0, i1, i2, i3;
         for (int m=1; m<liveSize; ++m)
-            for (int n=1; n<liveSize; ++n)
+            for (int n=1; n<liveSize2; ++n)
             {
                 // Get the indices of the 4 corners of the rectangle to the upper left
                 i0 = indices[m-1][n-1];
