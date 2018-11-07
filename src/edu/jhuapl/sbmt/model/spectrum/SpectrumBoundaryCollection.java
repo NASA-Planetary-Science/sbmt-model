@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.image;
+package edu.jhuapl.sbmt.model.spectrum;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -16,16 +16,15 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.Image.ImageKey;
+import edu.jhuapl.sbmt.model.spectrum.Spectrum.SpectrumKey;
 
 import nom.tam.fits.FitsException;
 
-public class PerspectiveImageBoundaryCollection extends AbstractModel implements PropertyChangeListener
+public class SpectrumBoundaryCollection extends AbstractModel implements PropertyChangeListener
 {
-    private HashMap<PerspectiveImageBoundary, List<vtkProp>> boundaryToActorsMap = new HashMap<PerspectiveImageBoundary, List<vtkProp>>();
-    private HashMap<vtkProp, PerspectiveImageBoundary> actorToBoundaryMap = new HashMap<vtkProp, PerspectiveImageBoundary>();
+    private HashMap<SpectrumBoundary, List<vtkProp>> boundaryToActorsMap = new HashMap<SpectrumBoundary, List<vtkProp>>();
+    private HashMap<vtkProp, SpectrumBoundary> actorToBoundaryMap = new HashMap<vtkProp, SpectrumBoundary>();
     private SmallBodyModel smallBodyModel;
     // Create a buffer of initial boundary colors to use. We cycle through these colors when creating new boundaries
     private Color[] initialColors = {Color.RED, Color.PINK.darker(), Color.ORANGE.darker(),
@@ -33,25 +32,26 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
             Color.GRAY, Color.DARK_GRAY, Color.BLACK};
     private int initialColorIndex = 0;
 
-    public PerspectiveImageBoundaryCollection(SmallBodyModel smallBodyModel)
+    public SpectrumBoundaryCollection(SmallBodyModel smallBodyModel)
     {
         this.smallBodyModel = smallBodyModel;
     }
 
-    protected PerspectiveImageBoundary createBoundary(
-            ImageKey key,
-            SmallBodyModel smallBodyModel) throws IOException, FitsException
+    protected SpectrumBoundary createBoundary(
+            SpectrumKey key,
+            SmallBodyModel smallBodyModel, SpectraCollection collection) throws IOException, FitsException
     {
-        PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, true), smallBodyModel);
+        Spectrum spectrum = collection.getSpectrumFromKey(key);
+        SpectrumBoundary boundary = new SpectrumBoundary(spectrum, smallBodyModel);
         boundary.setBoundaryColor(initialColors[initialColorIndex++]);
         if (initialColorIndex >= initialColors.length)
             initialColorIndex = 0;
         return boundary;
     }
 
-    private boolean containsKey(ImageKey key)
+    private boolean containsKey(SpectrumKey key)
     {
-        for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
+        for (SpectrumBoundary boundary : boundaryToActorsMap.keySet())
         {
             if (boundary.getKey().equals(key))
                 return true;
@@ -60,9 +60,9 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return false;
     }
 
-    private PerspectiveImageBoundary getBoundaryFromKey(ImageKey key)
+    private SpectrumBoundary getBoundaryFromKey(SpectrumKey key)
     {
-        for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
+        for (SpectrumBoundary boundary : boundaryToActorsMap.keySet())
         {
             if (boundary.getKey().equals(key))
                 return boundary;
@@ -72,12 +72,12 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     }
 
 
-    public void addBoundary(ImageKey key) throws FitsException, IOException
+    public void addBoundary(SpectrumKey key, SpectraCollection collection) throws FitsException, IOException
     {
         if (containsKey(key))
             return;
 
-        PerspectiveImageBoundary boundary = createBoundary(key, smallBodyModel);
+        SpectrumBoundary boundary = createBoundary(key, smallBodyModel, collection);
 
         smallBodyModel.addPropertyChangeListener(boundary);
         boundary.addPropertyChangeListener(this);
@@ -90,13 +90,12 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
 
         for (vtkProp act : boundaryPieces)
             actorToBoundaryMap.put(act, boundary);
-
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    public void removeBoundary(ImageKey key)
+    public void removeBoundary(SpectrumKey key)
     {
-        PerspectiveImageBoundary boundary = getBoundaryFromKey(key);
+        SpectrumBoundary boundary = getBoundaryFromKey(key);
 
         if(boundary != null)
         {
@@ -119,21 +118,20 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
 
     public void removeAllBoundaries()
     {
-        HashMap<PerspectiveImageBoundary, List<vtkProp>> map = (HashMap<PerspectiveImageBoundary, List<vtkProp>>)boundaryToActorsMap.clone();
-        for (PerspectiveImageBoundary boundary : map.keySet())
+        HashMap<SpectrumBoundary, List<vtkProp>> map = (HashMap<SpectrumBoundary, List<vtkProp>>)boundaryToActorsMap.clone();
+        for (SpectrumBoundary boundary : map.keySet())
             removeBoundary(boundary.getKey());
     }
 
     public List<vtkProp> getProps()
     {
-        System.out
-                .println("PerspectiveImageBoundaryCollection: getProps: getting props, number is " + actorToBoundaryMap.keySet().size());
+        System.out.println("SpectrumBoundaryCollection: getProps: getting props, number is " + actorToBoundaryMap.keySet().size());
         return new ArrayList<vtkProp>(actorToBoundaryMap.keySet());
     }
 
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
-        PerspectiveImageBoundary boundary = actorToBoundaryMap.get(prop);
+        SpectrumBoundary boundary = actorToBoundaryMap.get(prop);
         if(boundary == null)
         {
             return "";
@@ -147,27 +145,27 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return actorToBoundaryMap.get(actor).getKey().name;
     }
 
-    public ImmutableSet<ImageKey> getImageKeys()
+    public ImmutableSet<SpectrumKey> getSpectrumKeys()
     {
-        ImmutableSet.Builder<ImageKey> builder = ImmutableSet.builder();
-        for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
+        ImmutableSet.Builder<SpectrumKey> builder = ImmutableSet.builder();
+        for (SpectrumBoundary boundary : boundaryToActorsMap.keySet())
         {
             builder.add(boundary.getKey());
         }
         return builder.build();
     }
 
-    public PerspectiveImageBoundary getBoundary(vtkActor actor)
+    public SpectrumBoundary getBoundary(vtkActor actor)
     {
         return actorToBoundaryMap.get(actor);
     }
 
-    public PerspectiveImageBoundary getBoundary(ImageKey key)
+    public SpectrumBoundary getBoundary(SpectrumKey key)
     {
         return getBoundaryFromKey(key);
     }
 
-    public boolean containsBoundary(ImageKey key)
+    public boolean containsBoundary(SpectrumKey key)
     {
         return containsKey(key);
     }
