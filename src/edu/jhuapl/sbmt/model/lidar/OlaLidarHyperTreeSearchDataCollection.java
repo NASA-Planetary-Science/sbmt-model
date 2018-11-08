@@ -376,8 +376,6 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
             }
         }
 
-//        System.out.println("total points in tracks: " + totalpoints);
-
 
         // sort tracks by their starting time
         Collections.sort(tracks, new Comparator<Track>() {
