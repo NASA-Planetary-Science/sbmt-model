@@ -475,7 +475,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         float[][][] data = (float[][][])hdu.getData().getData();
         f.getStream().close();
 
-        int[][] indices = new int[liveSize][liveSize];
+        int[][] indices = new int[liveSize][liveSize2];
         int c = 0;
         float x, y, z;
         float d;
