@@ -4,6 +4,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Hashtable;
 
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
 public class OREXSearchSpec extends Hashtable<String, String> implements SearchSpec
@@ -128,5 +132,64 @@ public class OREXSearchSpec extends Hashtable<String, String> implements SearchS
     public String getDataDescription()
     {
         return get("dataDescription");
+    }
+
+    Key<String> dataNameKey = Key.of("dataName");
+    Key<String> dataRootLocationKey = Key.of("dataRootLocation");
+    Key<String> dataPathKey = Key.of("dataPath");
+    Key<String> dataListFilenameKey = Key.of("dataListFilename");
+    Key<String> sourceKey = Key.of("source");
+    Key<String> xAxisUnitsKey = Key.of("xAxisUnits");
+    Key<String> yAxisUnitsKey = Key.of("yAxisUnits");
+    Key<String> dataDescriptionKey = Key.of("dataDescription");
+
+    @Override
+    public Metadata store()
+    {
+        System.out.println("OREXSearchSpec: store: storing");
+        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
+        write(dataNameKey, getDataName(), configMetadata);
+        write(dataRootLocationKey, getDataRootLocation(), configMetadata);
+        write(dataPathKey, getDataPath(), configMetadata);
+        write(dataListFilenameKey, getDataListFilename(), configMetadata);
+        write(sourceKey, get("source"), configMetadata);
+        write(xAxisUnitsKey, getxAxisUnits(), configMetadata);
+        write(yAxisUnitsKey, getyAxisUnits(), configMetadata);
+        write(dataDescriptionKey, getDataDescription(), configMetadata);
+
+
+
+        return configMetadata;
+    }
+
+    @Override
+    public void retrieve(Metadata sourceMetadata)
+    {
+        dataName = read(dataNameKey, sourceMetadata);
+        dataRootLocation = read(dataRootLocationKey, sourceMetadata);
+        dataPath = read(dataPathKey, sourceMetadata);
+        dataListFilename = read(dataListFilenameKey, sourceMetadata);
+        source = read(sourceKey, sourceMetadata);
+        xAxisUnits = read(xAxisUnitsKey, sourceMetadata);
+        yAxisUnits = read(yAxisUnitsKey, sourceMetadata);
+        dataDescription = read(dataDescriptionKey, sourceMetadata);
+
+    }
+
+    private <T> T read(Key<T> key, Metadata configMetadata)
+    {
+        if (configMetadata.hasKey(key) == false) return null;
+        T value = configMetadata.get(key);
+        if (value != null)
+            return value;
+        return null;
+    }
+
+    private <T> void write(Key<T> key, T value, SettableMetadata configMetadata)
+    {
+        if (value != null)
+        {
+            configMetadata.put(key, value);
+        }
     }
 }

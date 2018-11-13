@@ -3,7 +3,13 @@ package edu.jhuapl.sbmt.model.bennu;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OREXSpectrumInstrumentMetadata<S extends SearchSpec> implements InstrumentMetadata<S>
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.MetadataManager;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
+
+public class OREXSpectrumInstrumentMetadata<S extends SearchSpec> implements InstrumentMetadata<S>, MetadataManager
 {
     String instrumentName;
     String queryType;
@@ -105,5 +111,50 @@ public class OREXSpectrumInstrumentMetadata<S extends SearchSpec> implements Ins
     {
         return "OREXSpectrumInstrumentMetadata [instrumentName="
                 + instrumentName + ", specs=" + searchMetadata + "]";
+    }
+
+    Key<Metadata[]> searchMetadataKey = Key.of("searchMetadata");
+
+    private <T> void writeMetadataArray(Key<Metadata[]> key, MetadataManager[] values, SettableMetadata configMetadata)
+    {
+        if (values != null)
+        {
+            Metadata[] data = new Metadata[values.length];
+            int i=0;
+            for (MetadataManager val : values) data[i++] = val.store();
+            configMetadata.put(key, data);
+        }
+    }
+
+    private Metadata[] readMetadataArray(Key<Metadata[]> key, Metadata configMetadata)
+    {
+        Metadata[] values = configMetadata.get(key);
+        if (values != null)
+        {
+            return values;
+        }
+        return null;
+    }
+
+    @Override
+    public Metadata store()
+    {
+        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
+        SearchSpec[] specs = new SearchSpec[searchMetadata.size()];
+        searchMetadata.toArray(specs);
+        writeMetadataArray(searchMetadataKey, specs, configMetadata);
+        return configMetadata;
+    }
+
+    @Override
+    public void retrieve(Metadata source)
+    {
+        Metadata[] metadata = readMetadataArray(searchMetadataKey, source);
+        for (Metadata meta : metadata)
+        {
+            OREXSearchSpec spec = new OREXSearchSpec();
+            spec.retrieve(meta);
+            addSearchSpec((S)spec);
+        }
     }
 }

@@ -8,12 +8,18 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.MetadataManager;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.model.bennu.otes.SpectraHierarchicalSearchSpecification;
 
@@ -94,6 +100,66 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
         {
             addHierarchicalSearchPath(new String[] {spec.getDataName()}, instrumentMetadata.getSpecs().indexOf(spec),-1);
         }
+    }
+
+    private <T> void writeMetadataArray(Key<Metadata[]> key, MetadataManager[] values, SettableMetadata configMetadata)
+    {
+        if (values != null)
+        {
+            Metadata[] data = new Metadata[values.length];
+            int i=0;
+            for (MetadataManager val : values) data[i++] = val.store();
+            configMetadata.put(key, data);
+        }
+    }
+
+    private Metadata[] readMetadataArray(Key<Metadata[]> key, Metadata configMetadata)
+    {
+        Metadata[] values = configMetadata.get(key);
+        if (values != null)
+        {
+            return values;
+        }
+        return null;
+    }
+
+
+
+    Key<Metadata[]> infoKey = Key.of("spectraInfo");
+
+    @Override
+    public MetadataManager getMetadataManager()
+    {
+        return new MetadataManager() {
+
+            @Override
+            public Metadata store()
+            {
+                SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+                MetadataManager[] specs = new MetadataManager[info.size()];
+                for (int i=0; i<info.size(); i++)
+                {
+
+                    specs[i] = info.get(i);
+                }
+                writeMetadataArray(infoKey, specs, result);
+                return result;
+            }
+
+            @Override
+            public void retrieve(Metadata source)
+            {
+                Metadata[] specs = readMetadataArray(infoKey, source);
+                info = new ArrayList<OREXSpectrumInstrumentMetadata<OREXSearchSpec>>();
+                for (Metadata meta : specs)
+                {
+                    OREXSpectrumInstrumentMetadata<OREXSearchSpec> inf = new OREXSpectrumInstrumentMetadata<OREXSearchSpec>();
+                    inf.retrieve(meta);
+                    info.add(inf);
+                }
+
+            }
+        };
     }
 
     public static void main(String[] args) throws FileNotFoundException

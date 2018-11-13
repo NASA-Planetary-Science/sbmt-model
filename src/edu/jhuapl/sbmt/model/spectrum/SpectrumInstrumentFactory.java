@@ -4,12 +4,23 @@ import java.io.IOException;
 import java.util.Hashtable;
 
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.bennu.otes.OTES;
+import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
+import edu.jhuapl.sbmt.model.eros.NIS;
+import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 public class SpectrumInstrumentFactory
 {
     static Hashtable<String, BasicSpectrumInstrument> spectralInstruments = new Hashtable<String, BasicSpectrumInstrument>();
+    static
+    {
+        registerType("OTES", new OTES());
+        registerType("OVIRS", new OVIRS());
+        registerType("NIS", new NIS());
+        registerType("NIRS3", new NIRS3());
+    }
 
     static public void registerType(String name, BasicSpectrumInstrument spectralInstrument)
     {

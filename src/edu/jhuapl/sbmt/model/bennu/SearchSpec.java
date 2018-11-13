@@ -3,10 +3,11 @@ package edu.jhuapl.sbmt.model.bennu;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
+import edu.jhuapl.saavtk.metadata.MetadataManager;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
 
-public interface SearchSpec
+public interface SearchSpec extends MetadataManager
 {
 
     String getDataName();

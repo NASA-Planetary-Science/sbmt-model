@@ -10,6 +10,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import edu.jhuapl.saavtk.metadata.MetadataManager;
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadataIO;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 
@@ -167,4 +168,7 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
 //    {
 //        return specs;
 //    }
+
+    public abstract MetadataManager getMetadataManager();
+
 }
