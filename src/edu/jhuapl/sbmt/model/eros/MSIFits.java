@@ -11,6 +11,7 @@ import java.util.Map;
 
 import edu.jhuapl.sbmt.util.BackplaneInfo;
 
+import altwg.Fits.HeaderTag;
 import altwg.Fits.HeaderTags;
 import altwg.util.FitsHeader;
 import altwg.util.FitsHeader.FitsHeaderBuilder;
@@ -47,7 +48,7 @@ public class MSIFits {
       // TODO need to reference productType in fits Header to determine which
       // keyword to display
 
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.HDRVERS));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.HDRVERS));
 
       // mission information
       headers.add(new HeaderCard("COMMENT", "Mission Information", false));
@@ -67,7 +68,7 @@ public class MSIFits {
       // data source
       headers.add(new HeaderCard("COMMENT", "Data Source", false));
  //     headers.add(fitsHdr.getHeaderCard(HeaderTags.DATASRC));
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.DATASRCF));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.DATASRCF));
 //      headers.add(fitsHdr.getHeaderCard(HeaderTags.DATASRCV));
 
       // timing information
@@ -84,8 +85,8 @@ public class MSIFits {
 
       // processing information
       headers.add(new HeaderCard("COMMENT", "Processing Information", false));
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.PRODNAME));
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.PRODVERS));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.PRODNAME));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.PRODVERS));
 //      headers.add(fitsHdr.getHeaderCard(HeaderTags.CREATOR));
 
       return headers;
