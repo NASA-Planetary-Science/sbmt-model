@@ -1,28 +1,40 @@
 package edu.jhuapl.sbmt.model.phobos;
 
 import java.util.Enumeration;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.MetadataManager;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
 
 public abstract class HierarchicalSearchSpecification
 {
-    private TreeModel treeModel;
-    private List<Integer> selectedCameras;
-    private List<Integer> selectedFilters;
+    private static final Key<List<String[]>> TREE_PATH_KEY = Key.of("selectionTree");
+
+    private final TreeModel treeModel;
+    private final Map<List<Object>, CameraInfo> cameraMap;
+    private TreeSelectionModel selectionModel;
 
     public HierarchicalSearchSpecification(String rootName)
     {
         // Create a tree model with just the root
-        treeModel = new DefaultTreeModel(new DefaultMutableTreeNode(rootName));
-
-        // Initialize container objects
-        selectedCameras = new LinkedList<Integer>();
-        selectedFilters = new LinkedList<Integer>();
+        this.treeModel = new DefaultTreeModel(createTreeNode(rootName));
+        this.cameraMap = new HashMap<>();
+        this.selectionModel = null;
     }
 
     // Method used to get the tree model
@@ -31,7 +43,13 @@ public abstract class HierarchicalSearchSpecification
         return treeModel;
     }
 
+    public void setSelectionModel(TreeSelectionModel selectionModel)
+    {
+        this.selectionModel = selectionModel;
+    }
+
     // Deep copy of the search specification
+    @Override
     public HierarchicalSearchSpecification clone()
     {
         // TBD, do nothing for now
@@ -43,18 +61,19 @@ public abstract class HierarchicalSearchSpecification
     protected void addHierarchicalSearchPath(String[] path, int cameraCheckbox, int filterCheckbox)
     {
         // Get the root node
-        DefaultMutableTreeNode currNode = (DefaultMutableTreeNode)treeModel.getRoot();
+        DefaultMutableTreeNode currNode = (DefaultMutableTreeNode) treeModel.getRoot();
 
         // Go through each level of path before child and make sure that it exists
         for(int i=0; i<path.length-1; i++)
         {
             // See if node has a child called path[i]
-            Enumeration e = currNode.children();
+            @SuppressWarnings("unchecked")
+            Enumeration<DefaultMutableTreeNode> e = currNode.children();
             boolean childFound = false;
             while(e.hasMoreElements())
             {
-                DefaultMutableTreeNode childNode = (DefaultMutableTreeNode)e.nextElement();
-                if(childNode.toString().equals(path[i]))
+                DefaultMutableTreeNode childNode = e.nextElement();
+                if(childNode.getUserObject().equals(path[i]))
                 {
                     childFound = true;
                     currNode = childNode;
@@ -66,7 +85,7 @@ public abstract class HierarchicalSearchSpecification
             if(!childFound)
             {
                 // Add the new node
-                DefaultMutableTreeNode newChildNode = new DefaultMutableTreeNode(path[i]);
+                DefaultMutableTreeNode newChildNode = (DefaultMutableTreeNode) createTreeNode(path[i]);
                 currNode.add(newChildNode);
 
                 // Set current node to that child
@@ -74,19 +93,23 @@ public abstract class HierarchicalSearchSpecification
             }
         }
 
-        // Always insert the child node
-        DefaultMutableTreeNode newLeafNode = new DefaultMutableTreeNode(
-                new HierarchicalSearchLeafNode(path[path.length-1],cameraCheckbox,filterCheckbox));
-        currNode.add(newLeafNode);
+        // Last node is the leaf; must add it no matter what. Use a String here like in all the other nodes.
+        DefaultMutableTreeNode leafNode = (DefaultMutableTreeNode) createTreeNode(path[path.length - 1]);
+        currNode.add(leafNode);
+
+        // Put the camera information in a map where we can get it later.
+        CameraInfo info = new CameraInfo(cameraCheckbox, filterCheckbox);
+        cameraMap.put(ImmutableList.copyOf(leafNode.getUserObjectPath()), info);
     }
 
     // Method for processing tree selections
-    public void processTreeSelections(TreePath[] selectedPaths)
+    public Selection processTreeSelections()
     {
-        // Clear storage for selected (camera,filter) pairs
-        selectedCameras.clear();
-        selectedFilters.clear();
+        Preconditions.checkState(selectionModel != null, "Set the selection model for the tree search before processing selections");
 
+        TreePath[] selectedPaths = selectionModel.getSelectionPaths();
+
+        ImmutableList.Builder<CameraInfo> builder = ImmutableList.builder();
         // Iterate through the selected paths
         for(TreePath tp : selectedPaths)
         {
@@ -96,55 +119,145 @@ public abstract class HierarchicalSearchSpecification
             DefaultMutableTreeNode selectedParentNode = (DefaultMutableTreeNode)tp.getLastPathComponent();
 
             // Get all leaves from the selected parent node
-            Enumeration en = selectedParentNode.depthFirstEnumeration();
+            @SuppressWarnings("unchecked")
+            Enumeration<DefaultMutableTreeNode> en = selectedParentNode.depthFirstEnumeration();
             while(en.hasMoreElements())
             {
                 // Information that we want is located at the leaf nodes
-                DefaultMutableTreeNode tempNode = (DefaultMutableTreeNode)en.nextElement();
+                DefaultMutableTreeNode tempNode = en.nextElement();
                 if(tempNode.isLeaf())
                 {
                     // Extract the saved object at the leaf node containing camera and filter checkbox numbers
-                    HierarchicalSearchLeafNode ln = (HierarchicalSearchLeafNode)tempNode.getUserObject();
-                    selectedCameras.add(ln.cameraCheckbox);
-                    selectedFilters.add(ln.filterCheckbox);
+                    builder.add(cameraMap.get(ImmutableList.copyOf(tempNode.getUserObjectPath())));
                 }
             }
         }
+        return new Selection(builder.build());
     }
 
-    // Get camera portion of selected (camera,filter) pairs
-    public List<Integer> getSelectedCameras()
+    protected MutableTreeNode createTreeNode(String nodeName)
     {
-        return new LinkedList<Integer>(selectedCameras);
-    }
-
-    // Get filter portion of selected (camera,filter) pairs
-    public List<Integer> getSelectedFilters()
-    {
-        return new LinkedList<Integer>(selectedFilters);
+        return new DefaultMutableTreeNode(nodeName);
     }
 
     /**
-     * Helper class for storing data at TreeModel leaf nodes
+     * The camera and filter checkbox identifiers associated with a particular
+     * imager.
      */
-    private class HierarchicalSearchLeafNode
+    public class CameraInfo
     {
-        public String name;
-        public int cameraCheckbox;
-        public int filterCheckbox;
+        private final int cameraCheckbox;
+        private final int filterCheckbox;
 
-        public HierarchicalSearchLeafNode(String name, int cameraCheckbox, int filterCheckbox)
+        private CameraInfo(int cameraCheckbox, int filterCheckbox)
         {
-            this.name = name;
             this.cameraCheckbox = cameraCheckbox;
             this.filterCheckbox = filterCheckbox;
         }
 
-        // This method must return what we want to be displayed for the leaf node in the GUI
-        @Override
-        public String toString()
+        public int getCameraCheckbox()
         {
-            return name;
+            return cameraCheckbox;
         }
+
+        public int getFilterCheckbox()
+        {
+            return filterCheckbox;
+        }
+
+    }
+
+    public class Selection
+    {
+        private final ImmutableList<Integer> cameras;
+        private final ImmutableList<Integer> filters;
+
+        private Selection(Iterable<CameraInfo> selection)
+        {
+            ImmutableList.Builder<Integer> cameraBuilder = ImmutableList.builder();
+            ImmutableList.Builder<Integer> filterBuilder = ImmutableList.builder();
+            for (CameraInfo node : selection)
+            {
+                cameraBuilder.add(node.cameraCheckbox);
+                filterBuilder.add(node.filterCheckbox);
+            }
+            this.cameras = cameraBuilder.build();
+            this.filters = filterBuilder.build();
+        }
+
+        public ImmutableList<Integer> getSelectedCameras()
+        {
+            return cameras;
+        }
+
+        public ImmutableList<Integer> getSelectedFilters()
+        {
+            return filters;
+        }
+    }
+
+    public MetadataManager getMetadataManager()
+    {
+        return new MetadataManager() {
+
+            @Override
+            public Metadata store()
+            {
+                Preconditions.checkState(selectionModel != null, "Set selection model prior to storing tree search metadata");
+
+                SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+                ImmutableList.Builder<String[]> builder = ImmutableList.builder();
+
+                TreePath[] treePaths = selectionModel.getSelectionPaths();
+                for (TreePath treePath : treePaths)
+                {
+                    Object[] pathObjects = treePath.getPath();
+                    String[] pathStrings = new String[pathObjects.length];
+                    for (int index = 0; index < pathObjects.length; ++index)
+                    {
+                        // For serializing, it's OK just to rely on the fact that
+                        // each of these nodes looks like the string it wraps.
+                        pathStrings[index] = pathObjects[index].toString();
+                    }
+                    builder.add(pathStrings);
+                }
+                result.put(TREE_PATH_KEY, builder.build());
+                return result;
+            }
+
+            @Override
+            public void retrieve(Metadata source)
+            {
+                Preconditions.checkState(selectionModel != null, "Set selection model prior to retrieving tree search metadata");
+
+                List<String[]> pathStringList = source.get(TREE_PATH_KEY);
+                TreePath[] treePaths = new TreePath[pathStringList.size()];
+
+                for (int treeIndex = 0; treeIndex < pathStringList.size(); ++treeIndex)
+                {
+                    String[] pathStrings = pathStringList.get(treeIndex);
+                    DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[pathStrings.length];
+                    DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) treeModel.getRoot();
+                    nodes[0] = currentNode;
+                    for (int index = 0; index < pathStrings.length; ++index)
+                    {
+                        @SuppressWarnings("unchecked")
+                        Enumeration<DefaultMutableTreeNode> children = currentNode.children();
+                        while (children.hasMoreElements())
+                        {
+                            DefaultMutableTreeNode child = children.nextElement();
+                            if (child.getUserObject().equals(pathStrings[index]))
+                            {
+                                nodes[index] = child;
+                                currentNode = child;
+                                break;
+                            }
+                        }
+                    }
+                    treePaths[treeIndex] = new TreePath(nodes);
+                }
+                selectionModel.setSelectionPaths(treePaths);
+            }
+        };
     }
 }
