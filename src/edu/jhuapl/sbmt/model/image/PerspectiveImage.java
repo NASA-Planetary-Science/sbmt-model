@@ -2491,13 +2491,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             //writer.Write();
 
         }
-        // for offlimb
-        if (offLimbTexture==null)
-            offLimbTexture=new vtkTexture();
         vtkImageData image=new vtkImageData();
         image.DeepCopy(getDisplayedImage());
-        offLimbTexture.SetInputData(image);
-        offLimbTexture.Modified();
+        // for offlimb
+        if ((System.getProperty("java.awt.headless") == null) || System.getProperty("java.awt.headless").equalsIgnoreCase("false"))
+        {
+            if (offLimbTexture==null )
+            {
+                offLimbTexture=new vtkTexture();
+                offLimbTexture.SetInputData(image);
+                offLimbTexture.Modified();
+            }
+        }
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 
@@ -4350,8 +4355,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
 
         // set initial visibilities
-        offLimbActor.SetVisibility(offLimbVisibility?1:0);
-        offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
+        if (offLimbActor != null)
+        {
+            offLimbActor.SetVisibility(offLimbVisibility?1:0);
+            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
+        }
     }
 
 
@@ -4395,8 +4403,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (offLimbActor==null)
             loadOffLimbPlane();
 
-        offLimbActor.SetVisibility(visible?1:0);
-        offLimbBoundaryActor.SetVisibility(visible?1:0);
+        if (offLimbActor != null)
+        {
+            offLimbActor.SetVisibility(visible?1:0);
+            offLimbBoundaryActor.SetVisibility(visible?1:0);
+        }
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
