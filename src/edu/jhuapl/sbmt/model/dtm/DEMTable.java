@@ -66,6 +66,13 @@ public class DEMTable extends MapAndShowTable {
 
 	}
 
+	public void updateRow(DEMKey key, int rowIndex)
+	{
+		System.out.println("DEMTable: generateDescription: display name is " + key.displayName);
+		availableKeys.set(rowIndex, key);
+		super.getRow(rowIndex)[3] = generateDescription(key);
+	}
+
 	protected String generateDescription(DEMKey key)
 	{
 		return key.displayName;
