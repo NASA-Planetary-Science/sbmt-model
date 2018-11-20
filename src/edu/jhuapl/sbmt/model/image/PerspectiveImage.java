@@ -1400,7 +1400,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     abstract protected int[] getMaskSizes();
 
-    protected String initializeFitFileFullPath() { return initLocalFitFileFullPath(); }
+    protected String initializeFitFileFullPath() throws IOException { return initLocalFitFileFullPath(); }
     protected String initializeEnviFileFullPath() {return initLocalEnviFileFullPath(); }
     protected String initializePngFileFullPath() { return initializeLabelFileFullPath(); }
 
@@ -1431,7 +1431,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initializeLabelFileFullPath() { return initLocalLabelFileFullPath(); }
     protected String initializeInfoFileFullPath() { return initLocalInfoFileFullPath(); }
-    protected String initializeSumfileFullPath() { return initLocalSumfileFullPath(); }
+    protected String initializeSumfileFullPath() throws IOException { return initLocalSumfileFullPath(); }
 
     protected String initLocalLabelFileFullPath()
     {
