@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -20,7 +22,7 @@ import nom.tam.fits.FitsException;
 public abstract class BasicPerspectiveImage extends PerspectiveImage
 {
 
-    private ImmutableMap<String, String> sumFileMap;
+    private static final Map<String, ImmutableMap<String, String>> SUM_FILE_MAP = new HashMap<>();
 
     protected BasicPerspectiveImage(ImageKey key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
@@ -96,12 +98,12 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
 
         if (key.source == ImageSource.GASKELL)
         {
-            File keyFile = new File(getFitFileFullPath());
+            File keyFile = new File(getImageFileName(key));
             String imagerDirectory = getImagerDirectory(keyFile).getPath();
             try
             {
                 String pointingFileName = getSumFileName(imagerDirectory, key);
-                String pointingFilePath = SafePaths.getString(imagerDirectory, "infofiles", pointingFileName);
+                String pointingFilePath = SafePaths.getString(imagerDirectory, "sumfiles", pointingFileName);
                 result = FileCache.getFileFromServer(pointingFilePath).getAbsolutePath();
             }
             catch (ParseException e)
@@ -124,7 +126,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
 
     protected String getSumFileName(String imagerDirectory, ImageKey key) throws IOException, ParseException
     {
-        if (sumFileMap == null)
+        if (!SUM_FILE_MAP.containsKey(imagerDirectory))
         {
             ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
             File mapFile = FileCache.getFileFromServer(SafePaths.getString(imagerDirectory, "make_sumfiles.in"));
@@ -145,10 +147,16 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
                     builder.put(imageFile, sumFile);
                 }
             }
-            sumFileMap = builder.build();
+            SUM_FILE_MAP.put(imagerDirectory, builder.build());
         }
 
-        return sumFileMap.get(getImageFileName(key));
+        File imageFile = new File(getImageFileName(key));
+        ImmutableMap<String, String> imagerSumFileMap = SUM_FILE_MAP.get(imagerDirectory);
+        if (imagerSumFileMap.containsKey(imageFile.getName()))
+        {
+            return SUM_FILE_MAP.get(imagerDirectory).get(imageFile.getName());
+        }
+        return null;
     }
 
 }
