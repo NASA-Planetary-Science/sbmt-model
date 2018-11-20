@@ -29,10 +29,6 @@ public class MapCamImage extends PerspectiveImage
     protected String initializeFitFileFullPath()
     {
         ImageKey key = getKey();
-        if (FileCache.isFileGettable(key.name + ".fits"))
-        {
-            return FileCache.getFileFromServer(key.name + ".fits").getAbsolutePath();
-        }
         return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
     }
 
