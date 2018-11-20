@@ -30,7 +30,7 @@ public class OcamsFlightImage extends BasicPerspectiveImage
         // For some reason we need to do
         // this so the image is displayed properly.
         ImageDataUtil.flipImageXAxis(rawImage);
-        ImageDataUtil.rotateImage(rawImage, -90);
+        ImageDataUtil.rotateImage(rawImage, 180);
     }
 
 }
