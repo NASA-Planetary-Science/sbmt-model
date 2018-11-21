@@ -6,6 +6,7 @@ import vtk.vtkImageData;
 
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
@@ -29,8 +30,17 @@ public class OcamsFlightImage extends BasicPerspectiveImage
     {
         // For some reason we need to do
         // this so the image is displayed properly.
-        ImageDataUtil.flipImageXAxis(rawImage);
-        ImageDataUtil.rotateImage(rawImage, 180);
+        System.out.println("OcamsFlightImage: processRawImage: key source " + key.source);
+        if (key.source == ImageSource.SPICE)
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+            ImageDataUtil.rotateImage(rawImage, 90);
+        }
+        else
+        {
+            ImageDataUtil.flipImageXAxis(rawImage);
+            ImageDataUtil.rotateImage(rawImage, 180);
+        }
     }
 
 }
