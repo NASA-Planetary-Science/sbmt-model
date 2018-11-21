@@ -32,7 +32,7 @@ import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
-import edu.jhuapl.saavtk.util.SafePaths;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
@@ -78,7 +78,7 @@ public class LidarDataPerUnit extends AbstractModel
         if (config.lidarBrowseOrigPathRegex != null && !config.lidarBrowseOrigPathRegex.isEmpty()) {
             path = path.replaceAll(config.lidarBrowseOrigPathRegex, config.lidarBrowsePathTop);
         }
-        File file = FileCache.getFileFromServer(SafePaths.getString(path));
+        File file = FileCache.getFileFromServer(SafeURLPaths.instance().getString(path));
 
         if (file == null)
             throw new IOException(path + " could not be loaded");
