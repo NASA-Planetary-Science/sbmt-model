@@ -12,7 +12,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.SafePaths;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.saavtk.util.file.DataFileReader.FileFormatException;
 import edu.jhuapl.saavtk.util.file.FitsFileReader;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -83,7 +83,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
             File keyFile = new File(key.name);
             File imagerDirectory = getImagerDirectory(keyFile);
             String pointingFileName = keyFile.getName() + ".INFO";
-            String pointingFilePath = SafePaths.getString(imagerDirectory.getPath(), "infofiles", pointingFileName);
+            String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), "infofiles", pointingFileName);
             result = FileCache.getFileFromServer(pointingFilePath).getAbsolutePath();
         }
 
@@ -103,7 +103,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
             try
             {
                 String pointingFileName = getSumFileName(imagerDirectory, key);
-                String pointingFilePath = SafePaths.getString(imagerDirectory, "sumfiles", pointingFileName);
+                String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory, "sumfiles", pointingFileName);
                 result = FileCache.getFileFromServer(pointingFilePath).getAbsolutePath();
             }
             catch (ParseException e)
@@ -129,7 +129,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
         if (!SUM_FILE_MAP.containsKey(imagerDirectory))
         {
             ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
-            File mapFile = FileCache.getFileFromServer(SafePaths.getString(imagerDirectory, "make_sumfiles.in"));
+            File mapFile = FileCache.getFileFromServer(SafeURLPaths.instance().getString(imagerDirectory, "make_sumfiles.in"));
             try (BufferedReader reader = new BufferedReader(new FileReader(mapFile)))
             {
                 while (reader.ready())
