@@ -115,11 +115,13 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         public ImageKey(String name, ImageSource source)
         {
             this(name, source, null, null, null, null, 0);
+            System.out.println("Image.ImageKey: called const 1: ");
         }
 
         public ImageKey(String name, ImageSource source, ImagingInstrument instrument)
         {
             this(name, source, null, null, instrument, null, 0);
+            System.out.println("Image.ImageKey: enclosing_method: called const 2");
         }
 
         public ImageKey(String name, ImageSource source, FileType fileType, ImageType imageType, ImagingInstrument instrument, String band, int slice)
@@ -129,6 +131,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
             this.name = name;
             this.source = source;
             this.fileType = fileType;
+            System.out.println("Image.ImageKey: ImageKey: called 3rd const with filetype " + fileType + " for name " + name);
             this.imageType = instrument != null ? instrument.type : imageType;
             this.instrument = instrument;
             this.band = band;
