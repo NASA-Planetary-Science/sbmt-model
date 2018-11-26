@@ -93,7 +93,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
                 String labelFileFullPath, String infoFileFullPath, String sumFileFullPath)
         {
             super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, firstImageKey.slice);
-            System.out.println("ImageCube.ImageCubeKey: ImageCubeKey: called image cube key const");
+
             this.imageKeys = new ArrayList<ImageKey>(imageKeys);
             this.nimages = imageKeys.size();
             this.firstImageKey = firstImageKey;
