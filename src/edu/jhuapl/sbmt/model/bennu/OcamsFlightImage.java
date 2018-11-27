@@ -30,7 +30,6 @@ public class OcamsFlightImage extends BasicPerspectiveImage
     {
         // For some reason we need to do
         // this so the image is displayed properly.
-        System.out.println("OcamsFlightImage: processRawImage: key source " + key.source);
         if (key.source == ImageSource.SPICE)
         {
             ImageDataUtil.flipImageYAxis(rawImage);
