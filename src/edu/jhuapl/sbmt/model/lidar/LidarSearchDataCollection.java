@@ -724,7 +724,7 @@ public class LidarSearchDataCollection extends AbstractModel
         {
             double[] pt=polyData.GetPoint(i);
 
-            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, polyData.GetPointData().GetArray(0).GetTuple1(i), range,  fileId);
+            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, range, polyData.GetPointData().GetArray(0).GetTuple1(i),   fileId);
             originalPointsSourceFiles.put(lidarPt,fileId);
             originalPoints.add(lidarPt);
         }
