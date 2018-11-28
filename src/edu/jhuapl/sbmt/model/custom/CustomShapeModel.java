@@ -51,16 +51,11 @@ public class CustomShapeModel extends SmallBodyModel
     {
         if (config.customTemporary)
         {
-            return FileCache.FILE_PREFIX + config.modelLabel;
+            return FileCache.createFileURL(config.modelLabel).toString();
         }
         else
         {
-            return FileCache.FILE_PREFIX +
-                    Configuration.getImportedShapeModelsDir() +
-                    File.separator +
-                    config.modelLabel +
-                    File.separator +
-                    "model.vtk";
+            return FileCache.createFileURL(Configuration.getImportedShapeModelsDir(), config.modelLabel, "model.vtk").toString();
         }
     }
 }
