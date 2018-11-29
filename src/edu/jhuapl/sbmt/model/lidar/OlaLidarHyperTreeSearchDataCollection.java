@@ -210,11 +210,10 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         radialOffset = 0.0;
 
         computeTracks();
-
         Stopwatch sw=new Stopwatch();
-        sw.reset();
-        sw.start();
-
+    //      System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
+          sw.reset();
+          sw.start();
         removeTracksThatAreTooSmall();
 
         // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
@@ -225,15 +224,27 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         for (Track t : tracksToRemove)
             tracks.remove(t);
 
+        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+        sw.reset();
+        sw.start();
 
         assignInitialColorToTrack();
+
+        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+        sw.reset();
+        sw.start();
+
+
         updateTrackPolydata();
 
-
+        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+        sw.reset();
+        sw.start();
 
         selectPoint(-1);
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        System.out.println("fire change time="+sw.elapsedMillis()+" ms");
 
     }
 

@@ -231,25 +231,27 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         for (Track t : tracksToRemove)
             tracks.remove(t);
 
-//        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
         sw.reset();
         sw.start();
 
         assignInitialColorToTrack();
 
-//        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
         sw.reset();
         sw.start();
 
 
         updateTrackPolydata();
 
-//        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
-
+        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+        sw.reset();
+        sw.start();
 
         selectPoint(-1);
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        System.out.println("fire change time="+sw.elapsedMillis()+" ms");
     }
 
     static vtkPoints points=new vtkPoints();
