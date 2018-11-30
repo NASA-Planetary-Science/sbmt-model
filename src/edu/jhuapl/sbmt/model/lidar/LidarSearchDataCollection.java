@@ -1239,7 +1239,7 @@ public class LidarSearchDataCollection extends AbstractModel
         if (enableTrackErrorComputation)
             computeTrackError();
 
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     private void removeTrack(int trackId)

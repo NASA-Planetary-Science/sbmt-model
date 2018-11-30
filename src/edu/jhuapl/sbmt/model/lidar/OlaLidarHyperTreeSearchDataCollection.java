@@ -30,7 +30,6 @@ import edu.jhuapl.saavtk.gui.ProgressBarSwingWorker;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
@@ -243,7 +242,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
         selectPoint(-1);
 
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         System.out.println("fire change time="+sw.elapsedMillis()+" ms");
 
     }
