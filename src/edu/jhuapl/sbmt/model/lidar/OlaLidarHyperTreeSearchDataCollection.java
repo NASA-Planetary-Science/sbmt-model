@@ -50,7 +50,8 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
     private FSHyperTreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
     private boolean loading=false;
-    Map<Integer, List<OlaFSHyperPoint>> filesWithPoints = new HashMap<Integer, List<OlaFSHyperPoint>>();
+//    Map<Integer, List<OlaFSHyperPoint>> filesWithPoints = new HashMap<Integer, List<OlaFSHyperPoint>>();
+    Map<Integer, HashSet<OlaFSHyperPoint>> filesWithPoints = new HashMap<Integer, HashSet<OlaFSHyperPoint>>();
 
     @Override
     public boolean isLoading()
@@ -168,13 +169,15 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
                         // if list already exists, just add point
                         if(filesWithPoints.containsKey(fileNum)) {
-                            List<OlaFSHyperPoint> currList = filesWithPoints.get(fileNum);
+//                            List<OlaFSHyperPoint> currList = filesWithPoints.get(fileNum);
+                            HashSet<OlaFSHyperPoint> currList = filesWithPoints.get(fileNum);
                             if (!currList.contains(currPt)) {
                                 currList.add(currPt);
                             }
                             filesWithPoints.put(fileNum, currList);
                         } else { // otherwise, create list and add point
-                            List<OlaFSHyperPoint> currList = new ArrayList<OlaFSHyperPoint>();
+//                            List<OlaFSHyperPoint> currList = new ArrayList<OlaFSHyperPoint>();
+                            HashSet<OlaFSHyperPoint> currList = new HashSet<OlaFSHyperPoint>();
                             currList.add(currPt);
                             filesWithPoints.put(fileNum, currList);
                         }
@@ -271,6 +274,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 cells.InsertNextCell(vert);*/
                 pts.add(pt);    // if the region checker does not exist and the point is within the time limits then add it
             }
+
         } catch (IOException e)
         {
             if (!e.getClass().equals(EOFException.class))
@@ -320,7 +324,9 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     Track track = new Track();
 
                     track.registerSourceFileIndex(key, localFileMap);
-                    List<OlaFSHyperPoint> currPoints = filesWithPoints.get(key);
+                    HashSet<OlaFSHyperPoint> currPointsSet = filesWithPoints.get(key);
+
+                    List<OlaFSHyperPoint> currPoints = new ArrayList<OlaFSHyperPoint>(currPointsSet);
                     // sort by time and check track separation
                     Collections.sort(currPoints);
                     OlaFSHyperPoint start = currPoints.get(0); // start and stop time of tracks in this file
