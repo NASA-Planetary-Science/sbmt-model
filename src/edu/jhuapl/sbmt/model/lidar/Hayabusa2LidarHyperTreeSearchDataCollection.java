@@ -30,7 +30,6 @@ import edu.jhuapl.saavtk.gui.ProgressBarSwingWorker;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
@@ -231,27 +230,25 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         for (Track t : tracksToRemove)
             tracks.remove(t);
 
-        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
+//        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
+//        sw.reset();
+//        sw.start();
 
         assignInitialColorToTrack();
 
-        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
-
+//        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
+//        sw.reset();
+//        sw.start();
 
         updateTrackPolydata();
 
-        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
+//        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
+//        sw.reset();
+//        sw.start();
 
         selectPoint(-1);
 
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-        System.out.println("fire change time="+sw.elapsedMillis()+" ms");
+//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     static vtkPoints points=new vtkPoints();

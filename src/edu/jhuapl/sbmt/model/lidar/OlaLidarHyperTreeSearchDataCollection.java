@@ -130,7 +130,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                     throws IOException, ParseException
     {
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
-        // Here it corresponds to the list of leaves of an octree that intersect the bounding box of the user selection area.
+        // Here it corresponds to the list of leaves of a hypertree that intersect the bounding box of the user selection area.
 
         setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
         setMinTrackLength(minTrackLength);
@@ -198,7 +198,6 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 cancel(true);
                 loading=false;
 
-                //                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
                 sw.start();
 
@@ -212,10 +211,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         radialOffset = 0.0;
 
         computeTracks();
-        Stopwatch sw=new Stopwatch();
-    //      System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
-          sw.reset();
-          sw.start();
+
         removeTracksThatAreTooSmall();
 
         // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
@@ -226,27 +222,13 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
         for (Track t : tracksToRemove)
             tracks.remove(t);
 
-        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
-
         assignInitialColorToTrack();
 
-        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
-
-
         updateTrackPolydata();
-
-        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
 
         selectPoint(-1);
 
 //        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-        System.out.println("fire change time="+sw.elapsedMillis()+" ms");
 
     }
 
