@@ -153,9 +153,9 @@ public class Hayabusa2LidarDataPerUnit extends LidarDataPerUnit
     }
 
     public Hayabusa2LidarDataPerUnit(String path,
-            BodyViewConfig polyhedralModelConfig) throws IOException
+            BodyViewConfig polyhedralModelConfig, LidarLoadingListener listener) throws IOException
     {
-        super(path, polyhedralModelConfig);
+        super(path, polyhedralModelConfig, listener);
         offsetMultiplier=10.;
     }
 
