@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.image;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 import org.apache.commons.io.FilenameUtils;
@@ -23,13 +24,15 @@ import nom.tam.fits.FitsException;
 
 public class PerspectiveImagePreRenderer
 {
-    PerspectiveImage image;
-    int resolutionIndex;
+    private PerspectiveImage image;
+    private int resolutionIndex;
+    private String outputDir;
 
-    public PerspectiveImagePreRenderer(PerspectiveImage image)
+    public PerspectiveImagePreRenderer(PerspectiveImage image, String outputDir)
     {
         this.image = image;
         this.resolutionIndex = image.getSmallBodyModel().getModelResolution();
+        this.outputDir = outputDir;
         calculateFootprint();
         calculateOffLimb();
     }
@@ -53,7 +56,8 @@ public class PerspectiveImagePreRenderer
         vtkPolyDataWriter writer = new vtkPolyDataWriter();
         writer.SetInputData(footprint);
         System.out.println("PerspectiveImage: loadFootprint: fit file full path " + image.getFitFileFullPath());
-        String intersectionFileName = new File(image.getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_frustumIntersection.vtk";
+//        String intersectionFileName = new File(image.getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_frustumIntersection.vtk";
+        String intersectionFileName = outputDir + File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_frustumIntersection.vtk";
 
         System.out.println("PerspectiveImage: loadFootprint: saving footprint to " + intersectionFileName);
 
@@ -66,7 +70,9 @@ public class PerspectiveImagePreRenderer
     {
         OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator(image);
         calculator.generateOffLimbPlane(image);
-        String filename = new File(image.getFitFileFullPath()).getParent() +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_offLimbImageData.vtk";
+//        String filename = new File(image.getFitFileFullPath()).getParent() +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_offLimbImageData.vtk";
+        String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_offLimbImageData.vtk";
+
         calculator.saveToDisk(filename);
     }
 
@@ -100,20 +106,28 @@ public class PerspectiveImagePreRenderer
         SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(body, type);
         ImagingInstrument instrument = config.imagingInstruments[imagerIndex];
 
-        File[] fileList = new File(inputDirectory).listFiles();
+        File[] fileList = new File(inputDirectory).listFiles(new FilenameFilter()
+        {
+            @Override
+            public boolean accept(File dir, String name)
+            {
+                return FilenameUtils.getExtension(name).contains("fit");
+            }
+        });
         for (File filename : fileList)
         {
-            System.out.println("PerspectiveImagePreRenderer: main: filename is " + filename);
             //may need to massage name here, need it to be /bennu/jfkfjksf, also need to strip .fits
             String basename = filename.getParent() + File.separator + FilenameUtils.getBaseName(filename.getAbsolutePath());
+            basename = basename.substring(basename.indexOf("2") + 2);
             ImageKey key = new ImageKey(basename, source, instrument);
+            System.out.println("PerspectiveImagePreRenderer: main: filename is " + basename);
 
             SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config);
             for (int i=0; i<smallBodyModel.getNumberResolutionLevels(); i++)
             {
                 smallBodyModel.setModelResolution(i);
                 PerspectiveImage image = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, false);
-                PerspectiveImagePreRenderer preRenderer = new PerspectiveImagePreRenderer(image);
+                PerspectiveImagePreRenderer preRenderer = new PerspectiveImagePreRenderer(image, outputDirectory);
             }
         }
     }
