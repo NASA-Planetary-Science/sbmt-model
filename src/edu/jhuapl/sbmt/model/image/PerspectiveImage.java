@@ -2191,7 +2191,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
         else
             setDisplayedImageRange(null);
-        System.out.println("PerspectiveImage: loadImage: load image elapsed time " + sw.elapsedMillis() + " ms");
         //        setDisplayedImageRange(new IntensityRange(0, 255));
     }
 
@@ -2365,9 +2364,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         //        System.out.println("getProps()");
         if (footprintActor == null)
         {
-            System.out.println("PerspectiveImage: getProps: footprint " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: getProps: footprint " + sw.elapsedMillis());
             loadFootprint();
-            System.out.println("PerspectiveImage: getProps: image texture " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: getProps: image texture " + sw.elapsedMillis());
             imageTexture = new vtkTexture();
             imageTexture.InterpolateOn();
             imageTexture.RepeatOff();
@@ -2377,7 +2376,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint[0]);
             footprintMapper.Update();
-            System.out.println("PerspectiveImage: getProps: footprint actor " + sw.elapsedMillis());
             footprintActor = new vtkActor();
             footprintActor.SetMapper(footprintMapper);
             footprintActor.SetTexture(imageTexture);
@@ -2385,12 +2383,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             footprintProperty.LightingOff();
 
             footprintActors.add(footprintActor);
-            System.out.println("PerspectiveImage: getProps: footprint done " + sw.elapsedMillis());
         }
 
         if (frustumActor == null)
         {
-            System.out.println("PerspectiveImage: getProps: frustrum " + sw.elapsedMillis());
             frustumActor = new vtkActor();
 
             calculateFrustum();
@@ -2401,21 +2397,20 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             frustumActor.VisibilityOff();
 
             footprintActors.add(frustumActor);
-            System.out.println("PerspectiveImage: getProps: frustrum complete " + sw.elapsedMillis());
         }
 
         // for offlimb
         if (offLimbActor==null) {
-            System.out.println("PerspectiveImage: getProps: offlimb " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: getProps: offlimb " + sw.elapsedMillis());
             loadOffLimbPlane();
-            System.out.println("PerspectiveImage: getProps: loaded offlimb plane " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: getProps: loaded offlimb plane " + sw.elapsedMillis());
             if (footprintActors.contains(offLimbActor))
                 footprintActors.remove(offLimbActor);
             footprintActors.add(offLimbActor);
             if (footprintActors.contains(offLimbBoundaryActor))
                 footprintActors.remove(offLimbBoundaryActor);
             footprintActors.add(offLimbBoundaryActor);
-            System.out.println("PerspectiveImage: getProps: offlimb complete " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: getProps: offlimb complete " + sw.elapsedMillis());
         }
 
 
@@ -3402,8 +3397,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             vtkPolyData footprint = smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[defaultSlice],
                     frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
-            System.out.println("PerspectiveImage: getFootprint: footprint creation " + sw.elapsedMillis());
-            System.out.println("PerspectiveImage: getFootprint: footprint is " + footprint);
+//            System.out.println("PerspectiveImage: getFootprint: footprint creation " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: getFootprint: footprint is " + footprint);
             return footprint;
         }
     }
@@ -3411,13 +3406,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private vtkPolyData checkForExistingFootprint()
     {
 //      String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_frustumIntersection.vtk";
-        String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
-        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
+        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
+//        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
         if (FileCache.isFileGettable(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2)))
 //      if (FileCache.isFileGettable(intersectionFileName))
         {
             FileCache.getFileFromServer(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2));
-            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally ");
+//            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally ");
             vtkPolyDataReader reader = new vtkPolyDataReader();
             reader.SetFileName(intersectionFileName);
             reader.Update();
@@ -3436,9 +3431,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
-            System.out.println("PerspectiveImage: loadFootprint: setting texture coords " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: loadFootprint: setting texture coords " + sw.elapsedMillis());
             PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
-            System.out.println("PerspectiveImage: loadFootprint: set texture coords " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: loadFootprint: set texture coords " + sw.elapsedMillis());
             pointData.Delete();
 
             shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
@@ -3455,13 +3450,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             {
                 if (useDefaultFootprint())
                 {
-                    System.out.println("PerspectiveImage: loadFootprint: using default footprint " + sw.elapsedMillis());
+//                    System.out.println("PerspectiveImage: loadFootprint: using default footprint " + sw.elapsedMillis());
                     int defaultSlice = getDefaultSlice();
-                    System.out.println("PerspectiveImage: loadFootprint: got default slice " + sw.elapsedMillis());
+//                    System.out.println("PerspectiveImage: loadFootprint: got default slice " + sw.elapsedMillis());
                     if (footprintGenerated[defaultSlice] == false)
                     {
                         footprint[defaultSlice] = getFootprint(defaultSlice);
-                        System.out.println("PerspectiveImage: loadFootprint: got footprint " + sw.elapsedMillis());
+//                        System.out.println("PerspectiveImage: loadFootprint: got footprint " + sw.elapsedMillis());
                         if (footprint[defaultSlice] == null)
                             return;
 
@@ -3481,7 +3476,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
                     tmp = smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice],
                             frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
-                    System.out.println("PerspectiveImage: loadFootprint: frustrum intersection " + sw.elapsedMillis());
+//                    System.out.println("PerspectiveImage: loadFootprint: frustrum intersection " + sw.elapsedMillis());
                     if (tmp == null)
                         return;
 
@@ -3497,17 +3492,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 //                writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
                 //               writer.SetFileTypeToBinary();
                 //                writer.Write();
-                System.out.println("PerspectiveImage: loadFootprint: performing deep copy " + sw.elapsedMillis());
+//                System.out.println("PerspectiveImage: loadFootprint: performing deep copy " + sw.elapsedMillis());
                 footprint[currentSlice].DeepCopy(tmp);
-                System.out.println("PerspectiveImage: loadFootprint: performed deep copy " + sw.elapsedMillis());
+//                System.out.println("PerspectiveImage: loadFootprint: performed deep copy " + sw.elapsedMillis());
                 footprintGenerated[currentSlice] = true;
             }
 
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
-            System.out.println("PerspectiveImage: loadFootprint: setting texture coords " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: loadFootprint: setting texture coords " + sw.elapsedMillis());
             PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
-            System.out.println("PerspectiveImage: loadFootprint: set texture coords " + sw.elapsedMillis());
+//            System.out.println("PerspectiveImage: loadFootprint: set texture coords " + sw.elapsedMillis());
             pointData.Delete();
         }
         else
@@ -3543,12 +3538,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], getOffset());
         vtkPolyDataWriter writer = new vtkPolyDataWriter();
         writer.SetInputData(footprint[0]);
-        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
-//        String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_frustumIntersection.vtk";
-        String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
-
-        System.out.println("PerspectiveImage: loadFootprint: saving footprint to " + intersectionFileName);
-
+//        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
+        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
         writer.SetFileName(new File(intersectionFileName).toString());
         writer.SetFileTypeToBinary();
         writer.Write();
@@ -4537,18 +4528,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
 
         calculator = new OffLimbPlaneCalculator(this);
-        System.out.println("PerspectiveImage: loadOffLimbPlane: loading offlimb plane " + sw.elapsedMillis());
         double[] spacecraftPosition=new double[3];
         double[] focalPoint=new double[3];
         double[] upVector=new double[3];
         this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
         this.offLimbFootprintDepth=new Vector3D(spacecraftPosition).getNorm();
-        System.out.println("PerspectiveImage: loadOffLimbPlane: calculating offlimb plane " + sw.elapsedMillis());
+//        System.out.println("PerspectiveImage: loadOffLimbPlane: calculating offlimb plane " + sw.elapsedMillis());
         calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-        System.out.println("PerspectiveImage: loadOffLimbPlane: calculated offlimb plane " + sw.elapsedMillis());
+//        System.out.println("PerspectiveImage: loadOffLimbPlane: calculated offlimb plane " + sw.elapsedMillis());
         offLimbActor=calculator.getOffLimbActor();
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
-        System.out.println("PerspectiveImage: loadOffLimbPlane: got actors " + sw.elapsedMillis());
 
         // set initial visibilities
         if (offLimbActor != null)
@@ -4556,8 +4545,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             offLimbActor.SetVisibility(offLimbVisibility?1:0);
             offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
         }
-        System.out.println("PerspectiveImage: loadOffLimbPlane: returning " + sw.elapsedMillis());
-
     }
 
 
