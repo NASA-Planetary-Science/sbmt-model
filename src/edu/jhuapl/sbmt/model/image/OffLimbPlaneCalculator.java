@@ -316,7 +316,7 @@ public class OffLimbPlaneCalculator
         }
 
         //try to fetch the offlimb image data from the file cache first
-        String offLimbImageDataFileName = new File(img.getFitFileFullPath()).getParent() +  File.separator  + FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_" + img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk";
+        String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_" + img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk";
         if (FileCache.isFileGettable(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2)))
 //      if (FileCache.isFileGettable(offLimbImageDataFileName))
         {
