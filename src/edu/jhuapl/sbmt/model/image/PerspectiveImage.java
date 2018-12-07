@@ -3406,7 +3406,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private vtkPolyData checkForExistingFootprint()
     {
 //      String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_frustumIntersection.vtk";
-        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
+        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + key.source.name() + File.separator + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
 //        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
         if (FileCache.isFileGettable(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2)))
 //      if (FileCache.isFileGettable(intersectionFileName))
@@ -3539,7 +3539,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         vtkPolyDataWriter writer = new vtkPolyDataWriter();
         writer.SetInputData(footprint[0]);
 //        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
-        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
+        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + key.source.name() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
         writer.SetFileName(new File(intersectionFileName).toString());
         writer.SetFileTypeToBinary();
         writer.Write();

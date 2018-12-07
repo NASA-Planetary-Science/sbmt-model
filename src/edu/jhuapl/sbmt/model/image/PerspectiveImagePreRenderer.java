@@ -12,6 +12,7 @@ import vtk.vtkPolyDataWriter;
 import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.util.Configuration;
+import edu.jhuapl.saavtk.util.FileCache.NonexistentRemoteFile;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
@@ -140,11 +141,10 @@ public class PerspectiveImagePreRenderer
             basename = basename.substring(basename.indexOf("2") + 2);
             ImageKey key = new ImageKey(basename, source, instrument);
             System.out.println("PerspectiveImagePreRenderer: main: filename is " + basename);
-
             SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config);
-            for (int i=0; i<smallBodyModel.getNumberResolutionLevels(); i++)
+            smallBodyModel.setModelResolution(0);
+            try
             {
-                smallBodyModel.setModelResolution(i);
                 PerspectiveImage image = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, false);
                 String pointingFileString = "";
                 if (source == ImageSource.SPICE)
@@ -156,7 +156,17 @@ public class PerspectiveImagePreRenderer
                     pointingFileString = image.getSumfileFullPath();
 
                 }
-                PerspectiveImagePreRenderer preRenderer = new PerspectiveImagePreRenderer(image, outputDirectory);
+                if (!new File(pointingFileString).exists()) continue;
+                for (int i=0; i<smallBodyModel.getNumberResolutionLevels(); i++)
+                {
+                    smallBodyModel.setModelResolution(i);
+                    image = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, false);
+                    PerspectiveImagePreRenderer preRenderer = new PerspectiveImagePreRenderer(image, outputDirectory);
+                }
+            }
+            catch (NonexistentRemoteFile nerf)
+            {
+                continue;
             }
         }
     }
