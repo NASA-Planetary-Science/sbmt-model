@@ -51,7 +51,7 @@ public class PerspectiveImagePreRenderer
         footprint.GetCellData().SetScalars(null);
         footprint.GetPointData().SetScalars(null);
 
-        System.out.println("PerspectiveImagePreRenderer: calculateFootprint: footprint is " + footprint);
+//        System.out.println("PerspectiveImagePreRenderer: calculateFootprint: footprint is " + footprint);
 
         vtkPolyDataWriter writer = new vtkPolyDataWriter();
         writer.SetInputData(footprint);
@@ -60,7 +60,7 @@ public class PerspectiveImagePreRenderer
         String intersectionFileName = outputDir + File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_frustumIntersection.vtk";
 
         System.out.println("PerspectiveImage: loadFootprint: saving footprint to " + intersectionFileName);
-
+        if (!(new File(intersectionFileName).exists()))new File(intersectionFileName).getParentFile().mkdir();
         writer.SetFileName(new File(intersectionFileName).toString());
         writer.SetFileTypeToBinary();
         writer.Write();
@@ -72,18 +72,18 @@ public class PerspectiveImagePreRenderer
         calculator.generateOffLimbPlane(image);
 //        String filename = new File(image.getFitFileFullPath()).getParent() +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_offLimbImageData.vtk";
         String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + resolutionIndex + "_offLimbImageData.vtk";
-
+        if (!(new File(filename).exists())) new File(filename).getParentFile().mkdirs();
         calculator.saveToDisk(filename);
     }
 
     public static void main(String[] args) throws FitsException, IOException
     {
         String inputDirectory = args[0];
-        ImageSource source = ImageSource.valueOf(args[1]);
+        final ImageSource source = ImageSource.valueOf(args[1]);
         ShapeModelBody body = ShapeModelBody.valueOf(args[2]);
         ShapeModelType type = ShapeModelType.valueOf(args[3]);
         int imagerIndex = Integer.parseInt(args[4]);
-        String outputDirectory = args[5];
+        String outputDirectory = args[5] + "/" + args[1];
 
         boolean aplVersion = true;
 //        String rootURL = FileCache.createFileURL("/disks/d0180/htdocs-sbmt/internal/sbmt").toString();
@@ -111,7 +111,26 @@ public class PerspectiveImagePreRenderer
             @Override
             public boolean accept(File dir, String name)
             {
-                return FilenameUtils.getExtension(name).contains("fit");
+                boolean fitsFile = FilenameUtils.getExtension(name).contains("fit");
+                return fitsFile;
+//                boolean hasPointingFile = false;
+//                String pointingFileString = "";
+//                if (source == ImageSource.SPICE)
+//                {
+//
+//                    pointingFileString = dir.getParentFile().getAbsolutePath() + File.separator + "infofiles" + File.separator +  FilenameUtils.getBaseName(name) + ".INFO";
+//                }
+//                else if (source == ImageSource.GASKELL)
+//                {
+//                    pointingFileString = dir.getParentFile().getAbsolutePath() + File.separator + "sumfiles" + File.separator + FilenameUtils.getBaseName(name) + ".SUM";
+//
+//                }
+//                System.out.println(
+//                        "PerspectiveImagePreRenderer.main(...).new FilenameFilter() {...}: accept: pointingfile string " + pointingFileString);
+//                File pointingFile = new File(pointingFileString);
+//                if (pointingFile.exists()) hasPointingFile = true;
+//
+//                return fitsFile && hasPointingFile;
             }
         });
         for (File filename : fileList)
@@ -127,6 +146,16 @@ public class PerspectiveImagePreRenderer
             {
                 smallBodyModel.setModelResolution(i);
                 PerspectiveImage image = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, false);
+                String pointingFileString = "";
+                if (source == ImageSource.SPICE)
+                {
+                    pointingFileString = image.getInfoFileFullPath();
+                }
+                else if (source == ImageSource.GASKELL)
+                {
+                    pointingFileString = image.getSumfileFullPath();
+
+                }
                 PerspectiveImagePreRenderer preRenderer = new PerspectiveImagePreRenderer(image, outputDirectory);
             }
         }
