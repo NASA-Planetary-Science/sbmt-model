@@ -3406,11 +3406,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private vtkPolyData checkForExistingFootprint()
     {
 //      String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_frustumIntersection.vtk";
-        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + key.source.name() + File.separator + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
+        String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + key.source.name() + File.separator + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk.gz";
 //        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
         if (FileCache.isFileGettable(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2)))
 //      if (FileCache.isFileGettable(intersectionFileName))
         {
+            System.out.println(
+                    "PerspectiveImage: checkForExistingFootprint: getting from server");
             FileCache.getFileFromServer(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2));
 //            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally ");
             vtkPolyDataReader reader = new vtkPolyDataReader();
@@ -3444,6 +3446,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (generateFootprint)
         {
+            System.out.println("PerspectiveImage: loadFootprint: generating footprint");
             vtkPolyData tmp = null;
 
             if (!footprintGenerated[currentSlice])
