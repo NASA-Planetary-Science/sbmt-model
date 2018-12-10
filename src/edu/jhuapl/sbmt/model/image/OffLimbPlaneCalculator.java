@@ -74,11 +74,11 @@ public class OffLimbPlaneCalculator
         // (2a) determine ray-cast depth; currently implemented as camera-to-origin distance plus body bounding-box diagonal length -- that way rays will always extend from the camera position past the entire body
         Vector3D scPos=new Vector3D(spacecraftPosition);
         int currentSlice = img.getCurrentSlice();
-        if (img.minFrustumDepth[currentSlice]==0)
-            img.minFrustumDepth[currentSlice]=0;
-        if (img.maxFrustumDepth[currentSlice]==0)
-            img.maxFrustumDepth[currentSlice]=scPos.getNorm()+img.getSmallBodyModel().getBoundingBoxDiagonalLength();
-        double maxRayDepth=(img.minFrustumDepth[currentSlice]+img.maxFrustumDepth[currentSlice]);
+        if (img.getMinFrustumDepth(currentSlice)==0)
+            img.setMinFrustumDepth(currentSlice, 0);
+        if (img.getMaxFrustumDepth(currentSlice)==0)
+            img.setMaxFrustumDepth(currentSlice, scPos.getNorm()+img.getSmallBodyModel().getBoundingBoxDiagonalLength());
+        double maxRayDepth=(img.getMinFrustumDepth(currentSlice)+img.getMaxFrustumDepth(currentSlice));
         double ffac=maxRayDepth*Math.tan(Math.toRadians(fov/2));    // img is the scaling factor in the plane perpendicular to the boresight, which maps unit vectors from the camera position onto the chosen max depth, in frustum coordinates, thus forming a ray
 
         // (2b) figure out rotations lookRot and upRot, which transform frustum (s,t) coordinates into a direction in 3D space, pointing in the implied direction from the 3D camera position:
@@ -87,6 +87,9 @@ public class OffLimbPlaneCalculator
         // NOTE: t-hat cross s-hat = look-hat, thus completing the frustum coordinate system
         // NOTE: given two scalar values -1<=s<=1 and -1<=t<=1, the corresponding ray extends (in 3D space) from the camera position to upRot*lookRot*
         Vector3D lookVec=new Vector3D(focalPoint).subtract(new Vector3D(spacecraftPosition));
+        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: focal point is " + focalPoint[0]);
+        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: sc pos " + spacecraftPosition[0]);
+        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: lookvec is " + lookVec);
         Vector3D upVec=new Vector3D(upVector);
         Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
@@ -165,6 +168,12 @@ public class OffLimbPlaneCalculator
             {
                 // create the texture first
                 offLimbTexture = img.getOfflimb().getOffLimbTexture();
+//                if (offLimbTexture == null)
+//                {
+//                    offLimbTexture=new vtkTexture();
+//                    offLimbTexture.SetInputData(img.getDisplayedImage());
+//                    offLimbTexture.Modified();
+//                }
                 offLimbTexture.InterpolateOn();
                 offLimbTexture.RepeatOff();
                 offLimbTexture.EdgeClampOn();

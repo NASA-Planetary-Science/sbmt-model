@@ -9,6 +9,7 @@ import vtk.vtkImageData;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataNormals;
 import vtk.vtkProp;
+import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.IntensityRange;
@@ -60,5 +61,23 @@ public interface IVTKRenderEngine
     public vtkPolyData getShiftedFootprint();
 
     public vtkPolyData getShiftedFootprint(int index);
+
+    public vtkPolyData getUnshiftedFootprint();
+
+    public vtkTexture getTexture();
+
+    public vtkPolyData getFootprint(int defaultSlice);
+
+    public vtkPolyData getFrustumPolyData();
+
+    public double getMaxFrustumDepth(int slice);
+
+    public double getMinFrustumDepth(int slice);
+
+    public void setMaxFrustumDepth(int slice, double value);
+
+    public void setMinFrustumDepth(int slice, double value);
+
+    public void setMaskSource(vtkImageCanvasSource2D maskSource);
 
 }

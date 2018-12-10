@@ -87,6 +87,7 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public List<vtkProp> getProps()
     {
+        System.out.println("PerspectiveImageVTKRenderEngine: getProps: getting props");
         //        System.out.println("getProps()");
         if (footprintActor == null)
         {
@@ -126,16 +127,19 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
         }
 
         // for offlimb
-        vtkActor offLimbActor = image.getOfflimb().getOffLimbActor();
-        vtkActor offLimbBoundaryActor = image.getOfflimb().getOffLimbBoundaryActor();
-        if (offLimbActor == null) {
-            image.getOfflimb().loadOffLimbPlane();
-            if (footprintActors.contains(offLimbActor))
-                footprintActors.remove(offLimbActor);
-            footprintActors.add(offLimbActor);
-            if (footprintActors.contains(offLimbBoundaryActor))
-                footprintActors.remove(offLimbBoundaryActor);
-            footprintActors.add(offLimbBoundaryActor);
+        if (image.getOfflimb() != null)
+        {
+            vtkActor offLimbActor = image.getOfflimb().getOffLimbActor();
+            vtkActor offLimbBoundaryActor = image.getOfflimb().getOffLimbBoundaryActor();
+            if (offLimbActor == null) {
+                image.getOfflimb().loadOffLimbPlane();
+                if (footprintActors.contains(offLimbActor))
+                    footprintActors.remove(offLimbActor);
+                footprintActors.add(offLimbActor);
+                if (footprintActors.contains(offLimbBoundaryActor))
+                    footprintActors.remove(offLimbBoundaryActor);
+                footprintActors.add(offLimbBoundaryActor);
+            }
         }
 
 
@@ -148,6 +152,8 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public void calculateFrustum()
     {
+        System.out.println(
+                "PerspectiveImageVTKRenderEngine: calculateFrustum: calculating frustum");
         //        System.out.println("recalculateFrustum()");
         frustumPolyData = new vtkPolyData();
 
@@ -282,21 +288,28 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
         }
         // for offlimb
-        vtkTexture offLimbTexture = image.getOfflimb().getOffLimbTexture();
-        if (offLimbTexture==null)
-            offLimbTexture=new vtkTexture();
-        vtkImageData image=new vtkImageData();
-        image.DeepCopy(getDisplayedImage());
-        offLimbTexture.SetInputData(image);
-        offLimbTexture.Modified();
+//        System.out.println(
+//                "PerspectiveImageVTKRenderEngine: setDisplayedImageRange: image is " + image.getOfflimb());
+        if (image.getOfflimb() != null)
+        {
+            vtkTexture offLimbTexture = image.getOfflimb().getOffLimbTexture();
+            if (offLimbTexture==null)
+                offLimbTexture=new vtkTexture();
+            vtkImageData image2=new vtkImageData();
+            image2.DeepCopy(getDisplayedImage());
+            offLimbTexture.SetInputData(image2);
+            offLimbTexture.Modified();
+        }
 
         this.image.firePropertyChange();
 //        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 
     }
 
-    protected vtkPolyData getFootprint(int defaultSlice)
+    public vtkPolyData getFootprint(int defaultSlice)
     {
+        System.out.println(
+                "PerspectiveImageVTKRenderEngine: getFootprint: getting footprint");
         return smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[defaultSlice],
                 frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
     }
@@ -307,6 +320,8 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public void loadFootprint()
     {
+        System.out.println(
+                "PerspectiveImageVTKRenderEngine: loadFootprint: loading footprint");
         ImageKey key = image.getKey();
         if (image.isGenerateFootprint())
         {
@@ -361,6 +376,8 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 //                footprintGenerated[currentSlice] = true;
             }
 
+            System.out.println(
+                    "PerspectiveImageVTKRenderEngine: loadFootprint: footprint is " + footprint[currentSlice]);
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
             PolyDataUtil.generateTextureCoordinates(getFrustum(), imageWidth, imageHeight, footprint[currentSlice]);
@@ -405,6 +422,8 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public vtkPolyData generateBoundary()
     {
+        System.out.println(
+                "PerspectiveImageVTKRenderEngine: generateBoundary: generating boundary");
         loadFootprint();
 
         if (footprint[currentSlice].GetNumberOfPoints() == 0)
@@ -510,9 +529,19 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
         return maxFrustumDepth[slice];
     }
 
+    public void setMaxFrustumDepth(int slice, double value)
+    {
+        maxFrustumDepth[slice] = value;
+    }
+
     public double getMinFrustumDepth(int slice)
     {
         return minFrustumDepth[slice];
+    }
+
+    public void setMinFrustumDepth(int slice, double value)
+    {
+        minFrustumDepth[slice] = value;
     }
 
     public vtkActor getFootprintActor()

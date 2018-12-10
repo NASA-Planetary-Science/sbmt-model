@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -20,6 +21,7 @@ import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkProp;
 import vtk.vtkProperty;
+import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
@@ -246,9 +248,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
     {
         this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
-        this.offlimb = new PerspectiveImageVTKOfflimbRenderEngine(this);
-        offlimb.setOffLimbFootprintVisibility(true);
-        offlimb.setOffLimbBoundaryVisibility(true);
+
     }
 
 
@@ -304,6 +304,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         labelFileIO = new BaseLabelFileIO();
         this.vtkRenderer = new PerspectiveImageVTKRenderEngine(this);
         initialize();
+//        this.offlimb = new PerspectiveImageVTKOfflimbRenderEngine(this);
+//        offlimb.setOffLimbFootprintVisibility(true);
+//        offlimb.setOffLimbBoundaryVisibility(true);
+
     }
 
     /**
@@ -330,6 +334,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         System.out.println("PerspectiveImage: PerspectiveImage: key is " + key);
         this.vtkRenderer = new PerspectiveImageVTKRenderEngine(this);
         initialize();
+//        this.offlimb = new PerspectiveImageVTKOfflimbRenderEngine(this);
+//        offlimb.setOffLimbFootprintVisibility(true);
+//        offlimb.setOffLimbBoundaryVisibility(true);
+
     }
 
     protected void initialize() throws FitsException, IOException
@@ -447,6 +455,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void resetSpacecraftState()
     {
+        System.out.println("PerspectiveImage: resetSpacecraftState: resetting sc state");
         copySpacecraftState();
         int nslices = getNumberBands();
         for (int i = 0; i<nslices; i++)
@@ -470,6 +479,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         //        saveImageInfo();
     }
 
+    public void saveImageInfo()
+    {
+        infoFileIO.saveImageInfo();
+    }
+
+    public void saveImageInfo(String filename)
+    {
+        infoFileIO.saveImageInfo(filename);
+    }
 
 
     public void setTargetPixelCoordinates(double[] frustumCenterPixel)
@@ -550,6 +568,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void updateFrameAdjustments()
     {
+        System.out.println("PerspectiveImage: updateFrameAdjustments: updating frame adjustments");
         // adjust wrt the original spacecraft pointing direction, not the previous adjusted one
         copySpacecraftState();
 
@@ -768,7 +787,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
     }
 
-
+    public void calculateFrustum()
+    {
+        vtkRenderer.calculateFrustum();
+    }
 
 
 //    public void calculateFrustum()
@@ -866,7 +888,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     abstract protected int[] getMaskSizes();
 
-    protected String initializeFitFileFullPath() { return initLocalFitFileFullPath(); }
+    protected String initializeFitFileFullPath() throws IOException { return initLocalFitFileFullPath(); }
     protected String initializeEnviFileFullPath() {return initLocalEnviFileFullPath(); }
     protected String initializePngFileFullPath() { return initializeLabelFileFullPath(); }
 
@@ -898,7 +920,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     //TODO: FIX THIS
     protected String initializeLabelFileFullPath() { return labelFileIO.initLocalLabelFileFullPath(); } //return initLocalLabelFileFullPath(); }
     protected String initializeInfoFileFullPath() { return infoFileIO.initLocalInfoFileFullPath(); } //return initLocalInfoFileFullPath(); }
-    protected String initializeSumfileFullPath() { return sumFileIO.initLocalSumfileFullPath(); } //initLocalSumfileFullPath(); }
+    protected String initializeSumfileFullPath() throws IOException { return sumFileIO.initLocalSumfileFullPath(); } //initLocalSumfileFullPath(); }
 
 //    public String initLocalSumfileFullPath()
 //    {
@@ -1002,6 +1024,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         maskSource.FillBox(leftMask, imageWidth-1-rightMask, bottomMask, imageHeight-1-topMask);
         maskSource.Update();
 
+        vtkRenderer.setMaskSource(maskSource);
+
         for (int k=0; k<imageDepth; k++)
         {
             vtkRenderer.getFootprint()[k] = new vtkPolyData();
@@ -1045,6 +1069,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void loadPointing() throws FitsException, IOException
     {
+        System.out.println("PerspectiveImage: loadPointing: loading pointing");
         if (key.source.equals(ImageSource.SPICE) || key.source.equals(ImageSource.CORRECTED_SPICE))
         {
             try
@@ -1120,7 +1145,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         copySpacecraftState();
     }
 
-
+    public List<vtkProp> getProps()
+    {
+        return vtkRenderer.getProps();
+    }
 
 //    public List<vtkProp> getProps()
 //    {
@@ -1195,7 +1223,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-
+    public void setDisplayedImageRange(IntensityRange range)
+    {
+        vtkRenderer.setDisplayedImageRange(range);
+    }
 
 //    public void setDisplayedImageRange(IntensityRange range)
 //    {
@@ -1323,6 +1354,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             return true;
         else
             return false;
+    }
+
+    protected vtkPolyData getFootprint(int defaultSlice)
+    {
+        return vtkRenderer.getFootprint(defaultSlice);
+    }
+
+    public void loadFootprint()
+    {
+        vtkRenderer.loadFootprint();
     }
 
 //    protected vtkPolyData getFootprint(int defaultSlice)
@@ -1678,6 +1719,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             focalPoint[1] = spacecraftPosition[1] + distanceToCenter*direction[1];
             focalPoint[2] = spacecraftPosition[2] + distanceToCenter*direction[2];
         }
+        System.out.println("PerspectiveImage: getCameraOrientation: focal point " + focalPoint[0] + " " + focalPoint[1] + " "  + focalPoint[2]);
+        System.out.println("PerspectiveImage: getCameraOrientation: sc pos " + spacecraftPosition[0] + " " + spacecraftPosition[1] + " "  + spacecraftPosition[2]);
     }
 
     /**
@@ -1715,6 +1758,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         quaternion[3] = rotation.getQ3();
 
         return rotation;
+    }
+
+    public Frustum getFrustum(int slice)
+    {
+        return vtkRenderer.getFrustum(slice);
     }
 
 //    public Frustum getFrustum(int slice)
@@ -2025,6 +2073,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return rotationOffset;
     }
 
+    public vtkPolyData getFrustumPolyData()
+    {
+        return vtkRenderer.getFrustumPolyData();
+    }
 
 //    public vtkPolyData getFrustumPolyData()
 //    {
@@ -2038,10 +2090,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //     * @return
 //     */
 //    @Override
-//    public vtkPolyData getShiftedFootprint()
-//    {
+    public vtkPolyData getShiftedFootprint()
+    {
+        return vtkRenderer.getShiftedFootprint();
 //        return shiftedFootprint[0];
-//    }
+    }
 
 //    /**
 //     * The original footprint whose cells exactly overlap the original asteroid.
@@ -2050,11 +2103,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //     * generators, which use it.
 //     * @return
 //     */
-//    @Override
-//    public vtkPolyData getUnshiftedFootprint()
-//    {
+    @Override
+    public vtkPolyData getUnshiftedFootprint()
+    {
+        return vtkRenderer.getUnshiftedFootprint();
 //        return footprint[currentSlice];
-//    }
+    }
 
     public int getNumBackplanes()
     {
@@ -2314,10 +2368,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return Integer.toString(currentSlice);
     }
 
-//    public vtkTexture getTexture()
-//    {
+    public vtkTexture getTexture()
+    {
+        return vtkRenderer.getTexture();
 //        return imageTexture;
-//    }
+    }
 
     public static void setGenerateFootprint(boolean b)
     {
@@ -2697,10 +2752,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.labelFileFullPath = labelFileFullPath;
     }
 
-//    public Frustum getFrustum()
-//    {
+    public Frustum getFrustum()
+    {
+        return vtkRenderer.getFrustum();
 //        return getFrustum(currentSlice);
-//    }
+    }
 
     /**
      *  Get the maximum FOV angle in degrees of the image (the max of either
@@ -2882,15 +2938,27 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-//    public double getMaxFrustumDepth(int slice)
-//    {
+    public double getMaxFrustumDepth(int slice)
+    {
+        return vtkRenderer.getMaxFrustumDepth(slice);
 //        return maxFrustumDepth[slice];
-//    }
-//
-//    public double getMinFrustumDepth(int slice)
-//    {
+    }
+
+    public void setMaxFrustumDepth(int slice, double value)
+    {
+        vtkRenderer.setMaxFrustumDepth(slice, value);
+    }
+
+    public double getMinFrustumDepth(int slice)
+    {
+        return vtkRenderer.getMinFrustumDepth(slice);
 //        return minFrustumDepth[slice];
-//    }
+    }
+
+    public void setMinFrustumDepth(int slice, double value)
+    {
+        vtkRenderer.setMinFrustumDepth(slice, value);
+    }
 
 
 

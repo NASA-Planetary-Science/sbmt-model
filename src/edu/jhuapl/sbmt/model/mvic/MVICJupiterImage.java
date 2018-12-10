@@ -3,14 +3,14 @@ package edu.jhuapl.sbmt.model.mvic;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class MVICJupiterImage extends PerspectiveImage
 {
@@ -43,11 +43,11 @@ public class MVICJupiterImage extends PerspectiveImage
         return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
     }
 
-    protected double getFocalLength() { return 657.5; }    // in mm
+    public double getFocalLength() { return 657.5; }    // in mm
 
-    protected double getPixelWidth() { return 0.013; }    // in mm
+    public double getPixelWidth() { return 0.013; }    // in mm
 
-    protected double getPixelHeight() { return 0.013; }   // in mm
+    public double getPixelHeight() { return 0.013; }   // in mm
 
     @Override
     protected String initializeLabelFileFullPath()
