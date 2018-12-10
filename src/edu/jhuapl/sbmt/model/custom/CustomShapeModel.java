@@ -3,7 +3,7 @@ package edu.jhuapl.sbmt.model.custom;
 import java.io.File;
 
 import edu.jhuapl.saavtk.util.Configuration;
-import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.model.dem.DEM;
@@ -49,18 +49,14 @@ public class CustomShapeModel extends SmallBodyModel
 
     public static String getModelFilename(SmallBodyViewConfig config)
     {
+    	SafeURLPaths safeUrlPaths = SafeURLPaths.instance();
         if (config.customTemporary)
         {
-            return FileCache.FILE_PREFIX + config.modelLabel;
+            return safeUrlPaths.getUrl(config.modelLabel);
         }
         else
         {
-            return FileCache.FILE_PREFIX +
-                    Configuration.getImportedShapeModelsDir() +
-                    File.separator +
-                    config.modelLabel +
-                    File.separator +
-                    "model.vtk";
+            return safeUrlPaths.getUrl(safeUrlPaths.getString(Configuration.getImportedShapeModelsDir(), config.modelLabel, "model.vtk"));
         }
     }
 }

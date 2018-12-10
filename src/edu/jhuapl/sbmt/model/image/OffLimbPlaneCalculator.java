@@ -86,7 +86,6 @@ public class OffLimbPlaneCalculator
         //    (B) upRot * (lookRot * y-hat) = up-hat = t-hat        [ first transform y-hat from 3D space into the "boresight frame" (it was perpendicular to z-hat before, so will now be perpendicular to the boresight direction) and second rotate that vector around the boresight axis to align with camera up, i.e. t-hat
         // NOTE: t-hat cross s-hat = look-hat, thus completing the frustum coordinate system
         // NOTE: given two scalar values -1<=s<=1 and -1<=t<=1, the corresponding ray extends (in 3D space) from the camera position to upRot*lookRot*
-        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: focal point " + focalPoint[0]  +" "+ focalPoint[1] + " " +  focalPoint[2] + " and sc pos " + spacecraftPosition[0] + " " + spacecraftPosition[1] + " " + spacecraftPosition[2]);
         Vector3D lookVec=new Vector3D(focalPoint).subtract(new Vector3D(spacecraftPosition));
         Vector3D upVec=new Vector3D(upVector);
         Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());

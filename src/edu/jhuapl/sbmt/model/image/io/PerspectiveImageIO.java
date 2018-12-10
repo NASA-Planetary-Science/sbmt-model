@@ -12,7 +12,7 @@ public class PerspectiveImageIO
 {
     ENVIFileFormatIO enviIO;
     PNGFileFormatIO pngIO;
-    FitsFileFormatIO fitsIO;
+    FitsFileFormatIO fitsIO; 
 
     public PerspectiveImageIO(PerspectiveImage image)
     {

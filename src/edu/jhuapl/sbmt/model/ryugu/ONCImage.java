@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.SafePaths;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
@@ -73,7 +73,7 @@ public class ONCImage extends PerspectiveImage
             throw new NullPointerException("Cannot determine correct sumfile for image " + imageKey);
         }
         String sumfileDir = new File(getImageFileName()).getParentFile().getParent();
-        return FileCache.getFileFromServer(SafePaths.getString(sumfileDir, "sumfiles", sumfileName)).getAbsolutePath();
+        return FileCache.getFileFromServer(SafeURLPaths.instance().getString(sumfileDir, "sumfiles", sumfileName)).getAbsolutePath();
     }
 
     private String getImageFileName()
@@ -85,7 +85,7 @@ public class ONCImage extends PerspectiveImage
     {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
         File keyFile = new File(getImageFileName());
-        File mapFile = FileCache.getFileFromServer(SafePaths.getString(keyFile.getParentFile().getParent(), "make_sumfiles.in"));
+        File mapFile = FileCache.getFileFromServer(SafeURLPaths.instance().getString(keyFile.getParentFile().getParent(), "make_sumfiles.in"));
         try (BufferedReader br = new BufferedReader(new FileReader(mapFile)))
         {
             while (br.ready())

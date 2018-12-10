@@ -57,7 +57,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     }
 
     @Override
-    public int getNumberBands()
+    protected int getNumberBands()
     {
         return 4;
     }
@@ -120,13 +120,13 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     }
 
     @Override
-    public double getFocalLength() { return 657.5; }    // in mm
+    protected double getFocalLength() { return 657.5; }    // in mm
 
     @Override
-    public double getPixelWidth() { return 0.013; }    // in mm
+    protected double getPixelWidth() { return 0.013; }    // in mm
 
     @Override
-    public double getPixelHeight() { return 0.013; }   // in mm
+    protected double getPixelHeight() { return 0.013; }   // in mm
 
     @Override
     protected String initializeFitFileFullPath()
