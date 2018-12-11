@@ -1,14 +1,15 @@
 package edu.jhuapl.sbmt.model.image;
 
-import edu.jhuapl.saavtk.metadata.api.Key;
-import edu.jhuapl.saavtk.metadata.api.Metadata;
-import edu.jhuapl.saavtk.metadata.api.MetadataManager;
-import edu.jhuapl.saavtk.metadata.api.Version;
-import edu.jhuapl.saavtk.metadata.impl.SettableMetadata;
 import edu.jhuapl.sbmt.client.SpectralMode;
 import edu.jhuapl.sbmt.query.QueryBase;
 import edu.jhuapl.sbmt.query.database.GenericPhpQuery;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
+
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.MetadataManager;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.SettableMetadata;
 
 public class ImagingInstrument implements MetadataManager
 {
