@@ -14,10 +14,10 @@ import javax.swing.JOptionPane;
 
 import org.joda.time.DateTime;
 
-import edu.jhuapl.saavtk.metadata.FixedMetadata;
-import edu.jhuapl.saavtk.metadata.Metadata;
-import edu.jhuapl.saavtk.metadata.SettableMetadata;
-import edu.jhuapl.saavtk.metadata.Version;
+import edu.jhuapl.saavtk.metadata.api.Metadata;
+import edu.jhuapl.saavtk.metadata.api.Version;
+import edu.jhuapl.saavtk.metadata.impl.FixedMetadata;
+import edu.jhuapl.saavtk.metadata.impl.SettableMetadata;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.SearchResultsMetadata;

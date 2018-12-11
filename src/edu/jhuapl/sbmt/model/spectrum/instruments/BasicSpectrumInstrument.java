@@ -1,9 +1,9 @@
 package edu.jhuapl.sbmt.model.spectrum.instruments;
 
-import edu.jhuapl.saavtk.metadata.Key;
-import edu.jhuapl.saavtk.metadata.Metadata;
-import edu.jhuapl.saavtk.metadata.SettableMetadata;
-import edu.jhuapl.saavtk.metadata.Version;
+import edu.jhuapl.saavtk.metadata.api.Key;
+import edu.jhuapl.saavtk.metadata.api.Metadata;
+import edu.jhuapl.saavtk.metadata.api.Version;
+import edu.jhuapl.saavtk.metadata.impl.SettableMetadata;
 import edu.jhuapl.sbmt.model.spectrum.SpectraType;
 import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 import edu.jhuapl.sbmt.query.QueryBase;
