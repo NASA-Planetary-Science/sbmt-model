@@ -475,6 +475,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             upVectorAdjusted = MathUtil.copy(upVectorOriginal);
             sunPositionAdjusted = MathUtil.copy(sunPositionOriginal);
         }
+        vtkRenderer.getPointingInformation();
     }
 
     public void resetSpacecraftState()
@@ -661,6 +662,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             vtkRenderer.getFrusta()[slice] = null;
             footprintGenerated[slice] = false;
         }
+        vtkRenderer.getPointingInformation();
     }
 
 

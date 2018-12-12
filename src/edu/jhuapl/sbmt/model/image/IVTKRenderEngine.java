@@ -80,4 +80,6 @@ public interface IVTKRenderEngine
 
     public void setMaskSource(vtkImageCanvasSource2D maskSource);
 
+    public void getPointingInformation();
+
 }
