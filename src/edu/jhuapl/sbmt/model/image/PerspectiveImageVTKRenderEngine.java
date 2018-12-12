@@ -108,11 +108,17 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint[0]);
+//            System.out.println(
+//                    "PerspectiveImageVTKRenderEngine: getProps: shiftedfootprint " + shiftedFootprint[0]);
             footprintMapper.Update();
 
             footprintActor = new vtkActor();
             footprintActor.SetMapper(footprintMapper);
             footprintActor.SetTexture(imageTexture);
+//            System.out.println(
+//                    "PerspectiveImageVTKRenderEngine: getProps: image texture " + imageTexture);
+//            System.out.println(
+//                    "PerspectiveImageVTKRenderEngine: getProps: footprint " + footprintActor);
             vtkProperty footprintProperty = footprintActor.GetProperty();
             footprintProperty.LightingOff();
 

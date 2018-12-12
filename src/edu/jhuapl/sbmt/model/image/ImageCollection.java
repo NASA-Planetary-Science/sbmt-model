@@ -81,6 +81,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         imageToActorsMap.put(image, new ArrayList<vtkProp>());
 
         List<vtkProp> imagePieces = image.getProps();
+        System.out.println("ImageCollection: addImage: number of pieces " + imagePieces.size());
 
         imageToActorsMap.get(image).addAll(imagePieces);
 
