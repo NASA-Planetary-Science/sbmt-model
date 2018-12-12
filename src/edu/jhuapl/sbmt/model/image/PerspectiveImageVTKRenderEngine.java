@@ -15,6 +15,7 @@ import vtk.vtkImageMapToColors;
 import vtk.vtkImageMask;
 import vtk.vtkImageReslice;
 import vtk.vtkLookupTable;
+import vtk.vtkPNGWriter;
 import vtk.vtkPointData;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
@@ -105,6 +106,11 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
             imageTexture.RepeatOff();
             imageTexture.EdgeClampOn();
             imageTexture.SetInputData(getDisplayedImage());
+
+            vtkPNGWriter writer = new vtkPNGWriter();
+            writer.SetFileName("fit.png");
+            writer.SetInputData(displayedImage);
+            writer.Write();
 
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint[0]);
@@ -299,10 +305,10 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
             maskSourceOutput.Delete();
             maskFilterOutput.Delete();
 
-            //vtkPNGWriter writer = new vtkPNGWriter();
-            //writer.SetFileName("fit.png");
-            //writer.SetInput(displayedImage);
-            //writer.Write();
+//            vtkPNGWriter writer = new vtkPNGWriter();
+//            writer.SetFileName("fit.png");
+//            writer.SetInputData(displayedImage);
+//            writer.Write();
 
         }
         // for offlimb
@@ -403,6 +409,9 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
             PolyDataUtil.generateTextureCoordinates(getFrustum(), imageWidth, imageHeight, footprint[currentSlice]);
+            for (int i=0; i< 100; i++)
+                System.out.println(
+                    "PerspectiveImageVTKRenderEngine: loadFootprint: texturecoords " + textureCoords.GetComponent(0, i));
             pointData.Delete();
         }
         else
