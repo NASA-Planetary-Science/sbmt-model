@@ -215,6 +215,7 @@ public class BaseInfoFileIO implements InfoFileIO
             double[] targetPixelCoordinates,
             boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
     {
+        System.out.println("BaseInfoFileIO: loadImageInfo: trying to read " + infoFilename);
         if (infoFilename == null || infoFilename.endsWith("null"))
             throw new FileNotFoundException();
 
@@ -246,6 +247,7 @@ public class BaseInfoFileIO implements InfoFileIO
         int slice = startSlice - 1;
 
         String str;
+        System.out.println("BaseInfoFileIO: loadImageInfo: reading in from file");
         while ((str = in.readLine()) != null)
         {
             StringTokenizer st = new StringTokenizer(str);

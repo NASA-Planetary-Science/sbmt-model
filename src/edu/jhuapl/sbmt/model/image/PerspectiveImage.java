@@ -349,7 +349,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        footprint[0] = new vtkPolyData();
 //        shiftedFootprint[0] = new vtkPolyData();
         displayedRange[0] = new IntensityRange(1,0);
-        System.out.println("PerspectiveImage: initialize: " + key);
+        System.out.println("****PerspectiveImage: initialize: " + key);
         switch (key.source)
         {
         case LOCAL_PERSPECTIVE:
@@ -431,7 +431,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        else
 //            sumFileFullPath = initializeSumfileFullPath();
 //        imageDepth = loadNumSlices();
-        fileIO.loadNumSlices(imageFileFullPath, imageFileType);
+        imageDepth = fileIO.loadNumSlices(imageFileFullPath, imageFileType);
 //        if (getFitFileFullPath() != null)
 //        {
 //            fileIO.loadFromFile(getFitFileFullPath());
@@ -443,7 +443,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-
+        System.out.println("PerspectiveImage: initialize: loading pointing");
         loadPointing();
 
         if (!loadPointingOnly)
@@ -453,7 +453,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             loadImage();
             updateFrameAdjustments();
         }
-
+        System.out.println("****PerspectiveImage: initialize: end of init");
 //        maxFrustumDepth=new double[imageDepth];
 //        minFrustumDepth=new double[imageDepth];
     }
@@ -1208,13 +1208,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 loaded = true;
             } catch (FileNotFoundException e) {
                 loaded = false;
-                e.printStackTrace();
 
             }
             if (!loaded)
             {
+                System.out.println("PerspectiveImage: loadPointing: still not loaded, trying file");
+
                 try {
-//                    System.out.println("PerspectiveImage: loadPointing: loading sum file");
                     sumFileIO.loadSumfile();
                     loaded = true;
                 }
@@ -1223,6 +1223,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     System.out.println("SUM file not available");
                     throw(e);
                 }
+                System.out.println("PerspectiveImage: loadPointing: loaded!");
             }
         }
 
