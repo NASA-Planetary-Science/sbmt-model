@@ -69,8 +69,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private ModelManager modelManager;
     protected ModelManager getModelManager() { return modelManager; }
 
-//    private vtkImageData rawImage;
-//    private vtkImageData displayedImage;
     private int currentSlice = 0;
 
     private double rotation = 0.0;
@@ -80,20 +78,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public String getFlip() { return flip; }
 
     private boolean useDefaultFootprint = true;
-//    private vtkPolyData[] footprint = new vtkPolyData[1];
     private boolean[] footprintGenerated = new boolean[1];
-//    private final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
-
-//    private vtkActor footprintActor;
-//    private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
-
-//    vtkPolyData frustumPolyData;
-//    private vtkActor frustumActor;
-
-//    private vtkPolyDataNormals normalsFilter;
-
-//    private vtkFloatArray textureCoords;
-
     private boolean normalsGenerated = false;
 
     private double minIncidence = Double.MAX_VALUE;
@@ -148,15 +133,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     // apply all frame adjustments if true
     private boolean[] applyFrameAdjustments = { true };
 
-
-
     private boolean showFrustum = false;
     private boolean simulateLighting = false;
 
     private String startTime = "";
     private String stopTime = "";
-
-//    private vtkImageCanvasSource2D maskSource;
 
     private int imageWidth;
     private int imageHeight;
@@ -180,9 +161,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private static boolean generateFootprint = true;
 
     private boolean loadPointingOnly;
-
-
-
 
     protected boolean transposeFITSData = false;
     private double numberOfPixels = 0.0;
@@ -246,15 +224,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     LabelFileIO labelFileIO;
     protected PerspectiveImageIO fileIO;
 
-
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
     {
         this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
-
     }
-
 
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
@@ -269,7 +244,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         this(key, smallBodyModel, null, loadPointingOnly, currentSlice);
     }
-
 
     /**
      * If loadPointingOnly is true then only pointing information about this
@@ -460,12 +434,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void copySpacecraftState()
     {
-        System.out.println("PerspectiveImage: copySpacecraftState: ");
         int nslices = getNumberBands();
-//        System.out.println("PerspectiveImage: copySpacecraftState: number of slices " + nslices);
         for (int i = 0; i<nslices; i++)
         {
-//            System.out.println("PerspectiveImage: copySpacecraftState: spacecraft pos orig " + spacecraftPositionOriginal[0][0] + " " + spacecraftPositionOriginal[0][1] + " " + spacecraftPositionOriginal[0][2]);
             spacecraftPositionAdjusted = MathUtil.copy(spacecraftPositionOriginal);
             frustum1Adjusted = MathUtil.copy(frustum1Original);
             frustum2Adjusted = MathUtil.copy(frustum2Original);
@@ -480,7 +451,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void resetSpacecraftState()
     {
-        System.out.println("PerspectiveImage: resetSpacecraftState: resetting sc state");
         copySpacecraftState();
         int nslices = getNumberBands();
         for (int i = 0; i<nslices; i++)
@@ -488,9 +458,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             vtkRenderer.getFrusta()[i] = null;
             footprintGenerated[i] = false;
         }
-
-        //        offsetPixelCoordinates[0] = Double.MAX_VALUE;
-        //        offsetPixelCoordinates[1] = Double.MAX_VALUE;
         targetPixelCoordinates[0] = Double.MAX_VALUE;
         targetPixelCoordinates[1] = Double.MAX_VALUE;
         rotationOffset[0] = 0.0;
@@ -514,11 +481,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         infoFileIO.saveImageInfo(filename);
     }
 
-
     public void setTargetPixelCoordinates(double[] frustumCenterPixel)
     {
-        //        System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " + frustumCenterPixel[0]);
-
         this.targetPixelCoordinates[0] = frustumCenterPixel[0];
         this.targetPixelCoordinates[1] = frustumCenterPixel[1];
 
@@ -819,61 +783,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         vtkRenderer.calculateFrustum();
     }
 
-
-//    public void calculateFrustum()
-//    {
-//        //        System.out.println("recalculateFrustum()");
-//        frustumPolyData = new vtkPolyData();
-//
-//        vtkPoints points = new vtkPoints();
-//        vtkCellArray lines = new vtkCellArray();
-//
-//        vtkIdList idList = new vtkIdList();
-//        idList.SetNumberOfIds(2);
-//
-//        double maxFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) + smallBodyModel.getBoundingBoxDiagonalLength();
-//        double[] origin = spacecraftPositionAdjusted[currentSlice];
-//        double[] UL = {origin[0]+frustum1Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum1Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum1Adjusted[currentSlice][2]*maxFrustumRayLength};
-//        double[] UR = {origin[0]+frustum2Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum2Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum2Adjusted[currentSlice][2]*maxFrustumRayLength};
-//        double[] LL = {origin[0]+frustum3Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum3Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum3Adjusted[currentSlice][2]*maxFrustumRayLength};
-//        double[] LR = {origin[0]+frustum4Adjusted[currentSlice][0]*maxFrustumRayLength, origin[1]+frustum4Adjusted[currentSlice][1]*maxFrustumRayLength, origin[2]+frustum4Adjusted[currentSlice][2]*maxFrustumRayLength};
-//
-//        double minFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) - smallBodyModel.getBoundingBoxDiagonalLength();
-//        maxFrustumDepth[currentSlice]=maxFrustumRayLength;  // a reasonable approximation for a max bound on the frustum depth
-//        minFrustumDepth[currentSlice]=minFrustumRayLength;  // a reasonable approximation for a min bound on the frustum depth
-//
-//
-//
-//        points.InsertNextPoint(spacecraftPositionAdjusted[currentSlice]);
-//        points.InsertNextPoint(UL);
-//        points.InsertNextPoint(UR);
-//        points.InsertNextPoint(LL);
-//        points.InsertNextPoint(LR);
-//
-//        idList.SetId(0, 0);
-//        idList.SetId(1, 1);
-//        lines.InsertNextCell(idList);
-//        idList.SetId(0, 0);
-//        idList.SetId(1, 2);
-//        lines.InsertNextCell(idList);
-//        idList.SetId(0, 0);
-//        idList.SetId(1, 3);
-//        lines.InsertNextCell(idList);
-//        idList.SetId(0, 0);
-//        idList.SetId(1, 4);
-//        lines.InsertNextCell(idList);
-//
-//        frustumPolyData.SetPoints(points);
-//        frustumPolyData.SetLines(lines);
-//
-//
-//        vtkPolyDataMapper frusMapper = new vtkPolyDataMapper();
-//        frusMapper.SetInputData(frustumPolyData);
-//
-//        frustumActor.SetMapper(frusMapper);
-//    }
-
-
     public void setPickedPosition(double[] position)
     {
         //System.out.println("PerspectiveImage.setPickedPosition(): " + position[0] + ", " + position[1] + ", " + position[2]);
@@ -902,8 +811,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         return MathUtil.distanceBetween(pixel1, pixel2);
     }
-
-
 
     /**
      * Return the default mask sizes as a 4 element integer array where the:
@@ -1110,48 +1017,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         //        setDisplayedImageRange(new IntensityRange(0, 255));
     }
 
-//    protected int loadNumSlices()
-//    {
-//        fileIO.loadNumSlices(getFitFileFullPath());
-//        if (getFitFileFullPath() != null)
-//        {
-//            try {
-//                String filename = getFitFileFullPath();
-//                Fits f = new Fits(filename);
-//                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
-//
-//                int[] fitsAxes = h.getAxes();
-//                int fitsNAxes = fitsAxes.length;
-//                int fitsDepth = fitsNAxes == 3 ? fitsAxes[1] : 1;
-//
-//                imageDepth = fitsDepth;
-//            } catch (Exception e) { e.printStackTrace(); }
-//        }
-//        else if (getPngFileFullPath() != null)
-//        {
-//            // Do nothing for now
-//        }
-//        else if (getEnviFileFullPath() != null)
-//        {
-//            // Get the number of bands from the ENVI header
-//            String name = getEnviFileFullPath();
-//
-//            String imageFile = null;
-//            if (getKey().source == ImageSource.IMAGE_MAP)
-//                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
-//            else
-//                imageFile = getKey().name;
-//
-//            VtkENVIReader reader = new VtkENVIReader();
-//            reader.SetFileName(imageFile);
-//            imageDepth = reader.getNumBands();
-//            // for multislice images, set slice to middle slice
-//            if (imageDepth > 1)
-//                setCurrentSlice(imageDepth / 2);
-//        }
-//        return imageDepth;
-//    }
-
     protected void loadPointing() throws FitsException, IOException
     {
         System.out.println("PerspectiveImage: loadPointing:");
@@ -1205,7 +1070,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             boolean loaded = false;
             try {
-//                System.out.println("PerspectiveImage: loadPointing: loading adjusted sum file");
                 infoFileIO.loadAdjustedSumfile();
                 loaded = true;
             } catch (FileNotFoundException e) {
@@ -1214,8 +1078,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             }
             if (!loaded)
             {
-                System.out.println("PerspectiveImage: loadPointing: still not loaded, trying file");
-
                 try {
                     sumFileIO.loadSumfile();
                     loaded = true;
@@ -1225,7 +1087,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     System.out.println("SUM file not available");
                     throw(e);
                 }
-                System.out.println("PerspectiveImage: loadPointing: loaded!");
             }
         }
 
@@ -1235,66 +1096,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public List<vtkProp> getProps()
     {
-        System.out.println("PerspectiveImage: getProps: ");
         return vtkRenderer.getProps();
     }
-
-//    public List<vtkProp> getProps()
-//    {
-//        //        System.out.println("getProps()");
-//        if (footprintActor == null)
-//        {
-//            loadFootprint();
-//
-//            imageTexture = new vtkTexture();
-//            imageTexture.InterpolateOn();
-//            imageTexture.RepeatOff();
-//            imageTexture.EdgeClampOn();
-//            imageTexture.SetInputData(getDisplayedImage());
-//
-//            vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
-//            footprintMapper.SetInputData(shiftedFootprint[0]);
-//            footprintMapper.Update();
-//
-//            footprintActor = new vtkActor();
-//            footprintActor.SetMapper(footprintMapper);
-//            footprintActor.SetTexture(imageTexture);
-//            vtkProperty footprintProperty = footprintActor.GetProperty();
-//            footprintProperty.LightingOff();
-//
-//            footprintActors.add(footprintActor);
-//        }
-//
-//        if (frustumActor == null)
-//        {
-//            frustumActor = new vtkActor();
-//
-//            calculateFrustum();
-//
-//            vtkProperty frustumProperty = frustumActor.GetProperty();
-//            frustumProperty.SetColor(0.0, 1.0, 0.0);
-//            frustumProperty.SetLineWidth(2.0);
-//            frustumActor.VisibilityOff();
-//
-//            footprintActors.add(frustumActor);
-//        }
-//
-//        // for offlimb
-//        vtkActor offLimbActor = offlimb.getOffLimbActor();
-//        vtkActor offLimbBoundaryActor = offlimb.getOffLimbBoundaryActor();
-//        if (offLimbActor == null) {
-//            offlimb.loadOffLimbPlane();
-//            if (footprintActors.contains(offLimbActor))
-//                footprintActors.remove(offLimbActor);
-//            footprintActors.add(offLimbActor);
-//            if (footprintActors.contains(offLimbBoundaryActor))
-//                footprintActors.remove(offLimbBoundaryActor);
-//            footprintActors.add(offLimbBoundaryActor);
-//        }
-//
-//
-//        return footprintActors;
-//    }
 
     public void setShowFrustum(boolean b)
     {
@@ -1317,103 +1120,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         System.out.println("PerspectiveImage: setDisplayedImageRange: ");
         vtkRenderer.setDisplayedImageRange(range);
     }
-
-//    public void setDisplayedImageRange(IntensityRange range)
-//    {
-//        if (range == null || displayedRange[currentSlice].min != range.min || displayedRange[currentSlice].max != range.max)
-//        {
-//            //            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
-//            if (range != null)
-//                displayedRange[currentSlice] = range;
-//
-//            float minValue = getMinValue();
-//            float maxValue = getMaxValue();
-//            float dx = (maxValue-minValue)/255.0f;
-//            float min = minValue + displayedRange[currentSlice].min*dx;
-//            float max = minValue + displayedRange[currentSlice].max*dx;
-//
-//            // Update the displayed image
-//            vtkLookupTable lut = new vtkLookupTable();
-//            lut.SetTableRange(min, max);
-//            lut.SetValueRange(0.0, 1.0);
-//            lut.SetHueRange(0.0, 0.0);
-//            lut.SetSaturationRange(0.0, 0.0);
-//            //lut.SetNumberOfTableValues(402);
-//            lut.SetRampToLinear();
-//            lut.Build();
-//
-//            // for 3D images, take the current slice
-//            vtkImageData image2D = rawImage;
-//            if (imageDepth > 1)
-//            {
-//                vtkImageReslice slicer = new vtkImageReslice();
-//                slicer.SetInputData(rawImage);
-//                slicer.SetOutputDimensionality(2);
-//                slicer.SetInterpolationModeToNearestNeighbor();
-//                slicer.SetOutputSpacing(1.0, 1.0, 1.0);
-//                slicer.SetResliceAxesDirectionCosines(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-//
-//                slicer.SetOutputOrigin(0.0, 0.0, (double)currentSlice);
-//                slicer. SetResliceAxesOrigin(0.0, 0.0, (double)currentSlice);
-//
-//                slicer.SetOutputExtent(0, imageWidth-1, 0, imageHeight-1, 0, 0);
-//
-//                slicer.Update();
-//                image2D = slicer.GetOutput();
-//            }
-//
-//            vtkImageMapToColors mapToColors = new vtkImageMapToColors();
-//            mapToColors.SetInputData(image2D);
-//            mapToColors.SetOutputFormatToRGBA();
-//            mapToColors.SetLookupTable(lut);
-//            mapToColors.Update();
-//
-//            vtkImageData mapToColorsOutput = mapToColors.GetOutput();
-//            vtkImageData maskSourceOutput = maskSource.GetOutput();
-//
-//            vtkImageMask maskFilter = new vtkImageMask();
-//            maskFilter.SetImageInputData(mapToColorsOutput);
-//            maskFilter.SetMaskInputData(maskSourceOutput);
-//            maskFilter.Update();
-//
-//            if (displayedImage == null)
-//                displayedImage = new vtkImageData();
-//            vtkImageData maskFilterOutput = maskFilter.GetOutput();
-//            displayedImage.DeepCopy(maskFilterOutput);
-//
-//            maskFilter.Delete();
-//            mapToColors.Delete();
-//            lut.Delete();
-//            mapToColorsOutput.Delete();
-//            maskSourceOutput.Delete();
-//            maskFilterOutput.Delete();
-//
-//            //vtkPNGWriter writer = new vtkPNGWriter();
-//            //writer.SetFileName("fit.png");
-//            //writer.SetInput(displayedImage);
-//            //writer.Write();
-//
-//        }
-//        // for offlimb
-//        vtkTexture offLimbTexture = offlimb.getOffLimbTexture();
-//        if (offLimbTexture==null)
-//            offLimbTexture=new vtkTexture();
-//        vtkImageData image=new vtkImageData();
-//        image.DeepCopy(getDisplayedImage());
-//        offLimbTexture.SetInputData(image);
-//        offLimbTexture.Modified();
-//
-//        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//
-//    }
-
-    //    private static void printpt(double[] p, String s)
-    //    {
-    //        System.out.println(s + " " + p[0] + " " + p[1] + " " + p[2]);
-    //    }
-
-
-
 
     private void initSpacecraftStateVariables()
     {
@@ -1450,157 +1156,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected vtkPolyData getFootprint(int defaultSlice)
     {
-        System.out.println("PerspectiveImage: getFootprint: ");
         return vtkRenderer.getFootprint(defaultSlice);
     }
 
     public void loadFootprint()
     {
-        System.out.println("PerspectiveImage: loadFootprint: ");
         vtkRenderer.loadFootprint();
     }
-
-//    protected vtkPolyData getFootprint(int defaultSlice)
-//    {
-//        return smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[defaultSlice],
-//                frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
-//    }
-//
-//    public void loadFootprint()
-//    {
-//        if (generateFootprint)
-//        {
-//            vtkPolyData tmp = null;
-//
-//            if (!footprintGenerated[currentSlice])
-//            {
-//                if (useDefaultFootprint())
-//                {
-//                    int defaultSlice = getDefaultSlice();
-//                    if (footprintGenerated[defaultSlice] == false)
-//                    {
-//                        footprint[defaultSlice] = getFootprint(defaultSlice);
-//                        if (footprint[defaultSlice] == null)
-//                            return;
-//
-//                        // Need to clear out scalar data since if coloring data is being shown,
-//                        // then the color might mix-in with the image.
-//                        footprint[defaultSlice].GetCellData().SetScalars(null);
-//                        footprint[defaultSlice].GetPointData().SetScalars(null);
-//
-//                        footprintGenerated[defaultSlice] = true;
-//                    }
-//
-//                    tmp = footprint[defaultSlice];
-//
-//                }
-//                else
-//                {
-//                    tmp = smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice],
-//                            frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
-//                    if (tmp == null)
-//                        return;
-//
-//                    // Need to clear out scalar data since if coloring data is being shown,
-//                    // then the color might mix-in with the image.
-//                    tmp.GetCellData().SetScalars(null);
-//                    tmp.GetPointData().SetScalars(null);
-//                }
-//
-//
-//                //                vtkPolyDataWriter writer=new vtkPolyDataWriter();
-//                //                writer.SetInputData(tmp);
-//                //                writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
-//                //               writer.SetFileTypeToBinary();
-//                //                writer.Write();
-//
-//                footprint[currentSlice].DeepCopy(tmp);
-//
-//                footprintGenerated[currentSlice] = true;
-//            }
-//
-//            vtkPointData pointData = footprint[currentSlice].GetPointData();
-//            pointData.SetTCoords(textureCoords);
-//            PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
-//            pointData.Delete();
-//        }
-//        else
-//        {
-//            int resolutionLevel = smallBodyModel.getModelResolution();
-//
-//            String footprintFilename = null;
-//            File file = null;
-//
-//            if (key.source == ImageSource.SPICE || key.source == ImageSource.CORRECTED_SPICE)
-//                footprintFilename = key.name + "_FOOTPRINT_RES" + resolutionLevel + "_PDS.VTP";
-//            else
-//                footprintFilename = key.name + "_FOOTPRINT_RES" + resolutionLevel + "_GASKELL.VTP";
-//
-//            file = FileCache.getFileFromServer(footprintFilename);
-//
-//            if (file == null || !file.exists())
-//            {
-//                System.out.println("Warning: " + footprintFilename + " not found");
-//                return;
-//            }
-//
-//            vtkXMLPolyDataReader footprintReader = new vtkXMLPolyDataReader();
-//            footprintReader.SetFileName(file.getAbsolutePath());
-//            footprintReader.Update();
-//
-//            vtkPolyData footprintReaderOutput = footprintReader.GetOutput();
-//            footprint[currentSlice].DeepCopy(footprintReaderOutput);
-//        }
-//
-//
-//        shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
-//        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], getOffset());
-//    }
-//
-//    public vtkPolyData generateBoundary()
-//    {
-//        loadFootprint();
-//
-//        if (footprint[currentSlice].GetNumberOfPoints() == 0)
-//            return null;
-//
-//        vtkFeatureEdges edgeExtracter = new vtkFeatureEdges();
-//        edgeExtracter.SetInputData(footprint[currentSlice]);
-//        edgeExtracter.BoundaryEdgesOn();
-//        edgeExtracter.FeatureEdgesOff();
-//        edgeExtracter.NonManifoldEdgesOff();
-//        edgeExtracter.ManifoldEdgesOff();
-//        edgeExtracter.Update();
-//
-//        vtkPolyData boundary = new vtkPolyData();
-//        vtkPolyData edgeExtracterOutput = edgeExtracter.GetOutput();
-//        boundary.DeepCopy(edgeExtracterOutput);
-//
-//        return boundary;
-//    }
-//
-//
-//
-//    private void computeCellNormals()
-//    {
-//        if (normalsGenerated == false)
-//        {
-//            normalsFilter.SetInputData(footprint[currentSlice]);
-//            normalsFilter.SetComputeCellNormals(1);
-//            normalsFilter.SetComputePointNormals(0);
-//            //normalsFilter.AutoOrientNormalsOn();
-//            //normalsFilter.ConsistencyOn();
-//            normalsFilter.SplittingOff();
-//            normalsFilter.Update();
-//
-//            if (footprint != null && footprint[currentSlice] != null)
-//            {
-//                vtkPolyData normalsFilterOutput = normalsFilter.GetOutput();
-//                footprint[currentSlice].DeepCopy(normalsFilterOutput);
-//                normalsGenerated = true;
-//            }
-//        }
-//    }
 
     // Computes the incidence, emission, and phase at a point on the footprint with a given normal.
     // (I.e. the normal of the plate which the point is lying on).
@@ -1866,24 +1428,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return vtkRenderer.getFrustum(slice);
     }
 
-//    public Frustum getFrustum(int slice)
-//    {
-//        if (useDefaultFootprint())
-//        {
-//            int defaultSlice = getDefaultSlice();
-//            if (frusta[defaultSlice] == null)
-//                frusta[defaultSlice] = new Frustum(spacecraftPositionAdjusted[defaultSlice], frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
-//            return frusta[defaultSlice];
-//        }
-//
-//        if (frusta[slice] == null)
-//            frusta[slice] = new Frustum(spacecraftPositionAdjusted[slice], frustum1Adjusted[slice], frustum3Adjusted[slice], frustum4Adjusted[slice], frustum2Adjusted[slice]);
-//        return frusta[slice];
-//    }
-
-
-
-
     @Override
     public LinkedHashMap<String, String> getProperties() throws IOException
     {
@@ -1967,9 +1511,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         for (int i=0; i<masking.length; ++i)
             currentMask[i] = masking[i];
     }
-
-
-
 
     @Override
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)

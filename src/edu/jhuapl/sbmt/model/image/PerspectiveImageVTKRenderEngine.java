@@ -66,15 +66,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     public PerspectiveImageVTKRenderEngine(PerspectiveImage image)
     {
         this.image = image;
-
-        smallBodyModel = image.getSmallBodyModel();
-        imageDepth = image.getImageDepth();
-        imageWidth = image.getImageWidth();
-        imageHeight = image.getImageHeight();
-        footprint[0] = new vtkPolyData();
-        shiftedFootprint[0] = new vtkPolyData();
-        maxFrustumDepth=new double[imageDepth];
-        minFrustumDepth=new double[imageDepth];
     }
 
     public void getPointingInformation()
@@ -85,6 +76,14 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
         frustum3Adjusted = image.getFrustum3Adjusted();
         frustum4Adjusted = image.getFrustum4Adjusted();
         currentSlice = image.getCurrentSlice();
+        smallBodyModel = image.getSmallBodyModel();
+        imageDepth = image.getImageDepth();
+        imageWidth = image.getImageWidth();
+        imageHeight = image.getImageHeight();
+        footprint[0] = new vtkPolyData();
+        shiftedFootprint[0] = new vtkPolyData();
+        maxFrustumDepth=new double[imageDepth];
+        minFrustumDepth=new double[imageDepth];
     }
 
     /* (non-Javadoc)
@@ -93,12 +92,9 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public List<vtkProp> getProps()
     {
-        System.out.println("PerspectiveImageVTKRenderEngine: getProps: getting props");
-        //        System.out.println("getProps()");
+//        System.out.println("PerspectiveImageVTKRenderEngine: getProps: getting props");
         if (footprintActor == null)
         {
-            System.out.println(
-                    "PerspectiveImageVTKRenderEngine: getProps: generating footprint");
             loadFootprint();
 
             imageTexture = new vtkTexture();
@@ -114,17 +110,11 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint[0]);
-//            System.out.println(
-//                    "PerspectiveImageVTKRenderEngine: getProps: shiftedfootprint " + shiftedFootprint[0]);
             footprintMapper.Update();
 
             footprintActor = new vtkActor();
             footprintActor.SetMapper(footprintMapper);
             footprintActor.SetTexture(imageTexture);
-//            System.out.println(
-//                    "PerspectiveImageVTKRenderEngine: getProps: image texture " + imageTexture);
-//            System.out.println(
-//                    "PerspectiveImageVTKRenderEngine: getProps: footprint " + footprintActor);
             vtkProperty footprintProperty = footprintActor.GetProperty();
             footprintProperty.LightingOff();
 
@@ -171,9 +161,8 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public void calculateFrustum()
     {
-        System.out.println(
-                "PerspectiveImageVTKRenderEngine: calculateFrustum: calculating frustum");
-        //        System.out.println("recalculateFrustum()");
+//        System.out.println(
+//                "PerspectiveImageVTKRenderEngine: calculateFrustum: calculating frustum");
         frustumPolyData = new vtkPolyData();
 
         vtkPoints points = new vtkPoints();
@@ -295,9 +284,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
             vtkImageData maskFilterOutput = maskFilter.GetOutput();
             displayedImage.DeepCopy(maskFilterOutput);
 
-            System.out.println(
-                    "PerspectiveImageVTKRenderEngine: setDisplayedImageRange: displayed image is " + displayedImage);
-
             maskFilter.Delete();
             mapToColors.Delete();
             lut.Delete();
@@ -312,8 +298,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
         }
         // for offlimb
-//        System.out.println(
-//                "PerspectiveImageVTKRenderEngine: setDisplayedImageRange: image is " + image.getOfflimb());
         if (image.getOfflimb() != null)
         {
             vtkTexture offLimbTexture = image.getOfflimb().getOffLimbTexture();
@@ -326,19 +310,10 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
         }
 
         this.image.firePropertyChange();
-//        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-
     }
 
     public vtkPolyData getFootprint(int defaultSlice)
     {
-        System.out.println(
-                "PerspectiveImageVTKRenderEngine: getFootprint: getting footprint");
-        System.out.println("PerspectiveImageVTKRenderEngine: getFootprint: frustum 1 adjusted " + frustum1Adjusted[defaultSlice][0] + " " + frustum1Adjusted[defaultSlice][1]);
-        System.out.println("PerspectiveImageVTKRenderEngine: getFootprint: frustum 2 adjusted " + frustum2Adjusted[defaultSlice][0] + " " + frustum2Adjusted[defaultSlice][1]);
-        System.out.println("PerspectiveImageVTKRenderEngine: getFootprint: frustum 3 adjusted " + frustum3Adjusted[defaultSlice][0] + " " + frustum3Adjusted[defaultSlice][1]);
-        System.out.println("PerspectiveImageVTKRenderEngine: getFootprint: frustum 4 adjusted " + frustum4Adjusted[defaultSlice][0] + " " + frustum4Adjusted[defaultSlice][1]);
-        System.out.println("PerspectiveImageVTKRenderEngine: getFootprint: sc position " + spacecraftPositionAdjusted[defaultSlice][0] + " " + spacecraftPositionAdjusted[defaultSlice][1]);
         return smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[defaultSlice],
                 frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
     }
@@ -349,8 +324,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public void loadFootprint()
     {
-        System.out.println(
-                "PerspectiveImageVTKRenderEngine: loadFootprint: loading footprint");
         ImageKey key = image.getKey();
         if (image.isGenerateFootprint())
         {
@@ -409,9 +382,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
             PolyDataUtil.generateTextureCoordinates(getFrustum(), imageWidth, imageHeight, footprint[currentSlice]);
-            for (int i=0; i< 100; i++)
-                System.out.println(
-                    "PerspectiveImageVTKRenderEngine: loadFootprint: texturecoords " + textureCoords.GetComponent(0, i));
             pointData.Delete();
         }
         else
@@ -445,8 +415,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
         shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
         PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], image.getOffset());
-        System.out.println(
-                "PerspectiveImageVTKRenderEngine: loadFootprint: footprint is " + footprint[currentSlice]);
     }
 
     /* (non-Javadoc)
@@ -455,8 +423,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public vtkPolyData generateBoundary()
     {
-        System.out.println(
-                "PerspectiveImageVTKRenderEngine: generateBoundary: generating boundary");
         loadFootprint();
 
         if (footprint[currentSlice].GetNumberOfPoints() == 0)
@@ -481,8 +447,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
     public void computeCellNormals()
     {
-        System.out.println(
-                "PerspectiveImageVTKRenderEngine: computeCellNormals: ");
         if (image.isNormalsGenerated() == false)
         {
             normalsFilter.SetInputData(footprint[currentSlice]);
