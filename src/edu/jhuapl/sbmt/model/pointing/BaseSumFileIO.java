@@ -77,7 +77,7 @@ public class BaseSumFileIO implements SumFileIO
         spacecraftPosition[slice][0] = -Double.parseDouble(tmp[0]);
         spacecraftPosition[slice][1] = -Double.parseDouble(tmp[1]);
         spacecraftPosition[slice][2] = -Double.parseDouble(tmp[2]);
-        System.out.println("BaseSumFileIO: loadSumfile: set to " + spacecraftPosition[slice][0] );
+//        System.out.println("BaseSumFileIO: loadSumfile: set to " + spacecraftPosition[slice][0] );
 
         double[] cx = new double[3];
         double[] cy = new double[3];

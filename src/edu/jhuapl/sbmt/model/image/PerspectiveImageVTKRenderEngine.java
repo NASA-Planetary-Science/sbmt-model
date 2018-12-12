@@ -212,6 +212,8 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public void setDisplayedImageRange(IntensityRange range)
     {
+        System.out.println(
+                "PerspectiveImageVTKRenderEngine: setDisplayedImageRange: ");
         if (range == null || image.getDisplayedRange().min != range.min || image.getDisplayedRange().max != range.max)
         {
             //            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
@@ -448,6 +450,8 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
     public void computeCellNormals()
     {
+        System.out.println(
+                "PerspectiveImageVTKRenderEngine: computeCellNormals: ");
         if (image.isNormalsGenerated() == false)
         {
             normalsFilter.SetInputData(footprint[currentSlice]);

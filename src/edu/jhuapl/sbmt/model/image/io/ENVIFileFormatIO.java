@@ -34,7 +34,6 @@ public class ENVIFileFormatIO
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
             imageFile = image.getKey().name;
-
         if (image.getRawImage() == null)
             image.setRawImage(new vtkImageData());
 
@@ -179,6 +178,7 @@ public class ENVIFileFormatIO
             imageFile = FileCache.getFileFromServer(filename).getAbsolutePath();
         else
             imageFile = image.getKey().name;
+        if (imageFile == null) return 1;
 
         VtkENVIReader reader = new VtkENVIReader();
         reader.SetFileName(imageFile);

@@ -12,13 +12,33 @@ public class PerspectiveImageIO
 {
     ENVIFileFormatIO enviIO;
     PNGFileFormatIO pngIO;
-    FitsFileFormatIO fitsIO; 
+    FitsFileFormatIO fitsIO;
+    String filePath;
+    PerspectiveImage image;
 
     public PerspectiveImageIO(PerspectiveImage image)
     {
+        this.image = image;
         this.enviIO = new ENVIFileFormatIO(image);
         this.pngIO = new PNGFileFormatIO(image);
         this.fitsIO = new FitsFileFormatIO(image);
+
+    }
+
+    public int loadNumSlices(String filename, PerspectiveImageIOSupportedFiletypes type)
+    {
+//        PerspectiveImageIOSupportedFiletypes type = PerspectiveImageIOSupportedFiletypes.getTypeForExtension(FilenameUtils.getExtension(filename));
+        switch (type)
+        {
+        case PNG:
+            return pngIO.loadNumSlices(filename);
+        case ENVI:
+            return enviIO.loadNumSlices(filename);
+        case FITS:
+            return fitsIO.loadNumSlices(filename);
+        default:
+            return 1;
+        }
     }
 
 

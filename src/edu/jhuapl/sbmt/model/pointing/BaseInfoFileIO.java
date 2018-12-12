@@ -610,7 +610,7 @@ public class BaseInfoFileIO implements InfoFileIO
         boolean[] ato = new boolean[1];
         ato[0] = true;
 
-        System.out.println("BaseSumFileIO: loadAdjustedSumfile: file path " + filePath);
+        System.out.println("BaseInfoFileIO: loadAdjustedSumfile: file path " + filePath);
 
         loadImageInfo(
                 filePath,

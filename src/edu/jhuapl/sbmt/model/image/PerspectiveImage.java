@@ -32,6 +32,7 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.io.PerspectiveImageIO;
+import edu.jhuapl.sbmt.model.image.io.PerspectiveImageIOSupportedFiletypes;
 import edu.jhuapl.sbmt.model.pointing.BaseInfoFileIO;
 import edu.jhuapl.sbmt.model.pointing.BaseLabelFileIO;
 import edu.jhuapl.sbmt.model.pointing.BaseSumFileIO;
@@ -162,9 +163,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected int imageDepth = 1;
     private int numBands = BackplaneInfo.values().length;
 
-    private String pngFileFullPath; // The actual path of the PNG image stored on the local disk (after downloading from the server)
-    private String fitFileFullPath; // The actual path of the FITS image stored on the local disk (after downloading from the server)
-    private String enviFileFullPath; // The actual path of the ENVI binary stored on the local disk (after downloading from the server)
+    private String imageFileFullPath;
+//    private String pngFileFullPath; // The actual path of the PNG image stored on the local disk (after downloading from the server)
+//    private String fitFileFullPath; // The actual path of the FITS image stored on the local disk (after downloading from the server)
+//    private String enviFileFullPath; // The actual path of the ENVI binary stored on the local disk (after downloading from the server)
     private String labelFileFullPath;
     private String infoFileFullPath;
     private String sumFileFullPath;
@@ -233,6 +235,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
     IOfflimbRenderEngine offlimb;
     IVTKRenderEngine vtkRenderer;
+
+    PerspectiveImageIOSupportedFiletypes imageFileType = PerspectiveImageIOSupportedFiletypes.FITS;
 
     /*
      * Pointing file interfaces - initialize to base versions, but allow children to override
@@ -331,7 +335,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         infoFileIO = new BaseInfoFileIO(this);
         sumFileIO = new BaseSumFileIO(this);
         labelFileIO = new BaseLabelFileIO();
-        System.out.println("PerspectiveImage: PerspectiveImage: key is " + key);
+//        System.out.println("PerspectiveImage: PerspectiveImage: key is " + key);
         this.vtkRenderer = new PerspectiveImageVTKRenderEngine(this);
         initialize();
 //        this.offlimb = new PerspectiveImageVTKOfflimbRenderEngine(this);
@@ -345,7 +349,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        footprint[0] = new vtkPolyData();
 //        shiftedFootprint[0] = new vtkPolyData();
         displayedRange[0] = new IntensityRange(1,0);
-        System.out.println("PerspectiveImage: initialize: source is " + key.source);
+        System.out.println("PerspectiveImage: initialize: " + key);
         switch (key.source)
         {
         case LOCAL_PERSPECTIVE:
@@ -355,9 +359,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //            sumFileFullPath = initLocalSumfileFullPath();
             if (!loadPointingOnly)
             {
-                fitFileFullPath = initLocalFitFileFullPath();
-                pngFileFullPath = initLocalPngFileFullPath();
-                enviFileFullPath = initLocalEnviFileFullPath();
+                if (imageFileType == PerspectiveImageIOSupportedFiletypes.FITS) imageFileFullPath = initLocalFitFileFullPath();
+                if (imageFileType == PerspectiveImageIOSupportedFiletypes.ENVI) imageFileFullPath = initLocalEnviFileFullPath();
+                if (imageFileType == PerspectiveImageIOSupportedFiletypes.PNG) imageFileFullPath = initLocalPngFileFullPath();
+
+//                fitFileFullPath = initLocalFitFileFullPath();
+//                pngFileFullPath = initLocalPngFileFullPath();
+//                enviFileFullPath = initLocalEnviFileFullPath();
             }
             break;
         case SPICE:
@@ -374,11 +382,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             System.out.println("PerspectiveImage: initialize: sum file full path " + sumFileFullPath);
             break;
         }
+        System.out.println("PerspectiveImage: initialize: load pointing only " + loadPointingOnly);
         if (!loadPointingOnly)
         {
-            fitFileFullPath = initializeFitFileFullPath();
-            pngFileFullPath = initializePngFileFullPath();
-            enviFileFullPath = initializeEnviFileFullPath();
+            if (imageFileType == PerspectiveImageIOSupportedFiletypes.FITS) imageFileFullPath = initializeFitFileFullPath();
+            if (imageFileType == PerspectiveImageIOSupportedFiletypes.ENVI) imageFileFullPath = initializeEnviFileFullPath();
+            if (imageFileType == PerspectiveImageIOSupportedFiletypes.PNG) imageFileFullPath = initializePngFileFullPath();
+
+//            fitFileFullPath = initializeFitFileFullPath();
+//            pngFileFullPath = initializePngFileFullPath();
+//            enviFileFullPath = initializeEnviFileFullPath();
         }
 
 
@@ -418,6 +431,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        else
 //            sumFileFullPath = initializeSumfileFullPath();
 //        imageDepth = loadNumSlices();
+        fileIO.loadNumSlices(imageFileFullPath, imageFileType);
+//        if (getFitFileFullPath() != null)
+//        {
+//            fileIO.loadFromFile(getFitFileFullPath());
+//        }
+//        else
+//        {
+//            fileIO.loadFromFile(getEnviFileFullPath());
+//        }
+
         if (imageDepth > 1)
             initSpacecraftStateVariables();
 
@@ -437,11 +460,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void copySpacecraftState()
     {
+        System.out.println("PerspectiveImage: copySpacecraftState: ");
         int nslices = getNumberBands();
-        System.out.println("PerspectiveImage: copySpacecraftState: number of slices " + nslices);
+//        System.out.println("PerspectiveImage: copySpacecraftState: number of slices " + nslices);
         for (int i = 0; i<nslices; i++)
         {
-            System.out.println("PerspectiveImage: copySpacecraftState: spacecraft pos orig " + spacecraftPositionOriginal[0][0] + " " + spacecraftPositionOriginal[0][1] + " " + spacecraftPositionOriginal[0][2]);
+//            System.out.println("PerspectiveImage: copySpacecraftState: spacecraft pos orig " + spacecraftPositionOriginal[0][0] + " " + spacecraftPositionOriginal[0][1] + " " + spacecraftPositionOriginal[0][2]);
             spacecraftPositionAdjusted = MathUtil.copy(spacecraftPositionOriginal);
             frustum1Adjusted = MathUtil.copy(frustum1Original);
             frustum2Adjusted = MathUtil.copy(frustum2Original);
@@ -789,6 +813,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void calculateFrustum()
     {
+        System.out.println("PerspectiveImage: calculateFrustum: ");
         vtkRenderer.calculateFrustum();
     }
 
@@ -899,8 +924,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalFitFileFullPath()
     {
+        System.out.println("PerspectiveImage: initLocalFitFileFullPath: ");
         String keyName = getKey().name;
-        if(keyName.endsWith(".fit") || keyName.endsWith(".fits") ||
+        if(imageFileType == PerspectiveImageIOSupportedFiletypes.FITS || keyName.endsWith(".fit") || keyName.endsWith(".fits") ||
                 keyName.endsWith(".FIT") || keyName.endsWith(".FITS"))
         {
             // Allowed fit file extensions for getKey().name
@@ -990,8 +1016,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void loadImage() throws FitsException, IOException
     {
+        System.out.println("PerspectiveImage: loadImage: ");
 //        rawImage = loadRawImage(filename);
-        System.out.println("PerspectiveImage: loadImage: raw image is " + vtkRenderer.getRawImage());
+//        System.out.println("PerspectiveImage: loadImage: raw image is " + vtkRenderer.getRawImage());
         if (vtkRenderer.getRawImage() == null)
             return;
 
@@ -1039,12 +1066,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        textureCoords = new vtkFloatArray();
 //        normalsFilter = new vtkPolyDataNormals();
 
-        if (getFitFileFullPath() != null)
-        {
-            System.out.println("PerspectiveImage: loadImage: fit file");
-            setDisplayedImageRange(null);
-        }
-        else if (getPngFileFullPath() != null)
+        if (imageFileType == PerspectiveImageIOSupportedFiletypes.PNG)
         {
             System.out.println("PerspectiveImage: loadImage: png");
             double[] scalarRange = vtkRenderer.getRawImage().GetScalarRange();
@@ -1053,23 +1075,84 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             //            setDisplayedImageRange(new IntensityRange(0, 255));
             setDisplayedImageRange(null);
         }
-        else if (getEnviFileFullPath() != null)
-        {
-            System.out.println("PerspectiveImage: loadImage: envi");
-            setDisplayedImageRange(null);
-        }
         else
         {
-            System.out.println("PerspectiveImage: loadImage: ????");
             setDisplayedImageRange(null);
         }
+
+//        if (getFitFileFullPath() != null)
+//        {
+//            System.out.println("PerspectiveImage: loadImage: fit file");
+//            setDisplayedImageRange(null);
+//        }
+//        else if (getPngFileFullPath() != null)
+//        {
+//            System.out.println("PerspectiveImage: loadImage: png");
+//            double[] scalarRange = vtkRenderer.getRawImage().GetScalarRange();
+//            minValue[0] = (float)scalarRange[0];
+//            maxValue[0] = (float)scalarRange[1];
+//            //            setDisplayedImageRange(new IntensityRange(0, 255));
+//            setDisplayedImageRange(null);
+//        }
+//        else if (getEnviFileFullPath() != null)
+//        {
+//            System.out.println("PerspectiveImage: loadImage: envi");
+//            setDisplayedImageRange(null);
+//        }
+//        else
+//        {
+//            System.out.println("PerspectiveImage: loadImage: ????");
+//            setDisplayedImageRange(null);
+//        }
 
         //        setDisplayedImageRange(new IntensityRange(0, 255));
     }
 
+//    protected int loadNumSlices()
+//    {
+//        fileIO.loadNumSlices(getFitFileFullPath());
+//        if (getFitFileFullPath() != null)
+//        {
+//            try {
+//                String filename = getFitFileFullPath();
+//                Fits f = new Fits(filename);
+//                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
+//
+//                int[] fitsAxes = h.getAxes();
+//                int fitsNAxes = fitsAxes.length;
+//                int fitsDepth = fitsNAxes == 3 ? fitsAxes[1] : 1;
+//
+//                imageDepth = fitsDepth;
+//            } catch (Exception e) { e.printStackTrace(); }
+//        }
+//        else if (getPngFileFullPath() != null)
+//        {
+//            // Do nothing for now
+//        }
+//        else if (getEnviFileFullPath() != null)
+//        {
+//            // Get the number of bands from the ENVI header
+//            String name = getEnviFileFullPath();
+//
+//            String imageFile = null;
+//            if (getKey().source == ImageSource.IMAGE_MAP)
+//                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+//            else
+//                imageFile = getKey().name;
+//
+//            VtkENVIReader reader = new VtkENVIReader();
+//            reader.SetFileName(imageFile);
+//            imageDepth = reader.getNumBands();
+//            // for multislice images, set slice to middle slice
+//            if (imageDepth > 1)
+//                setCurrentSlice(imageDepth / 2);
+//        }
+//        return imageDepth;
+//    }
+
     protected void loadPointing() throws FitsException, IOException
     {
-        System.out.println("PerspectiveImage: loadPointing: loading pointing");
+        System.out.println("PerspectiveImage: loadPointing:");
         if (key.source.equals(ImageSource.SPICE) || key.source.equals(ImageSource.CORRECTED_SPICE))
         {
             try
@@ -1120,16 +1203,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             boolean loaded = false;
             try {
-                System.out.println("PerspectiveImage: loadPointing: loading adjusted sum file");
+//                System.out.println("PerspectiveImage: loadPointing: loading adjusted sum file");
                 infoFileIO.loadAdjustedSumfile();
                 loaded = true;
             } catch (FileNotFoundException e) {
                 loaded = false;
+                e.printStackTrace();
+
             }
             if (!loaded)
             {
                 try {
-                    System.out.println("PerspectiveImage: loadPointing: loading sum file");
+//                    System.out.println("PerspectiveImage: loadPointing: loading sum file");
                     sumFileIO.loadSumfile();
                     loaded = true;
                 }
@@ -1147,6 +1232,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public List<vtkProp> getProps()
     {
+        System.out.println("PerspectiveImage: getProps: ");
         return vtkRenderer.getProps();
     }
 
@@ -1225,6 +1311,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setDisplayedImageRange(IntensityRange range)
     {
+        System.out.println("PerspectiveImage: setDisplayedImageRange: ");
         vtkRenderer.setDisplayedImageRange(range);
     }
 
@@ -1327,6 +1414,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void initSpacecraftStateVariables()
     {
+        System.out.println(
+                "PerspectiveImage: initSpacecraftStateVariables: ");
         int nslices = getNumberBands();
         spacecraftPositionOriginal = new double[nslices][3];
         frustum1Original = new double[nslices][3];
@@ -1358,11 +1447,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected vtkPolyData getFootprint(int defaultSlice)
     {
+        System.out.println("PerspectiveImage: getFootprint: ");
         return vtkRenderer.getFootprint(defaultSlice);
     }
 
     public void loadFootprint()
     {
+        System.out.println("PerspectiveImage: loadFootprint: ");
         vtkRenderer.loadFootprint();
     }
 
@@ -1517,6 +1608,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[] pt,
             double[] normal)
     {
+        System.out.println(
+                "PerspectiveImage: computeIlluminationAnglesAtPoint: ");
         double[] scvec = {
                 spacecraftPositionAdjusted[currentSlice][0] - pt[0],
                 spacecraftPositionAdjusted[currentSlice][1] - pt[1],
@@ -1534,6 +1627,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void computeIlluminationAngles()
     {
+        System.out
+                .println("PerspectiveImage: computeIlluminationAngles: ");
         if (footprintGenerated[currentSlice] == false)
             vtkRenderer.loadFootprint();
 
@@ -1593,6 +1688,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void computePixelScale()
     {
+        System.out.println("PerspectiveImage: computePixelScale: ");
         if (footprintGenerated[currentSlice] == false)
             vtkRenderer.loadFootprint();
 
@@ -1695,7 +1791,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void getCameraOrientation(double[] spacecraftPosition,
             double[] focalPoint, double[] upVector)
     {
-
+        System.out.println("PerspectiveImage: getCameraOrientation: ");
         for (int i=0; i<3; ++i)
         {
             spacecraftPosition[i] = this.spacecraftPositionAdjusted[currentSlice][i];
@@ -1719,8 +1815,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             focalPoint[1] = spacecraftPosition[1] + distanceToCenter*direction[1];
             focalPoint[2] = spacecraftPosition[2] + distanceToCenter*direction[2];
         }
-        System.out.println("PerspectiveImage: getCameraOrientation: focal point " + focalPoint[0] + " " + focalPoint[1] + " "  + focalPoint[2]);
-        System.out.println("PerspectiveImage: getCameraOrientation: sc pos " + spacecraftPosition[0] + " " + spacecraftPosition[1] + " "  + spacecraftPosition[2]);
+//        System.out.println("PerspectiveImage: getCameraOrientation: focal point " + focalPoint[0] + " " + focalPoint[1] + " "  + focalPoint[2]);
+//        System.out.println("PerspectiveImage: getCameraOrientation: sc pos " + spacecraftPosition[0] + " " + spacecraftPosition[1] + " "  + spacecraftPosition[2]);
     }
 
     /**
@@ -1734,6 +1830,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public Rotation getCameraOrientation(double[] spacecraftPosition,
             double[] quaternion)
     {
+        System.out.println("PerspectiveImage: getCameraOrientation: ");
         double[] cx = upVectorAdjusted[currentSlice];
         double[] cz = new double[3];
         MathUtil.unorm(boresightDirectionAdjusted[currentSlice], cz);
@@ -1762,6 +1859,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public Frustum getFrustum(int slice)
     {
+        System.out.println("PerspectiveImage: getFrustum: ");
         return vtkRenderer.getFrustum(slice);
     }
 
@@ -1846,6 +1944,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setCurrentMask(int[] masking)
     {
+        System.out.println("PerspectiveImage: setCurrentMask: ");
         int topMask =    masking[0];
         int rightMask =  masking[1];
         int bottomMask = masking[2];
@@ -2241,44 +2340,50 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return imageDepth;
     }
 
-    public String getPngFileFullPath()
-    {
-        return pngFileFullPath;
-    }
-
-    public String getFitFileFullPath()
-    {
-        return fitFileFullPath;
-    }
-
-    public String getEnviFileFullPath()
-    {
-        return enviFileFullPath;
-    }
-
     public String getImageFileFullPath()
     {
-        if(fitFileFullPath != null)
-        {
-            return fitFileFullPath;
-        }
-        else if(pngFileFullPath != null)
-        {
-            return pngFileFullPath;
-        }
-        else if(enviFileFullPath != null)
-        {
-            return enviFileFullPath;
-        }
-        else
-        {
-            return null;
-        }
+        return imageFileFullPath;
     }
+
+//    public String getPngFileFullPath()
+//    {
+//        return pngFileFullPath;
+//    }
+//
+//    public String getFitFileFullPath()
+//    {
+//        return fitFileFullPath;
+//    }
+//
+//    public String getEnviFileFullPath()
+//    {
+//        return enviFileFullPath;
+//    }
+//
+//    public String getImageFileFullPath()
+//    {
+//        if(fitFileFullPath != null)
+//        {
+//            return fitFileFullPath;
+//        }
+//        else if(pngFileFullPath != null)
+//        {
+//            return pngFileFullPath;
+//        }
+//        else if(enviFileFullPath != null)
+//        {
+//            return enviFileFullPath;
+//        }
+//        else
+//        {
+//            return null;
+//        }
+//    }
 
     public String[] getFitFilesFullPath()
     {
-        String[] result = { fitFileFullPath };
+//        String[] result = { fitFileFullPath };
+        String[] result = { imageFileFullPath };
         return result;
     }
 
