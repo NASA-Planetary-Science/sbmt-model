@@ -81,11 +81,10 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
 
         smallBodyModel.addPropertyChangeListener(boundary);
         boundary.addPropertyChangeListener(this);
-
+        boundary.setVisibility(true);
         boundaryToActorsMap.put(boundary, new ArrayList<vtkProp>());
 
         List<vtkProp> boundaryPieces = boundary.getProps();
-
         boundaryToActorsMap.get(boundary).addAll(boundaryPieces);
 
         for (vtkProp act : boundaryPieces)
@@ -108,7 +107,7 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
             }
 
             boundaryToActorsMap.remove(boundary);
-
+            boundary.setVisibility(false);
             boundary.removePropertyChangeListener(this);
             smallBodyModel.removePropertyChangeListener(boundary);
 
@@ -125,7 +124,6 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
 
     public List<vtkProp> getProps()
     {
-        System.out.println("SpectrumBoundaryCollection: getProps: getting props, number is " + actorToBoundaryMap.keySet().size());
         return new ArrayList<vtkProp>(actorToBoundaryMap.keySet());
     }
 

@@ -126,8 +126,8 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
 
     public List<vtkProp> getProps()
     {
-        System.out
-                .println("PerspectiveImageBoundaryCollection: getProps: getting props, number is " + actorToBoundaryMap.keySet().size());
+//        System.out
+//                .println("PerspectiveImageBoundaryCollection: getProps: getting props, number is " + actorToBoundaryMap.keySet().size());
         return new ArrayList<vtkProp>(actorToBoundaryMap.keySet());
     }
 
