@@ -82,4 +82,6 @@ public interface IVTKRenderEngine
 
     public void getPointingInformation();
 
+    public IOfflimbRenderEngine getOfflimb();
+
 }

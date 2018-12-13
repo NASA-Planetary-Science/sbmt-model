@@ -87,9 +87,6 @@ public class OffLimbPlaneCalculator
         // NOTE: t-hat cross s-hat = look-hat, thus completing the frustum coordinate system
         // NOTE: given two scalar values -1<=s<=1 and -1<=t<=1, the corresponding ray extends (in 3D space) from the camera position to upRot*lookRot*
         Vector3D lookVec=new Vector3D(focalPoint).subtract(new Vector3D(spacecraftPosition));
-        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: focal point is " + focalPoint[0]);
-        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: sc pos " + spacecraftPosition[0]);
-        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: lookvec is " + lookVec);
         Vector3D upVec=new Vector3D(upVector);
         Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());

@@ -41,7 +41,6 @@ public class FitsFileFormatIO
         // single file images (e.g. LORRI and LEISA)
         if (filenames.length == 1)
         {
-            System.out.println("FitsFileFormatIO: loadFitsFiles: file name is " + filename + ", transpose is " + transposeFITSData);
             Fits f = new Fits(filename);
             BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
@@ -231,7 +230,6 @@ public class FitsFileFormatIO
 
     public int loadNumSlices(String filename)
     {
-        System.out.println("FitsFileFormatIO: loadNumSlices: " + filename);
         try {
 //            String filename = getFitFileFullPath();
             if (filename == null) return 1;

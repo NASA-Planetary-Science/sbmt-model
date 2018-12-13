@@ -37,4 +37,6 @@ public interface IOfflimbRenderEngine
 
     public void setOffLimbPlaneDepth(double footprintDepth);
 
+    public void setOffLimbTexture(vtkTexture offLimbTexture);
+
 }

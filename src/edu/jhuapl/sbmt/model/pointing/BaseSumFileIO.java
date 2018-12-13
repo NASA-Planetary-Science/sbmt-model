@@ -19,8 +19,6 @@ public class BaseSumFileIO implements SumFileIO
         this.image = image;
     }
 
-
-
     /**
      * Sometimes Bob Gaskell sumfiles contain numbers of the form
      * .1192696009D+03 rather than .1192696009E+03 (i.e. a D instead
@@ -176,7 +174,6 @@ public class BaseSumFileIO implements SumFileIO
 
     public void loadSumfile() throws NumberFormatException, IOException
     {
-        System.out.println("BaseSumFileIO: loadSumfile: loading sum file");
         String[] start = new String[1];
         String[] stop = new String[1];
 

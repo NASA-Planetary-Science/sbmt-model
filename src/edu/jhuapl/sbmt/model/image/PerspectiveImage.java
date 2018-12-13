@@ -60,7 +60,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public static final String INFOFILENAMES = "InfofileNames";
     public static final float PDS_NA = -ImageDataUtil.FILL_CUTOFF;
 
-
     public static final double[] bodyOrigin = { 0.0, 0.0, 0.0 };
 
     private SmallBodyModel smallBodyModel;
@@ -211,7 +210,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //    private boolean offLimbVisibility;
 //    private boolean offLimbBoundaryVisibility;
 //    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
-    IOfflimbRenderEngine offlimb;
+//    IOfflimbRenderEngine offlimb;
     IVTKRenderEngine vtkRenderer;
 
     PerspectiveImageIOSupportedFiletypes imageFileType = PerspectiveImageIOSupportedFiletypes.FITS;
@@ -282,10 +281,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         labelFileIO = new BaseLabelFileIO();
         this.vtkRenderer = new PerspectiveImageVTKRenderEngine(this);
         initialize();
-//        this.offlimb = new PerspectiveImageVTKOfflimbRenderEngine(this);
-//        offlimb.setOffLimbFootprintVisibility(true);
-//        offlimb.setOffLimbBoundaryVisibility(true);
-
     }
 
     /**
@@ -309,13 +304,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         infoFileIO = new BaseInfoFileIO(this);
         sumFileIO = new BaseSumFileIO(this);
         labelFileIO = new BaseLabelFileIO();
-//        System.out.println("PerspectiveImage: PerspectiveImage: key is " + key);
         this.vtkRenderer = new PerspectiveImageVTKRenderEngine(this);
         initialize();
-//        this.offlimb = new PerspectiveImageVTKOfflimbRenderEngine(this);
-//        offlimb.setOffLimbFootprintVisibility(true);
-//        offlimb.setOffLimbBoundaryVisibility(true);
-
     }
 
     protected void initialize() throws FitsException, IOException
@@ -323,7 +313,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        footprint[0] = new vtkPolyData();
 //        shiftedFootprint[0] = new vtkPolyData();
         displayedRange[0] = new IntensityRange(1,0);
-        System.out.println("****PerspectiveImage: initialize: " + key);
         switch (key.source)
         {
         case LOCAL_PERSPECTIVE:
@@ -353,10 +342,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             sumFileIO = new BaseSumFileIO(this);
 //            sumFileFullPath = sumFileIO.initLocalSumfileFullPath();
             sumFileFullPath = initializeSumfileFullPath();
-            System.out.println("PerspectiveImage: initialize: sum file full path " + sumFileFullPath);
             break;
         }
-        System.out.println("PerspectiveImage: initialize: load pointing only " + loadPointingOnly);
         if (!loadPointingOnly)
         {
             if (imageFileType == PerspectiveImageIOSupportedFiletypes.FITS) imageFileFullPath = initializeFitFileFullPath();
@@ -417,7 +404,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-        System.out.println("PerspectiveImage: initialize: loading pointing");
         loadPointing();
 
         if (!loadPointingOnly)
@@ -427,9 +413,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             loadImage();
             updateFrameAdjustments();
         }
-        System.out.println("****PerspectiveImage: initialize: end of init");
-//        maxFrustumDepth=new double[imageDepth];
-//        minFrustumDepth=new double[imageDepth];
     }
 
     private void copySpacecraftState()
@@ -557,7 +540,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void updateFrameAdjustments()
     {
-        System.out.println("PerspectiveImage: updateFrameAdjustments: updating frame adjustments");
         // adjust wrt the original spacecraft pointing direction, not the previous adjusted one
         copySpacecraftState();
 
@@ -602,9 +584,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             footprintGenerated[slice] = false;
         }
     }
-
-
-
 
     private void zoomFrame(double zoomFactor)
     {
@@ -779,7 +758,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void calculateFrustum()
     {
-        System.out.println("PerspectiveImage: calculateFrustum: ");
         vtkRenderer.calculateFrustum();
     }
 
@@ -833,7 +811,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalFitFileFullPath()
     {
-        System.out.println("PerspectiveImage: initLocalFitFileFullPath: ");
         String keyName = getKey().name;
         if(imageFileType == PerspectiveImageIOSupportedFiletypes.FITS || keyName.endsWith(".fit") || keyName.endsWith(".fits") ||
                 keyName.endsWith(".FIT") || keyName.endsWith(".FITS"))
@@ -925,7 +902,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void loadImage() throws FitsException, IOException
     {
-        System.out.println("PerspectiveImage: loadImage: ");
 //        rawImage = loadRawImage(filename);
 //        System.out.println("PerspectiveImage: loadImage: raw image is " + vtkRenderer.getRawImage());
         if (vtkRenderer.getRawImage() == null)
@@ -977,7 +953,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (imageFileType == PerspectiveImageIOSupportedFiletypes.PNG)
         {
-            System.out.println("PerspectiveImage: loadImage: png");
             double[] scalarRange = vtkRenderer.getRawImage().GetScalarRange();
             minValue[0] = (float)scalarRange[0];
             maxValue[0] = (float)scalarRange[1];
@@ -1019,7 +994,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void loadPointing() throws FitsException, IOException
     {
-        System.out.println("PerspectiveImage: loadPointing:");
         if (key.source.equals(ImageSource.SPICE) || key.source.equals(ImageSource.CORRECTED_SPICE))
         {
             try
@@ -1117,14 +1091,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setDisplayedImageRange(IntensityRange range)
     {
-        System.out.println("PerspectiveImage: setDisplayedImageRange: ");
         vtkRenderer.setDisplayedImageRange(range);
     }
 
     private void initSpacecraftStateVariables()
     {
-        System.out.println(
-                "PerspectiveImage: initSpacecraftStateVariables: ");
         int nslices = getNumberBands();
         spacecraftPositionOriginal = new double[nslices][3];
         frustum1Original = new double[nslices][3];
@@ -1140,8 +1111,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         footprintGenerated = new boolean[nslices];
         displayedRange = new IntensityRange[nslices];
     }
-
-
 
     public boolean containsLimb()
     {
@@ -1173,8 +1142,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[] pt,
             double[] normal)
     {
-        System.out.println(
-                "PerspectiveImage: computeIlluminationAnglesAtPoint: ");
         double[] scvec = {
                 spacecraftPositionAdjusted[currentSlice][0] - pt[0],
                 spacecraftPositionAdjusted[currentSlice][1] - pt[1],
@@ -1192,8 +1159,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void computeIlluminationAngles()
     {
-        System.out
-                .println("PerspectiveImage: computeIlluminationAngles: ");
         if (footprintGenerated[currentSlice] == false)
             vtkRenderer.loadFootprint();
 
@@ -1253,7 +1218,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void computePixelScale()
     {
-        System.out.println("PerspectiveImage: computePixelScale: ");
         if (footprintGenerated[currentSlice] == false)
             vtkRenderer.loadFootprint();
 
@@ -1304,8 +1268,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         points.Delete();
     }
 
-
-
     public void propertyChange(PropertyChangeEvent evt)
     {
         if (Properties.MODEL_RESOLUTION_CHANGED.equals(evt.getPropertyName()))
@@ -1328,8 +1290,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         }
     }
-
-
 
     public void Delete()
     {
@@ -1356,7 +1316,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void getCameraOrientation(double[] spacecraftPosition,
             double[] focalPoint, double[] upVector)
     {
-        System.out.println("PerspectiveImage: getCameraOrientation: ");
         for (int i=0; i<3; ++i)
         {
             spacecraftPosition[i] = this.spacecraftPositionAdjusted[currentSlice][i];
@@ -1395,7 +1354,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public Rotation getCameraOrientation(double[] spacecraftPosition,
             double[] quaternion)
     {
-        System.out.println("PerspectiveImage: getCameraOrientation: ");
         double[] cx = upVectorAdjusted[currentSlice];
         double[] cz = new double[3];
         MathUtil.unorm(boresightDirectionAdjusted[currentSlice], cz);
@@ -1424,7 +1382,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public Frustum getFrustum(int slice)
     {
-        System.out.println("PerspectiveImage: getFrustum: ");
         return vtkRenderer.getFrustum(slice);
     }
 
@@ -1491,7 +1448,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setCurrentMask(int[] masking)
     {
-        System.out.println("PerspectiveImage: setCurrentMask: ");
         int topMask =    masking[0];
         int rightMask =  masking[1];
         int bottomMask = masking[2];
@@ -1541,120 +1497,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         return status;
     }
-
-
-
-//    /*
-//     * FOR OFF-LIMB IMAGES
-//     */
-//
-//    /**
-//     * No-argument entry point into the off-limb geometry-creation implementation.
-//     * This will create an offlimbPlaneCalculator and create the actors for the
-//     * plane and the boundaries.
-//     */
-//    protected void loadOffLimbPlane()
-//    {
-//        double[] spacecraftPosition=new double[3];
-//        double[] focalPoint=new double[3];
-//        double[] upVector=new double[3];
-//        this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
-//        this.offLimbFootprintDepth=new Vector3D(spacecraftPosition).getNorm();
-//        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-//        offLimbActor=calculator.getOffLimbActor();
-//        offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
-//
-//        // set initial visibilities
-//        if (offLimbActor != null)
-//        {
-//            offLimbActor.SetVisibility(offLimbVisibility?1:0);
-//            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
-//        }
-//    }
-//
-//
-//    /**
-//     * Set the distance of the off-limb plane from the camera position, along its look vector.
-//     * The associated polydata doesn't need to be regenerated every time this method is called since the body's shadow in frustum coordinates does not change with depth along the look axis.
-//     * The call to loadOffLimbPlane here does actually re-create the polydata, which should be unnecessary, and needs to be fixed in a future release.
-//     * @param footprintDepth
-//     */
-//    public void setOffLimbPlaneDepth(double footprintDepth)
-//    {
-//        this.offLimbFootprintDepth=footprintDepth;
-//        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-//    }
-//
-//    public void setOffLimbFootprintAlpha(double alpha)  // between 0-1
-//    {
-//        if (offLimbActor==null)
-//            loadOffLimbPlane();
-//        offLimbActor.GetProperty().SetOpacity(alpha);
-//    }
-//
-//
-//    public boolean offLimbFootprintIsVisible()
-//    {
-//        return offLimbVisibility;
-//    }
-//
-//    /**
-//     * Set visibility of the off-limb footprint
-//     *
-//     * Checks if offLimbActor has been instantiated; if not then call loadOffLimbPlane() before showing/hiding actors.
-//     *
-//     * @param visible
-//     */
-//    public void setOffLimbFootprintVisibility(boolean visible)
-//    {
-//
-//        offLimbVisibility=visible;
-//        offLimbBoundaryVisibility = visible;
-//        if (offLimbActor==null)
-//            loadOffLimbPlane();
-//
-//        if (offLimbActor != null)
-//        {
-//            offLimbActor.SetVisibility(visible?1:0);
-//            offLimbBoundaryActor.SetVisibility(visible?1:0);
-//        }
-//
-//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//    }
-//
-//    /**
-//     * Set visibility of the off-limb footprint boundary
-//     *
-//     * Checks if offLimbActor has been instantiated; if not then call loadOffLimbPlane() before showing/hiding actors.
-//     *
-//     * @param visible
-//     */
-//    public void setOffLimbBoundaryVisibility(boolean visible)
-//    {
-//
-//        offLimbBoundaryVisibility=visible;
-//        if (offLimbActor==null)
-//            loadOffLimbPlane();
-//        offLimbBoundaryActor.SetVisibility(visible?1:0);
-//
-//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//    }
-//
-//    public vtkTexture getOffLimbTexture()
-//    {
-//        return offLimbTexture;
-//    }
-//
-//    public void setOffLimbTexture(vtkTexture offLimbTexture)
-//    {
-//        this.offLimbTexture = offLimbTexture;
-//    }
-//    public double getOffLimbPlaneDepth()
-//    {
-//        return offLimbFootprintDepth;
-//    }
-
-
 
     //*********************
     //Getters and Setters
@@ -2820,7 +2662,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public IOfflimbRenderEngine getOfflimb()
     {
-        return offlimb;
+        return vtkRenderer.getOfflimb();
     }
 
 
@@ -2956,12 +2798,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return PerspectiveImageIOHelpers.generateBackplanes(returnNullIfContainsLimb, this);
     }
 
-
     @Override
     public void outputToOBJ(String filePath)
     {
         PerspectiveImageIOHelpers.outputToOBJ(filePath, this);
     }
-
-
 }

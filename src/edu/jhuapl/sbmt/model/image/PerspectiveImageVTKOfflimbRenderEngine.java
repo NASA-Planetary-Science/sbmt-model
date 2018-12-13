@@ -46,7 +46,6 @@ public class PerspectiveImageVTKOfflimbRenderEngine implements IOfflimbRenderEng
         calculator.loadOffLimbPlane(image, offLimbFootprintDepth);
         offLimbActor=calculator.getOffLimbActor();
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
-
         // set initial visibilities
         if (offLimbActor != null)
         {
@@ -129,6 +128,7 @@ public class PerspectiveImageVTKOfflimbRenderEngine implements IOfflimbRenderEng
         return offLimbTexture;
     }
 
+    @Override
     public void setOffLimbTexture(vtkTexture offLimbTexture)
     {
         this.offLimbTexture = offLimbTexture;

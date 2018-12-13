@@ -128,8 +128,6 @@ public class BaseInfoFileIO implements InfoFileIO
     {
         String[] infoFileNames = image.getInfoFilesFullPath();
         //        for (String name : infoFileNames) System.out.println("PerspectiveImage: loadImageInfo: name is " + name);
-        if (infoFileNames == null)
-            System.out.println("infoFileNames is null");
 
         int nfiles = infoFileNames.length;
         int nslices = image.getNumberBands();
@@ -215,7 +213,6 @@ public class BaseInfoFileIO implements InfoFileIO
             double[] targetPixelCoordinates,
             boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
     {
-        System.out.println("BaseInfoFileIO: loadImageInfo: trying to read " + infoFilename);
         if (infoFilename == null || infoFilename.endsWith("null"))
             throw new FileNotFoundException();
 
@@ -247,7 +244,6 @@ public class BaseInfoFileIO implements InfoFileIO
         int slice = startSlice - 1;
 
         String str;
-        System.out.println("BaseInfoFileIO: loadImageInfo: reading in from file");
         while ((str = in.readLine()) != null)
         {
             StringTokenizer st = new StringTokenizer(str);
@@ -400,8 +396,6 @@ public class BaseInfoFileIO implements InfoFileIO
             int nslices = image.getNumberBands();
             for (int i=slice+1; i<nslices; i++)
             {
-                System.out.println("PerspectiveImage: loadImageInfo: num slices " + nslices + " and slice is " + slice + " and i is " + i + " and spacecraft pos length" + spacecraftPosition.length);
-
                 spacecraftPosition[i][0] = spacecraftPosition[slice][0];
                 spacecraftPosition[i][1] = spacecraftPosition[slice][1];
                 spacecraftPosition[i][2] = spacecraftPosition[slice][2];
@@ -611,8 +605,6 @@ public class BaseInfoFileIO implements InfoFileIO
         String[] stop = new String[1];
         boolean[] ato = new boolean[1];
         ato[0] = true;
-
-        System.out.println("BaseInfoFileIO: loadAdjustedSumfile: file path " + filePath);
 
         loadImageInfo(
                 filePath,

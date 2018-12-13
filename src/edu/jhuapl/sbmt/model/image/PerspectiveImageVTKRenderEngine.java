@@ -15,7 +15,6 @@ import vtk.vtkImageMapToColors;
 import vtk.vtkImageMask;
 import vtk.vtkImageReslice;
 import vtk.vtkLookupTable;
-import vtk.vtkPNGWriter;
 import vtk.vtkPointData;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
@@ -62,6 +61,7 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     protected double[] minFrustumDepth;
     private vtkImageCanvasSource2D maskSource;
     private Frustum[] frusta = new Frustum[1];
+    private IOfflimbRenderEngine offlimb;
 
     public PerspectiveImageVTKRenderEngine(PerspectiveImage image)
     {
@@ -84,6 +84,10 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
         shiftedFootprint[0] = new vtkPolyData();
         maxFrustumDepth=new double[imageDepth];
         minFrustumDepth=new double[imageDepth];
+        offlimb = new PerspectiveImageVTKOfflimbRenderEngine(image);
+//        offlimb.loadOffLimbPlane();
+//        offlimb.setOffLimbFootprintVisibility(true);
+//        offlimb.setOffLimbBoundaryVisibility(true);
     }
 
     /* (non-Javadoc)
@@ -102,11 +106,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
             imageTexture.RepeatOff();
             imageTexture.EdgeClampOn();
             imageTexture.SetInputData(getDisplayedImage());
-
-            vtkPNGWriter writer = new vtkPNGWriter();
-            writer.SetFileName("fit.png");
-            writer.SetInputData(displayedImage);
-            writer.Write();
 
             vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
             footprintMapper.SetInputData(shiftedFootprint[0]);
@@ -136,12 +135,20 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
         }
 
         // for offlimb
-        if (image.getOfflimb() != null)
+        if (getOfflimb() != null)
         {
-            vtkActor offLimbActor = image.getOfflimb().getOffLimbActor();
-            vtkActor offLimbBoundaryActor = image.getOfflimb().getOffLimbBoundaryActor();
+            if (offlimb.getOffLimbTexture() == null)
+            {
+                vtkTexture offLimbTexture = new vtkTexture();
+                offLimbTexture.SetInputData(getDisplayedImage());
+                offLimbTexture.Modified();
+                offlimb.setOffLimbTexture(offLimbTexture);
+            }
+            offlimb.loadOffLimbPlane();
+            vtkActor offLimbActor = getOfflimb().getOffLimbActor();
+            vtkActor offLimbBoundaryActor = getOfflimb().getOffLimbBoundaryActor();
             if (offLimbActor == null) {
-                image.getOfflimb().loadOffLimbPlane();
+                getOfflimb().loadOffLimbPlane();
                 if (footprintActors.contains(offLimbActor))
                     footprintActors.remove(offLimbActor);
                 footprintActors.add(offLimbActor);
@@ -220,8 +227,6 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public void setDisplayedImageRange(IntensityRange range)
     {
-        System.out.println(
-                "PerspectiveImageVTKRenderEngine: setDisplayedImageRange: ");
         if (range == null || image.getDisplayedRange().min != range.min || image.getDisplayedRange().max != range.max)
         {
             //            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
@@ -298,15 +303,16 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
 
         }
         // for offlimb
-        if (image.getOfflimb() != null)
+        if (getOfflimb() != null)
         {
-            vtkTexture offLimbTexture = image.getOfflimb().getOffLimbTexture();
+            vtkTexture offLimbTexture = getOfflimb().getOffLimbTexture();
             if (offLimbTexture==null)
                 offLimbTexture=new vtkTexture();
             vtkImageData image2=new vtkImageData();
             image2.DeepCopy(getDisplayedImage());
             offLimbTexture.SetInputData(image2);
             offLimbTexture.Modified();
+            getOfflimb().setOffLimbTexture(offLimbTexture);
         }
 
         this.image.firePropertyChange();
@@ -624,6 +630,11 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     public vtkPolyDataNormals getNormalsFilter()
     {
         return normalsFilter;
+    }
+
+    public IOfflimbRenderEngine getOfflimb()
+    {
+        return offlimb;
     }
 
 }
