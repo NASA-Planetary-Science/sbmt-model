@@ -310,6 +310,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void initialize() throws FitsException, IOException
     {
+
+
 //        footprint[0] = new vtkPolyData();
 //        shiftedFootprint[0] = new vtkPolyData();
         displayedRange[0] = new IntensityRange(1,0);
@@ -318,8 +320,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         case LOCAL_PERSPECTIVE:
             //TODO GENERALIZE
 //            loadImageInfoFromConfigFile();
-            infoFileFullPath = infoFileIO.initLocalInfoFileFullPath();
-            sumFileFullPath = sumFileIO.initLocalSumfileFullPath();
+            String pointingFileName = key.pointingFile;
+            if (pointingFileName.endsWith("INFO"))
+                infoFileFullPath = pointingFileName;
+            else
+                sumFileFullPath = pointingFileName;
+            System.out.println("PerspectiveImage: initialize: pointing file name is " + pointingFileName);
             if (!loadPointingOnly)
             {
                 if (imageFileType == PerspectiveImageIOSupportedFiletypes.FITS) imageFileFullPath = initLocalFitFileFullPath();

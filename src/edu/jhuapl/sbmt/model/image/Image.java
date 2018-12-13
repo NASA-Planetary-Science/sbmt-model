@@ -112,17 +112,19 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
 
         public int slice;
 
+        public String pointingFile;
+
         public ImageKey(String name, ImageSource source)
         {
-            this(name, source, null, null, null, null, 0);
+            this(name, source, null, null, null, null, 0, null);
         }
 
         public ImageKey(String name, ImageSource source, ImagingInstrument instrument)
         {
-            this(name, source, null, null, instrument, null, 0);
+            this(name, source, null, null, instrument, null, 0, null);
         }
 
-        public ImageKey(String name, ImageSource source, FileType fileType, ImageType imageType, ImagingInstrument instrument, String band, int slice)
+        public ImageKey(String name, ImageSource source, FileType fileType, ImageType imageType, ImagingInstrument instrument, String band, int slice, String pointingFile)
         {
             Preconditions.checkNotNull(name);
             Preconditions.checkNotNull(source);
@@ -133,15 +135,21 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
             this.instrument = instrument;
             this.band = band;
             this.slice = slice;
+            this.pointingFile = pointingFile;
         }
 
         @Override
         public boolean equals(Object obj)
         {
-            return name.equals(((ImageKey)obj).name)
-                    && source.equals(((ImageKey)obj).source)
-//                    && fileType.equals(((ImageKey)obj).fileType)
-                    ;
+            String cleanedUpName = name.replace("file://", "");
+            String cleanedUpOtherName = ((ImageKey)obj).name.replace("file://", "");
+
+            return cleanedUpName.equals(cleanedUpOtherName) && source.equals(((ImageKey)obj).source);
+
+//            return name.equals(((ImageKey)obj).name)
+//                    && source.equals(((ImageKey)obj).source)
+////                    && fileType.equals(((ImageKey)obj).fileType)
+//                    ;
         }
 
         @Override
