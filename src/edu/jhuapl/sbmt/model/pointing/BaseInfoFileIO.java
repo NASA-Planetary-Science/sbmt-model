@@ -127,7 +127,7 @@ public class BaseInfoFileIO implements InfoFileIO
     public void loadImageInfo() throws NumberFormatException, IOException
     {
         String[] infoFileNames = image.getInfoFilesFullPath();
-        //        for (String name : infoFileNames) System.out.println("PerspectiveImage: loadImageInfo: name is " + name);
+        for (String name : infoFileNames) System.out.println("PerspectiveImage: loadImageInfo: name is " + name);
 
         int nfiles = infoFileNames.length;
         int nslices = image.getNumberBands();
@@ -213,6 +213,7 @@ public class BaseInfoFileIO implements InfoFileIO
             double[] targetPixelCoordinates,
             boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
     {
+        System.out.println("BaseInfoFileIO: loadImageInfo: info filename " + infoFilename);
         if (infoFilename == null || infoFilename.endsWith("null"))
             throw new FileNotFoundException();
 

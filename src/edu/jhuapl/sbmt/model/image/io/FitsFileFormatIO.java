@@ -234,6 +234,7 @@ public class FitsFileFormatIO
 //            String filename = getFitFileFullPath();
             if (filename == null) return 1;
             Fits f = new Fits(filename);
+            System.out.println("FitsFileFormatIO: loadNumSlices: filename is " + filename);
             BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
             int[] fitsAxes = h.getAxes();

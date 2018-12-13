@@ -318,8 +318,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         case LOCAL_PERSPECTIVE:
             //TODO GENERALIZE
 //            loadImageInfoFromConfigFile();
-//            infoFileFullPath = initLocalInfoFileFullPath();
-//            sumFileFullPath = initLocalSumfileFullPath();
+            infoFileFullPath = infoFileIO.initLocalInfoFileFullPath();
+            sumFileFullPath = sumFileIO.initLocalSumfileFullPath();
             if (!loadPointingOnly)
             {
                 if (imageFileType == PerspectiveImageIOSupportedFiletypes.FITS) imageFileFullPath = initLocalFitFileFullPath();
@@ -354,7 +354,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //            pngFileFullPath = initializePngFileFullPath();
 //            enviFileFullPath = initializeEnviFileFullPath();
         }
-
+        System.out.println("PerspectiveImage: initialize: full path " + imageFileFullPath);
 
         //why is this called for Custom images with INFO files?
 //        if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))

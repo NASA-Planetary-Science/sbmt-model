@@ -168,6 +168,7 @@ public class PerspectiveImageVTKRenderEngine implements IVTKRenderEngine
     @Override
     public void calculateFrustum()
     {
+        if (frustumActor == null) return;
 //        System.out.println(
 //                "PerspectiveImageVTKRenderEngine: calculateFrustum: calculating frustum");
         frustumPolyData = new vtkPolyData();
