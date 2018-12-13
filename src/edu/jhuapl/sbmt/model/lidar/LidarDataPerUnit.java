@@ -1,6 +1,8 @@
 package edu.jhuapl.sbmt.model.lidar;
 
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +14,11 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
+
+import com.google.common.base.Stopwatch;
 
 import vtk.vtkActor;
 import vtk.vtkCellArray;
@@ -32,11 +39,11 @@ import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
-import edu.jhuapl.saavtk.util.SafePaths;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
-public class LidarDataPerUnit extends AbstractModel
+public class LidarDataPerUnit extends AbstractModel implements PropertyChangeListener
 {
     protected vtkPolyData polydata;
     protected vtkPolyData polydataSc;
@@ -51,34 +58,60 @@ public class LidarDataPerUnit extends AbstractModel
     protected vtkDoubleArray times;
     protected vtkDoubleArray ranges;
     protected vtkActor actorSpacecraft;
-
+    private ProgressMonitor progressMonitor;
+    private BinaryDataTask binaryTask;
+    private int count;
     protected double offsetMultiplier=1.;
-
+    private int binaryRecordSize;
+    private File file;
+    private FileInputStream fs;
     String path;
     BodyViewConfig config;
+    private int xIndex;
+    private int yIndex;
+    private int zIndex;
+    private int scxIndex;
+    private int scyIndex;
+    private int sczIndex;
+    private boolean isInMeters;
+    private vtkPoints points;
+    private vtkCellArray vert;
+    private vtkIdList idList;
+    private boolean intensityEnabled;
+    private double minIntensity;
+    private double maxIntensity;
+    private int receivedIntensityIndex;
+    private vtkPoints pointsSc;
+    private vtkCellArray vertSc;
+    private List<Double> intensityList;
+    private int timeIndex;
+    private vtkUnsignedCharArray colors;
+    private Color baseColor;
+    private LidarLoadingListener listener;
 
     void init() throws IOException
     {
+        progressMonitor = new ProgressMonitor(null, "Loading OLA Data", "", 0, 100);
         int[] xyzIndices = config.lidarBrowseXYZIndices;
         int[] scXyzIndices = config.lidarBrowseSpacecraftIndices;
         boolean isLidarInSphericalCoordinates = config.lidarBrowseIsLidarInSphericalCoordinates;
         boolean isSpacecraftInSphericalCoordinates = config.lidarBrowseIsSpacecraftInSphericalCoordinates;
         boolean isTimeInET = config.lidarBrowseIsTimeInET;
-        int timeIndex = config.lidarBrowseTimeIndex;
+        timeIndex = config.lidarBrowseTimeIndex;
         int numberHeaderLines = config.lidarBrowseNumberHeaderLines;
-        boolean isInMeters = config.lidarBrowseIsInMeters;
+        isInMeters = config.lidarBrowseIsInMeters;
         int rangeIndex = config.lidarBrowseRangeIndex;
         boolean isRangeExplicitInData = config.lidarBrowseIsRangeExplicitInData;
         int noiseIndex = config.lidarBrowseNoiseIndex;
         boolean isBinary = config.lidarBrowseIsBinary;
-        int binaryRecordSize = config.lidarBrowseBinaryRecordSize;
-        int receivedIntensityIndex = config.lidarBrowseReceivedIntensityIndex;
-        boolean intensityEnabled = config.lidarBrowseIntensityEnabled;
+        binaryRecordSize = config.lidarBrowseBinaryRecordSize;
+        receivedIntensityIndex = config.lidarBrowseReceivedIntensityIndex;
+        intensityEnabled = config.lidarBrowseIntensityEnabled;
 
         if (config.lidarBrowseOrigPathRegex != null && !config.lidarBrowseOrigPathRegex.isEmpty()) {
             path = path.replaceAll(config.lidarBrowseOrigPathRegex, config.lidarBrowsePathTop);
         }
-        File file = FileCache.getFileFromServer(SafePaths.getString(path));
+        file = FileCache.getFileFromServer(SafeURLPaths.instance().getString(path));
 
         if (file == null)
             throw new IOException(path + " could not be loaded");
@@ -87,38 +120,38 @@ public class LidarDataPerUnit extends AbstractModel
 
 
         polydata = new vtkPolyData();
-        vtkPoints points = new vtkPoints();
-        vtkCellArray vert = new vtkCellArray();
+        points = new vtkPoints();
+        vert = new vtkCellArray();
         polydata.SetPoints( points );
         polydata.SetVerts( vert );
-        vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
+        colors = new vtkUnsignedCharArray();
         colors.SetNumberOfComponents(4);
         polydata.GetCellData().SetScalars(colors);
 
         polydataSc = new vtkPolyData();
-        vtkPoints pointsSc = new vtkPoints();
-        vtkCellArray vertSc = new vtkCellArray();
+        pointsSc = new vtkPoints();
+        vertSc = new vtkCellArray();
         polydataSc.SetPoints( pointsSc );
         polydataSc.SetVerts( vertSc );
         times = new vtkDoubleArray();
         ranges = new vtkDoubleArray();
 
-        vtkIdList idList = new vtkIdList();
+        idList = new vtkIdList();
         idList.SetNumberOfIds(1);
 
-        int xIndex = xyzIndices[0];
-        int yIndex = xyzIndices[1];
-        int zIndex = xyzIndices[2];
-        int scxIndex = scXyzIndices[0];
-        int scyIndex = scXyzIndices[1];
-        int sczIndex = scXyzIndices[2];
+        xIndex = xyzIndices[0];
+        yIndex = xyzIndices[1];
+        zIndex = xyzIndices[2];
+        scxIndex = scXyzIndices[0];
+        scyIndex = scXyzIndices[1];
+        sczIndex = scXyzIndices[2];
 
-        int count = 0;
+        count = 0;
 
-        FileInputStream fs = new FileInputStream(file.getAbsolutePath());
+        fs = new FileInputStream(file.getAbsolutePath());
 
         // Set base color
-        Color baseColor;
+
         if (path.contains("_v2"))
         {
             baseColor = new Color(255, 255, 0);
@@ -129,90 +162,16 @@ public class LidarDataPerUnit extends AbstractModel
         }
 
         // Variables to keep track of intensities
-        double minIntensity = Double.POSITIVE_INFINITY;
-        double maxIntensity = Double.NEGATIVE_INFINITY;
-        List<Double> intensityList = new LinkedList<Double>();
+        minIntensity = Double.POSITIVE_INFINITY;
+        maxIntensity = Double.NEGATIVE_INFINITY;
+        intensityList = new LinkedList<Double>();
 
         // Parse data
         if (isBinary)
         {
-            FileChannel channel = fs.getChannel();
-            ByteBuffer bb = ByteBuffer.allocateDirect((int) file.length());
-            bb.clear();
-            bb.order(ByteOrder.LITTLE_ENDIAN);
-            if (channel.read(bb) != file.length())
-            {
-                fs.close();
-                throw new IOException("Error reading " + path);
-            }
-
-            byte[] utcArray = new byte[24];
-
-            int numRecords = (int) (file.length() / binaryRecordSize);
-            for (count = 0; count < numRecords; ++count)
-            {
-                int xoffset = count*binaryRecordSize + xIndex;
-                int yoffset = count*binaryRecordSize + yIndex;
-                int zoffset = count*binaryRecordSize + zIndex;
-                int scxoffset = count*binaryRecordSize + scxIndex;
-                int scyoffset = count*binaryRecordSize + scyIndex;
-                int sczoffset = count*binaryRecordSize + sczIndex;
-
-                // Add lidar (x,y,z) and spacecraft (scx,scy,scz) data
-                double x = bb.getDouble(xoffset);
-                double y = bb.getDouble(yoffset);
-                double z = bb.getDouble(zoffset);
-                double scx = bb.getDouble(scxoffset);
-                double scy = bb.getDouble(scyoffset);
-                double scz = bb.getDouble(sczoffset);
-
-                if (isInMeters)
-                {
-                    x /= 1000.0;
-                    y /= 1000.0;
-                    z /= 1000.0;
-                    scx /= 1000.0;
-                    scy /= 1000.0;
-                    scz /= 1000.0;
-                }
-                points.InsertNextPoint(x, y, z);
-                idList.SetId(0, count);
-                vert.InsertNextCell(idList);
-
-                // Save range data
-                ranges.InsertNextValue(Math.sqrt((x-scx)*(x-scx) + (y-scy)*(y-scy) + (z-scz)*(z-scz)));
-
-                // Extract the received intensity
-                double irec = 0.0;
-                if(intensityEnabled)
-                {
-                    // Extract received intensity and keep track of min/max encountered so far
-                    int recIntensityOffset = count*binaryRecordSize + receivedIntensityIndex;
-                    irec = bb.getDouble(recIntensityOffset);
-                }
-
-                // Add to list and keep track of min/max encountered so far
-                minIntensity = (irec < minIntensity) ? irec : minIntensity;
-                maxIntensity = (irec > maxIntensity) ? irec : maxIntensity;
-                intensityList.add(irec);
-
-                // assume no spacecraft position for now
-                pointsSc.InsertNextPoint(scx, scy, scz);
-                vertSc.InsertNextCell(idList);
-
-                int timeoffset = count*binaryRecordSize + timeIndex;
-
-                bb.position(timeoffset);
-                bb.get(utcArray);
-                String utc = new String(utcArray);
-
-                // We store the times in a vtk array. By storing in a vtk array, we don't have to
-                // worry about java out of memory errors since java doesn't know about c++ memory.
-                double t = TimeUtil.str2et(utc);
-                times.InsertNextValue(t);
-            }
-
-            fs.close();
+            binaryTask = new BinaryDataTask();
+            binaryTask.addPropertyChangeListener(this);
+            binaryTask.execute();
         }
         else
         {   // ASCII-file
@@ -331,9 +290,15 @@ public class LidarDataPerUnit extends AbstractModel
             }
 
             in.close();
+            renderPoints();
         }
 
-        // Color each point based on base color scaled by intensity
+
+    }
+
+    private void renderPoints()
+    {
+     // Color each point based on base color scaled by intensity
         Color plotColor;
         float[] baseHSL = ColorUtil.getHSLColorComponents(baseColor);
         for(double intensity : intensityList)
@@ -344,10 +309,8 @@ public class LidarDataPerUnit extends AbstractModel
 
         polydata.GetCellData().GetScalars().Modified();
         polydata.Modified();
-
         originalPoints = new vtkPoints();
         originalPoints.DeepCopy(points);
-
         originalPointsSc = new vtkPoints();
         originalPointsSc.DeepCopy(pointsSc);
 
@@ -368,7 +331,6 @@ public class LidarDataPerUnit extends AbstractModel
         geometryFilterSc.MergingOff();
         geometryFilterSc.SetPointMinimum(0);
         geometryFilterSc.SetPointMaximum(count);
-
         vtkPolyDataMapper pointsMapper = new vtkPolyDataMapper();
         pointsMapper.SetScalarModeToUseCellData();
         pointsMapper.SetInputConnection(geometryFilter.GetOutputPort());
@@ -400,7 +362,10 @@ public class LidarDataPerUnit extends AbstractModel
     {
         startPercentage = startPercent;
         stopPercentage = stopPercent;
+    }
 
+    public void showPercentageShown()
+    {
         double numberOfPoints = originalPoints.GetNumberOfPoints();
         int firstPointId = (int)(numberOfPoints * startPercentage);
         int lastPointId = (int)(numberOfPoints * stopPercentage) - 1;
@@ -422,11 +387,12 @@ public class LidarDataPerUnit extends AbstractModel
     }
 
     public LidarDataPerUnit(String path,
-            BodyViewConfig polyhedralModelConfig) throws IOException
+            BodyViewConfig polyhedralModelConfig,
+            LidarLoadingListener listener) throws IOException
     {
         this.path=path;
         this.config=polyhedralModelConfig;
-
+        this.listener = listener;
         init();
     }
 
@@ -477,6 +443,127 @@ public class LidarDataPerUnit extends AbstractModel
     {
         if (actorSpacecraft != null)
             actorSpacecraft.SetVisibility(show ? 1 : 0);
+    }
+
+    class BinaryDataTask extends SwingWorker<Void, Void>
+    {
+
+        @Override
+        protected Void doInBackground() throws Exception
+        {
+            FileChannel channel = fs.getChannel();
+            ByteBuffer bb = ByteBuffer.allocateDirect((int) file.length());
+            bb.clear();
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            if (channel.read(bb) != file.length())
+            {
+                fs.close();
+                throw new IOException("Error reading " + path);
+            }
+
+            byte[] utcArray = new byte[24];
+
+            int numRecords = (int) (file.length() / binaryRecordSize);
+            Stopwatch sw = new Stopwatch();
+            sw.start();
+            for (count = 0; count < numRecords; ++count)
+            {
+                setProgress(count*100/numRecords);
+                int xoffset = count*binaryRecordSize + xIndex;
+                int yoffset = count*binaryRecordSize + yIndex;
+                int zoffset = count*binaryRecordSize + zIndex;
+                int scxoffset = count*binaryRecordSize + scxIndex;
+                int scyoffset = count*binaryRecordSize + scyIndex;
+                int sczoffset = count*binaryRecordSize + sczIndex;
+
+                // Add lidar (x,y,z) and spacecraft (scx,scy,scz) data
+                double x = bb.getDouble(xoffset);
+                double y = bb.getDouble(yoffset);
+                double z = bb.getDouble(zoffset);
+                double scx = bb.getDouble(scxoffset);
+                double scy = bb.getDouble(scyoffset);
+                double scz = bb.getDouble(sczoffset);
+
+                if (isInMeters)
+                {
+                    x /= 1000.0;
+                    y /= 1000.0;
+                    z /= 1000.0;
+                    scx /= 1000.0;
+                    scy /= 1000.0;
+                    scz /= 1000.0;
+                }
+                points.InsertNextPoint(x, y, z);
+                idList.SetId(0, count);
+                vert.InsertNextCell(idList);
+
+                // Save range data
+                ranges.InsertNextValue(Math.sqrt((x-scx)*(x-scx) + (y-scy)*(y-scy) + (z-scz)*(z-scz)));
+
+                // Extract the received intensity
+                double irec = 0.0;
+                if(intensityEnabled)
+                {
+                    // Extract received intensity and keep track of min/max encountered so far
+                    int recIntensityOffset = count*binaryRecordSize + receivedIntensityIndex;
+                    irec = bb.getDouble(recIntensityOffset);
+                }
+
+                // Add to list and keep track of min/max encountered so far
+                minIntensity = (irec < minIntensity) ? irec : minIntensity;
+                maxIntensity = (irec > maxIntensity) ? irec : maxIntensity;
+                intensityList.add(irec);
+
+                // assume no spacecraft position for now
+                pointsSc.InsertNextPoint(scx, scy, scz);
+                vertSc.InsertNextCell(idList);
+
+                int timeoffset = count*binaryRecordSize + timeIndex;
+
+                bb.position(timeoffset);
+                bb.get(utcArray);
+                String utc = new String(utcArray);
+
+                // We store the times in a vtk array. By storing in a vtk array, we don't have to
+                // worry about java out of memory errors since java doesn't know about c++ memory.
+                double t = TimeUtil.str2et(utc);
+                times.InsertNextValue(t);
+            }
+            setProgress(100);
+            fs.close();
+            renderPoints();
+
+            return null;
+
+        }
+
+        @Override
+        protected void done()
+        {
+            // TODO Auto-generated method stub
+            super.done();
+            if (listener != null)
+                listener.lidarLoadComplete(LidarDataPerUnit.this);
+        }
+
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("progress" == evt.getPropertyName() ) {
+            int progress = (Integer) evt.getNewValue();
+            progressMonitor.setProgress(progress);
+            String message =
+                String.format("Completed %d%%.\n", progress);
+            progressMonitor.setNote(message);
+            if (progressMonitor.isCanceled() || binaryTask.isDone()) {
+                if (progressMonitor.isCanceled()) {
+                    binaryTask.cancel(true);
+                } else {
+//                    taskOutput.append("Task completed.\n");
+                }
+            }
+        }
+
     }
 }
 
