@@ -65,7 +65,7 @@ public abstract class BasicSpectrum extends Spectrum
     protected vtkActor frustumActor;
     protected List<vtkProp> footprintActors = new ArrayList<vtkProp>();
     protected double[] frustumCenter;
-    protected vtkActor outlineActor = new vtkActor();
+//    protected vtkActor outlineActor = new vtkActor();
     protected vtkPolyData outlinePolyData = new vtkPolyData();
     boolean isOutlineShowing;
 
@@ -360,9 +360,9 @@ public abstract class BasicSpectrum extends Spectrum
 
     public void setSelected()
     {
-        isSelected = true;
-        selectionActor.VisibilityOn();
-        selectionActor.Modified();
+//        isSelected = true;
+//        selectionActor.VisibilityOn();
+//        selectionActor.Modified();
     }
 
     public void setUnselected()
