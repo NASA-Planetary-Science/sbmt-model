@@ -143,7 +143,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         dem = new vtkPolyData();
         boundary = new vtkPolyData();
 
-        demLoadingProgressMonitor = new ProgressMonitor(null, "Loading DEM...", "", 0, 100);
+        demLoadingProgressMonitor = new ProgressMonitor(null, "Loading DTM...", "", 0, 100);
         demLoadingProgressMonitor.setProgress(0);
 
         task = new DEMLoadingTask(key);

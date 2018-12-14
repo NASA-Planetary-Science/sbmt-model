@@ -154,10 +154,13 @@ public class DEMTable extends MapAndShowTable {
                     if (map)    // update the swing gui table model before re-enabling event listing
                     {
                         swingTableWrapper.getComponent().setValueAt(true, row, getColumnNumber(MapAndShowTable.Columns.Show));
+                        swingTableWrapper.setColumnEditable(DEMTable.Columns.Bndr, true);
                     }
                     else
                     {
                         swingTableWrapper.getComponent().setValueAt(false, row, getColumnNumber(MapAndShowTable.Columns.Show));
+                        swingTableWrapper.setColumnEditable(DEMTable.Columns.Bndr, false);
+
                     }
                 }
                 else if (eventCast.getTableColumn()==MapAndShowTable.Columns.Show)
@@ -201,12 +204,31 @@ public class DEMTable extends MapAndShowTable {
 	{
 		final TableSwingWrapper swingTableWrapper=new TableSwingWrapper(table);
 		swingTableWrapper.setColumnEditable(MapAndShowTable.Columns.Show, false);
-		swingTableWrapper.setColumnEditable(DEMTable.Columns.Bndr, true);
+		swingTableWrapper.setColumnEditable(DEMTable.Columns.Bndr, false);
 		swingTableWrapper.setColumnWidth(0, 31);
 		swingTableWrapper.setColumnWidth(1, 35);
 		swingTableWrapper.setColumnWidth(2, 31);
 		swingTableWrapper.setColumnWidth(3, 300);
 		table.addListener(table.new MapAndShowBehavior(swingTableWrapper));
+//		swingTableWrapper.getComponent().getModel().addTableModelListener(new TableModelListener()
+//		{
+//
+//			@Override
+//			public void tableChanged(TableModelEvent e)
+//			{
+//				if (e.getColumn() == MapAndShowTable.Columns.Map.ordinal())
+//	            {
+//					System.out.println(
+//							"DEMTable.createSwingWrapper(...).new TableModelListener() {...}: tableChanged: type is " + e.getType());
+//					System.out.println(
+//							"DEMTable.createSwingWrapper(...).new TableModelListener() {...}: tableChanged: e row " + e.getLastRow() + " col " + e.getColumn());
+//					System.out.println(
+//							"DEMTable.createSwingWrapper(...).new TableModelListener() {...}: tableChanged: setting boundary enabled to " + (Boolean)table.getValue(e.getFirstRow(), e.getColumn()));
+//					swingTableWrapper.setColumnEditable(DEMTable.Columns.Bndr, (Boolean)table.getValue(e.getFirstRow(), e.getColumn()));
+//	            }
+//
+//			}
+//		});
 		return swingTableWrapper;
 	}
 
