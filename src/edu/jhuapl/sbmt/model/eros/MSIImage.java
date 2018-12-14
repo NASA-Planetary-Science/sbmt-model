@@ -55,7 +55,6 @@ public class MSIImage extends PerspectiveImage
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
-        System.out.println("MSIImage: MSIImage: key is " + key);
         //the parent class looks like it only wants to set the labelFileFullPath if the ImageSource = LABEL
         //but the initialization of pngFileFullPath sets it to the label file. Just copy that to the
         //labelFileFullPath.
@@ -94,7 +93,6 @@ public class MSIImage extends PerspectiveImage
     protected String initializeFitFileFullPath()
     {
         ImageKey key = getKey();
-        System.out.println("MSIImage: initializeFitFileFullPath: key is " + key);
         if (key.name.endsWith(".fit")) return FileCache.getFileFromServer(key.name).getAbsolutePath();
         else return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
     }

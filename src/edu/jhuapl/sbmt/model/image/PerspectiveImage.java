@@ -325,7 +325,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 infoFileFullPath = pointingFileName;
             else
                 sumFileFullPath = pointingFileName;
-            System.out.println("PerspectiveImage: initialize: pointing file name is " + pointingFileName);
             if (!loadPointingOnly)
             {
                 if (imageFileType == PerspectiveImageIOSupportedFiletypes.FITS) imageFileFullPath = initLocalFitFileFullPath();
@@ -360,7 +359,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //            pngFileFullPath = initializePngFileFullPath();
 //            enviFileFullPath = initializeEnviFileFullPath();
         }
-        System.out.println("PerspectiveImage: initialize: full path " + imageFileFullPath);
 
         //why is this called for Custom images with INFO files?
 //        if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
