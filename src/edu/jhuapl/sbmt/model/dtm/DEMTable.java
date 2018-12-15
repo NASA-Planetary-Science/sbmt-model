@@ -17,7 +17,7 @@ import edu.jhuapl.sbmt.model.dem.DEMKey;
 
 public class DEMTable extends MapAndShowTable {
 
-	protected static enum Columns implements TableColumn
+	public static enum Columns implements TableColumn
 	{
 		Bndr(Boolean.class);
 
@@ -91,6 +91,7 @@ public class DEMTable extends MapAndShowTable {
 		{
 			FileCache.getFileFromServer(key.fileName);
 		}
+
 	    fire(new CreateDEMEvent(this, availableKeys.get(row)));
 	}
 
@@ -147,6 +148,7 @@ public class DEMTable extends MapAndShowTable {
                     else
                     {
                         signalDemUnmapped(row);
+
                     }
                     //
                     setItemMapped(row, map);    // this fires events needed internally for the table and its swing counterpart to synchronize

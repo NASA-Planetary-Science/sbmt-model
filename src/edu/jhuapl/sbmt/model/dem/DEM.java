@@ -993,6 +993,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 //                    taskOutput.append("Task completed.\n");
                 }
             }
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
         }
     }
 
