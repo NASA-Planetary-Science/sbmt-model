@@ -305,6 +305,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         sumFileIO = new BaseSumFileIO(this);
         labelFileIO = new BaseLabelFileIO();
         this.vtkRenderer = new PerspectiveImageVTKRenderEngine(this);
+        System.out.println("PerspectiveImage: PerspectiveImage: key is " + key);
         initialize();
     }
 
@@ -320,6 +321,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         case LOCAL_PERSPECTIVE:
             //TODO GENERALIZE
 //            loadImageInfoFromConfigFile();
+            System.out.println("PerspectiveImage: initialize: key is " + key);
             String pointingFileName = key.pointingFile;
             if (pointingFileName.endsWith("INFO"))
                 infoFileFullPath = pointingFileName;

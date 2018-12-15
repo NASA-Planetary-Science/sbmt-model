@@ -44,6 +44,7 @@ public class PerspectiveImageIO
 
     public void loadFromFile(String filename) throws FitsException, IOException
     {
+        System.out.println("PerspectiveImageIO: loadFromFile: filename is " + filename);
         PerspectiveImageIOSupportedFiletypes type = PerspectiveImageIOSupportedFiletypes.getTypeForExtension(FilenameUtils.getExtension(filename));
         switch (type)
         {

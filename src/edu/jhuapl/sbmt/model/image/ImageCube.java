@@ -88,6 +88,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         public String infoFileFullPath;
         public String sumFileFullPath;
         public int nimages;
+//        public String pointingFile;
 
         public ImageCubeKey(List<ImageKey> imageKeys, ImageKey firstImageKey,
                 String labelFileFullPath, String infoFileFullPath, String sumFileFullPath)
@@ -100,7 +101,11 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
             this.labelFileFullPath = labelFileFullPath;
             this.infoFileFullPath = infoFileFullPath;
             this.sumFileFullPath = sumFileFullPath;
+            this.pointingFile = firstImageKey.pointingFile;
+            System.out.println("ImageCube.ImageCubeKey: ImageCubeKey: pointing file " + pointingFile);
         }
+
+
 
         @Override
         public boolean equals(Object obj)
