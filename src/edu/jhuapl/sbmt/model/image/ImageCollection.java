@@ -71,7 +71,6 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     {
         if (containsKey(key))
         {
-            System.out.println("ImageCollection: addImage: already contains key");
             return;
         }
 

@@ -25,7 +25,7 @@ public class CustomPerspectiveImage extends PerspectiveImage
     }
 
     @Override
-    protected int getNumberBands()
+    public int getNumberBands()
     {
         return imageDepth;
     }

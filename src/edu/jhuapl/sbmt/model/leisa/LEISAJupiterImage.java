@@ -3,10 +3,6 @@ package edu.jhuapl.sbmt.model.leisa;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.model.FileType;
@@ -15,6 +11,10 @@ import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
+
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
 
 public class LEISAJupiterImage extends PerspectiveImage
 {
@@ -83,7 +83,7 @@ public class LEISAJupiterImage extends PerspectiveImage
 
     public boolean shiftBands() { return true; }
 
-    protected int getNumberBands()
+    public int getNumberBands()
     {
         return 256;
     }
@@ -220,11 +220,11 @@ public class LEISAJupiterImage extends PerspectiveImage
         return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
     }
 
-    protected double getFocalLength() { return 657.5; }    // in mm
+    public double getFocalLength() { return 657.5; }    // in mm
 
-    protected double getPixelWidth() { return 0.013; }    // in mm
+    public double getPixelWidth() { return 0.013; }    // in mm
 
-    protected double getPixelHeight() { return 0.013; }   // in mm
+    public double getPixelHeight() { return 0.013; }   // in mm
 
     @Override
     protected String initializeLabelFileFullPath()

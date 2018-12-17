@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.joda.time.DateTime;
 
+import vtk.vtkActor;
 import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
@@ -37,6 +38,7 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
     public abstract vtkPolyData getUnshiftedFootprint();
     public abstract vtkPolyData getShiftedFootprint();
     public abstract vtkPolyData getSelectionPolyData();
+    protected vtkActor outlineActor = new vtkActor();
 
     public abstract void setShowFrustum(boolean show);
     public abstract void setShowOutline(boolean show);
