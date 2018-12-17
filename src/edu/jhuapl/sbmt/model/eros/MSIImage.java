@@ -58,9 +58,7 @@ public class MSIImage extends PerspectiveImage
         //the parent class looks like it only wants to set the labelFileFullPath if the ImageSource = LABEL
         //but the initialization of pngFileFullPath sets it to the label file. Just copy that to the
         //labelFileFullPath.
-        //TODO FIX THIS
-//        setLabelFileFullPath(getPngFileFullPath());
-
+        setLabelFileFullPath(getPngFileFullPath());
     }
 
     @Override
@@ -93,8 +91,7 @@ public class MSIImage extends PerspectiveImage
     protected String initializeFitFileFullPath()
     {
         ImageKey key = getKey();
-        if (key.name.endsWith(".fit")) return FileCache.getFileFromServer(key.name).getAbsolutePath();
-        else return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
+        return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
     }
 
     @Override
@@ -138,9 +135,7 @@ public class MSIImage extends PerspectiveImage
     @Override
     public int getFilter()
     {
-//        String fitName = new File(getFitFileFullPath()).getName();
-        String fitName = new File(getImageFileFullPath()).getName();
-
+        String fitName = new File(getFitFileFullPath()).getName();
         int filter;
         try
         {
@@ -161,9 +156,7 @@ public class MSIImage extends PerspectiveImage
     @Override
     public int getCamera()
     {
-//        String fitName = new File(getFitFileFullPath()).getName();
-        String fitName = new File(getImageFileFullPath()).getName();
-
+        String fitName = new File(getFitFileFullPath()).getName();
         if (fitName.toUpperCase().contains("_IOF_"))
             return 1;
         else // CIF

@@ -88,7 +88,6 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         public String infoFileFullPath;
         public String sumFileFullPath;
         public int nimages;
-//        public String pointingFile;
 
         public ImageCubeKey(List<ImageKey> imageKeys, ImageKey firstImageKey,
                 String labelFileFullPath, String infoFileFullPath, String sumFileFullPath)
@@ -101,11 +100,11 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
             this.labelFileFullPath = labelFileFullPath;
             this.infoFileFullPath = infoFileFullPath;
             this.sumFileFullPath = sumFileFullPath;
-            this.pointingFile = firstImageKey.pointingFile;
-            System.out.println("ImageCube.ImageCubeKey: ImageCubeKey: pointing file " + pointingFile);
+            if (sumFileFullPath == null)
+                this.pointingFile = infoFileFullPath;
+            else
+                this.pointingFile = sumFileFullPath;
         }
-
-
 
         @Override
         public boolean equals(Object obj)
@@ -200,7 +199,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 
     protected String initializeLabelFileFullPath() { return ((ImageCubeKey)getKey()).labelFileFullPath; }
 
-//    @Override
+    @Override
     protected String initLocalInfoFileFullPath()
     {
         return initializeInfoFileFullPath();
@@ -780,6 +779,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         return 0;
     }
 
+    @Override
     public String getEnviHeaderAppend()
     {
         String appendString = "band names = {";

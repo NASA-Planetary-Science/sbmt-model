@@ -78,8 +78,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     @Override
     public String[] getFitFilesFullPath()
     {
-//        String path = getFitFileFullPath();
-        String path = getImageFileFullPath();
+        String path = getFitFileFullPath();
 
         String[] pathArray = path.split("/");
         int size = pathArray.length;

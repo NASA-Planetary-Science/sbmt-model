@@ -123,8 +123,7 @@ public class AmicaImage extends PerspectiveImage
         // to its proper position in the original and the vtkImageConstantPad then pads
         // it with zero to size 1024x1024. For images that were binned need to resample
         // to 1024x1024.
-//        String filename = getFitFileFullPath();
-        String filename = getImageFileFullPath();
+        String filename = getFitFileFullPath();
 
         int binning = 1;
         //int topMask = 0;
@@ -421,8 +420,7 @@ public class AmicaImage extends PerspectiveImage
     @Override
     protected int[] getMaskSizes()
     {
-//        String filename = getFitFileFullPath();
-        String filename = getImageFileFullPath();
+        String filename = getFitFileFullPath();
 
         try
         {
@@ -492,8 +490,7 @@ public class AmicaImage extends PerspectiveImage
     @Override
     public int getFilter()
     {
-//        String fitName = getFitFileFullPath();
-        String fitName = getImageFileFullPath();
+        String fitName = getFitFileFullPath();
 
         int ind1 = fitName.lastIndexOf('_');
         int ind2 = fitName.lastIndexOf('.');
