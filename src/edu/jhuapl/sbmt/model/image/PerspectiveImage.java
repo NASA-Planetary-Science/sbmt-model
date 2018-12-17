@@ -379,7 +379,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-        System.out.println("PerspectiveImage: initialize: image info path " + infoFileFullPath);
+
         loadPointing();
 
         if (!loadPointingOnly)
@@ -1526,7 +1526,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 if (filename.equals(info.imagefilename))
                 {
                     String string =  new File(getKey().name).getParent() + File.separator + info.sumfilename;
-                    if (getKey().name.startsWith("file://"))
+                    if (getKey().name.startsWith("file:/"))
                         return string.substring(5);
                     else
                         return string;

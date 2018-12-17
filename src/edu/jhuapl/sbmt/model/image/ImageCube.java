@@ -206,12 +206,23 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
     }
 
     @Override
+    protected String initLocalSumfileFullPath()
+    {
+        return initializeSumfileFullPath();
+    }
+
+
+    @Override
     protected String initializeInfoFileFullPath()
     {
         return ((ImageCubeKey)getKey()).infoFileFullPath;
     }
 
-    protected String initializeSumfileFullPath() { return ((ImageCubeKey)getKey()).sumFileFullPath; }
+    @Override
+    protected String initializeSumfileFullPath()
+    {
+        return ((ImageCubeKey)getKey()).sumFileFullPath;
+    }
 
     protected String initializeFitFileFullPath() { return null; }
     protected String initializeEnviFileFullPath() {return null; }
