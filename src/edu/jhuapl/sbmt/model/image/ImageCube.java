@@ -21,13 +21,13 @@ import vtk.vtksbCellLocator;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.util.Frustum;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
@@ -92,7 +92,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         public ImageCubeKey(List<ImageKey> imageKeys, ImageKey firstImageKey,
                 String labelFileFullPath, String infoFileFullPath, String sumFileFullPath)
         {
-            super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, firstImageKey.slice);
+            super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, firstImageKey.slice, null);
 
             this.imageKeys = new ArrayList<ImageKey>(imageKeys);
             this.nimages = imageKeys.size();
@@ -100,6 +100,10 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
             this.labelFileFullPath = labelFileFullPath;
             this.infoFileFullPath = infoFileFullPath;
             this.sumFileFullPath = sumFileFullPath;
+            if (sumFileFullPath == null)
+                this.pointingFile = infoFileFullPath;
+            else
+                this.pointingFile = sumFileFullPath;
         }
 
         @Override
@@ -202,12 +206,23 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
     }
 
     @Override
+    protected String initLocalSumfileFullPath()
+    {
+        return initializeSumfileFullPath();
+    }
+
+
+    @Override
     protected String initializeInfoFileFullPath()
     {
         return ((ImageCubeKey)getKey()).infoFileFullPath;
     }
 
-    protected String initializeSumfileFullPath() { return ((ImageCubeKey)getKey()).sumFileFullPath; }
+    @Override
+    protected String initializeSumfileFullPath()
+    {
+        return ((ImageCubeKey)getKey()).sumFileFullPath;
+    }
 
     protected String initializeFitFileFullPath() { return null; }
     protected String initializeEnviFileFullPath() {return null; }
@@ -776,7 +791,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
     }
 
     @Override
-    protected String getEnviHeaderAppend()
+    public String getEnviHeaderAppend()
     {
         String appendString = "band names = {";
         for(int i=0; i<images.size(); i++)

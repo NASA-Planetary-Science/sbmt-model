@@ -55,7 +55,6 @@ public class MSIImage extends PerspectiveImage
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
-
         //the parent class looks like it only wants to set the labelFileFullPath if the ImageSource = LABEL
         //but the initialization of pngFileFullPath sets it to the label file. Just copy that to the
         //labelFileFullPath.

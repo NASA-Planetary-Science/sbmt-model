@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Stopwatch;
+
 import vtk.vtkActor;
 import vtk.vtkProp;
 
@@ -69,25 +71,33 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     {
         if (containsKey(key))
         {
-            System.out.println("ImageCollection: addImage: already contains key");
             return;
         }
 
+        Stopwatch sw = new Stopwatch();
+        sw.start();
         Image image = createImage(key, smallBodyModel);
+        System.out.println("ImageCollection: addImage: created image in " + sw.elapsedMillis() + " ms");
 
         smallBodyModel.addPropertyChangeListener(image);
         image.addPropertyChangeListener(this);
+        System.out.println("ImageCollection: addImage: putting image in imageToActorsMap " + sw.elapsedMillis() + " ms");
 
         imageToActorsMap.put(image, new ArrayList<vtkProp>());
+        System.out.println("ImageCollection: addImage: getting props " + sw.elapsedMillis() + " ms");
 
         List<vtkProp> imagePieces = image.getProps();
+        System.out.println("ImageCollection: addImage: building actor to image map " + sw.elapsedMillis() + " ms");
 
         imageToActorsMap.get(image).addAll(imagePieces);
+        System.out.println("ImageCollection: addImage: building image to actor map " + sw.elapsedMillis() + " ms");
 
         for (vtkProp act : imagePieces)
             actorToImageMap.put(act, image);
-
+        System.out.println("ImageCollection: addImage: firing listener " + sw.elapsedMillis() + " ms");
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        System.out.println("ImageCollection: addImage: fired listener " + sw.elapsedMillis() + " ms");
+
     }
 
     public void removeImage(ImageKey key)
