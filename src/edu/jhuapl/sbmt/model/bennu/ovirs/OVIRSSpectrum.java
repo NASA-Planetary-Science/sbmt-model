@@ -80,7 +80,9 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getSpectrumPathOnServer()).getParent()
+        String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
+
+        return Paths.get(spectrumPath).getParent()
                 .resolveSibling("infofiles-corrected")
                 .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
                 .toString();
