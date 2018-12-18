@@ -224,6 +224,7 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
+        System.out.println("OVIRSSpectrum: readSpectrumFromFile: spectrum path " + getSpectrumPathOnServer());
         spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
         OVIRSL3SpectrumReader reader=new OVIRSL3SpectrumReader(spectrumFile.getAbsolutePath());
         reader.read();
