@@ -106,7 +106,6 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
             //       last component is actually the deepest selected node for which all its children are selected
             //       as opposed to one path for each selected leaf
             DefaultMutableTreeNode selectedParentNode = (DefaultMutableTreeNode)tp.getLastPathComponent();
-            System.out.println("SpectraHierarchicalSearchSpecification: processTreeSelections: parent node " + selectedParentNode.toString());
             // Get all leaves from the selected parent node
             Enumeration en = selectedParentNode.depthFirstEnumeration();
             while(en.hasMoreElements())
