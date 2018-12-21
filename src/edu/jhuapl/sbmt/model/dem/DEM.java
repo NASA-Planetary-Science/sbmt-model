@@ -11,6 +11,7 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import vtk.vtkCellArray;
 import vtk.vtkDataArray;
@@ -24,6 +25,7 @@ import vtk.vtkPolyDataNormals;
 import vtk.vtkProp;
 import vtk.vtksbCellLocator;
 
+import edu.jhuapl.saavtk.gui.render.camera.CameraUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
@@ -70,6 +72,9 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     private double longitude;
     private double halfSize;
     private double scale;
+
+    // Cache vars
+    private Vector3D cAverageSurfaceNormal;
 
     // Old constructor based on filename only, called all over SBMT
     public DEM(String filename) throws IOException, FitsException
@@ -129,6 +134,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         key = new DEMKey(copyDEM.key);
 
         setSmallBodyPolyData(dem, coloringValuesPerCell, coloringNames, coloringUnits, ColoringValueType.CELLDATA);
+
+        cAverageSurfaceNormal = null;
     }
 
 
@@ -142,6 +149,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         // Initialize data structures
         dem = new vtkPolyData();
         boundary = new vtkPolyData();
+
+        cAverageSurfaceNormal = null;
 
         demLoadingProgressMonitor = new ProgressMonitor(null, "Loading DTM...", "", 0, 100);
         demLoadingProgressMonitor.setProgress(0);
@@ -1020,5 +1029,16 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     public vtkPolyData getDem()
     {
         return dem;
+    }
+
+    @Override
+    public Vector3D getAverageSurfaceNormal()
+    {
+    	// Return the cached value
+    	if (cAverageSurfaceNormal != null)
+    		return cAverageSurfaceNormal;
+
+    	cAverageSurfaceNormal = CameraUtil.calcSurfaceNormal(this);
+    	return cAverageSurfaceNormal;
     }
 }
