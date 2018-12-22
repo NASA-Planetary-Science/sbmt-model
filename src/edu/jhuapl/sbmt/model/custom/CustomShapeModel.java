@@ -14,7 +14,9 @@ import edu.jhuapl.sbmt.model.dem.DEM;
 public class CustomShapeModel extends SmallBodyModel
 {
     // Cache vars
+	private Boolean cIsPolyhedron;
     private Vector3D cAverageSurfaceNormal;
+    private Vector3D cGeometricCenterPoint;
 
     public CustomShapeModel(SmallBodyViewConfig config)
     {
@@ -29,7 +31,9 @@ public class CustomShapeModel extends SmallBodyModel
                 ColoringValueType.CELLDATA,
                 false);
 
+        cIsPolyhedron = null;
         cAverageSurfaceNormal = null;
+        cGeometricCenterPoint = null;
 
         // Check to see if this is an altwg FITs file, if so then extract the color and set it as well
         String fitsPath = Configuration.getImportedShapeModelsDir() +
@@ -75,15 +79,43 @@ public class CustomShapeModel extends SmallBodyModel
 		if (cAverageSurfaceNormal != null)
 			return cAverageSurfaceNormal;
 
-		// Determine if the shape model is a polyhedron. If it is then
-		// there is no average surface normal.
-		boolean isPolyhedron = CameraUtil.isPolyhedron(this);
-
+		// Calculate the average surface normal if this is a polygonal model
+		// rather than a polyhedral model
 		cAverageSurfaceNormal = Vector3D.ZERO;
-		if (isPolyhedron == false)
+		if (isPolyhedron() == false)
 			cAverageSurfaceNormal = CameraUtil.calcSurfaceNormal(this);
 
 		return cAverageSurfaceNormal;
+	}
+
+	@Override
+	public Vector3D getGeometricCenterPoint()
+	{
+		// Return the cached value
+		if (cGeometricCenterPoint != null)
+			return cGeometricCenterPoint;
+
+		// Calculate the geometric center point if this is a polygonal model
+		// rather than a polyhedral model
+		cGeometricCenterPoint = Vector3D.ZERO;
+		if (isPolyhedron() == false)
+			cGeometricCenterPoint = CameraUtil.calcCenterPoint(this);
+
+		return cGeometricCenterPoint;
+	}
+
+	/**
+	 * Helper method that return if this is a true polyhedron (rather than just
+	 * a polygonal surface).
+	 */
+	public boolean isPolyhedron()
+	{
+		// Return the cached value
+		if (cIsPolyhedron != null)
+			return cIsPolyhedron;
+
+		cIsPolyhedron = CameraUtil.isPolyhedron(this);
+		return cIsPolyhedron;
 	}
 
 }
