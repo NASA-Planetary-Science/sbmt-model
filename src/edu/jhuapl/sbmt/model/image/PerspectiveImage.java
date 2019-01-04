@@ -379,7 +379,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-
+        if (getSumfileFullPath().endsWith("null")) sumFileFullPath = null;
+        if (getInfoFileFullPath().endsWith("null")) infoFileFullPath = null;
         loadPointing();
 
         if (!loadPointingOnly)
@@ -2117,6 +2118,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             rawImage = new vtkImageData();
         if (imageFile.startsWith("file://"))
         	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        if (imageFile.startsWith("file:/"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
         System.out.println("PerspectiveImage: loadEnviFile: image file is " + imageFile);
         VtkENVIReader reader = new VtkENVIReader();
         reader.SetFileName(imageFile);
@@ -2239,6 +2242,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
             if (imageFile.startsWith("file://"))
             	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             imageDepth = reader.getNumBands();
