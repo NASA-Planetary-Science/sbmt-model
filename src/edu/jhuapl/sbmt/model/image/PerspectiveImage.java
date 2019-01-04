@@ -1456,7 +1456,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (getKey().name.startsWith("file://"))
             file = getKey().name.substring(7, getKey().name.lastIndexOf("/"));
         else
-            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
+        	file = new File(getKey().name).getParent();
+//            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
         String configFilename = file + File.separator + "config.txt";
         FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
         Metadata[] metadataArray = read(customImagesKey, metadata);
