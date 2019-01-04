@@ -30,6 +30,7 @@ import edu.jhuapl.saavtk.gui.ProgressBarSwingWorker;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.FileCache.NonexistentRemoteFile;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
@@ -102,7 +103,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
     private Set<FSHyperTreeSkeleton> readIn = new HashSet<FSHyperTreeSkeleton>();
 
-    public void readSkeleton()
+    public void readSkeleton() throws NonexistentRemoteFile
     {
         if (!readIn.contains(currentSkeleton))
         {
