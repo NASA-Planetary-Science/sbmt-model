@@ -379,8 +379,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-        if (getSumfileFullPath().endsWith("null")) sumFileFullPath = null;
-        if (getInfoFileFullPath().endsWith("null")) infoFileFullPath = null;
+        if ((sumFileFullPath != null) && sumFileFullPath.endsWith("null")) sumFileFullPath = null;
+        if ((infoFileFullPath != null) && infoFileFullPath.endsWith("null")) infoFileFullPath = null;
         loadPointing();
 
         if (!loadPointingOnly)
