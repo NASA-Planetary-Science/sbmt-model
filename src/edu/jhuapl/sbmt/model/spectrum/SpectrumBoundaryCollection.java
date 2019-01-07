@@ -77,6 +77,8 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
         if (containsKey(key))
             return;
 
+        if (collection.getSpectrumFromKey(key) == null) return;
+
         SpectrumBoundary boundary = createBoundary(key, smallBodyModel, collection);
 
         smallBodyModel.addPropertyChangeListener(boundary);

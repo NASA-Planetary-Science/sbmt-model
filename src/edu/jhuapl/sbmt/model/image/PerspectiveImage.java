@@ -1410,7 +1410,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalPngFileFullPath()
     {
-        return getKey().name.endsWith(".png") ? getKey().name : null;
+        String name = getKey().name.endsWith(".png") ? getKey().name : null;
+        if (name == null) return name;
+        if (name.startsWith("file://"))
+        	return name.substring(name.indexOf("file://") + 7);
+        else
+        	return name;
     }
 
     protected String initLocalFitFileFullPath()
@@ -1877,13 +1882,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected void loadPngFile()
     {
         String name = getPngFileFullPath();
-
         String imageFile = null;
         if (getKey().source == ImageSource.IMAGE_MAP)
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
             imageFile = getKey().name;
-
+        if (imageFile.startsWith("file://"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
         if (rawImage == null)
             rawImage = new vtkImageData();
 
@@ -2110,7 +2115,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (rawImage == null)
             rawImage = new vtkImageData();
-
+        if (imageFile.startsWith("file://"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        System.out.println("PerspectiveImage: loadEnviFile: image file is " + imageFile);
         VtkENVIReader reader = new VtkENVIReader();
         reader.SetFileName(imageFile);
         reader.Update();
@@ -2230,6 +2237,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             else
                 imageFile = getKey().name;
 
+            if (imageFile.startsWith("file://"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             imageDepth = reader.getNumBands();

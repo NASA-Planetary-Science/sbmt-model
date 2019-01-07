@@ -24,6 +24,7 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk2.event.Event;
 import edu.jhuapl.saavtk2.event.EventListener;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.dtm.model.creation.DtmCreationModel.DEMInfo;
 import edu.jhuapl.sbmt.model.dem.DEMBoundaryCollection.DEMBoundary;
 import edu.jhuapl.sbmt.model.dtm.CreateDEMEvent;
 import edu.jhuapl.sbmt.model.dtm.DeleteDEMEvent;
@@ -87,6 +88,17 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
         {
             if (dem.getKey().equals(key))
                 return dem;
+        }
+
+        return null;
+    }
+
+    public DEMKey getDEMKeyFromInfo(DEMInfo info)
+    {
+        for (DEM dem : demToActorsMap.keySet())
+        {
+            if (dem.getKey().fileName.equals(info.demfilename))
+                return dem.getKey();
         }
 
         return null;
