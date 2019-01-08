@@ -150,6 +150,10 @@ public class Hayabusa2LidarDataPerUnit extends LidarDataPerUnit
 
         actors.add(actor);
         actors.add(actorSpacecraft);
+
+        if (listener != null)
+            listener.lidarLoadComplete(Hayabusa2LidarDataPerUnit.this);
+
     }
 
     public Hayabusa2LidarDataPerUnit(String path,
