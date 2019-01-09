@@ -379,7 +379,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-
+        if ((sumFileFullPath != null) && sumFileFullPath.endsWith("null")) sumFileFullPath = null;
+        if ((infoFileFullPath != null) && infoFileFullPath.endsWith("null")) infoFileFullPath = null;
         loadPointing();
 
         if (!loadPointingOnly)
@@ -1455,7 +1456,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (getKey().name.startsWith("file://"))
             file = getKey().name.substring(7, getKey().name.lastIndexOf("/"));
         else
-            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
+        	file = new File(getKey().name).getParent();
+//            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
         String configFilename = file + File.separator + "config.txt";
         FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
         Metadata[] metadataArray = read(customImagesKey, metadata);
@@ -2117,6 +2119,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             rawImage = new vtkImageData();
         if (imageFile.startsWith("file://"))
         	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        if (imageFile.startsWith("file:/"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
         System.out.println("PerspectiveImage: loadEnviFile: image file is " + imageFile);
         VtkENVIReader reader = new VtkENVIReader();
         reader.SetFileName(imageFile);
@@ -2239,6 +2243,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
             if (imageFile.startsWith("file://"))
             	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             imageDepth = reader.getNumBands();

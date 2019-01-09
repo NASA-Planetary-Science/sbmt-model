@@ -783,6 +783,10 @@ public class CylindricalImage extends Image
         if(VtkENVIReader.isENVIFilename(imageFile))
         {
             // Customized support for ENVI binary files
+        	if (imageFile.startsWith("file://"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             reader.Update();
