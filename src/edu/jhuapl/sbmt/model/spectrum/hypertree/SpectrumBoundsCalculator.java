@@ -3,7 +3,6 @@ package edu.jhuapl.sbmt.model.spectrum.hypertree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -134,7 +134,7 @@ public class SpectrumBoundsCalculator
 
                 FileCache.setOfflineMode(true, "/project/sbmt2/prod/");
 
-                URL createFileURL = FileCache.createFileURL(infoFile.toString());
+                String createFileURL = SafeURLPaths.instance().getUrl(infoFile.toString());
                 System.out.println("SpectrumBoundsCalculator: main: createFileURL " + createFileURL);
                 System.out.println("SpectrumBoundsCalculator: main: info file is " + infoFile.toString());
                 System.out.println("SpectrumBoundsCalculator: main: getting from server as " + FileCache.getFileFromServer(infoFile.toString()));

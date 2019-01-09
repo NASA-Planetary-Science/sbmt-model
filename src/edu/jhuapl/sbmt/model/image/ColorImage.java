@@ -25,6 +25,7 @@ import vtk.vtksbCellLocator;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.util.Frustum;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
@@ -32,7 +33,6 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 

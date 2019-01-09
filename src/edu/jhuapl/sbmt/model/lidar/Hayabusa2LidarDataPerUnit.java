@@ -20,7 +20,7 @@ import vtk.vtkVertex;
 import edu.jhuapl.saavtk.util.ColorUtil;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
-import edu.jhuapl.saavtk.util.SafePaths;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.hayabusa2.Hayabusa2RawLidarFile;
@@ -31,7 +31,7 @@ public class Hayabusa2LidarDataPerUnit extends LidarDataPerUnit
     @Override
     void init() throws IOException
     {
-        File file = FileCache.getFileFromServer(SafePaths.getString(path));
+        File file = FileCache.getFileFromServer(SafeURLPaths.instance().getString(path));
 
         if (file == null)
             throw new IOException(path + " could not be loaded");
@@ -150,12 +150,16 @@ public class Hayabusa2LidarDataPerUnit extends LidarDataPerUnit
 
         actors.add(actor);
         actors.add(actorSpacecraft);
+
+        if (listener != null)
+            listener.lidarLoadComplete(Hayabusa2LidarDataPerUnit.this);
+
     }
 
     public Hayabusa2LidarDataPerUnit(String path,
-            BodyViewConfig polyhedralModelConfig) throws IOException
+            BodyViewConfig polyhedralModelConfig, LidarLoadingListener listener) throws IOException
     {
-        super(path, polyhedralModelConfig);
+        super(path, polyhedralModelConfig, listener);
         offsetMultiplier=10.;
     }
 

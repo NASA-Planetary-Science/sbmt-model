@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -55,26 +56,30 @@ import vtk.vtkTexture;
 import vtk.vtkXMLPolyDataReader;
 import vtk.vtksbCellLocator;
 
+import edu.jhuapl.saavtk.metadata.FixedMetadata;
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.serialization.Serializers;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.DateTimeUtil;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.LatLon;
-import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.ObjUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.ui.custom.CustomImageImporterDialog.ImageInfo;
 import edu.jhuapl.sbmt.util.BackPlanesPDS4XML;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.util.BackplaneInfo;
 import edu.jhuapl.sbmt.util.BackplanesLabel;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
 
 import nom.tam.fits.BasicHDU;
@@ -250,7 +255,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private boolean offLimbBoundaryVisibility;
     OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
 
-
     public PerspectiveImage(ImageKey key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
@@ -329,7 +333,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.rotation = key.instrument != null ? key.instrument.rotation : 0.0;
         this.flip = key.instrument != null ? key.instrument.flip : "None";
 
-
         initialize();
     }
 
@@ -376,7 +379,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-
+        if ((sumFileFullPath != null) && sumFileFullPath.endsWith("null")) sumFileFullPath = null;
+        if ((infoFileFullPath != null) && infoFileFullPath.endsWith("null")) infoFileFullPath = null;
         loadPointing();
 
         if (!loadPointingOnly)
@@ -430,17 +434,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         //        saveImageInfo();
     }
 
-    protected double getFocalLength() { return 0.0; }
+    public double getFocalLength() { return 0.0; }
 
     private double numberOfPixels = 0.0;
-    protected double getNumberOfPixels() { return numberOfPixels; }
+    public double getNumberOfPixels() { return numberOfPixels; }
 
     private double numberOfLines = 0.0;
-    protected double getNumberOfLines() { return numberOfLines; }
+    public double getNumberOfLines() { return numberOfLines; }
 
-    protected double getPixelWidth() { return 0.0; }
+    public double getPixelWidth() { return 0.0; }
 
-    protected double getPixelHeight() { return 0.0; }
+    public double getPixelHeight() { return 0.0; }
 
     public float getMinValue()
     {
@@ -480,7 +484,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public boolean shiftBands() { return false; }
 
-    protected int getNumberBands()
+    public int getNumberBands()
     {
         //        return 1;
         return imageDepth;
@@ -834,6 +838,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void calculateFrustum()
     {
+        if (frustumActor == null) return;
         //        System.out.println("recalculateFrustum()");
         frustumPolyData = new vtkPolyData();
 
@@ -1306,7 +1311,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         fc.close();
     }
 
-    protected String getEnviHeaderAppend()
+    public String getEnviHeaderAppend()
     {
         return "";
     }
@@ -1400,13 +1405,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     abstract protected int[] getMaskSizes();
 
-    protected String initializeFitFileFullPath() { return initLocalFitFileFullPath(); }
+    protected String initializeFitFileFullPath() throws IOException { return initLocalFitFileFullPath(); }
     protected String initializeEnviFileFullPath() {return initLocalEnviFileFullPath(); }
     protected String initializePngFileFullPath() { return initializeLabelFileFullPath(); }
 
     protected String initLocalPngFileFullPath()
     {
-        return getKey().name.endsWith(".png") ? getKey().name : null;
+        String name = getKey().name.endsWith(".png") ? getKey().name : null;
+        if (name == null) return name;
+        if (name.startsWith("file://"))
+        	return name.substring(name.indexOf("file://") + 7);
+        else
+        	return name;
     }
 
     protected String initLocalFitFileFullPath()
@@ -1431,50 +1441,168 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initializeLabelFileFullPath() { return initLocalLabelFileFullPath(); }
     protected String initializeInfoFileFullPath() { return initLocalInfoFileFullPath(); }
-    protected String initializeSumfileFullPath() { return initLocalSumfileFullPath(); }
+    protected String initializeSumfileFullPath() throws IOException { return initLocalSumfileFullPath(); }
 
     protected String initLocalLabelFileFullPath()
     {
         return null;
     }
 
+    private Vector<ImageInfo> getCustomImageMetadata() throws IOException
+    {
+        Vector<ImageInfo> customImages = new Vector<ImageInfo>();
+        final Key<Metadata[]> customImagesKey = Key.of("customImages");
+        String file;
+        if (getKey().name.startsWith("file://"))
+            file = getKey().name.substring(7, getKey().name.lastIndexOf("/"));
+        else
+        	file = new File(getKey().name).getParent();
+//            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
+        String configFilename = file + File.separator + "config.txt";
+        FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
+        Metadata[] metadataArray = read(customImagesKey, metadata);
+        for (Metadata meta : metadataArray)
+        {
+            ImageInfo info = new ImageInfo();
+            info.retrieve(meta);
+            customImages.add(info);
+        }
+        return customImages;
+    }
+
+    protected <T> T read(Key<T> key, Metadata configMetadata)
+    {
+        T value = configMetadata.get(key);
+        if (value != null)
+            return value;
+        return null;
+    }
+
     protected String initLocalInfoFileFullPath()
     {
-        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-        MapUtil configMap = new MapUtil(configFilename);
-        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-        for (int i=0; i<imageFilenames.length; ++i)
+        Vector<ImageInfo> images;
+        try
         {
-            String filename = new File(getKey().name).getName();
-            if (filename.equals(imageFilenames[i]))
+            images = getCustomImageMetadata();
+            for (ImageInfo info : images)
             {
-                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(INFOFILENAMES)[i];
+                String filename = new File(getKey().name).getName();
+                if (filename.equals(info.imagefilename))
+                {
+                    String string = new File(getKey().name).getParent() + File.separator + info.infofilename;
+                    if (getKey().name.startsWith("file:/"))
+                        return string.substring(5);
+                    else
+                        return string;
+                }
             }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         return null;
+
+//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+//        MapUtil configMap = new MapUtil(configFilename);
+//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+//        for (int i=0; i<imageFilenames.length; ++i)
+//        {
+//            String filename = new File(getKey().name).getName();
+//            if (filename.equals(imageFilenames[i]))
+//            {
+//                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(INFOFILENAMES)[i];
+//            }
+//        }
+//
+//        return null;
     }
 
     protected String initLocalSumfileFullPath()
     {
-        // TODO this is bad in that we read from the config file 3 times in this class
 
-        // Look in the config file and figure out which index this image
-        // corresponds to. The config file is located in the same folder
-        // as the image file
-        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-        MapUtil configMap = new MapUtil(configFilename);
-        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-        for (int i=0; i<imageFilenames.length; ++i)
+        Vector<ImageInfo> images;
+        try
         {
-            String filename = new File(getKey().name).getName();
-            if (filename.equals(imageFilenames[i]))
+            images = getCustomImageMetadata();
+            for (ImageInfo info : images)
             {
-                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(SUMFILENAMES)[i];
+                String filename = new File(getKey().name).getName();
+                if (filename.equals(info.imagefilename))
+                {
+                    String string =  new File(getKey().name).getParent() + File.separator + info.sumfilename;
+                    if (getKey().name.startsWith("file:/"))
+                        return string.substring(5);
+                    else
+                        return string;
+                }
             }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
 
         return null;
+//        // TODO this is bad in that we read from the config file 3 times in this class
+//
+//        // Look in the config file and figure out which index this image
+//        // corresponds to. The config file is located in the same folder
+//        // as the image file
+//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+//        MapUtil configMap = new MapUtil(configFilename);
+//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+//        for (int i=0; i<imageFilenames.length; ++i)
+//        {
+//            String filename = new File(getKey().name).getName();
+//            if (filename.equals(imageFilenames[i]))
+//            {
+//                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(SUMFILENAMES)[i];
+//            }
+//        }
+//
+//        return null;
+    }
+
+    private void loadImageInfoFromConfigFile()
+    {
+        Vector<ImageInfo> images;
+        try
+        {
+            images = getCustomImageMetadata();
+            for (ImageInfo info : images)
+            {
+                String filename = new File(getKey().name).getName();
+                if (filename.equals(info.imagefilename))
+                {
+                    imageName = info.imagefilename;
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+//        // Look in the config file and figure out which index this image
+//        // corresponds to. The config file is located in the same folder
+//        // as the image file
+//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+//        MapUtil configMap = new MapUtil(configFilename);
+//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+//        for (int i=0; i<imageFilenames.length; ++i)
+//        {
+//            String filename = new File(getKey().name).getName();
+//            if (filename.equals(imageFilenames[i]))
+//            {
+//                imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
+//                break;
+//            }
+//        }
     }
 
     private String imageName;
@@ -1488,24 +1616,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             return super.getImageName();
     }
 
-    private void loadImageInfoFromConfigFile()
-    {
-        // Look in the config file and figure out which index this image
-        // corresponds to. The config file is located in the same folder
-        // as the image file
-        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-        MapUtil configMap = new MapUtil(configFilename);
-        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-        for (int i=0; i<imageFilenames.length; ++i)
-        {
-            String filename = new File(getKey().name).getName();
-            if (filename.equals(imageFilenames[i]))
-            {
-                imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
-                break;
-            }
-        }
-    }
+
 
     protected void appendWithPadding(StringBuffer strbuf, String str)
     {
@@ -1755,7 +1866,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return createRawImage(height, width, depth, true, array2D, array3D);
     }
 
-    protected vtkImageData createRawImage(int height, int width, int depth, boolean transpose, float[][] array2D, float[][][] array3D)
+    public vtkImageData createRawImage(int height, int width, int depth, boolean transpose, float[][] array2D, float[][][] array3D)
     {
         // Allocate enough room to store min/max value at each layer
         maxValue = new float[depth];
@@ -1773,13 +1884,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected void loadPngFile()
     {
         String name = getPngFileFullPath();
-
         String imageFile = null;
         if (getKey().source == ImageSource.IMAGE_MAP)
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
             imageFile = getKey().name;
-
+        if (imageFile.startsWith("file://"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
         if (rawImage == null)
             rawImage = new vtkImageData();
 
@@ -2006,7 +2117,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (rawImage == null)
             rawImage = new vtkImageData();
-
+        if (imageFile.startsWith("file://"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        if (imageFile.startsWith("file:/"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
+        System.out.println("PerspectiveImage: loadEnviFile: image file is " + imageFile);
         VtkENVIReader reader = new VtkENVIReader();
         reader.SetFileName(imageFile);
         reader.Update();
@@ -2079,11 +2194,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
         else if (getPngFileFullPath() != null)
         {
+
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float)scalarRange[0];
             maxValue[0] = (float)scalarRange[1];
-            //            setDisplayedImageRange(new IntensityRange(0, 255));
-            setDisplayedImageRange(null);
+            setDisplayedImageRange(new IntensityRange(0, 255));
+//            setDisplayedImageRange(null);
         }
         else if (getEnviFileFullPath() != null)
         {
@@ -2126,6 +2242,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             else
                 imageFile = getKey().name;
 
+            if (imageFile.startsWith("file://"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             imageDepth = reader.getNumBands();
@@ -2300,7 +2420,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         // for offlimb
-        if (offLimbActor==null) {
+        if (offLimbActor==null && offLimbTexture != null) {
             loadOffLimbPlane();
             if (footprintActors.contains(offLimbActor))
                 footprintActors.remove(offLimbActor);
@@ -2417,6 +2537,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setDisplayedImageRange(IntensityRange range)
     {
+        if (rawImage.GetNumberOfScalarComponents() > 1)
+        {
+            displayedImage = rawImage;
+            return;
+        }
+
         if (range == null || displayedRange[currentSlice].min != range.min || displayedRange[currentSlice].max != range.max)
         {
             //            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
@@ -4330,6 +4456,492 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         return status;
+    }
+
+    //Getters/setters
+
+    public String getStartTimeString()
+    {
+        return startTimeString;
+    }
+
+
+    public void setStartTimeString(String startTimeString)
+    {
+        this.startTimeString = startTimeString;
+    }
+
+
+    public String getStopTimeString()
+    {
+        return stopTimeString;
+    }
+
+
+    public void setStopTimeString(String stopTimeString)
+    {
+        this.stopTimeString = stopTimeString;
+    }
+
+
+
+    public String getScTargetPositionString()
+    {
+        return scTargetPositionString;
+    }
+
+
+    public void setScTargetPositionString(String scTargetPositionString)
+    {
+        this.scTargetPositionString = scTargetPositionString;
+    }
+
+
+    public String getTargetSunPositionString()
+    {
+        return targetSunPositionString;
+    }
+
+
+    public void setTargetSunPositionString(String targetSunPositionString)
+    {
+        this.targetSunPositionString = targetSunPositionString;
+    }
+
+
+    public String getScOrientationString()
+    {
+        return scOrientationString;
+    }
+
+
+    public void setScOrientationString(String scOrientationString)
+    {
+        this.scOrientationString = scOrientationString;
+    }
+
+
+    public Rotation getScOrientation()
+    {
+        return scOrientation;
+    }
+
+
+    public void setScOrientation(Rotation scOrientation)
+    {
+        this.scOrientation = scOrientation;
+    }
+
+    public double[][] getSpacecraftPositionAdjusted()
+    {
+        return spacecraftPositionAdjusted;
+    }
+
+    public double[] getQ()
+    {
+        return q;
+    }
+
+
+    public void setQ(double[] q)
+    {
+        this.q = q;
+    }
+
+
+    public double[] getCx()
+    {
+        return cx;
+    }
+
+
+    public void setCx(double[] cx)
+    {
+        this.cx = cx;
+    }
+
+
+    public double[] getCy()
+    {
+        return cy;
+    }
+
+
+    public void setCy(double[] cy)
+    {
+        this.cy = cy;
+    }
+
+
+    public double[] getCz()
+    {
+        return cz;
+    }
+
+
+    public void setCz(double[] cz)
+    {
+        this.cz = cz;
+    }
+
+
+    public double getFocalLengthMillimeters()
+    {
+        return focalLengthMillimeters;
+    }
+
+
+    public void setFocalLengthMillimeters(double focalLengthMillimeters)
+    {
+        this.focalLengthMillimeters = focalLengthMillimeters;
+    }
+
+
+    public double getNpx()
+    {
+        return npx;
+    }
+
+
+    public void setNpx(double npx)
+    {
+        this.npx = npx;
+    }
+
+
+    public double getNln()
+    {
+        return nln;
+    }
+
+
+    public void setNln(double nln)
+    {
+        this.nln = nln;
+    }
+
+
+    public double getKmatrix00()
+    {
+        return kmatrix00;
+    }
+
+
+    public void setKmatrix00(double kmatrix00)
+    {
+        this.kmatrix00 = kmatrix00;
+    }
+
+
+    public double getKmatrix11()
+    {
+        return kmatrix11;
+    }
+
+
+    public void setKmatrix11(double kmatrix11)
+    {
+        this.kmatrix11 = kmatrix11;
+    }
+
+
+
+    public double[][] getFrustum1Adjusted()
+    {
+        return frustum1Adjusted;
+    }
+
+
+    public double[][] getFrustum2Adjusted()
+    {
+        return frustum2Adjusted;
+    }
+
+
+    public double[][] getFrustum3Adjusted()
+    {
+        return frustum3Adjusted;
+    }
+
+
+    public double[][] getFrustum4Adjusted()
+    {
+        return frustum4Adjusted;
+    }
+
+
+    //******************
+    //IO Delegates
+    //******************
+
+    public void setSpacecraftPositionOriginal(double[][] spacecraftPositionOriginal)
+    {
+        this.spacecraftPositionOriginal = spacecraftPositionOriginal;
+    }
+
+
+    public void setFrustum1Original(double[][] frustum1Original)
+    {
+        this.frustum1Original = frustum1Original;
+    }
+
+
+    public void setFrustum2Original(double[][] frustum2Original)
+    {
+        this.frustum2Original = frustum2Original;
+    }
+
+
+    public void setFrustum3Original(double[][] frustum3Original)
+    {
+        this.frustum3Original = frustum3Original;
+    }
+
+
+    public void setFrustum4Original(double[][] frustum4Original)
+    {
+        this.frustum4Original = frustum4Original;
+    }
+
+
+    public void setSunPositionOriginal(double[][] sunPositionOriginal)
+    {
+        this.sunPositionOriginal = sunPositionOriginal;
+    }
+
+
+    public double[][] getSunPositionOriginal()
+    {
+        return sunPositionOriginal;
+    }
+
+
+    public double[][] getSpacecraftPositionOriginal()
+    {
+        return spacecraftPositionOriginal;
+    }
+
+
+    public double[][] getFrustum1Original()
+    {
+        return frustum1Original;
+    }
+
+
+    public double[][] getFrustum2Original()
+    {
+        return frustum2Original;
+    }
+
+
+    public double[][] getFrustum3Original()
+    {
+        return frustum3Original;
+    }
+
+
+    public double[][] getFrustum4Original()
+    {
+        return frustum4Original;
+    }
+
+
+    public double[][] getBoresightDirectionOriginal()
+    {
+        return boresightDirectionOriginal;
+    }
+
+
+    public double[][] getUpVectorOriginal()
+    {
+        return upVectorOriginal;
+    }
+
+
+    public double[] getTargetPixelCoordinates()
+    {
+        return targetPixelCoordinates;
+    }
+
+
+    public void setStartTime(String startTime)
+    {
+        this.startTime = startTime;
+    }
+
+
+    public void setStopTime(String stopTime)
+    {
+        this.stopTime = stopTime;
+    }
+
+
+    public double[][] getBoresightDirectionAdjusted()
+    {
+        return boresightDirectionAdjusted;
+    }
+
+
+    public double[][] getUpVectorAdjusted()
+    {
+        return upVectorAdjusted;
+    }
+
+
+    public double[][] getSunPositionAdjusted()
+    {
+        return sunPositionAdjusted;
+    }
+
+    public String getObjectName()
+    {
+        return objectName;
+    }
+
+
+    public void setObjectName(String objectName)
+    {
+        this.objectName = objectName;
+    }
+
+    public double[] getZoomFactor()
+    {
+        return zoomFactor;
+    }
+
+
+    public double[] getRotationOffset()
+    {
+        return rotationOffset;
+    }
+
+
+    public void setImageWidth(int imageWidth)
+    {
+        this.imageWidth = imageWidth;
+    }
+
+
+    public void setImageHeight(int imageHeight)
+    {
+        this.imageHeight = imageHeight;
+    }
+
+    public void setNumberOfLines(double numberOfLines)
+    {
+        this.numberOfLines = numberOfLines;
+    }
+
+
+    public void setImageDepth(int imageDepth)
+    {
+        this.imageDepth = imageDepth;
+    }
+
+    public void setNumberOfPixels(double numberOfPixels)
+    {
+        this.numberOfPixels = numberOfPixels;
+    }
+
+    public void setInstrumentId(String instrumentId)
+    {
+        this.instrumentId = instrumentId;
+    }
+
+
+    public void setRawImage(vtkImageData rawImage)
+    {
+        this.rawImage = rawImage;
+    }
+
+    public void setFilterName(String filterName)
+    {
+        this.filterName = filterName;
+    }
+
+    public void setTargetName(String targetName)
+    {
+        this.targetName = targetName;
+    }
+
+    public void setImageName(String imageName)
+    {
+        this.imageName = imageName;
+    }
+
+
+//    public void setInfoFileIO(InfoFileIO infoFileIO)
+//    {
+//        this.infoFileIO = infoFileIO;
+//    }
+//
+//
+//    public void setSumFileIO(SumFileIO sumFileIO)
+//    {
+//        this.sumFileIO = sumFileIO;
+//    }
+//
+//
+//    public void setLabelFileIO(LabelFileIO labelFileIO)
+//    {
+//        this.labelFileIO = labelFileIO;
+//    }
+//
+//
+//    public InfoFileIO getInfoFileIO()
+//    {
+//        return infoFileIO;
+//    }
+//
+//
+//    public SumFileIO getSumFileIO()
+//    {
+//        return sumFileIO;
+//    }
+//
+//
+//    public LabelFileIO getLabelFileIO()
+//    {
+//        return labelFileIO;
+//    }
+//
+//    public PerspectiveImageIO getFileIO()
+//    {
+//        return fileIO;
+//    }
+
+    public boolean[] getFootprintGenerated()
+    {
+        return footprintGenerated;
+    }
+
+
+    public void setFootprintGenerated(boolean footprintGenerated)
+    {
+        this.footprintGenerated[getDefaultSlice()] = footprintGenerated;
+    }
+
+    public void setFootprintGenerated(boolean footprintGenerated, int slice)
+    {
+        this.footprintGenerated[slice] = footprintGenerated;
+    }
+
+
+    public boolean isNormalsGenerated()
+    {
+        return normalsGenerated;
+    }
+
+
+    public static boolean isGenerateFootprint()
+    {
+        return generateFootprint;
+    }
+
+
+    public void setNormalsGenerated(boolean normalsGenerated)
+    {
+        this.normalsGenerated = normalsGenerated;
     }
 
 

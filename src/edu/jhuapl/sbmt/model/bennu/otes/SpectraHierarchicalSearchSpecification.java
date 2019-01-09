@@ -18,18 +18,21 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
 {
     private TreeModel treeModel;
     private List<Integer> selectedDatasets;
+    protected String rootName;
 //    protected ArrayList<ArrayList<String>> specs = new ArrayList<ArrayList<String>>();
 
     public SpectraHierarchicalSearchSpecification(String rootName)
     {
         // Create a tree model with just the root
+    	this.rootName = rootName;
         treeModel = new DefaultTreeModel(new DefaultMutableTreeNode(rootName));
-
         // Initialize container objects
         selectedDatasets = new LinkedList<Integer>();
     }
 
     public abstract void loadMetadata() throws FileNotFoundException;
+
+    public abstract SpectraHierarchicalSearchSpecification<S> clone();
 
     // Method used to get the tree model
     public TreeModel getTreeModel()
@@ -47,14 +50,6 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
     {
         DefaultMutableTreeNode currNode = (DefaultMutableTreeNode)treeModel.getRoot();
         currNode.removeAllChildren();
-    }
-
-    // Deep copy of the search specification
-    public SpectraHierarchicalSearchSpecification clone()
-    {
-        // TBD, do nothing for now
-        System.err.println("REMINDER: HierarchicalSearchSpecification.clone() not yet implemented!");
-        return null;
     }
 
     // Adds nodes to tree as necessary to create the path
@@ -112,7 +107,6 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
             //       last component is actually the deepest selected node for which all its children are selected
             //       as opposed to one path for each selected leaf
             DefaultMutableTreeNode selectedParentNode = (DefaultMutableTreeNode)tp.getLastPathComponent();
-
             // Get all leaves from the selected parent node
             Enumeration en = selectedParentNode.depthFirstEnumeration();
             while(en.hasMoreElements())
