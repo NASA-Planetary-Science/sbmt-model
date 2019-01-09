@@ -2194,11 +2194,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
         else if (getPngFileFullPath() != null)
         {
+
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float)scalarRange[0];
             maxValue[0] = (float)scalarRange[1];
-            //            setDisplayedImageRange(new IntensityRange(0, 255));
-            setDisplayedImageRange(null);
+            setDisplayedImageRange(new IntensityRange(0, 255));
+//            setDisplayedImageRange(null);
         }
         else if (getEnviFileFullPath() != null)
         {
@@ -2419,7 +2420,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         // for offlimb
-        if (offLimbActor==null) {
+        if (offLimbActor==null && offLimbTexture != null) {
             loadOffLimbPlane();
             if (footprintActors.contains(offLimbActor))
                 footprintActors.remove(offLimbActor);
@@ -2536,6 +2537,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setDisplayedImageRange(IntensityRange range)
     {
+        if (rawImage.GetNumberOfScalarComponents() > 1)
+        {
+            displayedImage = rawImage;
+            return;
+        }
+
         if (range == null || displayedRange[currentSlice].min != range.min || displayedRange[currentSlice].max != range.max)
         {
             //            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
