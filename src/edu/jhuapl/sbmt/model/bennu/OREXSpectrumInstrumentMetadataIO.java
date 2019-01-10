@@ -154,13 +154,18 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
             public Metadata store()
             {
                 SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
-                MetadataManager[] specs = new MetadataManager[info.size()];
-                for (int i=0; i<info.size(); i++)
-                {
 
-                    specs[i] = info.get(i);
+                if (info != null)
+                {
+	                MetadataManager[] specs = new MetadataManager[info.size()];
+	                for (int i=0; i<info.size(); i++)
+	                {
+
+	                    specs[i] = info.get(i);
+	                }
+	                writeMetadataArray(infoKey, specs, result);
                 }
-                writeMetadataArray(infoKey, specs, result);
+
                 return result;
             }
 
