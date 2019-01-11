@@ -16,9 +16,9 @@ public class Hayabusa2LidarBrowseDataCollection extends LidarBrowseDataCollectio
 
     @Override
     protected LidarDataPerUnit createLidarDataPerUnitWhateverThatIs(String path,
-            BodyViewConfig config) throws IOException
+            BodyViewConfig config, LidarLoadingListener listener) throws IOException
     {
-        return new Hayabusa2LidarDataPerUnit(path, config);
+        return new Hayabusa2LidarDataPerUnit(path, config, listener);
     }
 
 }

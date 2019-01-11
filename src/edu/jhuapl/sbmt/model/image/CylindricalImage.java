@@ -26,6 +26,10 @@ import vtk.vtkProperty;
 import vtk.vtkTexture;
 import vtk.vtkTransform;
 
+import edu.jhuapl.saavtk.metadata.FixedMetadata;
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.serialization.Serializers;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.LatLon;
@@ -34,6 +38,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.ui.custom.CustomImageImporterDialog.ImageInfo;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
 
 public class CylindricalImage extends Image
@@ -102,23 +107,67 @@ public class CylindricalImage extends Image
             // Look in the config file and figure out which index this image
             // corresponds to. The config file is located in the same folder
             // as the image file
+        	final Key<Metadata[]> customImagesKey = Key.of("customImages");
+//        	System.out.println("CylindricalImage: loadImageInfoFromConfigFile: key name " + getKey().name);
             String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-            MapUtil configMap = new MapUtil(configFilename);
-            String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-            for (int i=0; i<imageFilenames.length; ++i)
-            {
-                String filename = new File(getKey().name).getName();
-                if (filename.equals(imageFilenames[i]))
-                {
-                    imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
-                    lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
-                    lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
-                    upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
-                    upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
-                    break;
-                }
-            }
+//            System.out.println("CylindricalImage: loadImageInfoFromConfigFile: config filename " + configFilename);
+            FixedMetadata metadata;
+			try
+			{
+				metadata = Serializers.deserialize(new File(configFilename.substring(5)), "CustomImages");
+				Metadata[] metadataArray = read(customImagesKey, metadata);
+	            for (Metadata meta : metadataArray)
+	            {
+	                ImageInfo info = new ImageInfo();
+	                info.retrieve(meta);
+	                String filename = new File(getKey().name).getName();
+//	                System.out.println("CylindricalImage: loadImageInfoFromConfigFile: filename is " + filename + " and info name " + info.imagefilename);
+	                if (filename.equals(info.imagefilename))
+	                {
+//	                	System.out.println("CylindricalImage: loadImageInfoFromConfigFile: setting values, name is " + info.name);
+	                    imageName = info.name;
+	                    lowerLeftLat = info.lllat;
+	                    lowerLeftLon = info.lllon;
+	                    upperRightLat = info.urlat;
+	                    upperRightLon = info.urlon;
+//	                    System.out.println("CylindricalImage: loadImageInfoFromConfigFile: lower left lon " + info.lllon + " lower left lat " + info.lllat);
+//	                    System.out.println("CylindricalImage: loadImageInfoFromConfigFile: upper right lon " + info.urlon + " upper right lat " + info.urlat);
+
+	                    break;
+	                }
+	            }
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+	            MapUtil configMap = new MapUtil(configFilename);
+	            String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+	            for (int i=0; i<imageFilenames.length; ++i)
+	            {
+	                String filename = new File(getKey().name).getName();
+	                if (filename.equals(imageFilenames[i]))
+	                {
+	                    imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
+	                    lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
+	                    lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
+	                    upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
+	                    upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
+	                    break;
+	                }
+	            }
+
+			}
+
+
         }
+    }
+
+    protected <T> T read(Key<T> key, Metadata configMetadata)
+    {
+        T value = configMetadata.get(key);
+        if (value != null)
+            return value;
+        return null;
     }
 
     /**
@@ -734,6 +783,10 @@ public class CylindricalImage extends Image
         if(VtkENVIReader.isENVIFilename(imageFile))
         {
             // Customized support for ENVI binary files
+        	if (imageFile.startsWith("file://"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             reader.Update();
@@ -741,7 +794,17 @@ public class CylindricalImage extends Image
         }
         else
         {
+            if (getKey().source == ImageSource.IMAGE_MAP)
+                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+            else
+                imageFile = getKey().name;
+            if (imageFile.startsWith("file://"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (rawImage == null)
+                rawImage = new vtkImageData();
+
             // Otherwise, try vtk's built in reader
+//        	System.out.println("CylindricalImage: loadImage: using png reader");
             vtkPNGReader reader = new vtkPNGReader();
             reader.SetFileName(imageFile);
             reader.Update();
