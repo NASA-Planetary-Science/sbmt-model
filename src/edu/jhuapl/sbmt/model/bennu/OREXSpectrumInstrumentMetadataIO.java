@@ -34,6 +34,24 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     }
 
     @Override
+    public SpectraHierarchicalSearchSpecification<OREXSearchSpec> clone()
+    {
+    	// TODO Auto-generated method stub
+    	try
+		{
+    		OREXSpectrumInstrumentMetadataIO specIO = new OREXSpectrumInstrumentMetadataIO(rootName);
+    		specIO.setPathString(pathString);
+    		return specIO;
+		}
+    	catch (FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return null;
+    }
+
+    @Override
     public void loadMetadata() throws FileNotFoundException
     {
         this.path = FileCache.getFileFromServer(pathString);

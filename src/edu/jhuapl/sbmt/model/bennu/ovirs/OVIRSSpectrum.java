@@ -80,7 +80,9 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected String getInfoFilePathOnServer()
     {
-        return Paths.get(getSpectrumPathOnServer()).getParent()
+        String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
+
+        return Paths.get(spectrumPath).getParent()
                 .resolveSibling("infofiles-corrected")
                 .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
                 .toString();
@@ -224,6 +226,7 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
+        System.out.println("OVIRSSpectrum: readSpectrumFromFile: spectrum path " + getSpectrumPathOnServer());
         spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
         OVIRSL3SpectrumReader reader=new OVIRSL3SpectrumReader(spectrumFile.getAbsolutePath());
         reader.read();

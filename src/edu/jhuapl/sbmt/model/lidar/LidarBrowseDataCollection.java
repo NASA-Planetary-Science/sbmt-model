@@ -67,7 +67,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         if (fileToLidarPerUnitMap.containsKey(path))
             return;
 
-        LidarDataPerUnit lidarData = new LidarDataPerUnit(path, polyhedralModelConfig, new LidarLoadingListener()
+        LidarDataPerUnit lidarData = createLidarDataPerUnitWhateverThatIs(path, polyhedralModelConfig, new LidarLoadingListener()
         {
 
             @Override
