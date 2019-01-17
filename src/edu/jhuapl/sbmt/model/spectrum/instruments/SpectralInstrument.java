@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.spectrum.instruments;
 
 import java.io.IOException;
 
-import edu.jhuapl.saavtk.metadata.MetadataManager;
+import crucible.crust.metadata.api.MetadataManager;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;

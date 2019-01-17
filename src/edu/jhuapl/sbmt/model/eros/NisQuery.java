@@ -14,10 +14,10 @@ import javax.swing.JOptionPane;
 
 import org.joda.time.DateTime;
 
-import edu.jhuapl.saavtk.metadata.FixedMetadata;
-import edu.jhuapl.saavtk.metadata.Metadata;
-import edu.jhuapl.saavtk.metadata.SettableMetadata;
-import edu.jhuapl.saavtk.metadata.Version;
+import crucible.crust.metadata.impl.FixedMetadata;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.impl.SettableMetadata;
+import crucible.crust.metadata.api.Version;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.SearchResultsMetadata;
