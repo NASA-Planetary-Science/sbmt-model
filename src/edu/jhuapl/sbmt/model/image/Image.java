@@ -155,7 +155,9 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         	{
         		String cleanedUpName = name.replace("file://", "");
         		String cleanedUpOtherName = ((ImageKey)obj).name.replace("file://", "");
-        		return cleanedUpName.equals(cleanedUpOtherName) && source.equals(((ImageKey)obj).source);
+//        		System.out.println("Image.ImageKey: equals: cleaned up name " + cleanedUpName + " and source " + source);
+//        		System.out.println("Image.ImageKey: equals: cleaned upname2 " + cleanedUpOtherName + " and source " + ((ImageKey)obj).source);
+        		return cleanedUpName.equals(cleanedUpOtherName) /*&& source.equals(((ImageKey)obj).source)*/;
         	}
 
 //            return name.equals(((ImageKey)obj).name)
