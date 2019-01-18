@@ -181,6 +181,16 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
                     + slice + "]";
         }
 
+        public String getName()
+        {
+        	return name;
+        }
+
+        public String getImageFilename()
+        {
+        	return name;
+        }
+
 
     }
 
