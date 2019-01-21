@@ -23,6 +23,7 @@ import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk2.event.Event;
 import edu.jhuapl.saavtk2.event.EventListener;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.dtm.model.creation.DtmCreationModel.DEMInfo;
 import edu.jhuapl.sbmt.model.dem.DEMBoundaryCollection.DEMBoundary;
@@ -51,7 +52,7 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
     }
 
     // Creates a DEM based on a key
-    protected DEM createDEM(DEMKey key, SmallBodyModel smallBodyModel) throws FitsException, IOException
+    protected DEM createDEM(DEMKey key, ISmallBodyModel smallBodyModel) throws FitsException, IOException
     {
         // Check to see if we've already created the DEM through its boundary
         DEMBoundaryCollection demBoundaryCollection = (DEMBoundaryCollection)modelManager.getModel(ModelNames.DEM_BOUNDARY);

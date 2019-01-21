@@ -83,11 +83,11 @@ public class ColorImage extends Image implements PropertyChangeListener
 
     public static class ColorImageKey
     {
-        public PerspectiveImage.ImageKey redImageKey;
-        public PerspectiveImage.ImageKey greenImageKey;
-        public PerspectiveImage.ImageKey blueImageKey;
+        public ImageKey redImageKey;
+        public ImageKey greenImageKey;
+        public ImageKey blueImageKey;
 
-        public ColorImageKey(PerspectiveImage.ImageKey redImage, PerspectiveImage.ImageKey greenImage, PerspectiveImage.ImageKey blueImage)
+        public ColorImageKey(ImageKey redImage, ImageKey greenImage, ImageKey blueImage)
         {
             this.redImageKey = redImage;
             this.greenImageKey = greenImage;
@@ -107,7 +107,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         {
             // Find the start and stop indices of number part of the name. Should be
             // the same for all 3 images.
-            String name = new File(redImageKey.name).getName();
+            String name = new File(redImageKey.getName()).getName();
             char[] buf = name.toCharArray();
             int ind0 = -1;
             int ind1 = -1;
@@ -126,12 +126,12 @@ public class ColorImage extends Image implements PropertyChangeListener
                 ++ind0;
 
             return
-            "R: " + new File(redImageKey.name).getName().substring(ind0, ind1) + ", " +
-            "G: " + new File(greenImageKey.name).getName().substring(ind0, ind1) + ", " +
-            "B: " + new File(blueImageKey.name).getName().substring(ind0, ind1);
+            "R: " + new File(redImageKey.getName()).getName().substring(ind0, ind1) + ", " +
+            "G: " + new File(greenImageKey.getName()).getName().substring(ind0, ind1) + ", " +
+            "B: " + new File(blueImageKey.getName()).getName().substring(ind0, ind1);
         }
 
-        public ImageKey getImageKey()
+        public ImageKeyInterface getImageKey()
         {
             return redImageKey;
         }
@@ -140,7 +140,7 @@ public class ColorImage extends Image implements PropertyChangeListener
 
     public String getImageName()
     {
-        return new File(colorKey.redImageKey.name).getName();
+        return new File(colorKey.redImageKey.getName()).getName();
     }
 
     public ColorImage(ColorImageKey key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException, NoOverlapException

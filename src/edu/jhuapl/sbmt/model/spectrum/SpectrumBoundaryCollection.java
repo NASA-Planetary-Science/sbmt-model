@@ -16,6 +16,7 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum.SpectrumKey;
 
@@ -39,7 +40,7 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
 
     protected SpectrumBoundary createBoundary(
             SpectrumKey key,
-            SmallBodyModel smallBodyModel, SpectraCollection collection) throws IOException, FitsException
+            ISmallBodyModel smallBodyModel, SpectraCollection collection) throws IOException, FitsException
     {
         Spectrum spectrum = collection.getSpectrumFromKey(key);
         SpectrumBoundary boundary = new SpectrumBoundary(spectrum, smallBodyModel);

@@ -13,6 +13,12 @@ import vtk.vtkPolyData;
 import vtk.vtkProp;
 import vtk.vtkTexture;
 
+import edu.jhuapl.saavtk.metadata.InstanceGetter;
+import edu.jhuapl.saavtk.metadata.Key;
+import edu.jhuapl.saavtk.metadata.Metadata;
+import edu.jhuapl.saavtk.metadata.SettableMetadata;
+import edu.jhuapl.saavtk.metadata.StorableAsMetadata;
+import edu.jhuapl.saavtk.metadata.Version;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.IntensityRange;
@@ -94,7 +100,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
      *
      * No two images will have the same values for the fields of this class.
      */
-    public static class ImageKey
+    public static class ImageKey implements ImageKeyInterface, StorableAsMetadata<ImageKey>
     {
         // The path of the image as passed into the constructor. This is not the
         // same as fullpath but instead corresponds to the name needed to download
@@ -172,6 +178,9 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
             return name.hashCode();
         }
 
+        /* (non-Javadoc)
+		 * @see edu.jhuapl.sbmt.model.image.ImageKeyInterface#toString()
+		 */
         @Override
         public String toString()
         {
@@ -181,16 +190,86 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
                     + slice + "]";
         }
 
-        public String getName()
+        /* (non-Javadoc)
+		 * @see edu.jhuapl.sbmt.model.image.ImageKeyInterface#getName()
+		 */
+        @Override
+		public String getName()
         {
         	return name;
         }
 
-        public String getImageFilename()
+        /* (non-Javadoc)
+		 * @see edu.jhuapl.sbmt.model.image.ImageKeyInterface#getImageFilename()
+		 */
+        @Override
+		public String getImageFilename()
         {
         	return name;
         }
 
+        public ImageSource getSource()
+		{
+			return source;
+		}
+
+		public ImageType getImageType()
+		{
+			return imageType;
+		}
+
+		private static final Key<String> nameKey = Key.of("name");
+        private static final Key<String> sourceKey = Key.of("source");
+        private static final Key<String> fileTypeKey = Key.of("fileTypeKey");
+        private static final Key<String> imageTypeKey = Key.of("imageType");
+        private static final Key<Metadata> instrumentKey = Key.of("imagingInstrument");
+        private static final Key<String> bandKey = Key.of("band");
+        private static final Key<Integer> sliceKey = Key.of("slice");
+        private static final Key<String> pointingFilenameKey = Key.of("pointingfilename");
+
+        private static final Key<ImageKey> IMAGE_KEY = Key.of("image");
+
+        @Override
+        public Metadata store()
+        {
+            SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+            result.put(Key.of("customimagetype"), IMAGE_KEY.toString());
+            result.put(nameKey, name);
+            result.put(sourceKey, source.toString());
+            result.put(fileTypeKey, fileType.toString());
+            result.put(imageTypeKey, imageType.toString());
+            result.put(instrumentKey, instrument.store());
+            result.put(bandKey, band);
+            result.put(sliceKey, slice);
+            result.put(pointingFilenameKey, pointingFile);
+            return result;
+        }
+
+    	public static void initializeSerializationProxy()
+    	{
+    		InstanceGetter.defaultInstanceGetter().register(IMAGE_KEY, (metadata) -> {
+
+    	        String name = metadata.get(nameKey);
+    	        ImageSource source = ImageSource.valueOf(metadata.get(sourceKey));
+    	        ImageType imageType = ImageType.valueOf(metadata.get(imageTypeKey));
+    	        ImagingInstrument instrument = new ImagingInstrument();
+    	        instrument.retrieve(metadata.get(instrumentKey));
+    	        int slice = metadata.get(sliceKey);
+    	        String band = metadata.get(bandKey);
+    	        FileType fileType = FileType.valueOf(metadata.get(fileTypeKey));
+    	        String pointingFilename = metadata.get(pointingFilenameKey);
+
+    	        ImageKey result = new ImageKey(name, source, fileType, imageType, instrument, band, slice, pointingFilename);
+
+    			return result;
+    		});
+    	}
+
+    	@Override
+    	public Key<ImageKey> getKey()
+    	{
+    		return IMAGE_KEY;
+    	}
 
     }
 

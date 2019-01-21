@@ -73,7 +73,7 @@ import edu.jhuapl.saavtk.util.ObjUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.gui.image.ui.custom.CustomImageImporterDialog.ImageInfo;
+import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
 import edu.jhuapl.sbmt.util.BackPlanesPDS4XML;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
@@ -1448,9 +1448,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return null;
     }
 
-    private Vector<ImageInfo> getCustomImageMetadata() throws IOException
+    private Vector<CustomImageKeyInterface> getCustomImageMetadata() throws IOException
     {
-        Vector<ImageInfo> customImages = new Vector<ImageInfo>();
+        Vector<CustomImageKeyInterface> customImages = new Vector<CustomImageKeyInterface>();
         final Key<Metadata[]> customImagesKey = Key.of("customImages");
         String file;
         if (getKey().name.startsWith("file://"))
@@ -1463,8 +1463,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         Metadata[] metadataArray = read(customImagesKey, metadata);
         for (Metadata meta : metadataArray)
         {
-            ImageInfo info = new ImageInfo();
-            info.retrieve(meta);
+//            ImageInfo info = new ImageInfo();
+//            info.retrieve(meta);
+            CustomImageKeyInterface info = CustomImageKeyInterface.retrieve(meta);
             customImages.add(info);
         }
         return customImages;
@@ -1480,14 +1481,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalInfoFileFullPath()
     {
-        Vector<ImageInfo> images;
+        Vector<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
-            for (ImageInfo info : images)
+            for (ImageKeyInterface info : images)
             {
                 String filename = new File(getKey().name).getName();
-                if (filename.equals(info.imagefilename))
+                if (filename.equals(info.getImageFilename()))
                 {
                     String string = new File(getKey().name).getParent() + File.separator + info.infofilename;
                     if (getKey().name.startsWith("file:/"))
@@ -1523,14 +1524,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected String initLocalSumfileFullPath()
     {
 
-        Vector<ImageInfo> images;
+        Vector<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
-            for (ImageInfo info : images)
+            for (CustomImageKeyInterface info : images)
             {
                 String filename = new File(getKey().name).getName();
-                if (filename.equals(info.imagefilename))
+                if (filename.equals(info.getImageFilename()))
                 {
                     String string =  new File(getKey().name).getParent() + File.separator + info.sumfilename;
                     if (getKey().name.startsWith("file:/"))
@@ -1569,16 +1570,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void loadImageInfoFromConfigFile()
     {
-        Vector<ImageInfo> images;
+        Vector<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
-            for (ImageInfo info : images)
+            for (CustomImageKeyInterface info : images)
             {
                 String filename = new File(getKey().name).getName();
-                if (filename.equals(info.imagefilename))
+                if (filename.equals(info.getImageFilename()))
                 {
-                    imageName = info.imagefilename;
+                    imageName = info.getImageFilename();
                 }
             }
         }

@@ -39,7 +39,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     }
 
     protected PerspectiveImageBoundary createBoundary(
-            ImageKey key,
+            ImageKeyInterface key,
             SmallBodyModel smallBodyModel) throws IOException, FitsException
     {
         PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, true), smallBodyModel);
@@ -49,7 +49,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return boundary;
     }
 
-    private boolean containsKey(ImageKey key)
+    private boolean containsKey(ImageKeyInterface key)
     {
         for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
         {
@@ -60,7 +60,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return false;
     }
 
-    private PerspectiveImageBoundary getBoundaryFromKey(ImageKey key)
+    private PerspectiveImageBoundary getBoundaryFromKey(ImageKeyInterface key)
     {
         for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
         {
@@ -72,7 +72,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     }
 
 
-    public void addBoundary(ImageKey key) throws FitsException, IOException
+    public void addBoundary(ImageKeyInterface key) throws FitsException, IOException
     {
         if (containsKey(key))
             return;
@@ -94,7 +94,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    public void removeBoundary(ImageKey key)
+    public void removeBoundary(ImageKeyInterface key)
     {
         PerspectiveImageBoundary boundary = getBoundaryFromKey(key);
 
@@ -162,12 +162,12 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return actorToBoundaryMap.get(actor);
     }
 
-    public PerspectiveImageBoundary getBoundary(ImageKey key)
+    public PerspectiveImageBoundary getBoundary(ImageKeyInterface key)
     {
         return getBoundaryFromKey(key);
     }
 
-    public boolean containsBoundary(ImageKey key)
+    public boolean containsBoundary(ImageKeyInterface key)
     {
         return containsKey(key);
     }
