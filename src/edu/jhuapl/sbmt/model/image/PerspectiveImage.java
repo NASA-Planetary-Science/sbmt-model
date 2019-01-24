@@ -2198,8 +2198,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float)scalarRange[0];
             maxValue[0] = (float)scalarRange[1];
-            setDisplayedImageRange(new IntensityRange(0, 255));
-//            setDisplayedImageRange(null);
+            System.out.println("PerspectiveImage: loadImage: min max is " + minValue[0] + " max value " + maxValue[0] );
+//            setDisplayedImageRange(new IntensityRange(0, 255));
+            setDisplayedImageRange(null);
         }
         else if (getEnviFileFullPath() != null)
         {
