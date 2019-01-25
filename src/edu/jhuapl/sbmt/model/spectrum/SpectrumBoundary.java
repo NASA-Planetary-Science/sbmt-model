@@ -14,7 +14,7 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum.SpectrumKey;
 
 public class SpectrumBoundary extends AbstractModel implements PropertyChangeListener
@@ -29,11 +29,11 @@ public class SpectrumBoundary extends AbstractModel implements PropertyChangeLis
     private double[] boresightDirection = new double[3];
     private double[] upVector = new double[3];
     private Spectrum spectrum;
-    private ISmallBodyModel smallBodyModel;
+    private SmallBodyModel smallBodyModel;
     private static vtkPolyData emptyPolyData;
     private double offset =0.003;
 
-    public SpectrumBoundary(Spectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
+    public SpectrumBoundary(Spectrum spectrum, SmallBodyModel smallBodyModel) throws IOException
     {
         this.spectrum = spectrum;
         this.smallBodyModel = smallBodyModel;

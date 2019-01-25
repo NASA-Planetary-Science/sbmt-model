@@ -21,7 +21,7 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileCache.UnauthorizedAccessException;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 
 public class LidarBrowseDataCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -51,7 +51,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
     private double stopPercent = 1.0;
     private boolean showSpacecraftPosition = true;
 
-    public LidarBrowseDataCollection(ISmallBodyModel smallBodyModel)
+    public LidarBrowseDataCollection(SmallBodyModel smallBodyModel)
     {
         this.polyhedralModelConfig = smallBodyModel.getSmallBodyConfig();
     }

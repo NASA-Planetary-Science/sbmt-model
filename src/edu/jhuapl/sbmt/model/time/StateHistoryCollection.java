@@ -10,17 +10,18 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
+//import edu.jhuapl.sbmt.client.ModelFactory;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.time.StateHistoryModel.StateHistoryKey;
 
 public class StateHistoryCollection extends AbstractModel implements PropertyChangeListener, HasTime
 {
-    private ISmallBodyModel smallBodyModel;
+    private SmallBodyModel smallBodyModel;
     private ArrayList<StateHistoryKey> keys = new ArrayList<StateHistoryKey>();
     private List<StateHistoryModel> simRuns = new ArrayList<StateHistoryModel>();
     private StateHistoryModel currentRun = null;
 
-    public StateHistoryCollection(ISmallBodyModel smallBodyModel)
+    public StateHistoryCollection(SmallBodyModel smallBodyModel)
     {
         this.smallBodyModel = smallBodyModel;
     }

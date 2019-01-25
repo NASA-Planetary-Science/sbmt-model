@@ -21,7 +21,6 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk2.event.Event;
 import edu.jhuapl.saavtk2.event.EventListener;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.dtm.HideDEMBoundaryEvent;
@@ -161,7 +160,7 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
 
     protected DEMBoundary createBoundary(
             DEMKey key,
-            ISmallBodyModel smallBodyModel) throws IOException, FitsException
+            SmallBodyModel smallBodyModel) throws IOException, FitsException
     {
         DEMBoundary boundary;
 
