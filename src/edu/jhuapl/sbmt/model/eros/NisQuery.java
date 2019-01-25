@@ -14,16 +14,17 @@ import javax.swing.JOptionPane;
 
 import org.joda.time.DateTime;
 
-import crucible.crust.metadata.impl.FixedMetadata;
-import crucible.crust.metadata.api.Metadata;
-import crucible.crust.metadata.impl.SettableMetadata;
-import crucible.crust.metadata.api.Version;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.SearchResultsMetadata;
 import edu.jhuapl.sbmt.query.database.DatabaseQueryBase;
 import edu.jhuapl.sbmt.query.database.DatabaseSearchMetadata;
 import edu.jhuapl.sbmt.query.database.SpectraDatabaseSearchMetadata;
+
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.FixedMetadata;
+import crucible.crust.metadata.impl.SettableMetadata;
 
 
 /**
@@ -32,7 +33,7 @@ import edu.jhuapl.sbmt.query.database.SpectraDatabaseSearchMetadata;
 //This must be final because it is a singleton with a clone method.
 public final class NisQuery extends DatabaseQueryBase
 {
-    private static NisQuery ref = null;
+	private static NisQuery ref = null;
 
     public static String getNisPath(List<String> result)
     {
