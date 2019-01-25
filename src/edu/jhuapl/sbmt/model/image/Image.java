@@ -7,6 +7,8 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 
+import org.apache.commons.io.FilenameUtils;
+
 import com.google.common.base.Preconditions;
 
 import vtk.vtkPolyData;
@@ -155,7 +157,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         	{
         		String cleanedUpName = name.replace("file://", "");
         		String cleanedUpOtherName = ((ImageKey)obj).name.replace("file://", "");
-        		return cleanedUpName.equals(cleanedUpOtherName) && source.equals(((ImageKey)obj).source);
+        		return FilenameUtils.getBaseName(cleanedUpName).equals(FilenameUtils.getBaseName(cleanedUpOtherName)) && source.equals(((ImageKey)obj).source);
         	}
 
 //            return name.equals(((ImageKey)obj).name)
