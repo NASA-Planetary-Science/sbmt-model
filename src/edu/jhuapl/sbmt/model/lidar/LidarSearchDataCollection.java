@@ -308,7 +308,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 startDate == this.startDate &&
                 stopDate == this.stopDate &&
                 cubeList.equals(this.cubeList) &&
-                timeSeparationBetweenTracks == this.timeSeparationBetweenTracks &&
+                timeSeparationBetweenTracks == this.getTimeSeparationBetweenTracks() &&
                 minTrackLength == this.minTrackLength)
         {
             return;
@@ -320,7 +320,7 @@ public class LidarSearchDataCollection extends AbstractModel
         this.startDate = startDate;
         this.stopDate = stopDate;
         this.cubeList = (TreeSet<Integer>)cubeList.clone();
-        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+        this.setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
         this.minTrackLength = minTrackLength;
 
 
@@ -430,7 +430,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 startDate == this.startDate &&
                 stopDate == this.stopDate &&
                 cubeList.equals(this.cubeList) &&
-                timeSeparationBetweenTracks == this.timeSeparationBetweenTracks &&
+                timeSeparationBetweenTracks == this.getTimeSeparationBetweenTracks() &&
                 minTrackLength == this.minTrackLength &&
                 minRange == this.minRange &&
                 this.maxRange == this.maxRange)
@@ -444,7 +444,7 @@ public class LidarSearchDataCollection extends AbstractModel
         this.startDate = startDate;
         this.stopDate = stopDate;
         this.cubeList = (TreeSet<Integer>)cubeList.clone();
-        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+        this.setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
         this.minTrackLength = minTrackLength;
         this.minRange = minRange;
         this.maxRange = maxRange;
@@ -724,7 +724,7 @@ public class LidarSearchDataCollection extends AbstractModel
         {
             double[] pt=polyData.GetPoint(i);
 
-            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, polyData.GetPointData().GetArray(0).GetTuple1(i), range,  fileId);
+            lidarPt = new FSHyperPointWithFileTag(pt[0], pt[1], pt[2], 0, 0,0,0, range, polyData.GetPointData().GetArray(0).GetTuple1(i),   fileId);
             originalPointsSourceFiles.put(lidarPt,fileId);
             originalPoints.add(lidarPt);
         }
@@ -882,7 +882,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=1; i<size; ++i)
         {
             double currentTime = originalPoints.get(i).getTime();
-            if (currentTime - prevTime >= timeSeparationBetweenTracks)
+            if (currentTime - prevTime >= getTimeSeparationBetweenTracks())
             {
                 track.stopId = i-1;
                 double t0 = originalPoints.get(track.startId).getTime();
@@ -1239,28 +1239,13 @@ public class LidarSearchDataCollection extends AbstractModel
         if (enableTrackErrorComputation)
             computeTrackError();
 
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     private void removeTrack(int trackId)
     {
-//        Track track = tracks.get(trackId);
-//        int trackSize = track.getNumberOfPoints();
-
-//        for (int i=track.stopId; i>=track.startId; i--)
-//            originalPoints.remove(i);
 
         tracks.remove(trackId);
-
-        // Go through all tracks that follow the deleted track and shift
-        // all the start and stop ids down by the size of the deleted track
-//        int numberOfTracks = tracks.size();
-//        for (int i=trackId; i<numberOfTracks; ++i)
-//        {
-//            track = tracks.get(i);
-//            track.startId -= trackSize;
-//            track.stopId -= trackSize;
-//        }
     }
 
     protected void removeTracksThatAreTooSmall()
@@ -1854,6 +1839,26 @@ public class LidarSearchDataCollection extends AbstractModel
         //selectedPoint=-1;
         updateSelectedPoint();
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public double getTimeSeparationBetweenTracks()
+    {
+        return timeSeparationBetweenTracks;
+    }
+
+    public void setTimeSeparationBetweenTracks(double timeSeparationBetweenTracks)
+    {
+        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+    }
+
+    public int getMinTrackLength()
+    {
+        return minTrackLength;
+    }
+
+    public void setMinTrackLength(int value)
+    {
+        this.minTrackLength = value;
     }
 
 }

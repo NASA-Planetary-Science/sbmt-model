@@ -3,8 +3,15 @@ package edu.jhuapl.sbmt.model.dem;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import vtk.vtkCellArray;
 import vtk.vtkDataArray;
@@ -18,10 +25,14 @@ import vtk.vtkPolyDataNormals;
 import vtk.vtkProp;
 import vtk.vtksbCellLocator;
 
+import edu.jhuapl.saavtk.gui.render.camera.CameraUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
+import edu.jhuapl.saavtk.util.ProgressListener;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk2.geom.Geometry;
+import edu.jhuapl.saavtk2.io.ObjGeometryReader;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.dem.DEMView;
 
@@ -51,46 +62,8 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     private vtkGenericCell genericCell;
     private DEMView demView;
 
-    /**
-     * An DEMKey should be used to uniquely distinguish one DEM from another.
-     * It also contains metadata about the DEM that may be necessary to know
-     * before the DEM is loaded.
-     *
-     * No two DEMs will have the same values for the fields of this class.
-     */
-    public static class DEMKey
-    {
-        // The path of the DEM as passed into the constructor. This is not the
-        // same as fullpath but instead corresponds to the name needed to download
-        // the file from the server (excluding the hostname and extension).
-        public String fileName;
-        public String displayName;
-
-        public DEMKey(String fileName, String displayName)
-        {
-            this.fileName = fileName;
-            this.displayName = displayName;
-        }
-
-        // Copy constructor
-        public DEMKey(DEMKey copyKey)
-        {
-            fileName = copyKey.fileName;
-            this.displayName = copyKey.displayName;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return fileName.equals(((DEMKey)obj).fileName);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return fileName.hashCode();
-        }
-    }
+    private DEMLoadingTask task;
+    private ProgressMonitor demLoadingProgressMonitor;
 
     /** Class DEM **/
     // Attributes
@@ -99,6 +72,10 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     private double longitude;
     private double halfSize;
     private double scale;
+
+    // Cache vars
+    private Vector3D cAverageSurfaceNormal;
+    private Vector3D cGeometricCenterPoint;
 
     // Old constructor based on filename only, called all over SBMT
     public DEM(String filename) throws IOException, FitsException
@@ -158,10 +135,14 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         key = new DEMKey(copyDEM.key);
 
         setSmallBodyPolyData(dem, coloringValuesPerCell, coloringNames, coloringUnits, ColoringValueType.CELLDATA);
+
+        cAverageSurfaceNormal = null;
+        cGeometricCenterPoint = null;
     }
 
+
     // New constructor making use of key
-    public DEM(DEMKey key) throws IOException, FitsException
+    public DEM(DEMKey key) throws IOException
     {
         super(key.fileName);
         // Store the key for future use
@@ -171,10 +152,83 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         dem = new vtkPolyData();
         boundary = new vtkPolyData();
 
-        initializeDEM(key.fileName);
+        cAverageSurfaceNormal = null;
+        cGeometricCenterPoint = null;
 
-        setSmallBodyPolyData(dem, coloringValuesPerCell, coloringNames, coloringUnits, ColoringValueType.CELLDATA);
+        demLoadingProgressMonitor = new ProgressMonitor(null, "Loading DTM...", "", 0, 100);
+        demLoadingProgressMonitor.setProgress(0);
+
+        task = new DEMLoadingTask(key);
+        task.addPropertyChangeListener(this);
+        task.execute();
+
+
+//        if (FilenameUtils.isExtension(key.fileName.toLowerCase(), new String[]{"fit","fits"}))
+//            try
+//            {
+//                fromFits(key.fileName);
+//            }
+//            catch (FitsException e)
+//            {
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            }
+//        else if (FilenameUtils.isExtension(key.fileName.toLowerCase(), "obj"))
+//        {
+//            fromObj(key.fileName);
+//        }
+
+//        setSmallBodyPolyData(dem, coloringValuesPerCell, coloringNames, coloringUnits, ColoringValueType.CELLDATA);
     }
+
+    class DEMLoadingTask extends SwingWorker<Void, Void>
+    {
+    	DEMKey key;
+
+    	public DEMLoadingTask(DEMKey key)
+    	{
+    		this.key = key;
+    	}
+
+    	@Override
+    	protected Void doInBackground() throws Exception
+    	{
+    		if (FilenameUtils.isExtension(key.fileName.toLowerCase(), new String[]{"fit","fits"}))
+                try
+                {
+                    fromFits(key.fileName, new ProgressListener()
+            		{
+						@Override
+						public void setProgress(int progress)
+						{
+							task.setProgress(progress);
+						}
+
+            		});	//set a listener here to fire back progress events to the progress monitor
+                }
+                catch (FitsException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            else if (FilenameUtils.isExtension(key.fileName.toLowerCase(), "obj"))
+            {
+                fromObj(key.fileName);
+            }
+    		return null;
+    	}
+
+    	@Override
+    	protected void done()
+    	{
+    		// TODO Auto-generated method stub
+    		super.done();
+            setSmallBodyPolyData(dem, coloringValuesPerCell, coloringNames, coloringUnits, ColoringValueType.CELLDATA);
+
+    	}
+
+    }
+
 
     // Get method for key
     public DEMKey getKey()
@@ -281,24 +335,25 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         // Check dimensions of actual data
         final int NUM_PLANES = numBackPlanes + 3;
         int[] axes = hdu.getAxes();
-        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
-        {
-            throw new IOException("FITS file has incorrect dimensions");
-        }
+//        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
+//        {
+//            throw new IOException("FITS file has incorrect dimensions");
+//        }
 
         int liveSize = axes[1];
+        int liveSize2 = axes[2];
 
         float[][][] data = (float[][][])hdu.getData().getData();
         f.getStream().close();
 
-        int[][] indices = new int[liveSize][liveSize];
+        int[][] indices = new int[liveSize][liveSize2];
         int c = 0;
         float x, y, z;
         float d;
 
         // First add points to the vtkPoints array
         for (int m=0; m<liveSize; ++m)
-            for (int n=0; n<liveSize; ++n)
+            for (int n=0; n<liveSize2; ++n)
             {
                 indices[m][n] = -1;
 
@@ -339,7 +394,22 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                 coloringUnits, ColoringValueType.CELLDATA);
     }
 
-    private vtkPolyData initializeDEM(String filename) throws IOException, FitsException
+    protected vtkPolyData fromObj(String filename)
+    {
+        ObjGeometryReader reader=new ObjGeometryReader(Paths.get(filename));
+        Geometry geom=reader.get();
+        dem=geom.getPolyData();
+        centerOfDEM=dem.GetCenter();
+        int numBackPlanes = 0;
+        coloringValuesPerCell = new vtkFloatArray[numBackPlanes];
+        coloringValuesPerPoint = new vtkFloatArray[numBackPlanes];
+        coloringNames = new String[numBackPlanes];
+        coloringUnits = new String[numBackPlanes];
+        coloringValuesScale = new float[numBackPlanes];
+        return dem;
+    }
+
+    protected vtkPolyData fromFits(String filename, ProgressListener listener) throws IOException, FitsException
     {
         vtkPoints points = new vtkPoints();
         vtkCellArray polys = new vtkCellArray();
@@ -360,6 +430,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         int yIdx = -1;
         int zIdx = -1;
         int planeCount = 0;
+
         while((headerCard = header.nextCard()) != null)
         {
             String headerKey = headerCard.getKey();
@@ -463,24 +534,27 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
         // Check dimensions of actual data
         final int NUM_PLANES = numBackPlanes + 3;
         int[] axes = hdu.getAxes();
-        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
-        {
-            throw new IOException("FITS file has incorrect dimensions");
-        }
+//        if (axes.length != 3 || axes[0] != NUM_PLANES || axes[1] != axes[2])
+//        {
+//            throw new IOException("FITS file has incorrect dimensions");
+//        }
 
         int liveSize = axes[1];
+        int liveSize2 = axes[2];
 
         float[][][] data = (float[][][])hdu.getData().getData();
         f.getStream().close();
 
-        int[][] indices = new int[liveSize][liveSize];
+        int[][] indices = new int[liveSize][liveSize2];
         int c = 0;
         float x, y, z;
         float d;
 
         // First add points to the vtkPoints array
         for (int m=0; m<liveSize; ++m)
-            for (int n=0; n<liveSize; ++n)
+        {
+        	listener.setProgress(m*50/liveSize);
+            for (int n=0; n<liveSize2; ++n)
             {
                 indices[m][n] = -1;
 
@@ -513,13 +587,16 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                     ++c;
                 }
             }
+        }
 
         idList.SetNumberOfIds(3);
 
         // Now add connectivity information
         int i0, i1, i2, i3;
         for (int m=1; m<liveSize; ++m)
-            for (int n=1; n<liveSize; ++n)
+        {
+        	listener.setProgress(50 + m*50/liveSize);
+            for (int n=1; n<liveSize2; ++n)
             {
                 // Get the indices of the 4 corners of the rectangle to the upper left
                 i0 = indices[m-1][n-1];
@@ -544,6 +621,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                     polys.InsertNextCell(idList);
                 }
             }
+        }
 
         vtkPolyDataNormals normalsFilter = new vtkPolyDataNormals();
         normalsFilter.SetInputData(dem);
@@ -576,7 +654,7 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
 
         // Delete data structures
         idList.Delete();
-
+        listener.setProgress(100);
         return dem;
     }
 
@@ -911,6 +989,24 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
+        if ("progress" == evt.getPropertyName() ) {
+            int progress = (Integer) evt.getNewValue();
+            demLoadingProgressMonitor.setProgress(progress);
+            String message =
+                String.format("Completed %d%%.\n", progress);
+            demLoadingProgressMonitor.setNote(message);
+//            taskOutput.append(message);
+            if (demLoadingProgressMonitor.isCanceled() || task.isDone()) {
+                if (demLoadingProgressMonitor.isCanceled()) {
+                    task.cancel(true);
+//                    taskOutput.append("Task canceled.\n");
+                } else {
+//                    taskOutput.append("Task completed.\n");
+                }
+            }
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        }
     }
 
     public double getLatitude()
@@ -937,4 +1033,26 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
     {
         return dem;
     }
+
+	@Override
+	public Vector3D getAverageSurfaceNormal()
+	{
+		// Return the cached value
+		if (cAverageSurfaceNormal != null)
+			return cAverageSurfaceNormal;
+
+		cAverageSurfaceNormal = CameraUtil.calcSurfaceNormal(this);
+		return cAverageSurfaceNormal;
+	}
+
+	@Override
+	public Vector3D getGeometricCenterPoint()
+	{
+		// Return the cached value
+		if (cGeometricCenterPoint != null)
+			return cGeometricCenterPoint;
+
+		cGeometricCenterPoint = CameraUtil.calcCenterPoint(this);
+		return cGeometricCenterPoint;
+	}
 }
