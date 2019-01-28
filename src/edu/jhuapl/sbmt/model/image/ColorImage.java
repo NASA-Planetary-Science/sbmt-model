@@ -33,6 +33,7 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
 
 import nom.tam.fits.FitsException;
 
@@ -83,11 +84,11 @@ public class ColorImage extends Image implements PropertyChangeListener
 
     public static class ColorImageKey
     {
-        public ImageKey redImageKey;
-        public ImageKey greenImageKey;
-        public ImageKey blueImageKey;
+        public ImageKeyInterface redImageKey;
+        public ImageKeyInterface greenImageKey;
+        public ImageKeyInterface blueImageKey;
 
-        public ColorImageKey(ImageKey redImage, ImageKey greenImage, ImageKey blueImage)
+        public ColorImageKey(ImageKeyInterface redImage, ImageKeyInterface greenImage, ImageKeyInterface blueImage)
         {
             this.redImageKey = redImage;
             this.greenImageKey = greenImage;
@@ -153,17 +154,17 @@ public class ColorImage extends Image implements PropertyChangeListener
         greenImage = createImage(colorKey.greenImageKey, smallBodyModel, modelManager);
         blueImage = createImage(colorKey.blueImageKey, smallBodyModel, modelManager);
 
-        redImageSlice = colorKey.redImageKey.slice;
-        greenImageSlice = colorKey.greenImageKey.slice;
-        blueImageSlice = colorKey.blueImageKey.slice;
+        redImageSlice = colorKey.redImageKey.getSlice();
+        greenImageSlice = colorKey.greenImageKey.getSlice();
+        blueImageSlice = colorKey.blueImageKey.getSlice();
 
-        int rslice = colorKey.redImageKey.slice;
+        int rslice = colorKey.redImageKey.getSlice();
         redPixelData = ImageDataUtil.vtkImageDataToArray2D(redImage.getRawImage(), rslice);
 
-        int gslice = colorKey.greenImageKey.slice;
+        int gslice = colorKey.greenImageKey.getSlice();
         greenPixelData = ImageDataUtil.vtkImageDataToArray2D(greenImage.getRawImage(), gslice);
 
-        int bslice = colorKey.blueImageKey.slice;
+        int bslice = colorKey.blueImageKey.getSlice();
         bluePixelData = ImageDataUtil.vtkImageDataToArray2D(blueImage.getRawImage(), bslice);
 
         colorImage = new vtkImageData();
@@ -207,7 +208,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         return displayedImage; // colorImage;
     }
 
-    protected PerspectiveImage createImage(ImageKey key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
+    protected PerspectiveImage createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
     {
         ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);

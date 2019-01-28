@@ -20,7 +20,7 @@ public interface ImageKeyInterface
 
 	int getSlice();
 
-	ImagingInstrument getInstrument();
+	IImagingInstrument getInstrument();
 
 	FileType getFileType();
 

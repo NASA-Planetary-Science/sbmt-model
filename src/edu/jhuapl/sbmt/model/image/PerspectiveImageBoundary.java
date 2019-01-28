@@ -24,7 +24,6 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.Image.ImageKey;
 
 public class PerspectiveImageBoundary extends AbstractModel implements PropertyChangeListener
 {
@@ -248,7 +247,7 @@ public class PerspectiveImageBoundary extends AbstractModel implements PropertyC
         return props;
     }
 
-    public ImageKey getKey()
+    public ImageKeyInterface getKey()
     {
         return image.getKey();
     }

@@ -6,12 +6,13 @@ import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 
 import nom.tam.fits.FitsException;
 
 public class MapCamEarthImage extends MapCamImage
 {
-    public MapCamEarthImage(ImageKey key,
+    public MapCamEarthImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {

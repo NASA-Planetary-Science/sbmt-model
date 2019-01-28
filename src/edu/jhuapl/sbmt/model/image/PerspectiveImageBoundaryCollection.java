@@ -18,7 +18,6 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.Image.ImageKey;
 
 import nom.tam.fits.FitsException;
 
@@ -138,18 +137,18 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         {
             return "";
         }
-        File file = new File(boundary.getKey().name);
+        File file = new File(boundary.getKey().getName());
         return "Boundary of image " + file.getName();
     }
 
     public String getBoundaryName(vtkActor actor)
     {
-        return actorToBoundaryMap.get(actor).getKey().name;
+        return actorToBoundaryMap.get(actor).getKey().getName();
     }
 
-    public ImmutableSet<ImageKey> getImageKeys()
+    public ImmutableSet<ImageKeyInterface> getImageKeys()
     {
-        ImmutableSet.Builder<ImageKey> builder = ImmutableSet.builder();
+        ImmutableSet.Builder<ImageKeyInterface> builder = ImmutableSet.builder();
         for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
         {
             builder.add(boundary.getKey());

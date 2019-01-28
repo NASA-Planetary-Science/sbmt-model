@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -60,6 +59,7 @@ import edu.jhuapl.saavtk.metadata.FixedMetadata;
 import edu.jhuapl.saavtk.metadata.Key;
 import edu.jhuapl.saavtk.metadata.Metadata;
 import edu.jhuapl.saavtk.metadata.serialization.Serializers;
+import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.DateTimeUtil;
@@ -91,250 +91,250 @@ import nom.tam.fits.FitsException;
  */
 abstract public class PerspectiveImage extends Image implements PropertyChangeListener, BackPlanesPDS4XML, BackplanesLabel
 {
-    public static final float PDS_NA = -ImageDataUtil.FILL_CUTOFF;
-    public static final String FRUSTUM1 = "FRUSTUM1";
-    public static final String FRUSTUM2 = "FRUSTUM2";
-    public static final String FRUSTUM3 = "FRUSTUM3";
-    public static final String FRUSTUM4 = "FRUSTUM4";
-    public static final String BORESIGHT_DIRECTION = "BORESIGHT_DIRECTION";
-    public static final String UP_DIRECTION = "UP_DIRECTION";
-    public static final String NUMBER_EXPOSURES = "NUMBER_EXPOSURES";
-    public static final String START_TIME = "START_TIME";
-    public static final String STOP_TIME = "STOP_TIME";
-    public static final String SPACECRAFT_POSITION = "SPACECRAFT_POSITION";
-    public static final String SUN_POSITION_LT = "SUN_POSITION_LT";
-    public static final String TARGET_PIXEL_COORD = "TARGET_PIXEL_COORD";
-    public static final String TARGET_ROTATION = "TARGET_ROTATION";
-    public static final String TARGET_ZOOM_FACTOR = "TARGET_ZOOM_FACTOR";
-    public static final String APPLY_ADJUSTMENTS = "APPLY_ADJUSTMENTS";
+  public static final float PDS_NA = -ImageDataUtil.FILL_CUTOFF;
+  public static final String FRUSTUM1 = "FRUSTUM1";
+  public static final String FRUSTUM2 = "FRUSTUM2";
+  public static final String FRUSTUM3 = "FRUSTUM3";
+  public static final String FRUSTUM4 = "FRUSTUM4";
+  public static final String BORESIGHT_DIRECTION = "BORESIGHT_DIRECTION";
+  public static final String UP_DIRECTION = "UP_DIRECTION";
+  public static final String NUMBER_EXPOSURES = "NUMBER_EXPOSURES";
+  public static final String START_TIME = "START_TIME";
+  public static final String STOP_TIME = "STOP_TIME";
+  public static final String SPACECRAFT_POSITION = "SPACECRAFT_POSITION";
+  public static final String SUN_POSITION_LT = "SUN_POSITION_LT";
+  public static final String TARGET_PIXEL_COORD = "TARGET_PIXEL_COORD";
+  public static final String TARGET_ROTATION = "TARGET_ROTATION";
+  public static final String TARGET_ZOOM_FACTOR = "TARGET_ZOOM_FACTOR";
+  public static final String APPLY_ADJUSTMENTS = "APPLY_ADJUSTMENTS";
 
-    public static final String SUMFILENAMES = "SumfileNames";
-    public static final String INFOFILENAMES = "InfofileNames";
+  public static final String SUMFILENAMES = "SumfileNames";
+  public static final String INFOFILENAMES = "InfofileNames";
 
-    public static final double[] bodyOrigin = { 0.0, 0.0, 0.0 };
+  public static final double[] bodyOrigin = { 0.0, 0.0, 0.0 };
 
-    private SmallBodyModel smallBodyModel;
-    public SmallBodyModel getSmallBodyModel() { return smallBodyModel; }
+  private SmallBodyModel smallBodyModel;
+  public SmallBodyModel getSmallBodyModel() { return smallBodyModel; }
 
-    private ModelManager modelManager;
-    protected ModelManager getModelManager() { return modelManager; }
+  private ModelManager modelManager;
+  protected ModelManager getModelManager() { return modelManager; }
 
-    private vtkImageData rawImage;
-    private vtkImageData displayedImage;
-    private int currentSlice = 0;
+  private vtkImageData rawImage;
+  private vtkImageData displayedImage;
+  private int currentSlice = 0;
 
-    private double rotation = 0.0;
-    public double getRotation() { return rotation; }
+  private double rotation = 0.0;
+  public double getRotation() { return rotation; }
 
-    private String flip = "None";
-    public String getFlip() { return flip; }
+  private String flip = "None";
+  public String getFlip() { return flip; }
 
-    private boolean useDefaultFootprint = true;
-    private vtkPolyData[] footprint = new vtkPolyData[1];
-    private boolean[] footprintGenerated = new boolean[1];
-    private final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
+  private boolean useDefaultFootprint = true;
+  private vtkPolyData[] footprint = new vtkPolyData[1];
+  private boolean[] footprintGenerated = new boolean[1];
+  private final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
 
-    private vtkActor footprintActor;
-    private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
+  private vtkActor footprintActor;
+  private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
 
-    vtkPolyData frustumPolyData;
-    private vtkActor frustumActor;
+  vtkPolyData frustumPolyData;
+  private vtkActor frustumActor;
 
-    private vtkPolyDataNormals normalsFilter;
+  private vtkPolyDataNormals normalsFilter;
 
-    private vtkFloatArray textureCoords;
+  private vtkFloatArray textureCoords;
 
-    private boolean normalsGenerated = false;
+  private boolean normalsGenerated = false;
 
-    private double minIncidence = Double.MAX_VALUE;
-    private double maxIncidence = -Double.MAX_VALUE;
-    private double minEmission = Double.MAX_VALUE;
-    private double maxEmission = -Double.MAX_VALUE;
-    private double minPhase = Double.MAX_VALUE;
-    private double maxPhase = -Double.MAX_VALUE;
-    private double minHorizontalPixelScale = Double.MAX_VALUE;
-    private double maxHorizontalPixelScale = -Double.MAX_VALUE;
-    private double meanHorizontalPixelScale = 0.0;
-    private double minVerticalPixelScale = Double.MAX_VALUE;
-    private double maxVerticalPixelScale = -Double.MAX_VALUE;
-    private double meanVerticalPixelScale = 0.0;
+  private double minIncidence = Double.MAX_VALUE;
+  private double maxIncidence = -Double.MAX_VALUE;
+  private double minEmission = Double.MAX_VALUE;
+  private double maxEmission = -Double.MAX_VALUE;
+  private double minPhase = Double.MAX_VALUE;
+  private double maxPhase = -Double.MAX_VALUE;
+  private double minHorizontalPixelScale = Double.MAX_VALUE;
+  private double maxHorizontalPixelScale = -Double.MAX_VALUE;
+  private double meanHorizontalPixelScale = 0.0;
+  private double minVerticalPixelScale = Double.MAX_VALUE;
+  private double maxVerticalPixelScale = -Double.MAX_VALUE;
+  private double meanVerticalPixelScale = 0.0;
 
-    private float[] minValue = new float[1];
-    private float[] maxValue = new float[1];
+  private float[] minValue = new float[1];
+  private float[] maxValue = new float[1];
 
-    private int[] currentMask = new int[4];
+  private int[] currentMask = new int[4];
 
-    private IntensityRange[] displayedRange = new IntensityRange[1];
-    private double imageOpacity = 1.0;
+  private IntensityRange[] displayedRange = new IntensityRange[1];
+  private double imageOpacity = 1.0;
 
-    private double[][] spacecraftPositionOriginal = new double[1][3];
-    private double[][] frustum1Original = new double[1][3];
-    private double[][] frustum2Original = new double[1][3];
-    private double[][] frustum3Original = new double[1][3];
-    private double[][] frustum4Original = new double[1][3];
-    private double[][] boresightDirectionOriginal = new double[1][3];
-    private double[][] upVectorOriginal = new double[1][3];
-    private double[][] sunPositionOriginal = new double[1][3];
+  private double[][] spacecraftPositionOriginal = new double[1][3];
+  private double[][] frustum1Original = new double[1][3];
+  private double[][] frustum2Original = new double[1][3];
+  private double[][] frustum3Original = new double[1][3];
+  private double[][] frustum4Original = new double[1][3];
+  private double[][] boresightDirectionOriginal = new double[1][3];
+  private double[][] upVectorOriginal = new double[1][3];
+  private double[][] sunPositionOriginal = new double[1][3];
 
-    protected double[][] spacecraftPositionAdjusted = new double[1][3];
-    protected double[][] frustum1Adjusted = new double[1][3];
-    protected double[][] frustum2Adjusted = new double[1][3];
-    protected double[][] frustum3Adjusted = new double[1][3];
-    protected double[][] frustum4Adjusted = new double[1][3];
-    private double[][] boresightDirectionAdjusted = new double[1][3];
-    private double[][] upVectorAdjusted = new double[1][3];
-    private double[][] sunPositionAdjusted = new double[1][3];
+  protected double[][] spacecraftPositionAdjusted = new double[1][3];
+  protected double[][] frustum1Adjusted = new double[1][3];
+  protected double[][] frustum2Adjusted = new double[1][3];
+  protected double[][] frustum3Adjusted = new double[1][3];
+  protected double[][] frustum4Adjusted = new double[1][3];
+  private double[][] boresightDirectionAdjusted = new double[1][3];
+  private double[][] upVectorAdjusted = new double[1][3];
+  private double[][] sunPositionAdjusted = new double[1][3];
 
-    // location in pixel coordinates of the target origin for the adjusted frustum
-    private double[] targetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
+  // location in pixel coordinates of the target origin for the adjusted frustum
+  private double[] targetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
 
-    // offset in world coordinates of the adjusted frustum from the loaded frustum
-    //    private double[] offsetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
+  // offset in world coordinates of the adjusted frustum from the loaded frustum
+  //    private double[] offsetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
 
-    private double[] zoomFactor = { 1.0 };
+  private double[] zoomFactor = { 1.0 };
 
-    private double[] rotationOffset = { 0.0 };
+  private double[] rotationOffset = { 0.0 };
 
-    // apply all frame adjustments if true
-    private boolean[] applyFrameAdjustments = { true };
+  // apply all frame adjustments if true
+  private boolean[] applyFrameAdjustments = { true };
 
-    private Frustum[] frusta = new Frustum[1];
+  private Frustum[] frusta = new Frustum[1];
 
-    private boolean showFrustum = false;
-    private boolean simulateLighting = false;
+  private boolean showFrustum = false;
+  private boolean simulateLighting = false;
 
-    private String startTime = "";
-    private String stopTime = "";
+  private String startTime = "";
+  private String stopTime = "";
 
-    private vtkImageCanvasSource2D maskSource;
+  private vtkImageCanvasSource2D maskSource;
 
-    private int imageWidth;
-    private int imageHeight;
-    protected int imageDepth = 1;
-    private int numBands = BackplaneInfo.values().length;
+  private int imageWidth;
+  private int imageHeight;
+  protected int imageDepth = 1;
+  private int numBands = BackplaneInfo.values().length;
 
-    public int getNumBackplanes()
-    {
-        return numBands;
-    }
+  public int getNumBackplanes()
+  {
+      return numBands;
+  }
 
-    private String pngFileFullPath; // The actual path of the PNG image stored on the local disk (after downloading from the server)
-    private String fitFileFullPath; // The actual path of the FITS image stored on the local disk (after downloading from the server)
-    private String enviFileFullPath; // The actual path of the ENVI binary stored on the local disk (after downloading from the server)
-    private String labelFileFullPath;
-    private String infoFileFullPath;
-    private String sumFileFullPath;
-    protected int fitFileImageExtension = 0; // Default is to use the primary FITS image.
+  private String pngFileFullPath; // The actual path of the PNG image stored on the local disk (after downloading from the server)
+  private String fitFileFullPath; // The actual path of the FITS image stored on the local disk (after downloading from the server)
+  private String enviFileFullPath; // The actual path of the ENVI binary stored on the local disk (after downloading from the server)
+  private String labelFileFullPath;
+  private String infoFileFullPath;
+  private String sumFileFullPath;
+  protected int fitFileImageExtension = 0; // Default is to use the primary FITS image.
 
-    protected vtkTexture imageTexture;
+  protected vtkTexture imageTexture;
 
-    // If true, then the footprint is generated by intersecting a frustum with the asteroid.
-    // This setting is used when generating the files on the server.
-    // If false, then the footprint is downloaded from the server. This setting is used by the GUI.
-    private static boolean generateFootprint = true;
+  // If true, then the footprint is generated by intersecting a frustum with the asteroid.
+  // This setting is used when generating the files on the server.
+  // If false, then the footprint is downloaded from the server. This setting is used by the GUI.
+  private static boolean generateFootprint = true;
 
-    private boolean loadPointingOnly;
-
-
-    protected double[] maxFrustumDepth;
-    protected double[] minFrustumDepth;
-
-    protected boolean transposeFITSData = true;
+  private boolean loadPointingOnly;
 
 
-    /*
-     * For off-limb images
-     */
-    vtkPolyData offLimbPlane=null;
-    private vtkActor offLimbActor;
-    private vtkTexture offLimbTexture;
-    vtkPolyData offLimbBoundary=null;
-    private vtkActor offLimbBoundaryActor;
-    double offLimbFootprintDepth;
-    private boolean offLimbVisibility;
-    private boolean offLimbBoundaryVisibility;
-    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
+  public double[] maxFrustumDepth;
+  public double[] minFrustumDepth;
 
-    public PerspectiveImage(ImageKey key,
-            SmallBodyModel smallBodyModel,
-            boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
-    {
-        this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
-        setOffLimbFootprintVisibility(true);
-        offLimbBoundaryVisibility = true;
-    }
+  protected boolean transposeFITSData = true;
 
 
-    public PerspectiveImage(ImageKey key,
-            SmallBodyModel smallBodyModel,
-            boolean loadPointingOnly) throws FitsException, IOException
-    {
-        this(key, smallBodyModel, null, loadPointingOnly);
-    }
+  /*
+   * For off-limb images
+   */
+  vtkPolyData offLimbPlane=null;
+  private vtkActor offLimbActor;
+  private vtkTexture offLimbTexture;
+  vtkPolyData offLimbBoundary=null;
+  private vtkActor offLimbBoundaryActor;
+  double offLimbFootprintDepth;
+  private boolean offLimbVisibility;
+  private boolean offLimbBoundaryVisibility;
+  OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
 
-    public PerspectiveImage(ImageKey key,
-            SmallBodyModel smallBodyModel,
-            boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
-    {
-        this(key, smallBodyModel, null, loadPointingOnly, currentSlice);
-    }
+  public PerspectiveImage(ImageKeyInterface key,
+          SmallBodyModel smallBodyModel,
+          boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
+  {
+      this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
+      setOffLimbFootprintVisibility(true);
+      offLimbBoundaryVisibility = true;
+  }
 
 
-    /**
-     * If loadPointingOnly is true then only pointing information about this
-     * image will be downloaded/loaded. The image itself will not be loaded.
-     * Used by ImageBoundary to get pointing info.
-     */
-    public PerspectiveImage(ImageKey key,
-            SmallBodyModel smallBodyModel,
-            ModelManager modelManager,
-            boolean loadPointingOnly) throws FitsException, IOException
-    {
-        this(key, smallBodyModel, modelManager, loadPointingOnly, 0);
-    }
+  public PerspectiveImage(ImageKeyInterface key,
+          SmallBodyModel smallBodyModel,
+          boolean loadPointingOnly) throws FitsException, IOException
+  {
+      this(key, smallBodyModel, null, loadPointingOnly);
+  }
 
-    /**
-     * If loadPointingOnly is true then only pointing information about this
-     * image will be downloaded/loaded. The image itself will not be loaded.
-     * Used by ImageBoundary to get pointing info.
-     */
-    public PerspectiveImage(ImageKey key,
-            SmallBodyModel smallBodyModel,
-            ModelManager modelManager,
-            boolean loadPointingOnly, int currentSlice, boolean transposeData) throws FitsException, IOException
-    {
-        super(key);
-        this.currentSlice = currentSlice;
-        this.smallBodyModel = smallBodyModel;
-        this.modelManager = modelManager;
-        this.loadPointingOnly = loadPointingOnly;
-        this.rotation = key.instrument != null ? key.instrument.rotation : 0.0;
-        this.flip = key.instrument != null ? key.instrument.flip : "None";
-        this.transposeFITSData = transposeData;
+  public PerspectiveImage(ImageKeyInterface key,
+          SmallBodyModel smallBodyModel,
+          boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
+  {
+      this(key, smallBodyModel, null, loadPointingOnly, currentSlice);
+  }
 
-        initialize();
-    }
 
-    /**
-     * If loadPointingOnly is true then only pointing information about this
-     * image will be downloaded/loaded. The image itself will not be loaded.
-     * Used by ImageBoundary to get pointing info.
-     */
-    public PerspectiveImage(ImageKey key,
-            SmallBodyModel smallBodyModel,
-            ModelManager modelManager,
-            boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
-    {
-        super(key);
-        this.currentSlice = currentSlice;
-        this.smallBodyModel = smallBodyModel;
-        this.modelManager = modelManager;
-        this.loadPointingOnly = loadPointingOnly;
-        this.rotation = key.instrument != null ? key.instrument.rotation : 0.0;
-        this.flip = key.instrument != null ? key.instrument.flip : "None";
+  /**
+   * If loadPointingOnly is true then only pointing information about this
+   * image will be downloaded/loaded. The image itself will not be loaded.
+   * Used by ImageBoundary to get pointing info.
+   */
+  public PerspectiveImage(ImageKeyInterface key,
+          SmallBodyModel smallBodyModel,
+          ModelManager modelManager,
+          boolean loadPointingOnly) throws FitsException, IOException
+  {
+      this(key, smallBodyModel, modelManager, loadPointingOnly, 0);
+  }
 
-        initialize();
-    }
+  /**
+   * If loadPointingOnly is true then only pointing information about this
+   * image will be downloaded/loaded. The image itself will not be loaded.
+   * Used by ImageBoundary to get pointing info.
+   */
+  public PerspectiveImage(ImageKeyInterface key,
+          SmallBodyModel smallBodyModel,
+          ModelManager modelManager,
+          boolean loadPointingOnly, int currentSlice, boolean transposeData) throws FitsException, IOException
+  {
+      super(key);
+      this.currentSlice = currentSlice;
+      this.smallBodyModel = smallBodyModel;
+      this.modelManager = modelManager;
+      this.loadPointingOnly = loadPointingOnly;
+      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
+      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+      this.transposeFITSData = transposeData;
+
+      initialize();
+  }
+
+  /**
+   * If loadPointingOnly is true then only pointing information about this
+   * image will be downloaded/loaded. The image itself will not be loaded.
+   * Used by ImageBoundary to get pointing info.
+   */
+  public PerspectiveImage(ImageKeyInterface key,
+          SmallBodyModel smallBodyModel,
+          ModelManager modelManager,
+          boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
+  {
+      super(key);
+      this.currentSlice = currentSlice;
+      this.smallBodyModel = smallBodyModel;
+      this.modelManager = modelManager;
+      this.loadPointingOnly = loadPointingOnly;
+      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
+      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+
+      initialize();
+  }
 
     protected void initialize() throws FitsException, IOException
     {
@@ -342,14 +342,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         shiftedFootprint[0] = new vtkPolyData();
         displayedRange[0] = new IntensityRange(1,0);
 
-        if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+        if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
             loadImageInfoFromConfigFile();
         }
 
         if (!loadPointingOnly)
         {
-            if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+            if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
             {
                 fitFileFullPath = initLocalFitFileFullPath();
                 pngFileFullPath = initLocalPngFileFullPath();
@@ -363,16 +363,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             }
         }
 
-        if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+        if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
             infoFileFullPath = initLocalInfoFileFullPath();
             sumFileFullPath = initLocalSumfileFullPath();
         }
-        else if (key.source.equals(ImageSource.SPICE) || key.source.equals(ImageSource.CORRECTED_SPICE))
+        else if (key.getSource().equals(ImageSource.SPICE) || key.getSource().equals(ImageSource.CORRECTED_SPICE))
         {
             infoFileFullPath = initializeInfoFileFullPath();
         }
-        else if (key.source.equals(ImageSource.LABEL))
+        else if (key.getSource().equals(ImageSource.LABEL))
             setLabelFileFullPath(initializeLabelFileFullPath());
         else
             sumFileFullPath = initializeSumfileFullPath();
@@ -1411,7 +1411,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalPngFileFullPath()
     {
-        String name = getKey().name.endsWith(".png") ? getKey().name : null;
+        String name = getKey().getName().endsWith(".png") ? getKey().getName() : null;
         if (name == null) return name;
         if (name.startsWith("file://"))
         	return name.substring(name.indexOf("file://") + 7);
@@ -1421,7 +1421,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalFitFileFullPath()
     {
-        String keyName = getKey().name;
+        String keyName = getKey().getName();
         if(keyName.endsWith(".fit") || keyName.endsWith(".fits") ||
                 keyName.endsWith(".FIT") || keyName.endsWith(".FITS"))
         {
@@ -1436,7 +1436,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalEnviFileFullPath()
     {
-        return VtkENVIReader.isENVIFilename(getKey().name) ? getKey().name : null;
+        return VtkENVIReader.isENVIFilename(getKey().getName()) ? getKey().getName() : null;
     }
 
     protected String initializeLabelFileFullPath() { return initLocalLabelFileFullPath(); }
@@ -1448,27 +1448,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return null;
     }
 
-    private Vector<CustomImageKeyInterface> getCustomImageMetadata() throws IOException
+    private List<CustomImageKeyInterface> getCustomImageMetadata() throws IOException
     {
-        Vector<CustomImageKeyInterface> customImages = new Vector<CustomImageKeyInterface>();
-        final Key<Metadata[]> customImagesKey = Key.of("customImages");
+    	final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
         String file;
-        if (getKey().name.startsWith("file://"))
-            file = getKey().name.substring(7, getKey().name.lastIndexOf("/"));
+        if (getKey().getName().startsWith("file://"))
+            file = getKey().getName().substring(7, getKey().getName().lastIndexOf("/"));
         else
-        	file = new File(getKey().name).getParent();
-//            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
+        	file = new File(getKey().getImageFilename()).getParent();
         String configFilename = file + File.separator + "config.txt";
         FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
-        Metadata[] metadataArray = read(customImagesKey, metadata);
-        for (Metadata meta : metadataArray)
-        {
-//            ImageInfo info = new ImageInfo();
-//            info.retrieve(meta);
-            CustomImageKeyInterface info = CustomImageKeyInterface.retrieve(meta);
-            customImages.add(info);
-        }
-        return customImages;
+        return metadata.get(customImagesKey);
+
     }
 
     protected <T> T read(Key<T> key, Metadata configMetadata)
@@ -1481,60 +1472,49 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalInfoFileFullPath()
     {
-        Vector<CustomImageKeyInterface> images;
-        try
-        {
-            images = getCustomImageMetadata();
-            for (ImageKeyInterface info : images)
-            {
-                String filename = new File(getKey().name).getName();
-                if (filename.equals(info.getImageFilename()))
-                {
-                    String string = new File(getKey().name).getParent() + File.separator + info.infofilename;
-                    if (getKey().name.startsWith("file:/"))
-                        return string.substring(5);
-                    else
-                        return string;
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    	 List<CustomImageKeyInterface> images;
+         try
+         {
+             images = getCustomImageMetadata();
+             for (ImageKeyInterface info : images)
+             {
+                 String filename = new File(getKey().getName()).getName();
+                 if (filename.equals(info.getImageFilename()))
+                 {
+                 	if (info.getFileType() == FileType.SUM) return null;
+                     String string = new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
+                     if (getKey().getName().startsWith("file:/"))
+                         return string.substring(5);
+                     else
+                         return string;
+                 }
+             }
+         }
+         catch (IOException e)
+         {
+             // TODO Auto-generated catch block
+             e.printStackTrace();
+         }
 
-        return null;
-
-//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-//        MapUtil configMap = new MapUtil(configFilename);
-//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-//        for (int i=0; i<imageFilenames.length; ++i)
-//        {
-//            String filename = new File(getKey().name).getName();
-//            if (filename.equals(imageFilenames[i]))
-//            {
-//                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(INFOFILENAMES)[i];
-//            }
-//        }
-//
-//        return null;
+         return null;
     }
 
     protected String initLocalSumfileFullPath()
     {
 
-        Vector<CustomImageKeyInterface> images;
+    	List<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
             for (CustomImageKeyInterface info : images)
             {
-                String filename = new File(getKey().name).getName();
+                String filename = new File(getKey().getName()).getName();
                 if (filename.equals(info.getImageFilename()))
                 {
-                    String string =  new File(getKey().name).getParent() + File.separator + info.sumfilename;
-                    if (getKey().name.startsWith("file:/"))
+                	if (info.getFileType() == FileType.INFO) return null;
+
+                    String string =  new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
+                    if (getKey().getName().startsWith("file:/"))
                         return string.substring(5);
                     else
                         return string;
@@ -1548,35 +1528,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         return null;
-//        // TODO this is bad in that we read from the config file 3 times in this class
-//
-//        // Look in the config file and figure out which index this image
-//        // corresponds to. The config file is located in the same folder
-//        // as the image file
-//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-//        MapUtil configMap = new MapUtil(configFilename);
-//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-//        for (int i=0; i<imageFilenames.length; ++i)
-//        {
-//            String filename = new File(getKey().name).getName();
-//            if (filename.equals(imageFilenames[i]))
-//            {
-//                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(SUMFILENAMES)[i];
-//            }
-//        }
-//
-//        return null;
     }
 
     private void loadImageInfoFromConfigFile()
     {
-        Vector<CustomImageKeyInterface> images;
+        List<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
             for (CustomImageKeyInterface info : images)
             {
-                String filename = new File(getKey().name).getName();
+                String filename = new File(getKey().getName()).getName();
                 if (filename.equals(info.getImageFilename()))
                 {
                     imageName = info.getImageFilename();
@@ -1886,10 +1848,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         String name = getPngFileFullPath();
         String imageFile = null;
-        if (getKey().source == ImageSource.IMAGE_MAP)
+        if (getKey().getSource() == ImageSource.IMAGE_MAP)
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
-            imageFile = getKey().name;
+            imageFile = getKey().getName();
         if (imageFile.startsWith("file://"))
         	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
         if (rawImage == null)
@@ -2111,10 +2073,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         String name = getEnviFileFullPath();
 
         String imageFile = null;
-        if (getKey().source == ImageSource.IMAGE_MAP)
+        if (getKey().getSource() == ImageSource.IMAGE_MAP)
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
-            imageFile = getKey().name;
+            imageFile = getKey().getName();
 
         if (rawImage == null)
             rawImage = new vtkImageData();
@@ -2199,7 +2161,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float)scalarRange[0];
             maxValue[0] = (float)scalarRange[1];
-            System.out.println("PerspectiveImage: loadImage: min max is " + minValue[0] + " max value " + maxValue[0] );
 //            setDisplayedImageRange(new IntensityRange(0, 255));
             setDisplayedImageRange(null);
         }
@@ -2239,10 +2200,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             String name = getEnviFileFullPath();
 
             String imageFile = null;
-            if (getKey().source == ImageSource.IMAGE_MAP)
+            if (getKey().getSource() == ImageSource.IMAGE_MAP)
                 imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
             else
-                imageFile = getKey().name;
+                imageFile = getKey().getName();
 
             if (imageFile.startsWith("file://"))
             	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
@@ -2260,7 +2221,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void loadPointing() throws FitsException, IOException
     {
-        if (key.source.equals(ImageSource.SPICE) || key.source.equals(ImageSource.CORRECTED_SPICE))
+        if (key.getSource().equals(ImageSource.SPICE) || key.getSource().equals(ImageSource.CORRECTED_SPICE))
         {
             try
             {
@@ -2272,7 +2233,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 ex.printStackTrace();
             }
         }
-        else if (key.source.equals(ImageSource.LABEL))
+        else if (key.getSource().equals(ImageSource.LABEL))
         {
             try
             {
@@ -2283,7 +2244,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 System.out.println("LABEL file not available");
             }
         }
-        else if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+        else if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
             boolean loaded = false;
             try {
@@ -3483,10 +3444,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             String footprintFilename = null;
             File file = null;
 
-            if (key.source == ImageSource.SPICE || key.source == ImageSource.CORRECTED_SPICE)
-                footprintFilename = key.name + "_FOOTPRINT_RES" + resolutionLevel + "_PDS.VTP";
+            if (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.CORRECTED_SPICE)
+                footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_PDS.VTP";
             else
-                footprintFilename = key.name + "_FOOTPRINT_RES" + resolutionLevel + "_GASKELL.VTP";
+                footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_GASKELL.VTP";
 
             file = FileCache.getFileFromServer(footprintFilename);
 

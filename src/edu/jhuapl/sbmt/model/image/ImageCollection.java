@@ -128,7 +128,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     {
         HashMap<Image, List<vtkProp>> map = (HashMap<Image, List<vtkProp>>)imageToActorsMap.clone();
         for (Image image : map.keySet())
-            if (image.getKey().source == source)
+            if (image.getKey().getSource() == source)
                 removeImage(image.getKey());
     }
 
