@@ -4353,7 +4353,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void firePropertyChange()
     {
     	// with significant property changes, the offlimb plane needs to be recalculated
-    	loadOffLimbPlane();
+    	calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
