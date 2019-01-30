@@ -1121,7 +1121,7 @@ public class LidarSearchDataCollection extends AbstractModel
         if (radialOffset != 0.0)
         {
             LatLon lla = MathUtil.reclat(pt);
-            lla.rad += radialOffset;
+            lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
             pt = MathUtil.latrec(lla);
         }
 
@@ -1142,7 +1142,7 @@ public class LidarSearchDataCollection extends AbstractModel
         if (radialOffset != 0.0)
         {
             LatLon lla = MathUtil.reclat(lidarPoint);
-            lla.rad += radialOffset;
+            lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
             double[] offsetLidarPoint = MathUtil.latrec(lla);
 
             scpos[0] += (offsetLidarPoint[0]-lidarPoint[0]);

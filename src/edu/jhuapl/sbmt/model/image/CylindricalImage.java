@@ -620,12 +620,15 @@ public class CylindricalImage extends Image
 
             LatLon ll = MathUtil.reclat(pt);
 
-            if (ll.lon < 0.0)
-               ll.lon += (2.0 * Math.PI);
-            if (ll.lon >= 2.0 * Math.PI)
-                ll.lon = 0.0;
+    		double latitude = ll.lat;
+    		double longitude = ll.lon;
 
-            double dist = getDistanceBetweenLongitudes(lllon, ll.lon);
+            if (longitude < 0.0)
+               longitude += (2.0 * Math.PI);
+            if (longitude >= 2.0 * Math.PI)
+                longitude = 0.0;
+
+            double dist = getDistanceBetweenLongitudes(lllon, longitude);
             if (isOnLeftSide)
             {
                 if (Math.abs(2.0*Math.PI - dist) < 1.0e-2)
@@ -638,7 +641,7 @@ public class CylindricalImage extends Image
             }
 
             double u = dist / xsize;
-            double v = (ll.lat - lllat) / ysize;
+            double v = (latitude - lllat) / ysize;
 
             if (u < 0.0) u = 0.0;
             else if (u > 1.0) u = 1.0;
