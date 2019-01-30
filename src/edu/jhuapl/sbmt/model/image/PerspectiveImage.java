@@ -2626,9 +2626,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             if (offLimbTexture==null )
             {
                 offLimbTexture=new vtkTexture();
-                offLimbTexture.SetInputData(image);
-                offLimbTexture.Modified();
             }
+            offLimbTexture.SetInputData(image);
+            offLimbTexture.Modified();
+
         }
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
@@ -5045,7 +5046,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public vtkTexture getOffLimbTexture()
     {
-        return offLimbTexture;
+    	if (offLimbTexture==null )
+    	{ // if offlimbtexture is null, initialize it.
+    		vtkImageData image=new vtkImageData();
+    		image.DeepCopy(getDisplayedImage());
+    		offLimbTexture=new vtkTexture();
+    		offLimbTexture.SetInputData(image);
+    		offLimbTexture.Modified();
+    		return offLimbTexture;
+    	}
+    	return offLimbTexture;
     }
 
     public void setOffLimbTexture(vtkTexture offLimbTexture)
