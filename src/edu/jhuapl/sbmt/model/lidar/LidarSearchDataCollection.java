@@ -787,6 +787,17 @@ public class LidarSearchDataCollection extends AbstractModel
     }
 
     /**
+     * Returns the LidarPoint corresponding to the specified cellId
+     *
+     * @param aCellId
+     */
+     public LidarPoint getLidarPointFromCellId(int aCellId)
+     {
+         int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
+         return originalPoints.get(tmpIdx);
+     }
+
+    /**
      * Return the track with the specified trackId
      *
      * @param trackId
@@ -797,12 +808,17 @@ public class LidarSearchDataCollection extends AbstractModel
         return tracks.get(trackId);
     }
 
-    public int getTrackIdFromPointId(int pointId)
+    /**
+     * Returns the track ID corresponding to the specified cellId.
+     *
+     * @param aCellId
+     */
+    public int getTrackIdFromCellId(int aCellId)
     {
-        pointId = displayedPointToOriginalPointMap.get(pointId);
+        int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
         for (int i=0; i<tracks.size(); ++i)
         {
-            if (getTrack(i).containsId(pointId))
+            if (getTrack(i).containsId(tmpIdx))
                 return i;
         }
 
@@ -1172,7 +1188,6 @@ public class LidarSearchDataCollection extends AbstractModel
         idList.SetNumberOfIds(1);
 
         displayedPointToOriginalPointMap.clear();
-        int count = 0;
 
         int numTracks = getNumberOfTracks();
 
@@ -1209,7 +1224,6 @@ public class LidarSearchDataCollection extends AbstractModel
                     intensityList.add(intensityReceived);
 
                     displayedPointToOriginalPointMap.add(i);
-                    ++count;
                 }
 
                 // Assign colors to each point in that track
@@ -1554,11 +1568,6 @@ public class LidarSearchDataCollection extends AbstractModel
         selectedPointPolydata.Modified();
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
-
-    public int getTrackIdFromSelectedPoint()
-    {
-        return getTrackIdFromPointId(getDisplayPointIdFromOriginalPointId(selectedPoint));
     }
 
     public void deselectSelectedPoint()
