@@ -7,6 +7,8 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 
+import org.apache.commons.io.FilenameUtils;
+
 import com.google.common.base.Preconditions;
 
 import vtk.vtkPolyData;
@@ -18,6 +20,7 @@ import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 
 
 public abstract class Image extends AbstractModel implements PropertyChangeListener
@@ -141,10 +144,21 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         @Override
         public boolean equals(Object obj)
         {
-            String cleanedUpName = name.replace("file://", "");
-            String cleanedUpOtherName = ((ImageKey)obj).name.replace("file://", "");
 
-            return cleanedUpName.equals(cleanedUpOtherName) && source.equals(((ImageKey)obj).source);
+//            String cleanedUpName2 = SafeURLPaths.instance().getString(name);
+
+//            String cleanedUpOtherName2 = SafeURLPaths.instance().getString(((ImageKey)obj).name);
+//            return cleanedUpName.equals(cleanedUpOtherName2) && source.equals(((ImageKey)obj).source);
+        	if (((ImageKey)obj).name.startsWith("C:") && (name.startsWith("C:")))
+        		return name.equals(((ImageKey)obj).name) && source.equals(((ImageKey)obj).source);
+        	else if (((ImageKey)obj).name.startsWith("C:"))
+        		return name.equals(SafeURLPaths.instance().getUrl(((ImageKey)obj).name)) && source.equals(((ImageKey)obj).source);
+        	else
+        	{
+        		String cleanedUpName = name.replace("file://", "");
+        		String cleanedUpOtherName = ((ImageKey)obj).name.replace("file://", "");
+        		return FilenameUtils.getBaseName(cleanedUpName).equals(FilenameUtils.getBaseName(cleanedUpOtherName)) && source.equals(((ImageKey)obj).source);
+        	}
 
 //            return name.equals(((ImageKey)obj).name)
 //                    && source.equals(((ImageKey)obj).source)

@@ -379,7 +379,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         imageDepth = loadNumSlices();
         if (imageDepth > 1)
             initSpacecraftStateVariables();
-
+        if ((sumFileFullPath != null) && sumFileFullPath.endsWith("null")) sumFileFullPath = null;
+        if ((infoFileFullPath != null) && infoFileFullPath.endsWith("null")) infoFileFullPath = null;
         loadPointing();
 
         if (!loadPointingOnly)
@@ -1455,7 +1456,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (getKey().name.startsWith("file://"))
             file = getKey().name.substring(7, getKey().name.lastIndexOf("/"));
         else
-            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
+        	file = new File(getKey().name).getParent();
+//            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
         String configFilename = file + File.separator + "config.txt";
         FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
         Metadata[] metadataArray = read(customImagesKey, metadata);
@@ -2117,6 +2119,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             rawImage = new vtkImageData();
         if (imageFile.startsWith("file://"))
         	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        if (imageFile.startsWith("file:/"))
+        	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
         System.out.println("PerspectiveImage: loadEnviFile: image file is " + imageFile);
         VtkENVIReader reader = new VtkENVIReader();
         reader.SetFileName(imageFile);
@@ -2190,10 +2194,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
         else if (getPngFileFullPath() != null)
         {
+
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float)scalarRange[0];
             maxValue[0] = (float)scalarRange[1];
-            //            setDisplayedImageRange(new IntensityRange(0, 255));
+            System.out.println("PerspectiveImage: loadImage: min max is " + minValue[0] + " max value " + maxValue[0] );
+//            setDisplayedImageRange(new IntensityRange(0, 255));
             setDisplayedImageRange(null);
         }
         else if (getEnviFileFullPath() != null)
@@ -2239,6 +2245,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
             if (imageFile.startsWith("file://"))
             	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             imageDepth = reader.getNumBands();
@@ -2413,7 +2421,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         // for offlimb
-        if (offLimbActor==null) {
+        if (offLimbActor==null && offLimbTexture != null) {
             loadOffLimbPlane();
             if (footprintActors.contains(offLimbActor))
                 footprintActors.remove(offLimbActor);
@@ -2530,6 +2538,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setDisplayedImageRange(IntensityRange range)
     {
+        if (rawImage.GetNumberOfScalarComponents() > 1)
+        {
+            displayedImage = rawImage;
+            return;
+        }
+
         if (range == null || displayedRange[currentSlice].min != range.min || displayedRange[currentSlice].max != range.max)
         {
             //            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
