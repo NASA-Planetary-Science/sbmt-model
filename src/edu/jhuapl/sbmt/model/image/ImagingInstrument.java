@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.image;
 
 import edu.jhuapl.sbmt.client.SpectralMode;
+import edu.jhuapl.sbmt.query.IQueryBase;
 import edu.jhuapl.sbmt.query.QueryBase;
 import edu.jhuapl.sbmt.query.database.GenericPhpQuery;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
@@ -11,7 +12,7 @@ import crucible.crust.metadata.api.MetadataManager;
 import crucible.crust.metadata.api.Version;
 import crucible.crust.metadata.impl.SettableMetadata;
 
-public class ImagingInstrument implements MetadataManager
+public class ImagingInstrument implements MetadataManager, IImagingInstrument
 {
     public SpectralMode spectralMode;
     public QueryBase searchQuery;
@@ -70,6 +71,21 @@ public class ImagingInstrument implements MetadataManager
     {
         return new ImagingInstrument(spectralMode, searchQuery.clone(), type, searchImageSources.clone(), instrumentName, rotation, flip);
     }
+
+    public ImageType getType()
+	{
+		return type;
+	}
+
+	public ImageSource[] getSearchImageSources()
+	{
+		return searchImageSources;
+	}
+
+	public SpectralMode getSpectralMode()
+	{
+		return spectralMode;
+	}
 
     Key<String> spectralModeKey = Key.of("spectralMode");
     Key<String> queryType = Key.of("queryType");
@@ -160,5 +176,27 @@ public class ImagingInstrument implements MetadataManager
             return value;
         return null;
     }
+
+	@Override
+	public String getFlip()
+	{
+		return flip;
+	}
+
+	@Override
+	public double getRotation()
+	{
+		return rotation;
+	}
+
+	public IQueryBase getSearchQuery()
+	{
+		return searchQuery;
+	}
+
+	public Instrument getInstrumentName()
+	{
+		return instrumentName;
+	}
 }
 

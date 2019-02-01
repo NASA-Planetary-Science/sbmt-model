@@ -24,26 +24,26 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
 
     private static final Map<String, ImmutableMap<String, String>> SUM_FILE_MAP = new HashMap<>();
 
-    protected BasicPerspectiveImage(ImageKey key, SmallBodyModel smallBodyModel,
+    protected BasicPerspectiveImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
     }
 
-    protected String getImageBaseName(ImageKey key)
+    protected String getImageBaseName(ImageKeyInterface key)
     {
         // By default, assume the base name is the key name field
         // with any extension stripped off.
-        return key.name.replaceFirst("\\.[^\\.]*$", "");
+        return key.getName().replaceFirst("\\.[^\\.]*$", "");
     }
 
-    protected String getImageFileName(ImageKey key)
+    protected String getImageFileName(ImageKeyInterface key)
     {
         // Image file name is based on the key name.
-        String imageFileName = key.name;
+        String imageFileName = key.getName();
 
         // If the proposed name does not include the extension, add .fits.
-        if (!key.name.matches("^.*\\.[^\\\\.]*$"))
+        if (!key.getName().matches("^.*\\.[^\\\\.]*$"))
         {
             imageFileName += ".fits";
         }
@@ -75,12 +75,12 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String result = null;
 
-        if (key.source == ImageSource.SPICE)
+        if (key.getSource() == ImageSource.SPICE)
         {
-            File keyFile = new File(key.name);
+            File keyFile = new File(key.getName());
             File imagerDirectory = getImagerDirectory(keyFile);
             String pointingFileName = keyFile.getName() + ".INFO";
             String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), "infofiles", pointingFileName);
@@ -93,10 +93,10 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath() throws IOException
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String result = null;
 
-        if (key.source == ImageSource.GASKELL)
+        if (key.getSource() == ImageSource.GASKELL)
         {
             File keyFile = new File(getImageFileName(key));
             String imagerDirectory = getImagerDirectory(keyFile).getPath();
@@ -124,7 +124,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
         return imagerDirectory;
     }
 
-    protected String getSumFileName(String imagerDirectory, ImageKey key) throws IOException, ParseException
+    protected String getSumFileName(String imagerDirectory, ImageKeyInterface key) throws IOException, ParseException
     {
         if (!SUM_FILE_MAP.containsKey(imagerDirectory))
         {

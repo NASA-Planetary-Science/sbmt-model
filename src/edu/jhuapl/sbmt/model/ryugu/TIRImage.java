@@ -8,6 +8,7 @@ import vtk.vtkImageData;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
@@ -21,7 +22,7 @@ public class TIRImage extends PerspectiveImage
     public static final int RESAMPLED_IMAGE_WIDTH = 344;
     public static final int RESAMPLED_IMAGE_HEIGHT = 260;
 
-    public TIRImage(ImageKey key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
+    public TIRImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly, false);
     }
@@ -35,14 +36,14 @@ public class TIRImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        return FileCache.getFileFromServer(getKey().name + ".fit").getAbsolutePath();
+        return FileCache.getFileFromServer(getKey().getName() + ".fit").getAbsolutePath();
     }
 
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent()
         + "/infofiles/" + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();

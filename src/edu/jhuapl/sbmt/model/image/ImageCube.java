@@ -28,10 +28,11 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
 
 import nom.tam.fits.FitsException;
 
-public class ImageCube extends PerspectiveImage implements PropertyChangeListener
+public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage implements PropertyChangeListener
 {
 //    private SmallBodyModel smallBodyModel;
     private List<PerspectiveImage> images;
@@ -79,22 +80,22 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 
     public static enum Chromatism { POLY, MONO_RED, MONO_GREEN, MONO_BLUE };
 
-    public static class ImageCubeKey extends Image.ImageKey
+    public static class ImageCubeKey<T extends ImageKeyInterface> extends ImageKey
     {
-        public List<PerspectiveImage.ImageKey> imageKeys;
-        public PerspectiveImage.ImageKey firstImageKey;
+    	public List<T> imageKeys;
+        public ImageKeyInterface firstImageKey;
 
         public String labelFileFullPath;
         public String infoFileFullPath;
         public String sumFileFullPath;
         public int nimages;
 
-        public ImageCubeKey(List<ImageKey> imageKeys, ImageKey firstImageKey,
+        public ImageCubeKey(List<T> imageKeys, T firstImageKey,
                 String labelFileFullPath, String infoFileFullPath, String sumFileFullPath)
         {
-            super(firstImageKey.name + "-cube", firstImageKey.source, firstImageKey.fileType, firstImageKey.imageType, firstImageKey.instrument, firstImageKey.band, firstImageKey.slice, null);
+            super(firstImageKey.getName() + "-cube", firstImageKey.getSource(), firstImageKey.getFileType(), firstImageKey.getImageType(), firstImageKey.getInstrument(), firstImageKey.getBand(), firstImageKey.getSlice(), null);
 
-            this.imageKeys = new ArrayList<ImageKey>(imageKeys);
+            this.imageKeys = new ArrayList<T>(imageKeys);
             this.nimages = imageKeys.size();
             this.firstImageKey = firstImageKey;
             this.labelFileFullPath = labelFileFullPath;
@@ -110,12 +111,12 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         public boolean equals(Object obj)
         {
             ImageCubeKey objectCubeKey = (ImageCubeKey)obj;
-            List<ImageKey> objectKeys = objectCubeKey.imageKeys;
+            List<ImageKeyInterface> objectKeys = objectCubeKey.imageKeys;
 
             for (int i = 0; i < imageKeys.size(); i++)
             {
-                ImageKey thisKey = this.imageKeys.get(i);
-                ImageKey objectKey = objectKeys.get(i);
+                ImageKeyInterface thisKey = this.imageKeys.get(i);
+                ImageKeyInterface objectKey = objectKeys.get(i);
                 if (!thisKey.equals(objectKey))
                     return false;
             }
@@ -127,7 +128,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         {
             // Find the start and stop indices of number part of the name. Should be
             // the same for all 3 images.
-            String name = new File(firstImageKey.name).getName();
+            String name = new File(firstImageKey.getName()).getName();
             char[] buf = name.toCharArray();
             int ind0 = -1;
             int ind1 = -1;
@@ -147,9 +148,9 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
             if (ind1 == -1 || ind1 == ind0) ind1 = buf.length;
 
             String result = "";
-            for (ImageKey key : imageKeys)
+            for (ImageKeyInterface key : imageKeys)
             {
-                result = result + new File(key.name).getName().substring(ind0, ind1).toString() + ", ";
+                result = result + new File(key.getName()).getName().substring(ind0, ind1).toString() + ", ";
             }
 
             return result;
@@ -159,7 +160,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
         {
             // Find the start and stop indices of number part of the name. Should be
             // the same for all 3 images.
-            String name = new File(firstImageKey.name).getName();
+            String name = new File(firstImageKey.getName()).getName();
             char[] buf = name.toCharArray();
             int ind0 = -1;
             int ind1 = -1;
@@ -178,17 +179,17 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
                 ++ind0;
 
             String result = "";
-            for (ImageKey key : imageKeys)
-                result = result + new File(key.name).getName().substring(ind0, ind1).toString() + "-";
+            for (ImageKeyInterface key : imageKeys)
+                result = result + new File(key.getName()).getName().substring(ind0, ind1).toString() + "-";
 
             return result;
         }
 
-        public PerspectiveImage.ImageKey getFirstImageKey()
+        public ImageKeyInterface getFirstImageKey()
         {
             return firstImageKey;
         }
-}
+    }
 
 
     public String getImageName()
@@ -215,27 +216,27 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
     @Override
     protected String initializeInfoFileFullPath()
     {
-        return ((ImageCubeKey)getKey()).infoFileFullPath;
+        return ((ImageCubeKey<T>)getKey()).infoFileFullPath;
     }
 
     @Override
     protected String initializeSumfileFullPath()
     {
-        return ((ImageCubeKey)getKey()).sumFileFullPath;
+        return ((ImageCubeKey<T>)getKey()).sumFileFullPath;
     }
 
     protected String initializeFitFileFullPath() { return null; }
     protected String initializeEnviFileFullPath() {return null; }
     protected String initializePngFileFullPath() { return null; }
 
-    public ImageCube(ImageCubeKey key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException, NoOverlapException
+    public ImageCube(ImageCubeKey<T> key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException, NoOverlapException
     {
         super(key, smallBodyModel, modelManager, false);
     }
 
     protected vtkImageData loadRawImage() throws FitsException, IOException
     {
-        ImageCubeKey imageCubeKey = (ImageCubeKey)getKey();
+        ImageCubeKey<T> imageCubeKey = (ImageCubeKey<T>)getKey();
 
         footprintActors = new ArrayList<vtkProp>();
         chromatism = Chromatism.POLY;
@@ -250,7 +251,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 
         images = new ArrayList<PerspectiveImage>();
         imageSlices = new ArrayList<Integer>();
-        for (ImageKey key : imageCubeKey.imageKeys)
+        for (T key : imageCubeKey.imageKeys)
         {
             PerspectiveImage image = createImage(key, getSmallBodyModel(), getModelManager());
             images.add(image);
@@ -317,7 +318,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 //        return colorImage;
     }
 
-    protected PerspectiveImage createImage(ImageKey key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
+    protected PerspectiveImage createImage(T key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
     {
         ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);
@@ -328,7 +329,7 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 
     protected int loadNumSlices()
     {
-        return ((ImageCubeKey)getKey()).nimages;
+        return ((ImageCubeKey<T>)getKey()).nimages;
     }
 
 
@@ -580,9 +581,9 @@ public class ImageCube extends PerspectiveImage implements PropertyChangeListene
 //        return footprintActors;
 //    }
 
-    public ImageCubeKey getImageCubeKey()
+    public ImageCubeKey<T> getImageCubeKey()
     {
-        return (ImageCubeKey)getKey();
+        return (ImageCubeKey<T>)getKey();
     }
 
     public void propertyChange(PropertyChangeEvent evt)

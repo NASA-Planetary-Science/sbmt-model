@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -56,6 +55,7 @@ import vtk.vtkTexture;
 import vtk.vtkXMLPolyDataReader;
 import vtk.vtksbCellLocator;
 
+import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.DateTimeUtil;
@@ -69,7 +69,7 @@ import edu.jhuapl.saavtk.util.ObjUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.gui.image.ui.custom.CustomImageImporterDialog.ImageInfo;
+import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
 import edu.jhuapl.sbmt.util.BackPlanesPDS4XML;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
@@ -236,8 +236,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private boolean loadPointingOnly;
 
 
-    protected double[] maxFrustumDepth;
-    protected double[] minFrustumDepth;
+  public double[] maxFrustumDepth;
+  public double[] minFrustumDepth;
 
     protected boolean transposeFITSData = true;
 
@@ -255,7 +255,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private boolean offLimbBoundaryVisibility;
     OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
 
-    public PerspectiveImage(ImageKey key,
+  public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
     {
@@ -265,14 +265,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     }
 
 
-    public PerspectiveImage(ImageKey key,
+  public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         this(key, smallBodyModel, null, loadPointingOnly);
     }
 
-    public PerspectiveImage(ImageKey key,
+  public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
     {
@@ -285,7 +285,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      * image will be downloaded/loaded. The image itself will not be loaded.
      * Used by ImageBoundary to get pointing info.
      */
-    public PerspectiveImage(ImageKey key,
+  public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             ModelManager modelManager,
             boolean loadPointingOnly) throws FitsException, IOException
@@ -298,7 +298,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      * image will be downloaded/loaded. The image itself will not be loaded.
      * Used by ImageBoundary to get pointing info.
      */
-    public PerspectiveImage(ImageKey key,
+  public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             ModelManager modelManager,
             boolean loadPointingOnly, int currentSlice, boolean transposeData) throws FitsException, IOException
@@ -308,8 +308,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-        this.rotation = key.instrument != null ? key.instrument.rotation : 0.0;
-        this.flip = key.instrument != null ? key.instrument.flip : "None";
+      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
+      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
         this.transposeFITSData = transposeData;
 
         initialize();
@@ -320,7 +320,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      * image will be downloaded/loaded. The image itself will not be loaded.
      * Used by ImageBoundary to get pointing info.
      */
-    public PerspectiveImage(ImageKey key,
+  public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             ModelManager modelManager,
             boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
@@ -330,8 +330,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-        this.rotation = key.instrument != null ? key.instrument.rotation : 0.0;
-        this.flip = key.instrument != null ? key.instrument.flip : "None";
+      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
+      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
 
         initialize();
     }
@@ -342,14 +342,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         shiftedFootprint[0] = new vtkPolyData();
         displayedRange[0] = new IntensityRange(1,0);
 
-        if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+        if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
             loadImageInfoFromConfigFile();
         }
 
         if (!loadPointingOnly)
         {
-            if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+            if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
             {
                 fitFileFullPath = initLocalFitFileFullPath();
                 pngFileFullPath = initLocalPngFileFullPath();
@@ -363,16 +363,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             }
         }
 
-        if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+        if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
             infoFileFullPath = initLocalInfoFileFullPath();
             sumFileFullPath = initLocalSumfileFullPath();
         }
-        else if (key.source.equals(ImageSource.SPICE) || key.source.equals(ImageSource.CORRECTED_SPICE))
+        else if (key.getSource().equals(ImageSource.SPICE) || key.getSource().equals(ImageSource.CORRECTED_SPICE))
         {
             infoFileFullPath = initializeInfoFileFullPath();
         }
-        else if (key.source.equals(ImageSource.LABEL))
+        else if (key.getSource().equals(ImageSource.LABEL))
             setLabelFileFullPath(initializeLabelFileFullPath());
         else
             sumFileFullPath = initializeSumfileFullPath();
@@ -1411,7 +1411,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalPngFileFullPath()
     {
-        String name = getKey().name.endsWith(".png") ? getKey().name : null;
+        String name = getKey().getName().endsWith(".png") ? getKey().getName() : null;
         if (name == null) return name;
         if (name.startsWith("file://"))
         	return name.substring(name.indexOf("file://") + 7);
@@ -1421,7 +1421,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalFitFileFullPath()
     {
-        String keyName = getKey().name;
+        String keyName = getKey().getName();
         if(keyName.endsWith(".fit") || keyName.endsWith(".fits") ||
                 keyName.endsWith(".FIT") || keyName.endsWith(".FITS"))
         {
@@ -1436,7 +1436,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalEnviFileFullPath()
     {
-        return VtkENVIReader.isENVIFilename(getKey().name) ? getKey().name : null;
+        return VtkENVIReader.isENVIFilename(getKey().getName()) ? getKey().getName() : null;
     }
 
     protected String initializeLabelFileFullPath() { return initLocalLabelFileFullPath(); }
@@ -1448,26 +1448,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return null;
     }
 
-    private Vector<ImageInfo> getCustomImageMetadata() throws IOException
+    private List<CustomImageKeyInterface> getCustomImageMetadata() throws IOException
     {
-        Vector<ImageInfo> customImages = new Vector<ImageInfo>();
-        final Key<Metadata[]> customImagesKey = Key.of("customImages");
+    	final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
         String file;
-        if (getKey().name.startsWith("file://"))
-            file = getKey().name.substring(7, getKey().name.lastIndexOf("/"));
+        if (getKey().getName().startsWith("file://"))
+            file = getKey().getName().substring(7, getKey().getName().lastIndexOf("/"));
         else
-        	file = new File(getKey().name).getParent();
-//            file = getKey().name.substring(0, getKey().name.lastIndexOf("/"));
+        	file = new File(getKey().getImageFilename()).getParent();
         String configFilename = file + File.separator + "config.txt";
         FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
-        Metadata[] metadataArray = read(customImagesKey, metadata);
-        for (Metadata meta : metadataArray)
-        {
-            ImageInfo info = new ImageInfo();
-            info.retrieve(meta);
-            customImages.add(info);
-        }
-        return customImages;
+        return metadata.get(customImagesKey);
+
     }
 
     protected <T> T read(Key<T> key, Metadata configMetadata)
@@ -1480,17 +1472,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initLocalInfoFileFullPath()
     {
-        Vector<ImageInfo> images;
+    	 List<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
-            for (ImageInfo info : images)
+             for (ImageKeyInterface info : images)
             {
-                String filename = new File(getKey().name).getName();
-                if (filename.equals(info.imagefilename))
+                 String filename = new File(getKey().getName()).getName();
+                 if (filename.equals(info.getImageFilename()))
                 {
-                    String string = new File(getKey().name).getParent() + File.separator + info.infofilename;
-                    if (getKey().name.startsWith("file:/"))
+                 	if (info.getFileType() == FileType.SUM) return null;
+                     String string = new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
+                     if (getKey().getName().startsWith("file:/"))
                         return string.substring(5);
                     else
                         return string;
@@ -1504,36 +1497,24 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         return null;
-
-//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-//        MapUtil configMap = new MapUtil(configFilename);
-//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-//        for (int i=0; i<imageFilenames.length; ++i)
-//        {
-//            String filename = new File(getKey().name).getName();
-//            if (filename.equals(imageFilenames[i]))
-//            {
-//                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(INFOFILENAMES)[i];
-//            }
-//        }
-//
-//        return null;
     }
 
     protected String initLocalSumfileFullPath()
     {
 
-        Vector<ImageInfo> images;
+    	List<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
-            for (ImageInfo info : images)
+            for (CustomImageKeyInterface info : images)
             {
-                String filename = new File(getKey().name).getName();
-                if (filename.equals(info.imagefilename))
+                String filename = new File(getKey().getName()).getName();
+                if (filename.equals(info.getImageFilename()))
                 {
-                    String string =  new File(getKey().name).getParent() + File.separator + info.sumfilename;
-                    if (getKey().name.startsWith("file:/"))
+                	if (info.getFileType() == FileType.INFO) return null;
+
+                    String string =  new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
+                    if (getKey().getName().startsWith("file:/"))
                         return string.substring(5);
                     else
                         return string;
@@ -1547,38 +1528,20 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         return null;
-//        // TODO this is bad in that we read from the config file 3 times in this class
-//
-//        // Look in the config file and figure out which index this image
-//        // corresponds to. The config file is located in the same folder
-//        // as the image file
-//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-//        MapUtil configMap = new MapUtil(configFilename);
-//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-//        for (int i=0; i<imageFilenames.length; ++i)
-//        {
-//            String filename = new File(getKey().name).getName();
-//            if (filename.equals(imageFilenames[i]))
-//            {
-//                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(SUMFILENAMES)[i];
-//            }
-//        }
-//
-//        return null;
     }
 
     private void loadImageInfoFromConfigFile()
     {
-        Vector<ImageInfo> images;
+        List<CustomImageKeyInterface> images;
         try
         {
             images = getCustomImageMetadata();
-            for (ImageInfo info : images)
+            for (CustomImageKeyInterface info : images)
             {
-                String filename = new File(getKey().name).getName();
-                if (filename.equals(info.imagefilename))
+                String filename = new File(getKey().getName()).getName();
+                if (filename.equals(info.getImageFilename()))
                 {
-                    imageName = info.imagefilename;
+                    imageName = info.getImageFilename();
                 }
             }
         }
@@ -1885,10 +1848,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         String name = getPngFileFullPath();
         String imageFile = null;
-        if (getKey().source == ImageSource.IMAGE_MAP)
+        if (getKey().getSource() == ImageSource.IMAGE_MAP)
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
-            imageFile = getKey().name;
+            imageFile = getKey().getName();
         if (imageFile.startsWith("file://"))
         	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
         if (rawImage == null)
@@ -2110,10 +2073,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         String name = getEnviFileFullPath();
 
         String imageFile = null;
-        if (getKey().source == ImageSource.IMAGE_MAP)
+        if (getKey().getSource() == ImageSource.IMAGE_MAP)
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
-            imageFile = getKey().name;
+            imageFile = getKey().getName();
 
         if (rawImage == null)
             rawImage = new vtkImageData();
@@ -2198,7 +2161,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float)scalarRange[0];
             maxValue[0] = (float)scalarRange[1];
-            System.out.println("PerspectiveImage: loadImage: min max is " + minValue[0] + " max value " + maxValue[0] );
 //            setDisplayedImageRange(new IntensityRange(0, 255));
             setDisplayedImageRange(null);
         }
@@ -2238,10 +2200,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             String name = getEnviFileFullPath();
 
             String imageFile = null;
-            if (getKey().source == ImageSource.IMAGE_MAP)
+            if (getKey().getSource() == ImageSource.IMAGE_MAP)
                 imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
             else
-                imageFile = getKey().name;
+                imageFile = getKey().getName();
 
             if (imageFile.startsWith("file://"))
             	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
@@ -2259,7 +2221,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void loadPointing() throws FitsException, IOException
     {
-        if (key.source.equals(ImageSource.SPICE) || key.source.equals(ImageSource.CORRECTED_SPICE))
+        if (key.getSource().equals(ImageSource.SPICE) || key.getSource().equals(ImageSource.CORRECTED_SPICE))
         {
             try
             {
@@ -2271,7 +2233,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 ex.printStackTrace();
             }
         }
-        else if (key.source.equals(ImageSource.LABEL))
+        else if (key.getSource().equals(ImageSource.LABEL))
         {
             try
             {
@@ -2282,7 +2244,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 System.out.println("LABEL file not available");
             }
         }
-        else if (key.source.equals(ImageSource.LOCAL_PERSPECTIVE))
+        else if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
             boolean loaded = false;
             try {
@@ -3482,10 +3444,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             String footprintFilename = null;
             File file = null;
 
-            if (key.source == ImageSource.SPICE || key.source == ImageSource.CORRECTED_SPICE)
-                footprintFilename = key.name + "_FOOTPRINT_RES" + resolutionLevel + "_PDS.VTP";
+            if (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.CORRECTED_SPICE)
+                footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_PDS.VTP";
             else
-                footprintFilename = key.name + "_FOOTPRINT_RES" + resolutionLevel + "_GASKELL.VTP";
+                footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_GASKELL.VTP";
 
             file = FileCache.getFileFromServer(footprintFilename);
 
