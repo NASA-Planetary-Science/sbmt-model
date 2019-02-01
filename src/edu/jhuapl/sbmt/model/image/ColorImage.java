@@ -33,6 +33,7 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
 
 import nom.tam.fits.FitsException;
 
@@ -83,11 +84,11 @@ public class ColorImage extends Image implements PropertyChangeListener
 
     public static class ColorImageKey
     {
-        public PerspectiveImage.ImageKey redImageKey;
-        public PerspectiveImage.ImageKey greenImageKey;
-        public PerspectiveImage.ImageKey blueImageKey;
+        public ImageKeyInterface redImageKey;
+        public ImageKeyInterface greenImageKey;
+        public ImageKeyInterface blueImageKey;
 
-        public ColorImageKey(PerspectiveImage.ImageKey redImage, PerspectiveImage.ImageKey greenImage, PerspectiveImage.ImageKey blueImage)
+        public ColorImageKey(ImageKeyInterface redImage, ImageKeyInterface greenImage, ImageKeyInterface blueImage)
         {
             this.redImageKey = redImage;
             this.greenImageKey = greenImage;
@@ -107,7 +108,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         {
             // Find the start and stop indices of number part of the name. Should be
             // the same for all 3 images.
-            String name = new File(redImageKey.name).getName();
+            String name = new File(redImageKey.getName()).getName();
             char[] buf = name.toCharArray();
             int ind0 = -1;
             int ind1 = -1;
@@ -126,12 +127,12 @@ public class ColorImage extends Image implements PropertyChangeListener
                 ++ind0;
 
             return
-            "R: " + new File(redImageKey.name).getName().substring(ind0, ind1) + ", " +
-            "G: " + new File(greenImageKey.name).getName().substring(ind0, ind1) + ", " +
-            "B: " + new File(blueImageKey.name).getName().substring(ind0, ind1);
+            "R: " + new File(redImageKey.getName()).getName().substring(ind0, ind1) + ", " +
+            "G: " + new File(greenImageKey.getName()).getName().substring(ind0, ind1) + ", " +
+            "B: " + new File(blueImageKey.getName()).getName().substring(ind0, ind1);
         }
 
-        public ImageKey getImageKey()
+        public ImageKeyInterface getImageKey()
         {
             return redImageKey;
         }
@@ -140,7 +141,7 @@ public class ColorImage extends Image implements PropertyChangeListener
 
     public String getImageName()
     {
-        return new File(colorKey.redImageKey.name).getName();
+        return new File(colorKey.redImageKey.getName()).getName();
     }
 
     public ColorImage(ColorImageKey key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException, NoOverlapException
@@ -153,17 +154,17 @@ public class ColorImage extends Image implements PropertyChangeListener
         greenImage = createImage(colorKey.greenImageKey, smallBodyModel, modelManager);
         blueImage = createImage(colorKey.blueImageKey, smallBodyModel, modelManager);
 
-        redImageSlice = colorKey.redImageKey.slice;
-        greenImageSlice = colorKey.greenImageKey.slice;
-        blueImageSlice = colorKey.blueImageKey.slice;
+        redImageSlice = colorKey.redImageKey.getSlice();
+        greenImageSlice = colorKey.greenImageKey.getSlice();
+        blueImageSlice = colorKey.blueImageKey.getSlice();
 
-        int rslice = colorKey.redImageKey.slice;
+        int rslice = colorKey.redImageKey.getSlice();
         redPixelData = ImageDataUtil.vtkImageDataToArray2D(redImage.getRawImage(), rslice);
 
-        int gslice = colorKey.greenImageKey.slice;
+        int gslice = colorKey.greenImageKey.getSlice();
         greenPixelData = ImageDataUtil.vtkImageDataToArray2D(greenImage.getRawImage(), gslice);
 
-        int bslice = colorKey.blueImageKey.slice;
+        int bslice = colorKey.blueImageKey.getSlice();
         bluePixelData = ImageDataUtil.vtkImageDataToArray2D(blueImage.getRawImage(), bslice);
 
         colorImage = new vtkImageData();
@@ -207,7 +208,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         return displayedImage; // colorImage;
     }
 
-    protected PerspectiveImage createImage(ImageKey key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
+    protected PerspectiveImage createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
     {
         ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);

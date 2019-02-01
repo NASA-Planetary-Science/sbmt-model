@@ -11,7 +11,7 @@ import nom.tam.fits.FitsException;
 
 public class CustomPerspectiveImage extends PerspectiveImage
 {
-    public CustomPerspectiveImage(ImageKey key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
+    public CustomPerspectiveImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, null, loadPointingOnly);
     }
@@ -33,8 +33,8 @@ public class CustomPerspectiveImage extends PerspectiveImage
     @Override
     protected void processRawImage(vtkImageData rawImage)
     {
-        ImageKey key = getKey();
-        if (key.source == ImageSource.LOCAL_PERSPECTIVE)
+        ImageKeyInterface key = getKey();
+        if (key.getSource() == ImageSource.LOCAL_PERSPECTIVE)
         {
                 if (getFlip().equals("X"))
                 {
