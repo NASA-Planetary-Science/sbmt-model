@@ -3,18 +3,19 @@ package edu.jhuapl.sbmt.model.mvic;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class MVICJupiterImage extends PerspectiveImage
 {
-    public MVICJupiterImage(ImageKey key, SmallBodyModel smallBodyModel,
+    public MVICJupiterImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {
@@ -39,21 +40,21 @@ public class MVICJupiterImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".fit").getAbsolutePath();
     }
 
-    protected double getFocalLength() { return 657.5; }    // in mm
+    public double getFocalLength() { return 657.5; }    // in mm
 
-    protected double getPixelWidth() { return 0.013; }    // in mm
+    public double getPixelWidth() { return 0.013; }    // in mm
 
-    protected double getPixelHeight() { return 0.013; }   // in mm
+    public double getPixelHeight() { return 0.013; }   // in mm
 
     @Override
     protected String initializeLabelFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + "/labelfiles/"
         + keyFile.getName().split("\\.")[0] + ".lbl";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -62,8 +63,8 @@ public class MVICJupiterImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + "/infofiles/"
         + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -72,8 +73,8 @@ public class MVICJupiterImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + "/sumfiles/"
         + keyFile.getName().split("\\.")[0] + ".SUM";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();

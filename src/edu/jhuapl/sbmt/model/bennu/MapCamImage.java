@@ -3,16 +3,17 @@ package edu.jhuapl.sbmt.model.bennu;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 
+import nom.tam.fits.FitsException;
+
 public class MapCamImage extends PerspectiveImage
 {
-    public MapCamImage(ImageKey key,
+    public MapCamImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
@@ -28,8 +29,8 @@ public class MapCamImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".fit").getAbsolutePath();
     }
 
     @Override
@@ -42,15 +43,15 @@ public class MapCamImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String result = null;
 
         // if the source is GASKELL, then return a null
-        if (key.source == null || key.source != null && key.source == ImageSource.GASKELL)
+        if (key.getSource() == null || key.getSource() != null && key.getSource() == ImageSource.GASKELL)
             result = null;
         else
         {
-            File keyFile = new File(key.name);
+            File keyFile = new File(key.getName());
             String infodir = "infofiles";
             String pointingFileName = keyFile.getParentFile().getParent() + File.separator + infodir + File.separator + keyFile.getName() + ".INFO";
 
@@ -67,15 +68,15 @@ public class MapCamImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String result = null;
 
         // if the source is SPICE, then return a null
-        if (key.source == null || key.source != null && key.source == ImageSource.SPICE)
+        if (key.getSource() == null || key.getSource() != null && key.getSource() == ImageSource.SPICE)
             result = null;
         else
         {
-            File keyFile = new File(key.name);
+            File keyFile = new File(key.getName());
             String sumdir = "sumfiles";
             String sumFilename = keyFile.getParentFile().getParent() + File.separator + sumdir + File.separator + keyFile.getName() + ".SUM";
 

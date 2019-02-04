@@ -8,15 +8,16 @@ import vtk.vtkImageData;
 import vtk.vtkImageTranslateExtent;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
 public class OsirisImage extends PerspectiveImage
 {
-    public OsirisImage(ImageKey key,
+    public OsirisImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
@@ -31,15 +32,15 @@ public class OsirisImage extends PerspectiveImage
     protected void processRawImage(vtkImageData rawImage)
     {
         // Flip image along y axis and rotate it. Only needed for NAC images.
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         if (keyFile.getName().startsWith("N"))
         {
             ImageDataUtil.flipImageYAxis(rawImage);
             ImageDataUtil.rotateImage(rawImage, 180.0);
         }
 
-        if (key.name.contains("67P"))
+        if (key.getName().contains("67P"))
         {
             return;
         }
@@ -86,8 +87,8 @@ public class OsirisImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".FIT").getAbsolutePath();
     }
 
     @Override
@@ -99,8 +100,8 @@ public class OsirisImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + "/infofiles/"
         + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -109,8 +110,8 @@ public class OsirisImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + "/sumfiles/"
         + keyFile.getName() + ".SUM";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -175,8 +176,8 @@ public class OsirisImage extends PerspectiveImage
     @Override
     public String getFilterName()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String filename = keyFile.getName();
 
         return filename.substring(filename.length()-2, filename.length());
@@ -206,8 +207,8 @@ public class OsirisImage extends PerspectiveImage
         // Return the following:
         // 1 for NAC
         // 2 for WAC
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         if (keyFile.getName().startsWith("N"))
         {
             return 1;

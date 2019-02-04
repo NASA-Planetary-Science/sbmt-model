@@ -7,14 +7,11 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
 
-import com.google.common.base.Preconditions;
-
 import vtk.vtkPolyData;
 import vtk.vtkProp;
 import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
-import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
@@ -85,82 +82,186 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
 //    }
 //
 
-    /**
-     * An ImageKey should be used to uniquely distinguish one image from another.
-     * It also contains metadata about the image that may be necessary to know
-     * before the image is loaded, such as the image projection information and
-     * type of instrument used to generate the image.
-     *
-     * No two images will have the same values for the fields of this class.
-     */
-    public static class ImageKey
-    {
-        // The path of the image as passed into the constructor. This is not the
-        // same as fullpath but instead corresponds to the name needed to download
-        // the file from the server (excluding the hostname and extension).
-        public final String name;
-
-        public final ImageSource source;
-
-        public final FileType fileType;
-
-        public final ImagingInstrument instrument;
-
-        public final ImageType imageType;
-
-        public String band;
-
-        public int slice;
-
-        public ImageKey(String name, ImageSource source)
-        {
-            this(name, source, null, null, null, null, 0);
-        }
-
-        public ImageKey(String name, ImageSource source, ImagingInstrument instrument)
-        {
-            this(name, source, null, null, instrument, null, 0);
-        }
-
-        public ImageKey(String name, ImageSource source, FileType fileType, ImageType imageType, ImagingInstrument instrument, String band, int slice)
-        {
-            Preconditions.checkNotNull(name);
-            Preconditions.checkNotNull(source);
-            this.name = name;
-            this.source = source;
-            this.fileType = fileType;
-            this.imageType = instrument != null ? instrument.type : imageType;
-            this.instrument = instrument;
-            this.band = band;
-            this.slice = slice;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return name.equals(((ImageKey)obj).name)
-                    && source.equals(((ImageKey)obj).source)
-//                    && fileType.equals(((ImageKey)obj).fileType)
-                    ;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return name.hashCode();
-        }
-
-        @Override
-        public String toString()
-        {
-            return "ImageKey [name=" + name + ", source=" + source
-                    + ", fileType=" + fileType + ", instrument=" + instrument
-                    + ", imageType=" + imageType + ", band=" + band + ", slice="
-                    + slice + "]";
-        }
-
-
-    }
+//    /**
+//     * An ImageKey should be used to uniquely distinguish one image from another.
+//     * It also contains metadata about the image that may be necessary to know
+//     * before the image is loaded, such as the image projection information and
+//     * type of instrument used to generate the image.
+//     *
+//     * No two images will have the same values for the fields of this class.
+//     */
+//    public static class ImageKey implements ImageKeyInterface, StorableAsMetadata<ImageKey>
+//    {
+//        // The path of the image as passed into the constructor. This is not the
+//        // same as fullpath but instead corresponds to the name needed to download
+//        // the file from the server (excluding the hostname and extension).
+//        public final String name;
+//
+//        public final ImageSource source;
+//
+//        public final FileType fileType;
+//
+//        public final ImagingInstrument instrument;
+//
+//        public final ImageType imageType;
+//
+//        public String band;
+//
+//        public int slice;
+//
+//        public String pointingFile;
+//
+//        public ImageKey(String name, ImageSource source)
+//        {
+//            this(name, source, null, null, null, null, 0, null);
+//        }
+//
+//        public ImageKey(String name, ImageSource source, ImagingInstrument instrument)
+//        {
+//            this(name, source, null, null, instrument, null, 0, null);
+//        }
+//
+//        public ImageKey(String name, ImageSource source, FileType fileType, ImageType imageType, ImagingInstrument instrument, String band, int slice, String pointingFile)
+//        {
+//            Preconditions.checkNotNull(name);
+//            Preconditions.checkNotNull(source);
+//            this.name = name;
+//            this.source = source;
+//            this.fileType = fileType;
+//            this.imageType = instrument != null ? instrument.type : imageType;
+//            this.instrument = instrument;
+//            this.band = band;
+//            this.slice = slice;
+//            this.pointingFile = pointingFile;
+//        }
+//
+//        @Override
+//        public boolean equals(Object obj)
+//        {
+//
+////            String cleanedUpName2 = SafeURLPaths.instance().getString(name);
+//
+////            String cleanedUpOtherName2 = SafeURLPaths.instance().getString(((ImageKey)obj).name);
+////            return cleanedUpName.equals(cleanedUpOtherName2) && source.equals(((ImageKey)obj).source);
+//        	if (((ImageKey)obj).name.startsWith("C:") && (name.startsWith("C:")))
+//        		return name.equals(((ImageKey)obj).name) && source.equals(((ImageKey)obj).source);
+//        	else if (((ImageKey)obj).name.startsWith("C:"))
+//        		return name.equals(SafeURLPaths.instance().getUrl(((ImageKey)obj).name)) && source.equals(((ImageKey)obj).source);
+//        	else
+//        	{
+//        		String cleanedUpName = name.replace("file://", "");
+//        		String cleanedUpOtherName = ((ImageKey)obj).name.replace("file://", "");
+////        		System.out.println("Image.ImageKey: equals: cleaned up name " + cleanedUpName + " and source " + source);
+////        		System.out.println("Image.ImageKey: equals: cleaned upname2 " + cleanedUpOtherName + " and source " + ((ImageKey)obj).source);
+//        		return FilenameUtils.getBaseName(cleanedUpName).equals(FilenameUtils.getBaseName(cleanedUpOtherName)) && source.equals(((ImageKey)obj).source);
+//        	}
+//
+////            return name.equals(((ImageKey)obj).name)
+////                    && source.equals(((ImageKey)obj).source)
+//////                    && fileType.equals(((ImageKey)obj).fileType)
+////                    ;
+//        }
+//
+//        @Override
+//        public int hashCode()
+//        {
+//            return name.hashCode();
+//        }
+//
+//        /* (non-Javadoc)
+//		 * @see edu.jhuapl.sbmt.model.image.ImageKeyInterface#toString()
+//		 */
+//        @Override
+//        public String toString()
+//        {
+//            return "ImageKey [name=" + name + ", source=" + source
+//                    + ", fileType=" + fileType + ", instrument=" + instrument
+//                    + ", imageType=" + imageType + ", band=" + band + ", slice="
+//                    + slice + "]";
+//        }
+//
+//        /* (non-Javadoc)
+//		 * @see edu.jhuapl.sbmt.model.image.ImageKeyInterface#getName()
+//		 */
+//        @Override
+//		public String getName()
+//        {
+//        	return name;
+//        }
+//
+//        /* (non-Javadoc)
+//		 * @see edu.jhuapl.sbmt.model.image.ImageKeyInterface#getImageFilename()
+//		 */
+//        @Override
+//		public String getImageFilename()
+//        {
+//        	return name;
+//        }
+//
+//        public ImageSource getSource()
+//		{
+//			return source;
+//		}
+//
+//		public ImageType getImageType()
+//		{
+//			return imageType;
+//		}
+//
+//		private static final Key<String> nameKey = Key.of("name");
+//        private static final Key<String> sourceKey = Key.of("source");
+//        private static final Key<String> fileTypeKey = Key.of("fileTypeKey");
+//        private static final Key<String> imageTypeKey = Key.of("imageType");
+//        private static final Key<Metadata> instrumentKey = Key.of("imagingInstrument");
+//        private static final Key<String> bandKey = Key.of("band");
+//        private static final Key<Integer> sliceKey = Key.of("slice");
+//        private static final Key<String> pointingFilenameKey = Key.of("pointingfilename");
+//
+//        private static final Key<ImageKey> IMAGE_KEY = Key.of("image");
+//
+//        @Override
+//        public Metadata store()
+//        {
+//            SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+//            result.put(Key.of("customimagetype"), IMAGE_KEY.toString());
+//            result.put(nameKey, name);
+//            result.put(sourceKey, source.toString());
+//            result.put(fileTypeKey, fileType.toString());
+//            result.put(imageTypeKey, imageType.toString());
+//            result.put(instrumentKey, instrument.store());
+//            result.put(bandKey, band);
+//            result.put(sliceKey, slice);
+//            result.put(pointingFilenameKey, pointingFile);
+//            return result;
+//        }
+//
+//    	public static void initializeSerializationProxy()
+//    	{
+//    		InstanceGetter.defaultInstanceGetter().register(IMAGE_KEY, (metadata) -> {
+//
+//    	        String name = metadata.get(nameKey);
+//    	        ImageSource source = ImageSource.valueOf(metadata.get(sourceKey));
+//    	        ImageType imageType = ImageType.valueOf(metadata.get(imageTypeKey));
+//    	        ImagingInstrument instrument = new ImagingInstrument();
+//    	        instrument.retrieve(metadata.get(instrumentKey));
+//    	        int slice = metadata.get(sliceKey);
+//    	        String band = metadata.get(bandKey);
+//    	        FileType fileType = FileType.valueOf(metadata.get(fileTypeKey));
+//    	        String pointingFilename = metadata.get(pointingFilenameKey);
+//
+//    	        ImageKey result = new ImageKey(name, source, fileType, imageType, instrument, band, slice, pointingFilename);
+//
+//    			return result;
+//    		});
+//    	}
+//
+//    	@Override
+//    	public Key<ImageKey> getKey()
+//    	{
+//    		return IMAGE_KEY;
+//    	}
+//
+//    }
 
 
     public static void applyOffset(Image image, double offset)
@@ -170,25 +271,25 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
         PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint, offset);
     }
 
-    protected final ImageKey key;
+    protected final ImageKeyInterface key;
     // Use a lazily initialized Double to avoid calling
     // the non-final method getDefaultOffset from the  constructor.
     private Double offset;
 
-    public Image(ImageKey key)
+    public Image(ImageKeyInterface key)
     {
         this.key = key;
         this.offset = null;
     }
 
-    public ImageKey getKey()
+    public ImageKeyInterface getKey()
     {
         return key;
     }
 
     public String getImageName()
     {
-        return new File(key.name).getName();
+        return new File(key.getName()).getName();
     }
 
     public void imageAboutToBeRemoved()

@@ -7,24 +7,28 @@ import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
 public class MVICQuadJupiterImage extends PerspectiveImage
 {
-    public static final int INITIAL_BAND = 3;
+	public static final int INITIAL_BAND = 3;
 
     private static final String[] bandNames = { "Red", "Blue", "NIR", "MH4" };
 
-    public ImageKey getKey()
+    public ImageKeyInterface getKey()
     {
-        ImageKey key = super.getKey();
-        key.slice = getCurrentSlice();
-        key.band = getCurrentBand();
-        return key;
+        ImageKeyInterface key = super.getKey();
+        ImageKey newKey = new ImageKey(key.getName(), key.getSource(), key.getFileType(), key.getImageType(), key.getInstrument(), getCurrentBand(), getCurrentSlice(), key.getPointingFile());
+        return newKey;
+//        key.slice = getCurrentSlice();
+//        key.band = getCurrentBand();
+//        return key;
     }
 
     public String getCurrentBand()
@@ -32,7 +36,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         return bandNames[getCurrentSlice()];
     }
 
-    public MVICQuadJupiterImage(ImageKey key, SmallBodyModel smallBodyModel,
+    public MVICQuadJupiterImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {
@@ -57,12 +61,12 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     }
 
     @Override
-    protected int getNumberBands()
+    public int getNumberBands()
     {
         return 4;
     }
 
-    @Override
+//    @Override
     protected int loadNumSlices()
     {
         // TODO Auto-generated method stub
@@ -120,25 +124,25 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     }
 
     @Override
-    protected double getFocalLength() { return 657.5; }    // in mm
+    public double getFocalLength() { return 657.5; }    // in mm
 
     @Override
-    protected double getPixelWidth() { return 0.013; }    // in mm
+    public double getPixelWidth() { return 0.013; }    // in mm
 
     @Override
-    protected double getPixelHeight() { return 0.013; }   // in mm
+    public double getPixelHeight() { return 0.013; }   // in mm
 
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         int defaultBand = getDefaultSlice();
         int nbands = getNumberBands();
         String result = null;
 
         for (int band=0; band<nbands; band++)
         {
-            String path = key.name;
+            String path = key.getName();
             String[] pathArray = path.split("/");
             int size = pathArray.length;
             String fileName = "mc" + band + "_" + pathArray[size-1];
@@ -168,9 +172,9 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         // if the file type is SUM, then return a null
-        if (key.fileType != null && key.fileType == FileType.SUM)
+        if (key.getFileType() != null && key.getFileType() == FileType.SUM)
             return null;
 
         int defaultBand = getDefaultSlice();
@@ -179,7 +183,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
 
         for (int band=0; band<nbands; band++)
         {
-            String path = key.name;
+            String path = key.getName();
             String[] pathArray = path.split("/");
             int size = pathArray.length;
             String fileName = /*"mc" + band + "_" +*/ pathArray[size-1];
@@ -201,12 +205,12 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         // if the file type is not SUM, then return null
-        if (key.fileType == null || key.fileType != FileType.SUM)
+        if (key.getFileType() == null || key.getFileType() != FileType.SUM)
             return null;
 
-        File keyFile = new File(key.name);
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + "/sumfiles/"
         + keyFile.getName().split("\\.")[0] + ".SUM";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();

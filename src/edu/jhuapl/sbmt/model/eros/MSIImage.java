@@ -20,6 +20,7 @@ import vtk.vtkImageReslice;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
@@ -50,12 +51,11 @@ public class MSIImage extends PerspectiveImage
     private static final int BOTTOM_MASK = 2;
     private static final String xmlTemplate = "edu/jhuapl/sbmt/model/eros/msiXmlTemplate.xml";
 
-    public MSIImage(ImageKey key,
+    public MSIImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
-
         //the parent class looks like it only wants to set the labelFileFullPath if the ImageSource = LABEL
         //but the initialization of pngFileFullPath sets it to the label file. Just copy that to the
         //labelFileFullPath.
@@ -91,23 +91,23 @@ public class MSIImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".FIT").getAbsolutePath();
     }
 
     @Override
     protected String initializeLabelFileFullPath()
     {
-        ImageKey key = getKey();
-        String imgLblFilename = key.name + ".LBL";
+        ImageKeyInterface key = getKey();
+        String imgLblFilename = key.getName() + ".LBL";
         return FileCache.getFileFromServer(imgLblFilename).getAbsolutePath();
     }
 
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String infoFilename = keyFile.getParentFile().getParent()
         + "/infofiles/" + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(infoFilename).getAbsolutePath();
@@ -116,12 +116,12 @@ public class MSIImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent()
         + "/sumfiles/" + keyFile.getName().substring(0, 11) + ".SUM";
 
-        if (key.source.equals(ImageSource.GASKELL_UPDATED))
+        if (key.getSource().equals(ImageSource.GASKELL_UPDATED))
         {
             // This is for the ~90K new sumfiles from Olivier for the MSI
             // backplanes delivery

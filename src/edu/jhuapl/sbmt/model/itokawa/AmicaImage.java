@@ -19,6 +19,7 @@ import vtk.vtkImageTranslateExtent;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 
@@ -31,7 +32,7 @@ public class AmicaImage extends PerspectiveImage
     //private static final int IMAGE_WIDTH = 1024;
     //private static final int IMAGE_HEIGHT = 1024;
 
-    public AmicaImage(ImageKey key,
+    public AmicaImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
@@ -50,8 +51,8 @@ public class AmicaImage extends PerspectiveImage
     private void doFlatFieldCorrection(vtkImageData rawImage)
     {
         // Download appropriate flat field depending on filter of current image
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String imagesDir = keyFile.getParentFile().getPath();
         String flatFileName = "flat_" + getFilterName() + ".fit";
         String flatfile = FileCache.getFileFromServer(imagesDir + File.separator + flatFileName).getAbsolutePath();
@@ -452,23 +453,23 @@ public class AmicaImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".fit").getAbsolutePath();
     }
 
     @Override
     protected String initializeLabelFileFullPath()
     {
-        ImageKey key = getKey();
-        String imgLblFilename = key.name + ".lbl";
+        ImageKeyInterface key = getKey();
+        String imgLblFilename = key.getName() + ".lbl";
         return FileCache.getFileFromServer(imgLblFilename).getAbsolutePath();
     }
 
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent()
         + "/infofiles/" + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -477,11 +478,11 @@ public class AmicaImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String sumfilesdir = "sumfiles";
-        if (key.source == ImageSource.CORRECTED)
+        if (key.getSource() == ImageSource.CORRECTED)
             sumfilesdir += "-corrected";
-        File keyFile = new File(key.name);
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent()
         + "/" + sumfilesdir + "/N" + keyFile.getName().substring(3, 13) + ".SUM";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();

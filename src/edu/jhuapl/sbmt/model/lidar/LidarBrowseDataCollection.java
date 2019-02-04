@@ -56,34 +56,43 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         this.polyhedralModelConfig = smallBodyModel.getSmallBodyConfig();
     }
 
-    protected LidarDataPerUnit createLidarDataPerUnitWhateverThatIs(String path, BodyViewConfig config) throws IOException
+    protected LidarDataPerUnit createLidarDataPerUnitWhateverThatIs(String path, BodyViewConfig config, LidarLoadingListener listener) throws IOException
     {
         return new LidarDataPerUnit(
-                path, polyhedralModelConfig);
+                path, polyhedralModelConfig, listener);
     }
 
-    public void addLidarData(String path) throws IOException
+    public void addLidarData(final String path) throws IOException
     {
         if (fileToLidarPerUnitMap.containsKey(path))
             return;
 
-        LidarDataPerUnit lidarData = createLidarDataPerUnitWhateverThatIs(path, polyhedralModelConfig);
-        lidarData.setShowSpacecraftPosition(showSpacecraftPosition);
-
-        lidarData.addPropertyChangeListener(this);
-
-        fileToLidarPerUnitMap.put(path, lidarData);
-
-        for (vtkProp prop : lidarData.getProps())
+        LidarDataPerUnit lidarData = createLidarDataPerUnitWhateverThatIs(path, polyhedralModelConfig, new LidarLoadingListener()
         {
-            actorToFileMap.put(prop, path);
-            lidarPerUnitActors.add(prop);
-        }
 
-        this.setOffset(radialOffset);
-        this.setPercentageShown(startPercent, stopPercent);
+            @Override
+            public void lidarLoadComplete(LidarDataPerUnit lidarData)
+            {
+                lidarData.setShowSpacecraftPosition(showSpacecraftPosition);
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+                lidarData.addPropertyChangeListener(LidarBrowseDataCollection.this);
+
+                fileToLidarPerUnitMap.put(path, lidarData);
+
+                for (vtkProp prop : lidarData.getProps())
+                {
+                    actorToFileMap.put(prop, path);
+                    lidarPerUnitActors.add(prop);
+                }
+
+                LidarBrowseDataCollection.this.setOffset(radialOffset);
+                LidarBrowseDataCollection.this.setPercentageShown(startPercent, stopPercent);
+
+                LidarBrowseDataCollection.this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
+            }
+        });
+
     }
 
     public void removeLidarData(String path)
