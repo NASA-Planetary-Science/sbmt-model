@@ -29,5 +29,6 @@ public interface ImageKeyInterface
 
 	String getPointingFile();
 
+	String getOriginalName();
 
 }

@@ -128,7 +128,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
         {
             // Find the start and stop indices of number part of the name. Should be
             // the same for all 3 images.
-            String name = new File(firstImageKey.getName()).getName();
+            String name = new File(firstImageKey.getOriginalName()).getName();
             char[] buf = name.toCharArray();
             int ind0 = -1;
             int ind1 = -1;
@@ -141,6 +141,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
                     ind1 = i;
                     break;
                 }
+
             }
             if (ind1 == -1) ind1 = buf.length;
             if (buf[ind0] == '0')
@@ -150,7 +151,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
             String result = "";
             for (ImageKeyInterface key : imageKeys)
             {
-                result = result + new File(key.getName()).getName().substring(ind0, ind1).toString() + ", ";
+                result = result + new File(key.getOriginalName()).getName().substring(ind0, ind1).toString() + ", ";
             }
 
             return result;
@@ -180,7 +181,9 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
 
             String result = "";
             for (ImageKeyInterface key : imageKeys)
-                result = result + new File(key.getName()).getName().substring(ind0, ind1).toString() + "-";
+            {
+                result = result + new File(key.getOriginalName()).getName().substring(ind0, ind1).toString() + "-";
+            }
 
             return result;
         }
