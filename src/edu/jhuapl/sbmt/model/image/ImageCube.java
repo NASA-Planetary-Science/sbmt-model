@@ -134,9 +134,9 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
             int ind1 = -1;
             for (int i = 0; i<buf.length; ++i)
             {
-                if (Character.isDigit(buf[i]) && ind0 == -1)
+                if (Character.isLetterOrDigit(buf[i]) && ind0 == -1)
                     ind0 = i;
-                else if(!Character.isDigit(buf[i]) && ind0 >= 0)
+                else if(!Character.isLetterOrDigit(buf[i]) && ind0 >= 0)
                 {
                     ind1 = i;
                     break;
@@ -167,9 +167,9 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
             int ind1 = -1;
             for (int i = 0; i<buf.length; ++i)
             {
-                if (Character.isDigit(buf[i]) && ind0 == -1)
+                if (Character.isLetterOrDigit(buf[i]) && ind0 == -1)
                     ind0 = i;
-                else if(!Character.isDigit(buf[i]) && ind0 >= 0)
+                else if(!Character.isLetterOrDigit(buf[i]) && ind0 >= 0)
                 {
                     ind1 = i;
                     break;
