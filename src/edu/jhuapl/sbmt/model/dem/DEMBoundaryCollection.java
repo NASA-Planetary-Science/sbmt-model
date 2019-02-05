@@ -348,7 +348,12 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
         return containsKey(key);
     }
 
-    public void propertyChange(PropertyChangeEvent evt)
+    public void setModelManager(ModelManager modelManager)
+	{
+		this.modelManager = modelManager;
+	}
+
+	public void propertyChange(PropertyChangeEvent evt)
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
