@@ -33,6 +33,7 @@ import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquar
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -151,7 +152,6 @@ public class LidarSearchDataCollection extends AbstractModel
     protected List<Track> tracks = new ArrayList<Track>();
     private double timeSeparationBetweenTracks = 10.0; // In seconds
     private int minTrackLength = 5;
-    int[] defaultColor = {0, 0, 255, 255};
     private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
     private boolean enableTrackErrorComputation = false;
     private double trackError;
@@ -797,6 +797,14 @@ public class LidarSearchDataCollection extends AbstractModel
          return originalPoints.get(tmpIdx);
      }
 
+     /**
+      * Returns a list of Tracks
+      */
+     public List<Track> getTracks()
+     {
+   	  return ImmutableList.copyOf(tracks);
+     }
+
     /**
      * Return the track with the specified trackId
      *
@@ -825,6 +833,21 @@ public class LidarSearchDataCollection extends AbstractModel
         return -1;
     }
 
+    /**
+     * Returns the track ID corresponding to the current selection.
+     */
+    public int getTrackIdOfCurrentSelection()
+    {
+   	 int tmpIdx = selectedPoint;
+       for (int i=0; i<tracks.size(); ++i)
+       {
+           if (getTrack(i).containsId(tmpIdx))
+               return i;
+       }
+
+       return -1;
+    }
+
     public int getNumberOfTracks()
     {
         return tracks.size();
@@ -835,7 +858,7 @@ public class LidarSearchDataCollection extends AbstractModel
         int numVisibleTracks = 0;
         int numTracks = getNumberOfTracks();
         for (int i=0; i<numTracks; ++i)
-            if (!getTrack(i).hidden)
+            if (getTrack(i).getIsVisible() == true)
                 ++numVisibleTracks;
 
         return numVisibleTracks;
@@ -978,7 +1001,7 @@ public class LidarSearchDataCollection extends AbstractModel
         int numTracks = getNumberOfTracks();
         for (int i=0; i<numTracks; ++i)
         {
-            if (!getTrack(i).hidden)
+            if (getTrack(i).getIsVisible() == true)
             {
                 File file = new File(folder.getAbsolutePath(), "track" + i + ".txt");
                 saveTrack(i, file, transformPoint);
@@ -995,7 +1018,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
         for (Track track : tracks)
         {
-            if (!track.hidden)
+            if (track.getIsVisible() == true)
             {
                 int startId = track.startId;
                 int stopId = track.stopId;
@@ -1029,59 +1052,32 @@ public class LidarSearchDataCollection extends AbstractModel
 
     protected void assignInitialColorToTrack()
     {
-        Color[] colors = ColorUtil.generateColors(tracks.size());
-        int[] color = new int[4];
-        int i = 0;
-
-        for (Track track : tracks)
+        int tmpIdx = 0;
+        Color[] colorArr = ColorUtil.generateColors(tracks.size());
+        for (Track aTrack : tracks)
         {
-            color[0] = colors[i].getRed();
-            color[1] = colors[i].getGreen();
-            color[2] = colors[i].getBlue();
-            color[3] = colors[i].getAlpha();
-
-            track.color = color.clone();
-
-            ++i;
+            aTrack.color = colorArr[tmpIdx];
+            tmpIdx++;
         }
     }
 
-    public void setTrackColor(int trackId, Color color)
+    /**
+     * Returns the color associated with the Track.
+     */
+    public Color getTrackColor(int aId)
     {
-        Track track = tracks.get(trackId);
-        track.color[0] = color.getRed();
-        track.color[1] = color.getGreen();
-        track.color[2] = color.getBlue();
-        track.color[3] = color.getAlpha();
-        updateTrackPolydata();
+        return tracks.get(aId).color;
     }
 
-    public int[] getTrackColor(int trackId)
+    /**
+     * Sets the color associated with the Track at the specified index.
+     */
+    public void setTrackColor(int aId, Color aColor)
     {
-        return tracks.get(trackId).color.clone();
-    }
-
-    public void setColorAllTracks(Color color)
-    {
-        defaultColor[0] = color.getRed();
-        defaultColor[1] = color.getGreen();
-        defaultColor[2] = color.getBlue();
-        defaultColor[3] = color.getAlpha();
-
-        for (Track track : tracks)
-        {
-            track.color = defaultColor.clone();
-        }
+        Track tmpTrack = tracks.get(aId);
+        tmpTrack.color = aColor;
 
         updateTrackPolydata();
-    }
-
-    public void hideTrack(int trackId, boolean hide)
-    {
-        tracks.get(trackId).hidden = hide;
-        updateTrackPolydata();
-        selectedPoint=-1;
-        updateSelectedPoint();
     }
 
     public void hideOtherTracksExcept(int trackId)
@@ -1090,7 +1086,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (Track track : tracks)
         {
             if (track != trackToHide)
-                track.hidden = true;
+                track.isVisible = false;
         }
 
         updateTrackPolydata();
@@ -1098,33 +1094,31 @@ public class LidarSearchDataCollection extends AbstractModel
         updateSelectedPoint();
     }
 
-    public void hideAllTracks()
+    /**
+     * Sets the Track corresponding to the specified index to be visible.
+     * @param aId
+     * @param aBool True if the Track should be visible
+     */
+    public void setTrackVisible(int aId, boolean aBool)
     {
-        for (Track track : tracks)
-        {
-            track.hidden = true;
-        }
-
-        updateTrackPolydata();
-        selectedPoint=-1;
-        updateSelectedPoint();
+        // Delegate
+        int[] idArr = {aId};
+        setTrackVisible(idArr, aBool);
     }
 
-    public void showAllTracks()
+    /**
+     * Sets the Tracks corresponding to the specified index array to be visible.
+     * @param aIdArr
+     * @param aBool True if the Tracks should be visible
+     */
+    public void setTrackVisible(int[] aIdArr, boolean aBool)
     {
-        for (Track track : tracks)
-        {
-            track.hidden = false;
-        }
+   	 for (int aId : aIdArr)
+   		 tracks.get(aId).isVisible = aBool;
 
-        updateTrackPolydata();
-        selectedPoint=-1;
-        updateSelectedPoint();
-    }
-
-    public boolean isTrackHidden(int trackId)
-    {
-        return tracks.get(trackId).hidden;
+       updateTrackPolydata();
+       selectedPoint=-1;
+       updateSelectedPoint();
     }
 
     private int getDisplayPointIdFromOriginalPointId(int ptId)
@@ -1171,7 +1165,6 @@ public class LidarSearchDataCollection extends AbstractModel
 
     protected void updateTrackPolydata()
     {
-
         // Place the points into polydata
         polydata.DeepCopy(emptyPolyData);
         scPosPolyData.DeepCopy(emptyPolyData);
@@ -1196,7 +1189,7 @@ public class LidarSearchDataCollection extends AbstractModel
             Track track = getTrack(j);
             int startId = track.startId;
             int stopId = track.stopId;
-            if (!track.hidden)
+            if (track.getIsVisible() == true)
             {
                 // Variables to keep track of intensities
                 double minIntensity = Double.POSITIVE_INFINITY;
@@ -1227,7 +1220,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 }
 
                 // Assign colors to each point in that track
-                Color trackColor = new Color(track.color[0], track.color[1], track.color[2], track.color[3]);
+                Color trackColor = track.color;
                 float[] trackHSL = ColorUtil.getHSLColorComponents(trackColor);
                 Color plotColor;
                 for(double intensity : intensityList)
@@ -1253,7 +1246,7 @@ public class LidarSearchDataCollection extends AbstractModel
         if (enableTrackErrorComputation)
             computeTrackError();
 
-//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
     private void removeTrack(int trackId)
@@ -1599,14 +1592,6 @@ public class LidarSearchDataCollection extends AbstractModel
         selectedPointPolydata.Modified();
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
-
-    public double[] getSelectedPoint()
-    {
-        if (selectedPoint >= 0)
-            return originalPoints.get(selectedPoint).getTargetPosition().toArray().clone();
-
-        return null;
     }
 
     public int getNumberOfPointsPerTrack(int trackId)
