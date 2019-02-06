@@ -33,6 +33,7 @@ import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquar
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -151,7 +152,6 @@ public class LidarSearchDataCollection extends AbstractModel
     protected List<Track> tracks = new ArrayList<Track>();
     private double timeSeparationBetweenTracks = 10.0; // In seconds
     private int minTrackLength = 5;
-    int[] defaultColor = {0, 0, 255, 255};
     private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
     private boolean enableTrackErrorComputation = false;
     private double trackError;
@@ -308,7 +308,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 startDate == this.startDate &&
                 stopDate == this.stopDate &&
                 cubeList.equals(this.cubeList) &&
-                timeSeparationBetweenTracks == this.timeSeparationBetweenTracks &&
+                timeSeparationBetweenTracks == this.getTimeSeparationBetweenTracks() &&
                 minTrackLength == this.minTrackLength)
         {
             return;
@@ -320,7 +320,7 @@ public class LidarSearchDataCollection extends AbstractModel
         this.startDate = startDate;
         this.stopDate = stopDate;
         this.cubeList = (TreeSet<Integer>)cubeList.clone();
-        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+        this.setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
         this.minTrackLength = minTrackLength;
 
 
@@ -430,7 +430,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 startDate == this.startDate &&
                 stopDate == this.stopDate &&
                 cubeList.equals(this.cubeList) &&
-                timeSeparationBetweenTracks == this.timeSeparationBetweenTracks &&
+                timeSeparationBetweenTracks == this.getTimeSeparationBetweenTracks() &&
                 minTrackLength == this.minTrackLength &&
                 minRange == this.minRange &&
                 this.maxRange == this.maxRange)
@@ -444,7 +444,7 @@ public class LidarSearchDataCollection extends AbstractModel
         this.startDate = startDate;
         this.stopDate = stopDate;
         this.cubeList = (TreeSet<Integer>)cubeList.clone();
-        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+        this.setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
         this.minTrackLength = minTrackLength;
         this.minRange = minRange;
         this.maxRange = maxRange;
@@ -787,6 +787,25 @@ public class LidarSearchDataCollection extends AbstractModel
     }
 
     /**
+     * Returns the LidarPoint corresponding to the specified cellId
+     *
+     * @param aCellId
+     */
+     public LidarPoint getLidarPointFromCellId(int aCellId)
+     {
+         int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
+         return originalPoints.get(tmpIdx);
+     }
+
+     /**
+      * Returns a list of Tracks
+      */
+     public List<Track> getTracks()
+     {
+   	  return ImmutableList.copyOf(tracks);
+     }
+
+    /**
      * Return the track with the specified trackId
      *
      * @param trackId
@@ -797,16 +816,36 @@ public class LidarSearchDataCollection extends AbstractModel
         return tracks.get(trackId);
     }
 
-    public int getTrackIdFromPointId(int pointId)
+    /**
+     * Returns the track ID corresponding to the specified cellId.
+     *
+     * @param aCellId
+     */
+    public int getTrackIdFromCellId(int aCellId)
     {
-        pointId = displayedPointToOriginalPointMap.get(pointId);
+        int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
         for (int i=0; i<tracks.size(); ++i)
         {
-            if (getTrack(i).containsId(pointId))
+            if (getTrack(i).containsId(tmpIdx))
                 return i;
         }
 
         return -1;
+    }
+
+    /**
+     * Returns the track ID corresponding to the current selection.
+     */
+    public int getTrackIdOfCurrentSelection()
+    {
+   	 int tmpIdx = selectedPoint;
+       for (int i=0; i<tracks.size(); ++i)
+       {
+           if (getTrack(i).containsId(tmpIdx))
+               return i;
+       }
+
+       return -1;
     }
 
     public int getNumberOfTracks()
@@ -819,7 +858,7 @@ public class LidarSearchDataCollection extends AbstractModel
         int numVisibleTracks = 0;
         int numTracks = getNumberOfTracks();
         for (int i=0; i<numTracks; ++i)
-            if (!getTrack(i).hidden)
+            if (getTrack(i).getIsVisible() == true)
                 ++numVisibleTracks;
 
         return numVisibleTracks;
@@ -882,7 +921,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=1; i<size; ++i)
         {
             double currentTime = originalPoints.get(i).getTime();
-            if (currentTime - prevTime >= timeSeparationBetweenTracks)
+            if (currentTime - prevTime >= getTimeSeparationBetweenTracks())
             {
                 track.stopId = i-1;
                 double t0 = originalPoints.get(track.startId).getTime();
@@ -962,7 +1001,7 @@ public class LidarSearchDataCollection extends AbstractModel
         int numTracks = getNumberOfTracks();
         for (int i=0; i<numTracks; ++i)
         {
-            if (!getTrack(i).hidden)
+            if (getTrack(i).getIsVisible() == true)
             {
                 File file = new File(folder.getAbsolutePath(), "track" + i + ".txt");
                 saveTrack(i, file, transformPoint);
@@ -979,7 +1018,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
         for (Track track : tracks)
         {
-            if (!track.hidden)
+            if (track.getIsVisible() == true)
             {
                 int startId = track.startId;
                 int stopId = track.stopId;
@@ -1013,59 +1052,32 @@ public class LidarSearchDataCollection extends AbstractModel
 
     protected void assignInitialColorToTrack()
     {
-        Color[] colors = ColorUtil.generateColors(tracks.size());
-        int[] color = new int[4];
-        int i = 0;
-
-        for (Track track : tracks)
+        int tmpIdx = 0;
+        Color[] colorArr = ColorUtil.generateColors(tracks.size());
+        for (Track aTrack : tracks)
         {
-            color[0] = colors[i].getRed();
-            color[1] = colors[i].getGreen();
-            color[2] = colors[i].getBlue();
-            color[3] = colors[i].getAlpha();
-
-            track.color = color.clone();
-
-            ++i;
+            aTrack.color = colorArr[tmpIdx];
+            tmpIdx++;
         }
     }
 
-    public void setTrackColor(int trackId, Color color)
+    /**
+     * Returns the color associated with the Track.
+     */
+    public Color getTrackColor(int aId)
     {
-        Track track = tracks.get(trackId);
-        track.color[0] = color.getRed();
-        track.color[1] = color.getGreen();
-        track.color[2] = color.getBlue();
-        track.color[3] = color.getAlpha();
-        updateTrackPolydata();
+        return tracks.get(aId).color;
     }
 
-    public int[] getTrackColor(int trackId)
+    /**
+     * Sets the color associated with the Track at the specified index.
+     */
+    public void setTrackColor(int aId, Color aColor)
     {
-        return tracks.get(trackId).color.clone();
-    }
-
-    public void setColorAllTracks(Color color)
-    {
-        defaultColor[0] = color.getRed();
-        defaultColor[1] = color.getGreen();
-        defaultColor[2] = color.getBlue();
-        defaultColor[3] = color.getAlpha();
-
-        for (Track track : tracks)
-        {
-            track.color = defaultColor.clone();
-        }
+        Track tmpTrack = tracks.get(aId);
+        tmpTrack.color = aColor;
 
         updateTrackPolydata();
-    }
-
-    public void hideTrack(int trackId, boolean hide)
-    {
-        tracks.get(trackId).hidden = hide;
-        updateTrackPolydata();
-        selectedPoint=-1;
-        updateSelectedPoint();
     }
 
     public void hideOtherTracksExcept(int trackId)
@@ -1074,7 +1086,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (Track track : tracks)
         {
             if (track != trackToHide)
-                track.hidden = true;
+                track.isVisible = false;
         }
 
         updateTrackPolydata();
@@ -1082,33 +1094,31 @@ public class LidarSearchDataCollection extends AbstractModel
         updateSelectedPoint();
     }
 
-    public void hideAllTracks()
+    /**
+     * Sets the Track corresponding to the specified index to be visible.
+     * @param aId
+     * @param aBool True if the Track should be visible
+     */
+    public void setTrackVisible(int aId, boolean aBool)
     {
-        for (Track track : tracks)
-        {
-            track.hidden = true;
-        }
-
-        updateTrackPolydata();
-        selectedPoint=-1;
-        updateSelectedPoint();
+        // Delegate
+        int[] idArr = {aId};
+        setTrackVisible(idArr, aBool);
     }
 
-    public void showAllTracks()
+    /**
+     * Sets the Tracks corresponding to the specified index array to be visible.
+     * @param aIdArr
+     * @param aBool True if the Tracks should be visible
+     */
+    public void setTrackVisible(int[] aIdArr, boolean aBool)
     {
-        for (Track track : tracks)
-        {
-            track.hidden = false;
-        }
+   	 for (int aId : aIdArr)
+   		 tracks.get(aId).isVisible = aBool;
 
-        updateTrackPolydata();
-        selectedPoint=-1;
-        updateSelectedPoint();
-    }
-
-    public boolean isTrackHidden(int trackId)
-    {
-        return tracks.get(trackId).hidden;
+       updateTrackPolydata();
+       selectedPoint=-1;
+       updateSelectedPoint();
     }
 
     private int getDisplayPointIdFromOriginalPointId(int ptId)
@@ -1121,7 +1131,7 @@ public class LidarSearchDataCollection extends AbstractModel
         if (radialOffset != 0.0)
         {
             LatLon lla = MathUtil.reclat(pt);
-            lla.rad += radialOffset;
+            lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
             pt = MathUtil.latrec(lla);
         }
 
@@ -1142,7 +1152,7 @@ public class LidarSearchDataCollection extends AbstractModel
         if (radialOffset != 0.0)
         {
             LatLon lla = MathUtil.reclat(lidarPoint);
-            lla.rad += radialOffset;
+            lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
             double[] offsetLidarPoint = MathUtil.latrec(lla);
 
             scpos[0] += (offsetLidarPoint[0]-lidarPoint[0]);
@@ -1155,7 +1165,6 @@ public class LidarSearchDataCollection extends AbstractModel
 
     protected void updateTrackPolydata()
     {
-
         // Place the points into polydata
         polydata.DeepCopy(emptyPolyData);
         scPosPolyData.DeepCopy(emptyPolyData);
@@ -1172,7 +1181,6 @@ public class LidarSearchDataCollection extends AbstractModel
         idList.SetNumberOfIds(1);
 
         displayedPointToOriginalPointMap.clear();
-        int count = 0;
 
         int numTracks = getNumberOfTracks();
 
@@ -1181,7 +1189,7 @@ public class LidarSearchDataCollection extends AbstractModel
             Track track = getTrack(j);
             int startId = track.startId;
             int stopId = track.stopId;
-            if (!track.hidden)
+            if (track.getIsVisible() == true)
             {
                 // Variables to keep track of intensities
                 double minIntensity = Double.POSITIVE_INFINITY;
@@ -1209,11 +1217,10 @@ public class LidarSearchDataCollection extends AbstractModel
                     intensityList.add(intensityReceived);
 
                     displayedPointToOriginalPointMap.add(i);
-                    ++count;
                 }
 
                 // Assign colors to each point in that track
-                Color trackColor = new Color(track.color[0], track.color[1], track.color[2], track.color[3]);
+                Color trackColor = track.color;
                 float[] trackHSL = ColorUtil.getHSLColorComponents(trackColor);
                 Color plotColor;
                 for(double intensity : intensityList)
@@ -1244,23 +1251,8 @@ public class LidarSearchDataCollection extends AbstractModel
 
     private void removeTrack(int trackId)
     {
-//        Track track = tracks.get(trackId);
-//        int trackSize = track.getNumberOfPoints();
-
-//        for (int i=track.stopId; i>=track.startId; i--)
-//            originalPoints.remove(i);
 
         tracks.remove(trackId);
-
-        // Go through all tracks that follow the deleted track and shift
-        // all the start and stop ids down by the size of the deleted track
-//        int numberOfTracks = tracks.size();
-//        for (int i=trackId; i<numberOfTracks; ++i)
-//        {
-//            track = tracks.get(i);
-//            track.startId -= trackSize;
-//            track.stopId -= trackSize;
-//        }
     }
 
     protected void removeTracksThatAreTooSmall()
@@ -1571,11 +1563,6 @@ public class LidarSearchDataCollection extends AbstractModel
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    public int getTrackIdFromSelectedPoint()
-    {
-        return getTrackIdFromPointId(getDisplayPointIdFromOriginalPointId(selectedPoint));
-    }
-
     public void deselectSelectedPoint()
     {
         selectedPointPolydata.DeepCopy(emptyPolyData);
@@ -1605,14 +1592,6 @@ public class LidarSearchDataCollection extends AbstractModel
         selectedPointPolydata.Modified();
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
-
-    public double[] getSelectedPoint()
-    {
-        if (selectedPoint >= 0)
-            return originalPoints.get(selectedPoint).getTargetPosition().toArray().clone();
-
-        return null;
     }
 
     public int getNumberOfPointsPerTrack(int trackId)
@@ -1854,6 +1833,26 @@ public class LidarSearchDataCollection extends AbstractModel
         //selectedPoint=-1;
         updateSelectedPoint();
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+    }
+
+    public double getTimeSeparationBetweenTracks()
+    {
+        return timeSeparationBetweenTracks;
+    }
+
+    public void setTimeSeparationBetweenTracks(double timeSeparationBetweenTracks)
+    {
+        this.timeSeparationBetweenTracks = timeSeparationBetweenTracks;
+    }
+
+    public int getMinTrackLength()
+    {
+        return minTrackLength;
+    }
+
+    public void setMinTrackLength(int value)
+    {
+        this.minTrackLength = value;
     }
 
 }

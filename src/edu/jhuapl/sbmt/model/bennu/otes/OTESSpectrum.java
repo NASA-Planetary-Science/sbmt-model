@@ -95,7 +95,9 @@ public class OTESSpectrum extends BasicSpectrum
         }
         else
         {
-            return Paths.get(getSpectrumPathOnServer()).getParent()
+            String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
+//            System.out.println("OTESSpectrum: getInfoFilePathOnServer: spectrum path " + Paths.get(getSpectrumPathOnServer()).getParent().resolveSibling("infofiles-corrected"));
+            return Paths.get(spectrumPath).getParent()
                     .resolveSibling("infofiles-corrected")
                     .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
                     .toString();
@@ -200,7 +202,7 @@ public class OTESSpectrum extends BasicSpectrum
                     catch (Exception e)
                     {
                         // TODO Auto-generated catch block
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                     continue;
                 }

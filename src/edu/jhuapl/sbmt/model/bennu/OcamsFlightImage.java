@@ -4,22 +4,23 @@ import java.io.IOException;
 
 import vtk.vtkImageData;
 
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
 public class OcamsFlightImage extends BasicPerspectiveImage
 {
-    public static OcamsFlightImage of(ImageKey key, SmallBodyModel smallBodyModel,
+    public static OcamsFlightImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         return new OcamsFlightImage(key, smallBodyModel, loadPointingOnly);
     }
 
-    protected OcamsFlightImage(ImageKey key, SmallBodyModel smallBodyModel,
+    protected OcamsFlightImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
@@ -30,8 +31,7 @@ public class OcamsFlightImage extends BasicPerspectiveImage
     {
         // For some reason we need to do
         // this so the image is displayed properly.
-        System.out.println("OcamsFlightImage: processRawImage: key source " + key.source);
-        if (key.source == ImageSource.SPICE)
+        if (key.getSource() == ImageSource.SPICE)
         {
             ImageDataUtil.flipImageYAxis(rawImage);
             ImageDataUtil.rotateImage(rawImage, 90);

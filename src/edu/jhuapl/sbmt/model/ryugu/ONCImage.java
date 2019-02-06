@@ -11,18 +11,19 @@ import com.google.common.collect.ImmutableMap;
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
 public class ONCImage extends PerspectiveImage
 {
 
-    public ONCImage(ImageKey key, SmallBodyModel smallBodyModel,
+    public ONCImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
@@ -55,8 +56,8 @@ public class ONCImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent()
         + "/infofiles/" + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -77,7 +78,7 @@ public class ONCImage extends PerspectiveImage
 
     private String getImageFileName()
     {
-        return key.name + ".fit";
+        return key.getName() + ".fit";
     }
 
     private ImmutableMap<String, String> getSumfileMap()
@@ -114,8 +115,8 @@ public class ONCImage extends PerspectiveImage
     {
         // Flip image along y axis. For some reason we need to do
         // this so the image is displayed properly.
-        ImageKey key = getKey();
-        if (key.source.equals(ImageSource.SPICE))
+        ImageKeyInterface key = getKey();
+        if (key.getSource().equals(ImageSource.SPICE))
             ImageDataUtil.rotateImage(rawImage, -90);
     }
 }

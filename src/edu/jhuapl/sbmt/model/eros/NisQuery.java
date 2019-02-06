@@ -33,7 +33,7 @@ import crucible.crust.metadata.impl.SettableMetadata;
 //This must be final because it is a singleton with a clone method.
 public final class NisQuery extends DatabaseQueryBase
 {
-    private static NisQuery ref = null;
+	private static NisQuery ref = null;
 
     public static String getNisPath(List<String> result)
     {

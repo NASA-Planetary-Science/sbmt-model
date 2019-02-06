@@ -3,22 +3,24 @@ package edu.jhuapl.sbmt.model.leisa;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.BasicHDU;
-import nom.tam.fits.Fits;
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.BasicHDU;
+import nom.tam.fits.Fits;
+import nom.tam.fits.FitsException;
 
 public class LEISAJupiterImage extends PerspectiveImage
 {
-    public static final int INITIAL_BAND = 127;
+	public static final int INITIAL_BAND = 127;
 
     private double[][] spectrumWavelengths;
     private double[][] spectrumBandwidths;
@@ -27,13 +29,14 @@ public class LEISAJupiterImage extends PerspectiveImage
 
     public ImageKey getKey()
     {
-        ImageKey key = super.getKey();
-        key.slice = getCurrentSlice();
-        key.band = getCurrentBand();
-        return key;
+        ImageKeyInterface key = super.getKey();
+        ImageKey newKey = new ImageKey(key.getName(), key.getSource(), key.getFileType(), key.getImageType(), key.getInstrument(), getCurrentBand(), getCurrentSlice(), key.getPointingFile());
+//        key.slice = getCurrentSlice();
+//        key.band = getCurrentBand();
+        return newKey;
     }
 
-    public LEISAJupiterImage(ImageKey key, SmallBodyModel smallBodyModel,
+    public LEISAJupiterImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {
@@ -83,7 +86,7 @@ public class LEISAJupiterImage extends PerspectiveImage
 
     public boolean shiftBands() { return true; }
 
-    protected int getNumberBands()
+    public int getNumberBands()
     {
         return 256;
     }
@@ -220,11 +223,11 @@ public class LEISAJupiterImage extends PerspectiveImage
         return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
     }
 
-    protected double getFocalLength() { return 657.5; }    // in mm
+    public double getFocalLength() { return 657.5; }    // in mm
 
-    protected double getPixelWidth() { return 0.013; }    // in mm
+    public double getPixelWidth() { return 0.013; }    // in mm
 
-    protected double getPixelHeight() { return 0.013; }   // in mm
+    public double getPixelHeight() { return 0.013; }   // in mm
 
     @Override
     protected String initializeLabelFileFullPath()

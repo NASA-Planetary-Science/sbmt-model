@@ -87,7 +87,7 @@ public class LidarDataPerUnit extends AbstractModel implements PropertyChangeLis
     private int timeIndex;
     private vtkUnsignedCharArray colors;
     private Color baseColor;
-    private LidarLoadingListener listener;
+    protected LidarLoadingListener listener;
 
     void init() throws IOException
     {
@@ -291,12 +291,14 @@ public class LidarDataPerUnit extends AbstractModel implements PropertyChangeLis
 
             in.close();
             renderPoints();
+            if (listener != null)
+                listener.lidarLoadComplete(LidarDataPerUnit.this);
         }
 
 
     }
 
-    private void renderPoints()
+    protected void renderPoints()
     {
      // Color each point based on base color scaled by intensity
         Color plotColor;
@@ -411,7 +413,7 @@ public class LidarDataPerUnit extends AbstractModel implements PropertyChangeLis
         {
             double[] pt = originalPoints.GetPoint(i);
             LatLon lla = MathUtil.reclat(pt);
-            lla.rad += offset*offsetMultiplier;
+            lla = new LatLon(lla.lat, lla.lon, lla.rad + offset*offsetMultiplier);
             pt = MathUtil.latrec(lla);
             points.SetPoint(i, pt);
         }

@@ -3,18 +3,19 @@ package edu.jhuapl.sbmt.model.vesta;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class FcImage extends PerspectiveImage
 {
-    public FcImage(ImageKey key,
+    public FcImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
@@ -31,8 +32,8 @@ public class FcImage extends PerspectiveImage
 
     public int getCamera()
     {
-        ImageKey key = getKey();
-        String cameraId = new File(key.name).getName().substring(2, 3);
+        ImageKeyInterface key = getKey();
+        String cameraId = new File(key.getName()).getName().substring(2, 3);
         return Integer.parseInt(cameraId);
     }
 
@@ -45,8 +46,8 @@ public class FcImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".FIT").getAbsolutePath();
     }
 
     @Override
@@ -58,8 +59,8 @@ public class FcImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + File.separator + "infofiles" + File.separator
         + keyFile.getName() + ".INFO";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -68,8 +69,8 @@ public class FcImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + File.separator + "sumfiles" + File.separator
         + keyFile.getName().substring(0, 12).replace('B', 'A') + ".SUM";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
@@ -78,8 +79,8 @@ public class FcImage extends PerspectiveImage
     @Override
     public int getFilter()
     {
-        ImageKey key = getKey();
-        String filterId = new File(key.name).getName().substring(25, 26);
+        ImageKeyInterface key = getKey();
+        String filterId = new File(key.getName()).getName().substring(25, 26);
         return Integer.parseInt(filterId);
     }
 

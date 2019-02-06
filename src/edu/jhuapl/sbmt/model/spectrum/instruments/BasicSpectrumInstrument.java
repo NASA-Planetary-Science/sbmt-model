@@ -1,5 +1,9 @@
 package edu.jhuapl.sbmt.model.spectrum.instruments;
 
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.impl.SettableMetadata;
+import crucible.crust.metadata.api.Version;
 import edu.jhuapl.sbmt.model.spectrum.SpectraType;
 import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 import edu.jhuapl.sbmt.query.QueryBase;

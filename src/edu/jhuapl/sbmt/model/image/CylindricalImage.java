@@ -34,7 +34,14 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
+import edu.jhuapl.sbmt.gui.image.model.custom.CustomCylindricalImageKey;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
+
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.impl.FixedMetadata;
+import crucible.crust.metadata.impl.gson.Serializers;
 
 public class CylindricalImage extends Image
 {
@@ -76,7 +83,7 @@ public class CylindricalImage extends Image
      * @param smallBodyModel
      */
     public CylindricalImage(
-            ImageKey key,
+            ImageKeyInterface key,
             SmallBodyModel smallBodyModel)
     {
         super(key);
@@ -89,36 +96,71 @@ public class CylindricalImage extends Image
 
         // If we're an IMAGE_MAP then the image name is the same as
         // as the key name.
-        if (getKey().source.equals(ImageSource.IMAGE_MAP))
+        if (getKey().getSource().equals(ImageSource.IMAGE_MAP))
         {
-            imageName = getKey().name;
+            imageName = getKey().getName();
         }
 }
 
     private void loadImageInfoFromConfigFile()
     {
-        if (getKey().source.equals(ImageSource.LOCAL_CYLINDRICAL))
+        if (getKey().getSource().equals(ImageSource.LOCAL_CYLINDRICAL))
         {
             // Look in the config file and figure out which index this image
             // corresponds to. The config file is located in the same folder
             // as the image file
-            String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-            MapUtil configMap = new MapUtil(configFilename);
-            String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-            for (int i=0; i<imageFilenames.length; ++i)
-            {
-                String filename = new File(getKey().name).getName();
-                if (filename.equals(imageFilenames[i]))
-                {
-                    imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
-                    lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
-                    lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
-                    upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
-                    upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
-                    break;
-                }
-            }
+        	final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
+            String configFilename = new File(getKey().getName()).getParent() + File.separator + "config.txt";
+            FixedMetadata metadata;
+			try
+			{
+				metadata = Serializers.deserialize(new File(configFilename.substring(5)), "CustomImages");
+				List<CustomImageKeyInterface> customImages = metadata.get(customImagesKey);
+				for (CustomImageKeyInterface info : customImages)
+				{
+					CustomCylindricalImageKey cylInfo = (CustomCylindricalImageKey)info;
+					String filename = new File(getKey().getName()).getName();
+					if (filename.equals(cylInfo.getImageFilename()))
+	                {
+						imageName = cylInfo.getName();
+	                    lowerLeftLat = cylInfo.lllat;
+	                    lowerLeftLon = cylInfo.lllon;
+	                    upperRightLat = cylInfo.urlat;
+	                    upperRightLon = cylInfo.urlon;
+
+	                    break;
+	                }
+				}
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+	            MapUtil configMap = new MapUtil(configFilename);
+	            String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+	            for (int i=0; i<imageFilenames.length; ++i)
+	            {
+	                String filename = new File(getKey().getName()).getName();
+	                if (filename.equals(imageFilenames[i]))
+	                {
+	                    imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
+	                    lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
+	                    lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
+	                    upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
+	                    upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
+	                    break;
+	                }
+	            }
+
+			}
         }
+    }
+
+    protected <T> T read(Key<T> key, Metadata configMetadata)
+    {
+        T value = configMetadata.get(key);
+        if (value != null)
+            return value;
+        return null;
     }
 
     /**
@@ -570,12 +612,15 @@ public class CylindricalImage extends Image
 
             LatLon ll = MathUtil.reclat(pt);
 
-            if (ll.lon < 0.0)
-               ll.lon += (2.0 * Math.PI);
-            if (ll.lon >= 2.0 * Math.PI)
-                ll.lon = 0.0;
+    		double latitude = ll.lat;
+    		double longitude = ll.lon;
 
-            double dist = getDistanceBetweenLongitudes(lllon, ll.lon);
+            if (longitude < 0.0)
+               longitude += (2.0 * Math.PI);
+            if (longitude >= 2.0 * Math.PI)
+                longitude = 0.0;
+
+            double dist = getDistanceBetweenLongitudes(lllon, longitude);
             if (isOnLeftSide)
             {
                 if (Math.abs(2.0*Math.PI - dist) < 1.0e-2)
@@ -588,7 +633,7 @@ public class CylindricalImage extends Image
             }
 
             double u = dist / xsize;
-            double v = (ll.lat - lllat) / ysize;
+            double v = (latitude - lllat) / ysize;
 
             if (u < 0.0) u = 0.0;
             else if (u > 1.0) u = 1.0;
@@ -672,7 +717,7 @@ public class CylindricalImage extends Image
         if (smallBodyActor == null)
         {
             initialize();
-            loadImage(getKey().name);
+            loadImage(getKey().getName());
 
             smallBodyMapper = new vtkPolyDataMapper();
             smallBodyMapper.ScalarVisibilityOff();
@@ -722,10 +767,10 @@ public class CylindricalImage extends Image
     protected void loadImage(String name)
     {
         String imageFile = null;
-        if (getKey().source == ImageSource.IMAGE_MAP)
+        if (getKey().getSource() == ImageSource.IMAGE_MAP)
             imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
         else
-            imageFile = getKey().name;
+            imageFile = getKey().getName();
 
         if (rawImage == null)
             rawImage = new vtkImageData();
@@ -734,6 +779,10 @@ public class CylindricalImage extends Image
         if(VtkENVIReader.isENVIFilename(imageFile))
         {
             // Customized support for ENVI binary files
+        	if (imageFile.startsWith("file://"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
             VtkENVIReader reader = new VtkENVIReader();
             reader.SetFileName(imageFile);
             reader.Update();
@@ -741,7 +790,17 @@ public class CylindricalImage extends Image
         }
         else
         {
+            if (getKey().getSource() == ImageSource.IMAGE_MAP)
+                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+            else
+                imageFile = getKey().getName();
+            if (imageFile.startsWith("file://"))
+            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (rawImage == null)
+                rawImage = new vtkImageData();
+
             // Otherwise, try vtk's built in reader
+//        	System.out.println("CylindricalImage: loadImage: using png reader");
             vtkPNGReader reader = new vtkPNGReader();
             reader.SetFileName(imageFile);
             reader.Update();

@@ -3,13 +3,15 @@ package edu.jhuapl.sbmt.model.dem;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-import nom.tam.fits.FitsException;
+import javax.swing.JOptionPane;
 
 import vtk.vtkActor;
 import vtk.vtkProp;
@@ -17,12 +19,21 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
+import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk2.event.Event;
+import edu.jhuapl.saavtk2.event.EventListener;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.dem.DEM.DEMKey;
+import edu.jhuapl.sbmt.gui.dtm.model.creation.DtmCreationModel.DEMInfo;
 import edu.jhuapl.sbmt.model.dem.DEMBoundaryCollection.DEMBoundary;
+import edu.jhuapl.sbmt.model.dtm.CreateDEMEvent;
+import edu.jhuapl.sbmt.model.dtm.DeleteDEMEvent;
+import edu.jhuapl.sbmt.model.dtm.HideDEMEvent;
+import edu.jhuapl.sbmt.model.dtm.ShowDEMEvent;
 
-public class DEMCollection extends AbstractModel implements PropertyChangeListener
+import nom.tam.fits.FitsException;
+
+public class DEMCollection extends AbstractModel implements PropertyChangeListener, EventListener
 {
     private SmallBodyModel smallBodyModel;
     private ModelManager modelManager;
@@ -77,6 +88,17 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
         {
             if (dem.getKey().equals(key))
                 return dem;
+        }
+
+        return null;
+    }
+
+    public DEMKey getDEMKeyFromInfo(DEMInfo info)
+    {
+        for (DEM dem : demToActorsMap.keySet())
+        {
+            if (dem.getKey().fileName.equals(info.demfilename))
+                return dem.getKey();
         }
 
         return null;
@@ -183,4 +205,70 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
+
+
+    @Override
+    public void handle(Event event)
+    {
+        try
+        {
+            if (event instanceof CreateDEMEvent)
+            {
+                CreateDEMEvent eventCast=(CreateDEMEvent)event;
+                addDEM(eventCast.getKey());
+            }
+            else if (event instanceof DeleteDEMEvent)
+            {
+                DeleteDEMEvent eventCast=(DeleteDEMEvent)event;
+                removeDEM(eventCast.getKey());
+            }
+            else if (event instanceof ShowDEMEvent)
+            {
+                ShowDEMEvent eventCast=(ShowDEMEvent)event;
+                DEM dem=getDEM(eventCast.getKey());
+                if (dem!=null)
+                    dem.setVisible(true);
+            }
+            else if (event instanceof HideDEMEvent)
+            {
+                HideDEMEvent eventCast=(HideDEMEvent)event;
+                DEM dem = getDEM(eventCast.getKey());
+                if (dem != null)
+                    dem.setVisible(false);
+            }
+        }
+        catch (FitsException | IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void saveDEM(DEMKey key) throws IOException
+    {
+        String uuid = UUID.randomUUID().toString();
+
+        if(key.fileName.toLowerCase().endsWith(".fit") || key.fileName.toLowerCase().endsWith(".fits"))
+        {
+            // Copy FIT file to cache
+            String newFilename = "dem-" + uuid + ".fit";
+            String newFilepath = Paths.get(modelManager.getPolyhedralModel().getCustomDataFolder()).resolve(newFilename).toString();
+            FileUtil.copyFile(key.fileName,  newFilepath);
+            // Change demInfo.demfilename to the new location of the file
+            key.fileName = newFilepath;
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(null,
+                    "DEM file does not have valid FIT extension.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+	public void setModelManager(ModelManager modelManager)
+	{
+		this.modelManager = modelManager;
+	}
+
 }

@@ -3,18 +3,19 @@ package edu.jhuapl.sbmt.model.ida;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
+
+import nom.tam.fits.FitsException;
 
 public class SSIIdaImage extends PerspectiveImage
 {
-    public SSIIdaImage(ImageKey key, SmallBodyModel smallBodyModel,
+    public SSIIdaImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {
@@ -38,8 +39,8 @@ public class SSIIdaImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".fit").getAbsolutePath();
     }
 
     @Override
@@ -57,8 +58,8 @@ public class SSIIdaImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String sumFilename = keyFile.getParentFile().getParent() + "/sumfiles/"
         + keyFile.getName().substring(0, 5) + ".SUM";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();

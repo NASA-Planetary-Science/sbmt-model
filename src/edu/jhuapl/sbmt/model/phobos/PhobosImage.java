@@ -7,16 +7,17 @@ import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
+import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
-import edu.jhuapl.sbmt.util.ImageDataUtil;
 
 import nom.tam.fits.FitsException;
 
 public class PhobosImage extends PerspectiveImage
 {
-    public PhobosImage(ImageKey key,
+    public PhobosImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
@@ -96,15 +97,15 @@ public class PhobosImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".FIT").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".FIT").getAbsolutePath();
     }
 
     @Override
     protected String initializeLabelFileFullPath()
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String filename = keyFile.getName();
 
         // Note Viking images begin either with an upper case V or a lower case f.
@@ -116,7 +117,7 @@ public class PhobosImage extends PerspectiveImage
         if (keyFile.getName().startsWith("V"))
             labelFilename = keyFile.getParent() + "/f" + keyFile.getName().substring(2, 8).toLowerCase() + ".lbl";
         else //if (keyFile.getName().startsWith("f"))
-            labelFilename = key.name + ".lbl";
+            labelFilename = key.getName() + ".lbl";
 
         return FileCache.isFileGettable(labelFilename) ? FileCache.getFileFromServer(labelFilename).getAbsolutePath() : null;
     }
@@ -124,9 +125,9 @@ public class PhobosImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
 
-        File keyFile = new File(key.name);
+        File keyFile = new File(key.getName());
         String fileName = keyFile.getParentFile().getParent() + "/infofiles/"
         + keyFile.getName() + ".INFO";
 
@@ -136,11 +137,11 @@ public class PhobosImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String sumfilesdir = "sumfiles";
-        if (key.source == ImageSource.CORRECTED)
+        if (key.getSource() == ImageSource.CORRECTED)
             sumfilesdir += "-corrected";
-        File keyFile = new File(key.name);
+        File keyFile = new File(key.getName());
         String fileName = keyFile.getParentFile().getParent() + "/" + sumfilesdir + "/"
         + keyFile.getName() + ".SUM";
 
@@ -153,8 +154,8 @@ public class PhobosImage extends PerspectiveImage
         // For Phobos 2 image, return 1, 2, or 3 which we can get by looking at the last number in the filename.
         // For Viking images, we need to parse the label file to get the filter.
         // for MEX, HiRISE, or MOC images, return -1
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String filename = keyFile.getName();
         if (isHrsc(filename) || isHiRISE(filename) || isMoc(filename))
         {
@@ -277,8 +278,8 @@ public class PhobosImage extends PerspectiveImage
         // 8 for MOC
         // We need to parse the label file to get which viking spacecraft
 
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String filename = keyFile.getName();
         if (isHrsc(filename))
         {
@@ -332,8 +333,8 @@ public class PhobosImage extends PerspectiveImage
     @Override
     protected void processRawImage(vtkImageData rawImage)
     {
-        ImageKey key = getKey();
-        File keyFile = new File(key.name);
+        ImageKeyInterface key = getKey();
+        File keyFile = new File(key.getName());
         String fileName = keyFile.getName();
         if (getFlip().contains("Y") && !isHiRISE(fileName) && !isMoc(fileName))
         {
