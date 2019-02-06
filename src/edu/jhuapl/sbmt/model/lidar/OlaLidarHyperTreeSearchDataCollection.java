@@ -386,35 +386,6 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 						prevTime = currentTime;
 					}
 
-
-
-
-					//                    prevTime = start.getTime();
-					//                    for (OlaFSHyperPoint point : pntsFromCurrFile) {
-					//                        double currentTime = point.getTime();
-					//                        double diff = currentTime - prevTime;
-					//                        if (diff >= getTimeSeparationBetweenTracks()) {
-					//                            // start a new track
-					//                            int iLastPoint = pntsFromCurrFile.indexOf(point) - 1;
-					//                            istop = allPointsSortedbyFileThenTime.indexOf(pntsFromCurrFile.get(iLastPoint)); // get index of last point in original points
-					//                            stop = (OlaFSHyperPoint) allPointsSortedbyFileThenTime.get(istop); // get last point
-					//
-					//                            // create the current track and add to tracks
-					//                            track.timeRange = new String[]
-					//                                    {TimeUtil.et2str(start.getTime()),
-					//                                            TimeUtil.et2str(stop.getTime())};
-					//                            track.startId = istart;
-					//                            track.stopId = istop;
-					//                            tracks.add(track);
-					//
-					//                            // start new track with this current point
-					//                            track = new Track();
-					//                            track.registerSourceFileIndex(fileNum, localFileMap);
-					//                            istart = allPointsSortedbyFileThenTime.indexOf(point);
-					//                            start = point;
-					//                        }
-					//                        prevTime = currentTime;
-					//                    }
 					count++;
 					double progressPercentage=((double)count/(double)total*100);
 					setProgress((int)progressPercentage);
