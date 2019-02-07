@@ -18,9 +18,11 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
@@ -1062,37 +1064,50 @@ public class LidarSearchDataCollection extends AbstractModel
     }
 
     /**
-     * Returns the color associated with the Track.
-     */
-    public Color getTrackColor(int aId)
-    {
-        return tracks.get(aId).color;
-    }
-
-    /**
      * Sets the color associated with the Track at the specified index.
      */
     public void setTrackColor(int aId, Color aColor)
     {
-        Track tmpTrack = tracks.get(aId);
-        tmpTrack.color = aColor;
-
-        updateTrackPolydata();
+       // Delegate
+       int[] idArr = {aId};
+       setTrackColor(idArr, aColor);
     }
 
-    public void hideOtherTracksExcept(int trackId)
+    /**
+     * Sets the color associated with the Tracks at the specified indexes.
+     */
+    public void setTrackColor(int[] aIdArr, Color aColor)
     {
-        Track trackToHide = tracks.get(trackId);
-        for (Track track : tracks)
-        {
-            if (track != trackToHide)
-                track.isVisible = false;
-        }
+   	 for (int aId : aIdArr)
+   		 tracks.get(aId).color = aColor;
 
         updateTrackPolydata();
-        selectedPoint=-1;
-        updateSelectedPoint();
     }
+
+	/**
+	 * Method that will set the Tracks associated with the specified indexs to
+	 * visible and set all other Tracks to invisible.
+	 *
+	 * @param aIdArr
+	 */
+	public void hideOtherTracksExcept(int[] aIdArr)
+	{
+		Set<Integer> tmpSet = new HashSet<>();
+		for (int aId : aIdArr)
+			tmpSet.add(aId);
+
+		// Update the visibility flag on each Track
+		for (int aId = 0; aId < tracks.size(); aId++)
+		{
+			Track tmpTrack = tracks.get(aId);
+			boolean isVisible = tmpSet.contains(aId);
+			tmpTrack.isVisible = isVisible;
+		}
+
+		updateTrackPolydata();
+		selectedPoint = -1;
+		updateSelectedPoint();
+	}
 
     /**
      * Sets the Track corresponding to the specified index to be visible.
@@ -1107,7 +1122,7 @@ public class LidarSearchDataCollection extends AbstractModel
     }
 
     /**
-     * Sets the Tracks corresponding to the specified index array to be visible.
+     * Sets the Tracks corresponding to the specified indexes to be visible.
      * @param aIdArr
      * @param aBool True if the Tracks should be visible
      */
