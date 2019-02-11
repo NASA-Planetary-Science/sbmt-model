@@ -40,25 +40,11 @@ import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
 {
-    public enum TrackFileType
-    {
-        TEXT,
-        BINARY,
-        OLA_LEVEL_2
-    };
-
     private Map<String, FSHyperTreeSkeleton> skeletons = new HashMap<String, FSHyperTreeSkeleton>();
     private FSHyperTreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
-    private boolean loading=false;
 //    Map<Integer, List<OlaFSHyperPoint>> filesWithPoints = new HashMap<Integer, List<OlaFSHyperPoint>>();
     Map<Integer, HashSet<OlaFSHyperPoint>> filesWithPoints = new HashMap<Integer, HashSet<OlaFSHyperPoint>>();
-
-    @Override
-    public boolean isLoading()
-    {
-        return loading;
-    }
 
     public OlaLidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
@@ -144,7 +130,6 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
             {
                 Stopwatch sw=new Stopwatch();
                 sw.start();
-                loading=true;
 
                 originalPoints.clear();
                 filesWithPoints.clear();
@@ -197,7 +182,6 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                 }
 
                 cancel(true);
-                loading=false;
 
                 sw.reset();
                 sw.start();
@@ -207,12 +191,8 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 
         };
         dataLoader.executeDialog();
-        initTranslationArray(originalPoints.size());
-
-        radialOffset = 0.0;
 
         computeTracks();
-
         removeTracksThatAreTooSmall();
 
         // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
@@ -354,6 +334,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
                         break;
                 }
                 cancel(true);
+
                 return null;
             }
 
@@ -372,7 +353,9 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
             }
         });
 
-
+        // Reset internal state vars
+        radialOffset = 0.0;
+        initTranslationArray();
     }
 
 

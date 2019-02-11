@@ -39,22 +39,10 @@ import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
 {
-    public enum TrackFileType
-    {
-        TEXT
-    };
-
     private Map<String, Hayabusa2LidarHypertreeSkeleton> skeletons = new HashMap<String, Hayabusa2LidarHypertreeSkeleton>();
     private Hayabusa2LidarHypertreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
-    private boolean loading=false;
     Map<Integer, List<Hayabusa2LidarPoint>> filesWithPoints = new HashMap<Integer, List<Hayabusa2LidarPoint>>();
-
-    @Override
-    public boolean isLoading()
-    {
-        return loading;
-    }
 
     public Hayabusa2LidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
@@ -145,7 +133,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
             {
                 Stopwatch sw=new Stopwatch();
                 sw.start();
-                loading=true;
 
                  originalPoints.clear();
                  filesWithPoints.clear();
@@ -196,7 +183,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
                 }
 
                 cancel(true);
-                loading=false;
 
 //                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
@@ -207,11 +193,8 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 
         };
         dataLoader.executeDialog();
-        initTranslationArray(originalPoints.size());
 //        System.out.println(
 //                "Hayabusa2LidarSearchDataCollection: setLidarData: before while loop");
-
-        radialOffset = 0.0;
 
         computeTracks();
 
@@ -363,7 +346,9 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
             }
         });
 
-
+        // Reset internal state vars
+        radialOffset = 0.0;
+        initTranslationArray();
     }
 
 
