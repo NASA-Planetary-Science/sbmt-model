@@ -27,6 +27,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.fitting.PolynomialFitter;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -140,7 +141,7 @@ public class LidarSearchDataCollection extends AbstractModel
     private vtkActor scPosActor;
 
     protected double radialOffset = 0.0;
-    protected double[][] translation;
+    private Vector3D[] translationArr;
 
     private String dataSource;
     private double startDate;
@@ -214,19 +215,19 @@ public class LidarSearchDataCollection extends AbstractModel
         actors.add(scPosActor);
     }
 
-    protected void initTranslationArray(int size)
-    {
-        translation = new double[size][];
-        for (int i = 0; i < size; i++)
-        {
-            translation[i] = new double[] {0.0, 0.0, 0.0};
-        }
-    }
-
-    public boolean isLoading()
-    {
-        return false;
-    }
+	/**
+	 * Helper method that initializes the internal translation array. The
+	 * translation array is used to store a translation vector for each Track.
+	 * Initialization of the translation array will set each Track to have no
+	 * translation (Zero vector).
+	 */
+	protected void initTranslationArray()
+	{
+		int trackCnt = tracks.size();
+		translationArr = new Vector3D[trackCnt];
+		for (int c1 = 0; c1 < trackCnt; c1++)
+			translationArr[c1] = Vector3D.ZERO;
+	}
 
     public double getOffsetScale()
     {
@@ -398,13 +399,9 @@ public class LidarSearchDataCollection extends AbstractModel
                     continue;
                 }
             }
-            initTranslationArray(originalPoints.size());
             in.close();
         }
 
-
-        radialOffset = 0.0;
-//        translation[0] = translation[1] = translation[2] = 0.0;
 
         computeTracks();
         removeTracksThatAreTooSmall();
@@ -524,13 +521,9 @@ public class LidarSearchDataCollection extends AbstractModel
                     continue;
                 }
             }
-            initTranslationArray(originalPoints.size());
             in.close();
         }
 
-
-        radialOffset = 0.0;
-//        translation[0] = translation[1] = translation[2] = 0.0;
 
         computeTracks();
         removeTracksThatAreTooSmall();
@@ -544,7 +537,7 @@ public class LidarSearchDataCollection extends AbstractModel
     {
         LidarTextFormatReader textReader = new LidarTextFormatReader(file, localFileMap.inverse().get(file.toString()), originalPoints, originalPointsSourceFiles, tracks);
         textReader.process(type);
-        initTranslationArray(originalPoints.size());
+        initTranslationArray();
 //
 //        InputStream fs = new FileInputStream(file.getAbsolutePath());
 //        InputStreamReader isr = new InputStreamReader(fs);
@@ -672,11 +665,11 @@ public class LidarSearchDataCollection extends AbstractModel
             originalPoints.add(pt);
             originalPointsSourceFiles.put(pt,fileId);
         }
-        initTranslationArray(originalPoints.size());
         in.close();
 
         track.stopId = originalPoints.size() - 1;
         tracks.add(track);
+        initTranslationArray();
         track.registerSourceFileIndex(fileId, localFileMap);
     }
 
@@ -701,10 +694,9 @@ public class LidarSearchDataCollection extends AbstractModel
             originalPointsSourceFiles.put(pts.get(i),fileId);
         originalPoints.addAll(pts);
 
-        initTranslationArray(originalPoints.size());
-
         track.stopId = originalPoints.size() - 1;
         tracks.add(track);
+        initTranslationArray();
         track.registerSourceFileIndex(fileId, localFileMap);
     }
 
@@ -730,10 +722,10 @@ public class LidarSearchDataCollection extends AbstractModel
             originalPointsSourceFiles.put(lidarPt,fileId);
             originalPoints.add(lidarPt);
         }
-        initTranslationArray(originalPoints.size());
 
         track.stopId = originalPoints.size() - 1;
         tracks.add(track);
+        initTranslationArray();
         track.registerSourceFileIndex(fileId, localFileMap);
     }
 
@@ -754,7 +746,6 @@ public class LidarSearchDataCollection extends AbstractModel
         //fileBounds.clear();
         //localFileMap.clear();
 
-        int oldBounds=0;
         for (File file : files)
         {
             if (!localFileMap.containsValue(file.toString()))
@@ -850,10 +841,13 @@ public class LidarSearchDataCollection extends AbstractModel
        return -1;
     }
 
-    public int getNumberOfTracks()
-    {
-        return tracks.size();
-    }
+	/**
+	 * Returns the number of tracks in the model
+	 */
+	public int getNumberOfTracks()
+	{
+		return tracks.size();
+	}
 
     public int getNumberOfVisibleTracks()
     {
@@ -946,7 +940,9 @@ public class LidarSearchDataCollection extends AbstractModel
         double t1 = originalPoints.get(track.stopId).getTime();
         track.timeRange=new String[]{TimeUtil.et2str(t0),TimeUtil.et2str(t1)};
 
-
+        // Reset internal state vars
+        initTranslationArray();
+        radialOffset = 0.0;
     }
 
 
@@ -957,18 +953,18 @@ public class LidarSearchDataCollection extends AbstractModel
      * radial offset and translation before being saved out. If false, the original points
      * are saved out unmodified.
      *
-     * @param trackId
-     * @param outfile
+     * @param aTrackId
+     * @param aOutfile
      * @param transformPoint
      * @throws IOException
      */
-    public void saveTrack(int trackId, File outfile, boolean transformPoint) throws IOException
+    public void saveTrack(int aTrackId, File aOutfile, boolean transformPoint) throws IOException
     {
-        FileWriter fstream = new FileWriter(outfile);
+        FileWriter fstream = new FileWriter(aOutfile);
         BufferedWriter out = new BufferedWriter(fstream);
 
-        int startId = tracks.get(trackId).startId;
-        int stopId = tracks.get(trackId).stopId;
+        int startId = tracks.get(aTrackId).startId;
+        int stopId = tracks.get(aTrackId).stopId;
 
         String newline = System.getProperty("line.separator");
 
@@ -979,8 +975,8 @@ public class LidarSearchDataCollection extends AbstractModel
             double[] scpos = pt.getSourcePosition().toArray();
             if (transformPoint)
             {
-                target = transformLidarPoint(target, i);
-                scpos = transformScpos(scpos, target, i);
+                target = transformLidarPoint(aTrackId, target);
+                scpos = transformScpos(aTrackId, scpos, target);
             }
 
             String timeString = TimeUtil.et2str(pt.getTime());
@@ -1011,46 +1007,44 @@ public class LidarSearchDataCollection extends AbstractModel
         }
     }
 
-    public void saveAllVisibleTracksToSingleFile(File file, boolean transformPoint) throws IOException
-    {
-        FileWriter fstream = new FileWriter(file);
-        BufferedWriter out = new BufferedWriter(fstream);
+	public void saveAllVisibleTracksToSingleFile(File aFile, boolean transformPoint) throws IOException
+	{
+		FileWriter fstream = new FileWriter(aFile);
+		BufferedWriter out = new BufferedWriter(fstream);
 
-        String newline = System.getProperty("line.separator");
+		String newline = System.getProperty("line.separator");
 
-        for (Track track : tracks)
-        {
-            if (track.getIsVisible() == true)
-            {
-                int startId = track.startId;
-                int stopId = track.stopId;
+		for (int aTrackId = 0; aTrackId < tracks.size(); aTrackId++)
+		{
+			// Skip to next if Track is not visible
+			Track tmpTrack = tracks.get(aTrackId);
+			if (tmpTrack.getIsVisible() == false)
+				continue;
 
-                for (int i=startId; i<=stopId; ++i)
-                {
-                    LidarPoint pt = originalPoints.get(i);
-                    double[] target = pt.getTargetPosition().toArray();
-                    double[] scpos = pt.getSourcePosition().toArray();
-                    if (transformPoint)
-                    {
-                        target = transformLidarPoint(target, i);
-                        scpos = transformScpos(scpos, target, i);
-                    }
+			// Save each individual lidar point
+			int startId = tmpTrack.startId;
+			int stopId = tmpTrack.stopId;
+			for (int i = startId; i <= stopId; ++i)
+			{
+				LidarPoint pt = originalPoints.get(i);
+				double[] target = pt.getTargetPosition().toArray();
+				double[] scpos = pt.getSourcePosition().toArray();
+				if (transformPoint)
+				{
+					target = transformLidarPoint(aTrackId, target);
+					scpos = transformScpos(aTrackId, scpos, target);
+				}
 
-                    String timeString = TimeUtil.et2str(pt.getTime());
+				String timeString = TimeUtil.et2str(pt.getTime());
 
-                    out.write(timeString + " " +
-                            target[0] + " " +
-                            target[1] + " " +
-                            target[2] + " " +
-                            scpos[0] + " " +
-                            scpos[1] + " " +
-                            scpos[2] + " " +
-                            MathUtil.distanceBetween(pt.getSourcePosition().toArray(), pt.getTargetPosition().toArray()) + newline);
-                }
-            }
-        }
-        out.close();
-    }
+				out.write(timeString + " " + target[0] + " " + target[1] + " " + target[2] + " " + scpos[0] + " " + scpos[1]
+						+ " " + scpos[2] + " "
+						+ MathUtil.distanceBetween(pt.getSourcePosition().toArray(), pt.getTargetPosition().toArray())
+						+ newline);
+			}
+		}
+		out.close();
+	}
 
     protected void assignInitialColorToTrack()
     {
@@ -1141,28 +1135,38 @@ public class LidarSearchDataCollection extends AbstractModel
         return displayedPointToOriginalPointMap.indexOf(ptId);
     }
 
-    private double[] transformLidarPoint(double[] pt, int index)
-    {
-        if (radialOffset != 0.0)
-        {
-            LatLon lla = MathUtil.reclat(pt);
-            lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
-            pt = MathUtil.latrec(lla);
-        }
+	/**
+	 * Helper method that takes the given lidar point and returns a corresponding
+	 * point that takes into account the radial offset and translation of the
+	 * associated Hrack.
+	 *
+	 * @param aTrackId Index of the Track the lidar point is associated with.
+	 * @param aPt The lidar point of interest.
+	 */
+	private double[] transformLidarPoint(int aTrackId, double[] aPt)
+	{
+		if (radialOffset != 0.0)
+		{
+			LatLon lla = MathUtil.reclat(aPt);
+			lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
+			aPt = MathUtil.latrec(lla);
+		}
 
-        return new double[]{pt[0]+translation[index][0], pt[1]+translation[index][1], pt[2]+translation[index][2]};
-    }
+		Vector3D tmpVect = translationArr[aTrackId];
+		return new double[] { aPt[0] + tmpVect.getX(), aPt[1] + tmpVect.getY(), aPt[2] + tmpVect.getZ() };
+	}
 
     /**
      * Similar to previous function but specific to spacecraft position. The difference is
      * that we calculate the radial offset we applied to the lidar and apply that offset
      * to the spacecraft (rather than computing the radial offset directly for the spacecraft).
      *
+     * @param aTrackId Index of the Track the lidar point is associated with.
      * @param scpos
      * @param lidarPoint
      * @return
      */
-    private double[] transformScpos(double[] scpos, double[] lidarPoint, int index)
+    private double[] transformScpos(int aTrackId, double[] scpos, double[] lidarPoint)
     {
         if (radialOffset != 0.0)
         {
@@ -1175,8 +1179,11 @@ public class LidarSearchDataCollection extends AbstractModel
             scpos[2] += (offsetLidarPoint[2]-lidarPoint[2]);
         }
 
-        return new double[]{scpos[0]+translation[index][0], scpos[1]+translation[index][1], scpos[2]+translation[index][2]};
+        Vector3D tmpVect = translationArr[aTrackId];
+        return new double[]{scpos[0]+tmpVect.getX(), scpos[1]+tmpVect.getY(), scpos[2]+tmpVect.getZ()};
     }
+
+
 
     protected void updateTrackPolydata()
     {
@@ -1216,7 +1223,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 {
 
                     double[] pt = originalPoints.get(i).getTargetPosition().toArray();
-                    pt = transformLidarPoint(pt, i);
+                    pt = transformLidarPoint(j, pt);
                     int id=points.InsertNextPoint(pt);
                     idList.SetId(0, id);
                     vert.InsertNextCell(idList);
@@ -1264,21 +1271,26 @@ public class LidarSearchDataCollection extends AbstractModel
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    private void removeTrack(int trackId)
-    {
+	/**
+	 * Helper method that will remove Tracks that are too small. A Track is
+	 * defined as being too small if the number of points in the track is less
+	 * than the minTrackLength.
+	 * <P>
+	 * A side effect is that the translationArr field will be reinitialized (all
+	 * translation vectors set to Zero).
+	 */
+	protected void removeTracksThatAreTooSmall()
+	{
+		for (int i = tracks.size() - 1; i >= 0; --i)
+		{
+			if (tracks.get(i).getNumberOfPoints() < minTrackLength)
+			{
+				tracks.remove(i);
+			}
+		}
 
-        tracks.remove(trackId);
-    }
-
-    protected void removeTracksThatAreTooSmall()
-    {
-        for (int i=tracks.size()-1; i>=0; --i)
-        {
-            if (tracks.get(i).getNumberOfPoints() < minTrackLength) {
-                removeTrack(i);
-            }
-        }
-    }
+		initTranslationArray();
+	}
 
     public void removeAllLidarData()
     {
@@ -1353,55 +1365,30 @@ public class LidarSearchDataCollection extends AbstractModel
         updateSelectedPoint();
     }
 
-    public void setTranslation(double[] translation)
-    {
-        for (int i=0; i<this.translation.length; i++)
-        {
-//            if (this.translation[i][0] == translation[0] && this.translation[i][1] == translation[1] && this.translation[i][2] == translation[2])
-//                return;
+	/**
+	 * Returns the translation associated with the Track at the specified index.
+	 *
+	 * @param aIdx
+	 */
+	public Vector3D getTranslation(int aIdx)
+	{
+		return translationArr[aIdx];
+	}
 
-            this.translation[i][0] = translation[0];
-            this.translation[i][1] = translation[1];
-            this.translation[i][2] = translation[2];
+	/**
+	 * Set in the translation amount for each Track at the specified indexes.
+	 *
+	 * @param aIdxArr
+	 * @param aTranslation
+	 */
+	public void setTranslation(int[] aIdxArr, Vector3D aVect)
+	{
+		for (int aIdx : aIdxArr)
+			translationArr[aIdx] = aVect;
 
-        }
-
-        updateTrackPolydata();
-        updateSelectedPoint();
-    }
-
-    public double[] getTranslation(int forIndex)
-    {
-        return this.translation[forIndex];
-    }
-
-    public void setTranslation(double[] translation, int forIndex)
-    {
-//        if (this.translation[forIndex][0] == translation[0] && this.translation[forIndex][1] == translation[1] && this.translation[forIndex][2] == translation[2])
-//        {
-//            System.out.println(
-//                    "LidarSearchDataCollection: setTranslation: no translation change");
-//            return;
-//        }
-
-        int startIndex = tracks.get(forIndex).startId;
-        int stopIndex = tracks.get(forIndex).stopId;
-        for (int i=startIndex; i<=stopIndex; i++)
-        {
-            this.translation[i][0] = translation[0];
-            this.translation[i][1] = translation[1];
-            this.translation[i][2] = translation[2];
-        }
-//        System.out.println("LidarSearchDataCollection: setTranslation: for index " + forIndex + " translation is " + this.translation[forIndex][0] + " " + this.translation[forIndex][1] + " " + this.translation[forIndex][2]);
-
-        updateTrackPolydata();
-        updateSelectedPoint();
-    }
-
-    public double[][] getTranslation()
-    {
-        return this.translation;
-    }
+		updateTrackPolydata();
+		updateSelectedPoint();
+	}
 
     public void setPointSize(int size)
     {
@@ -1429,9 +1416,9 @@ public class LidarSearchDataCollection extends AbstractModel
      * Note that the returned fittedLinePoint is the point on the line closest to
      * the first point of the track.
      */
-    private void fitLineToTrack(int trackId, double[] fittedLinePoint, double[] fittedLineDirection)
+    private void fitLineToTrack(int aTrackId, double[] fittedLinePoint, double[] fittedLineDirection)
     {
-        Track track = tracks.get(trackId);
+        Track track = tracks.get(aTrackId);
         int startId = track.startId;
         int stopId = track.stopId;
 
@@ -1449,7 +1436,7 @@ public class LidarSearchDataCollection extends AbstractModel
                 for (int i=startId; i<=stopId; ++i)
                 {
                     LidarPoint lp = originalPoints.get(i);
-                    double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
+                    double[] target = transformLidarPoint(aTrackId, lp.getTargetPosition().toArray());
                     fitter.addObservedPoint(1.0, lp.getTime()-t0, target[j]);
                 }
 
@@ -1462,7 +1449,7 @@ public class LidarSearchDataCollection extends AbstractModel
             // Set the fittedLinePoint to the point on the line closest to first track point
             // as this makes it easier to do distance computations along the line.
             double[] dist = new double[1];
-            double[] target = transformLidarPoint(originalPoints.get(startId).getTargetPosition().toArray(), startId);
+            double[] target = transformLidarPoint(aTrackId, originalPoints.get(startId).getTargetPosition().toArray());
             MathUtil.nplnpt(lineStartPoint, fittedLineDirection, target, fittedLinePoint, dist);
         }
         catch (Exception e)
@@ -1487,31 +1474,31 @@ public class LidarSearchDataCollection extends AbstractModel
     /**
      * Run gravity program on specified track and return potential, acceleration,
      * and elevation as function of distance and time.
-     * @param trackId
+     * @param aTrackId
      * @throws Exception
      */
     public void getGravityDataForTrack(
-            int trackId,
+            int aTrackId,
             List<Double> potential,
             List<Double> acceleration,
             List<Double> elevation,
             List<Double> distance,
             List<Double> time) throws Exception
     {
-        Track track = tracks.get(trackId);
+        Track track = tracks.get(aTrackId);
 
         if (originalPoints.size() == 0 || track.startId < 0 || track.stopId < 0)
             throw new IOException();
 
         // Run the gravity program
-        int startId = tracks.get(trackId).startId;
-        int stopId = tracks.get(trackId).stopId;
+        int startId = tracks.get(aTrackId).startId;
+        int stopId = tracks.get(aTrackId).stopId;
         List<double[]> xyzPointList = new ArrayList<double[]>();
         for (int i=startId; i<=stopId; ++i)
         {
             LidarPoint pt = originalPoints.get(i);
             double[] target = pt.getTargetPosition().toArray();
-            target = transformLidarPoint(target, i);
+            target = transformLidarPoint(aTrackId, target);
             xyzPointList.add(target);
         }
         List<Point3D> accelerationVector = new ArrayList<Point3D>();
@@ -1528,12 +1515,12 @@ public class LidarSearchDataCollection extends AbstractModel
 
         double[] fittedLinePoint = new double[3];
         double[] fittedLineDirection = new double[3];
-        fitLineToTrack(trackId, fittedLinePoint, fittedLineDirection);
+        fitLineToTrack(aTrackId, fittedLinePoint, fittedLineDirection);
         for (int i=track.startId; i<=track.stopId; ++i)
         {
             double[] point = originalPoints.get(i).getTargetPosition().toArray();
-            point = transformLidarPoint(point, i);
-            double dist = distanceOfClosestPointOnLineToStartOfLine(point, trackId, fittedLinePoint, fittedLineDirection);
+            point = transformLidarPoint(aTrackId, point);
+            double dist = distanceOfClosestPointOnLineToStartOfLine(point, aTrackId, fittedLinePoint, fittedLineDirection);
             distance.add(dist);
             time.add(originalPoints.get(i).getTime());
         }
@@ -1664,7 +1651,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=startId; i<=stopId; ++i)
         {
             LidarPoint lp = originalPoints.get(i);
-            double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
+            double[] target = transformLidarPoint(trackId, lp.getTargetPosition().toArray());
             centroid[0] += target[0];
             centroid[1] += target[1];
             centroid[2] += target[2];
@@ -1706,7 +1693,7 @@ public class LidarSearchDataCollection extends AbstractModel
             for (int i=startId,j=0; i<=stopId; ++i,++j)
             {
                 LidarPoint lp = originalPoints.get(i);
-                double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
+                double[] target = transformLidarPoint(trackId, lp.getTargetPosition().toArray());
                 points[0][j] = target[0] - centroid[0];
                 points[1][j] = target[1] - centroid[1];
                 points[2][j] = target[2] - centroid[2];
@@ -1762,7 +1749,7 @@ public class LidarSearchDataCollection extends AbstractModel
         for (int i=startId; i<=stopId; ++i)
         {
             LidarPoint lp = originalPoints.get(i);
-            double[] target = transformLidarPoint(lp.getTargetPosition().toArray(), i);
+            double[] target = transformLidarPoint(trackId, lp.getTargetPosition().toArray());
 
             target[0] = target[0] - pointOnPlane[0];
             target[1] = target[1] - pointOnPlane[1];
@@ -1804,18 +1791,18 @@ public class LidarSearchDataCollection extends AbstractModel
      * radial offset and translation before being saved out. If false, the original points
      * are saved out unmodified.
      *
-     * @param trackId
+     * @param aTrackId
      * @param outfile
      * @param transformPoint
      * @throws IOException
      */
-    public void saveTrackBinary(int trackId, File outfile, boolean transformPoint) throws IOException
+    public void saveTrackBinary(int aTrackId, File outfile, boolean transformPoint) throws IOException
     {
         outfile = new File(outfile.getAbsolutePath() + ".bin");
         DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfile)));
 
-        int startId = tracks.get(trackId).startId;
-        int stopId = tracks.get(trackId).stopId;
+        int startId = tracks.get(aTrackId).startId;
+        int stopId = tracks.get(aTrackId).stopId;
 
         for (int i=startId; i<=stopId; ++i)
         {
@@ -1824,8 +1811,8 @@ public class LidarSearchDataCollection extends AbstractModel
             double[] scpos = pt.getSourcePosition().toArray();
             if (transformPoint)
             {
-                target = transformLidarPoint(target, i);
-                scpos = transformScpos(scpos, target, i);
+                target = transformLidarPoint(aTrackId, target);
+                scpos = transformScpos(aTrackId, scpos, target);
             }
 
             FileUtil.writeDoubleAndSwap(out, pt.getTime());
