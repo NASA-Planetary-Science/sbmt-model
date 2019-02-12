@@ -194,6 +194,10 @@ public class OffLimbPlaneCalculator
             if (offLimbBoundaryActor==null)
                 offLimbBoundaryActor=new vtkActor();
             offLimbBoundaryActor.SetMapper(boundaryMapper);
+
+            // get color from default boundary color of image
+//            Color color =
+            // set boundary color to this color
             offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
             offLimbBoundaryActor.Modified();
