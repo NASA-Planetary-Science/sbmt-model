@@ -2384,15 +2384,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         // for offlimb
         if (offLimbActor==null && offLimbTexture != null) {
-        	if (offLimbVisibility) {
-	            loadOffLimbPlane();
-	            if (footprintActors.contains(offLimbActor))
-	                footprintActors.remove(offLimbActor);
-	            footprintActors.add(offLimbActor);
-	            if (footprintActors.contains(offLimbBoundaryActor))
-	                footprintActors.remove(offLimbBoundaryActor);
-	            footprintActors.add(offLimbBoundaryActor);
-        	}
+	        loadOffLimbPlane();
+        	if (footprintActors.contains(offLimbActor))
+                footprintActors.remove(offLimbActor);
+            footprintActors.add(offLimbActor);
+            if (footprintActors.contains(offLimbBoundaryActor))
+                footprintActors.remove(offLimbBoundaryActor);
+            footprintActors.add(offLimbBoundaryActor);
         }
 
 
@@ -4937,6 +4935,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             offLimbActor.SetVisibility(offLimbVisibility?1:0);
             offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
         }
+
+
     }
 
 
