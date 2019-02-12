@@ -193,4 +193,14 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     {
         return loadedImageKeys;
     }
+
+	public String getCustomDataFolder()
+	{
+		return smallBodyModel.getCustomDataFolder();
+	}
+
+	public void setModelManager(ModelManager modelManager)
+	{
+		this.modelManager = modelManager;
+	}
 }

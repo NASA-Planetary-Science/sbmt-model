@@ -179,6 +179,11 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
         return loadedImages;
     }
 
+	public void setModelManager(ModelManager modelManager)
+	{
+		this.modelManager = modelManager;
+	}
+
 //    public void setShowFrustums(boolean b)
 //    {
 //        for (ColorImage image : imageToActorsMap.keySet())
