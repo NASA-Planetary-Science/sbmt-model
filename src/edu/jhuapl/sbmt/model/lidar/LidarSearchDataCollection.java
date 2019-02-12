@@ -71,13 +71,23 @@ import edu.jhuapl.sbmt.util.gravity.Gravity;
 
 public class LidarSearchDataCollection extends AbstractModel
 {
-	private BodyViewConfig polyhedralModelConfig;
-	private PolyhedralModel smallBodyModel;
+	// Reference vars
+	private PolyhedralModel refSmallBodyModel;
+
+	// State vars
+	protected List<Track> tracks;
+	private int[] selectedTrackIdxArr;
+	private int selectedPointIdx;
+
+	private Vector3D[] translationArr;
+	protected double radialOffset;
+
+	// VTK vars
 	private vtkPolyData polydata; // target points
 	private vtkPolyData selectedPointPolydata;
 
 	protected List<LidarPoint> originalPoints = new ArrayList<LidarPoint>();
-	Map<LidarPoint, Integer> originalPointsSourceFiles = Maps.newHashMap();
+	protected Map<LidarPoint, Integer> originalPointsSourceFiles = Maps.newHashMap();
 
 	private List<vtkProp> actors = new ArrayList<vtkProp>();
 	private vtkPolyDataMapper pointsMapper;
@@ -90,9 +100,6 @@ public class LidarSearchDataCollection extends AbstractModel
 	private vtkPolyDataMapper scPosMapper;
 	private vtkActor scPosActor;
 
-	protected double radialOffset = 0.0;
-	private Vector3D[] translationArr;
-
 	private String dataSource;
 	private double startDate;
 	private double stopDate;
@@ -100,9 +107,6 @@ public class LidarSearchDataCollection extends AbstractModel
 	private double maxRange;
 	private TreeSet<Integer> cubeList;
 
-	private int selectedPoint = -1;
-
-	protected List<Track> tracks = new ArrayList<Track>();
 	private double timeSeparationBetweenTracks = 10.0; // In seconds
 	private int minTrackLength = 5;
 	private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
@@ -112,10 +116,21 @@ public class LidarSearchDataCollection extends AbstractModel
 
 	private boolean showSpacecraftPosition = false;
 
-	public LidarSearchDataCollection(PolyhedralModel smallBodyModel)
+	/**
+	 * Standard Constructor
+	 *
+	 * @param aSmallBodyModel
+	 */
+	public LidarSearchDataCollection(PolyhedralModel aSmallBodyModel)
 	{
-		this.smallBodyModel = smallBodyModel;
-		this.polyhedralModelConfig = (BodyViewConfig) smallBodyModel.getConfig();
+		refSmallBodyModel = aSmallBodyModel;
+
+		tracks = new ArrayList<>();
+		selectedTrackIdxArr = new int[0];
+		selectedPointIdx = -1;
+
+		translationArr = new Vector3D[0];
+		radialOffset = 0.0;
 
 		// Initialize an empty polydata for resetting
 		emptyPolyData = new vtkPolyData();
@@ -180,19 +195,17 @@ public class LidarSearchDataCollection extends AbstractModel
 
 	public double getOffsetScale()
 	{
-		if (polyhedralModelConfig.lidarOffsetScale <= 0.0)
-		{
-			return smallBodyModel.getBoundingBoxDiagonalLength() / 1546.4224133453388;
-		}
-		else
-		{
-			return polyhedralModelConfig.lidarOffsetScale;
-		}
+		BodyViewConfig tmpBodyViewConfig = (BodyViewConfig) refSmallBodyModel.getConfig();
+		if (tmpBodyViewConfig.lidarOffsetScale <= 0.0)
+			return refSmallBodyModel.getBoundingBoxDiagonalLength() / 1546.4224133453388;
+
+		return tmpBodyViewConfig.lidarOffsetScale;
 	}
 
 	public Map<String, String> getLidarDataSourceMap()
 	{
-		return polyhedralModelConfig.lidarSearchDataSourceMap;
+		BodyViewConfig tmpBodyViewConfig = (BodyViewConfig) refSmallBodyModel.getConfig();
+		return tmpBodyViewConfig.lidarSearchDataSourceMap;
 	}
 
 	public void setLidarData(String dataSource, double startDate, double stopDate, TreeSet<Integer> cubeList,
@@ -742,7 +755,7 @@ public class LidarSearchDataCollection extends AbstractModel
 	 */
 	public int getTrackIdOfCurrentSelection()
 	{
-		int tmpIdx = selectedPoint;
+		int tmpIdx = selectedPointIdx;
 		for (int i = 0; i < tracks.size(); ++i)
 		{
 			if (getTrack(i).containsId(tmpIdx))
@@ -994,7 +1007,7 @@ public class LidarSearchDataCollection extends AbstractModel
 		}
 
 		updateTrackPolydata();
-		selectedPoint = -1;
+		selectedPointIdx = -1;
 		updateSelectedPoint();
 	}
 
@@ -1023,7 +1036,7 @@ public class LidarSearchDataCollection extends AbstractModel
 			tracks.get(aId).isVisible = aBool;
 
 		updateTrackPolydata();
-		selectedPoint = -1;
+		selectedPointIdx = -1;
 		updateSelectedPoint();
 	}
 
@@ -1404,9 +1417,9 @@ public class LidarSearchDataCollection extends AbstractModel
 			xyzPointList.add(target);
 		}
 		List<Point3D> accelerationVector = new ArrayList<Point3D>();
-		Gravity.getGravityAtPoints(xyzPointList, smallBodyModel.getDensity(), smallBodyModel.getRotationRate(),
-				smallBodyModel.getReferencePotential(), smallBodyModel.getSmallBodyPolyData(), elevation, acceleration,
-				accelerationVector, potential);
+		Gravity.getGravityAtPoints(xyzPointList, refSmallBodyModel.getDensity(), refSmallBodyModel.getRotationRate(),
+				refSmallBodyModel.getReferencePotential(), refSmallBodyModel.getSmallBodyPolyData(), elevation,
+				acceleration, accelerationVector, potential);
 
 		double[] fittedLinePoint = new double[3];
 		double[] fittedLineDirection = new double[3];
@@ -1430,9 +1443,9 @@ public class LidarSearchDataCollection extends AbstractModel
 	public void selectPoint(int ptId)
 	{
 		if (ptId >= 0)
-			selectedPoint = displayedPointToOriginalPointMap.get(ptId);
+			selectedPointIdx = displayedPointToOriginalPointMap.get(ptId);
 		else
-			selectedPoint = -1;
+			selectedPointIdx = -1;
 
 		selectedPointPolydata.DeepCopy(emptyPolyData);
 		vtkPoints points = selectedPointPolydata.GetPoints();
@@ -1471,8 +1484,8 @@ public class LidarSearchDataCollection extends AbstractModel
 	public void updateSelectedPoint()
 	{
 		int ptId = -1;
-		if (selectedPoint >= 0)
-			ptId = getDisplayPointIdFromOriginalPointId(selectedPoint);
+		if (selectedPointIdx >= 0)
+			ptId = getDisplayPointIdFromOriginalPointId(selectedPointIdx);
 
 		if (ptId < 0)
 		{
@@ -1516,7 +1529,7 @@ public class LidarSearchDataCollection extends AbstractModel
 		for (int i = 0; i < numberOfPoints; ++i)
 		{
 			points.GetPoint(i, pt);
-			double[] closestPt = smallBodyModel.findClosestPoint(pt);
+			double[] closestPt = refSmallBodyModel.findClosestPoint(pt);
 			trackError += MathUtil.distance2Between(pt, closestPt);
 		}
 
