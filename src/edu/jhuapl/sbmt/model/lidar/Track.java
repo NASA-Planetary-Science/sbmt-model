@@ -1,91 +1,113 @@
 package edu.jhuapl.sbmt.model.lidar;
 
+import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
-
 public class Track
 {
-    /**
-     * @param lidarSearchDataCollection
-     */
-    Track()
-    {
+	// State vars
+	public int startId = -1;
+	public int stopId = -1;
+	public boolean isVisible;
+	public Color color;
+	List<Integer> sourceFiles;
+	public String[] timeRange;
+	List<Map<Integer, String>> fileMaps;
 
-    }
+	Track()
+	{
+		startId = -1;
+		stopId = -1;
 
-    public int startId = -1;
-    public int stopId = -1;
-    public boolean hidden = false;
-    public int[] color = {0, 0, 255, 255}; //blue by default
-    List<Integer> sourceFiles=Lists.newArrayList();
-    public String[] timeRange=new String[]{"",""};
-    List<Map<Integer,String>> fileMaps=Lists.newArrayList();
+		isVisible = true;
+		color = Color.BLUE;
 
-    public int getNumberOfPoints()
-    {
-        return stopId - startId + 1;
-    }
+		sourceFiles = new ArrayList<>();
+		timeRange = new String[] { "", "" };
+		fileMaps = new ArrayList<>();
+	}
 
-    public boolean containsId(int id)
-    {
-        return startId >= 0 && stopId >=0 && id >= startId && id <= stopId;
-    }
+	/**
+	 * Returns the Color associated with the Track.
+	 */
+	public Color getColor()
+	{
+		return color;
+	}
 
-    public int getNumberOfSourceFiles()
-    {
-        return sourceFiles.size();
-    }
+	public int getNumberOfPoints()
+	{
+		return stopId - startId + 1;
+	}
 
-    public String getSourceFileName(int i)
-    {
-        return fileMaps.get(i).get(sourceFiles.get(i));
-    }
+	public boolean containsId(int id)
+	{
+		return startId >= 0 && stopId >= 0 && id >= startId && id <= stopId;
+	}
 
-    public void registerSourceFileIndex(int fileNum, Map<Integer,String> fileMap)
-    {
-        if (!sourceFiles.contains(fileNum))
-        {
-            sourceFiles.add(fileNum);
-            fileMaps.add(fileMap);
-        }
-    }
+	public int getNumberOfSourceFiles()
+	{
+		return sourceFiles.size();
+	}
+
+	public String getSourceFileName(int i)
+	{
+		return fileMaps.get(i).get(sourceFiles.get(i));
+	}
+
+	/**
+	 * Returns true if the track is visible.
+	 */
+	public boolean getIsVisible()
+	{
+		return isVisible;
+	}
+
+	public void registerSourceFileIndex(int fileNum, Map<Integer, String> fileMap)
+	{
+		if (!sourceFiles.contains(fileNum))
+		{
+			sourceFiles.add(fileNum);
+			fileMaps.add(fileMap);
+		}
+	}
 
 //    public LidarPoint getPoint(int i)
 //    {
 //        return this.lidarSearchDataCollection.originalPoints.get(startId+i);
 //    }
 
-    @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + startId;
-        result = prime * result + stopId;
-        result = prime * result + Arrays.hashCode(timeRange);
-        return result;
-    }
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + startId;
+		result = prime * result + stopId;
+		result = prime * result + Arrays.hashCode(timeRange);
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Track other = (Track) obj;
-        if (startId != other.startId)
-            return false;
-        if (stopId != other.stopId)
-            return false;
-        if (!Arrays.equals(timeRange, other.timeRange))
-            return false;
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Track other = (Track) obj;
+		if (startId != other.startId)
+			return false;
+		if (stopId != other.stopId)
+			return false;
+		if (!Arrays.equals(timeRange, other.timeRange))
+			return false;
+		return true;
+	}
 
 }
