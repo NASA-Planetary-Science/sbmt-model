@@ -240,6 +240,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         {
             LidarDataPerUnit data = fileToLidarPerUnitMap.get(key);
             data.setPercentageShown(startPercent, stopPercent);
+            data.showPercentageShown();
         }
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
