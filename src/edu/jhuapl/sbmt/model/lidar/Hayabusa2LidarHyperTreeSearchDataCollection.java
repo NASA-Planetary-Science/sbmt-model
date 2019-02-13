@@ -296,72 +296,138 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
     @Override
     protected void computeTracks()
     {
-        localFileMap.clear();
-        localFileMap.putAll(getCurrentSkeleton().getFileMap());
+    	localFileMap.clear();
+		localFileMap.putAll(getCurrentSkeleton().getFileMap());
 
-        tracks.clear();
+		tracks.clear();
 
-        int size = originalPoints.size();
-        if (size == 0)
-            return;
+		int size = originalPoints.size();
+		if (size == 0)
+			return;
 
-        double prevTime;
-        Set<Integer> keys = filesWithPoints.keySet();
-        for (Integer key : keys) {
-            Track track = new Track();
+		ProgressBarSwingWorker trackComputer=new ProgressBarSwingWorker(parentForProgressMonitor,"Computing tracks from results")
+		{
 
-            track.registerSourceFileIndex(key, localFileMap);
-            List<Hayabusa2LidarPoint> currPoints = filesWithPoints.get(key);
-            // sort by time and check track separation
-            Collections.sort(currPoints);
-            Hayabusa2LidarPoint start = currPoints.get(0); // start and stop time of tracks in this file
-            prevTime = start.getTime();
-            Hayabusa2LidarPoint stop = currPoints.get(currPoints.size() - 1);
-
-            // original start and stop points are first and last.
-            // this will change if points are separated by more than
-            // time separation between tracks
-            int istart = originalPoints.indexOf(start);
-            int istop = originalPoints.indexOf(stop);
-
-            for (Hayabusa2LidarPoint point : currPoints) {
-                double currentTime = point.getTime();
-                double diff = currentTime - prevTime;
-                if (diff >= getTimeSeparationBetweenTracks()) {
-                    // start a new track
-                    int iLastPoint = currPoints.indexOf(point) - 1;
-                    istop = originalPoints.indexOf(currPoints.get(iLastPoint)); // get index of last point in original points
-                    stop = (Hayabusa2LidarPoint) originalPoints.get(istop); // get last point
-
-                    // create the current track and add to tracks
-                    track.timeRange = new String[]
-                            {TimeUtil.et2str(start.getTime()),
-                             TimeUtil.et2str(stop.getTime())};
-                    track.startId = istart;
-                    track.stopId = istop;
-                    tracks.add(track);
-
-                    // start new track with this current point
-                    track = new Track();
-                    track.registerSourceFileIndex(key, localFileMap);
-                    istart = originalPoints.indexOf(point);
-                    start = point;
-                }
-                prevTime = currentTime;
-            }
-        }
-
-//        System.out.println("total points in tracks: " + totalpoints);
+			@Override
+			protected Void doInBackground() throws Exception
+			{
 
 
-        // sort tracks by their starting time
-        Collections.sort(tracks, new Comparator<Track>() {
-            public int compare(Track track1, Track track2) {
-                double track1Start = TimeUtil.str2et(track1.timeRange[0]);
-                double track2Start = TimeUtil.str2et(track2.timeRange[0]);
-                return track1Start > track2Start ? 1 : track1Start < track2Start ? -1 : 0;
-            }
-        });
+				double prevTime;
+				Set<Integer> keys = filesWithPoints.keySet();
+				double count = 0;
+				double total = keys.size();
+
+				ArrayList<LidarPoint> allPointsSortedbyFileThenTime = Lists.newArrayList();
+
+
+				for (Integer fileNum : keys) {
+					// create a new track for this file
+					Track track = new Track();
+					track.registerSourceFileIndex(fileNum, localFileMap);
+
+					// get all current points and convert to a list, then sort by time
+					List<Hayabusa2LidarPoint> pntsFromCurrFile = filesWithPoints.get(fileNum);
+					Collections.sort(pntsFromCurrFile);
+
+					allPointsSortedbyFileThenTime.addAll(pntsFromCurrFile);
+
+					// get start and stop time of tracks in this file
+					Hayabusa2LidarPoint start = pntsFromCurrFile.get(0);
+					Hayabusa2LidarPoint stop = pntsFromCurrFile.get(pntsFromCurrFile.size() - 1);
+
+					// original start and stop points are first and last.
+					// this will change if points are separated by more than
+					// time separation between tracks
+					int istart = allPointsSortedbyFileThenTime.indexOf(start);
+					int istop = allPointsSortedbyFileThenTime.indexOf(stop);
+
+
+					prevTime = start.getTime();
+					for (Hayabusa2LidarPoint point : pntsFromCurrFile) {
+						double currentTime = point.getTime();
+						double diff = currentTime - prevTime;
+						if (diff >= getTimeSeparationBetweenTracks()) {
+							/*
+							 *  save current track before starting next one
+							 */
+							int iLastPoint = pntsFromCurrFile.indexOf(point) - 1;
+							istop = allPointsSortedbyFileThenTime.indexOf(pntsFromCurrFile.get(iLastPoint)); // get index of last point
+							stop = (Hayabusa2LidarPoint) allPointsSortedbyFileThenTime.get(istop); // get last point
+
+							// create the current track
+							track.timeRange = new String[]
+									{TimeUtil.et2str(start.getTime()),
+											TimeUtil.et2str(stop.getTime())};
+							track.startId = istart;
+							track.stopId = istop;
+							// and add to list of all tracks
+							tracks.add(track);
+
+							/*
+							 * start a new track beginning with current point
+							 */
+
+							track = new Track();
+							track.registerSourceFileIndex(fileNum, localFileMap);
+							istart = allPointsSortedbyFileThenTime.indexOf(point);
+							start = point;
+						}
+						else {
+							/*
+							 * We want to keep going since the time between these 2 points was
+							 * not greater than timeSeparationBetweenTracks.
+							 * But first lets check if it was the last point, so we can save
+							 * this track if it was.
+							 */
+							int indexOfPoint = pntsFromCurrFile.indexOf(point);
+							if (indexOfPoint == pntsFromCurrFile.size()-1) {
+								// this is the last point in the file, so finalize this last track
+								istop = allPointsSortedbyFileThenTime.indexOf(pntsFromCurrFile.get(indexOfPoint)); // get index of this point
+								stop = (Hayabusa2LidarPoint) allPointsSortedbyFileThenTime.get(istop); // get this point
+
+								// create the current track
+								track.timeRange = new String[]
+										{TimeUtil.et2str(start.getTime()),
+												TimeUtil.et2str(stop.getTime())};
+								track.startId = istart;
+								track.stopId = istop;
+								// and add to list of all tracks
+								tracks.add(track);
+							}
+						}
+						prevTime = currentTime;
+					}
+
+					count++;
+					double progressPercentage=((double)count/(double)total*100);
+					setProgress((int)progressPercentage);
+					if (isCancelled())
+						break;
+				}
+
+				originalPoints = allPointsSortedbyFileThenTime;
+
+				cancel(true);
+				return null;
+
+
+			}
+
+
+
+		};
+
+		trackComputer.executeDialog();
+
+		// sort tracks by their starting time
+		Collections.sort(tracks, new Comparator<Track>() {
+			public int compare(Track track1, Track track2) {
+				double track1Start = TimeUtil.str2et(track1.timeRange[0]);
+				double track2Start = TimeUtil.str2et(track2.timeRange[0]);
+				return track1Start > track2Start ? 1 : track1Start < track2Start ? -1 : 0;
+			}
+		});
 
 
     }
