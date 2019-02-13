@@ -74,7 +74,8 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
             return;
 
         ImageCube image = createImage(key, smallBodyModel);
-        loadedImages.add(image);
+        if (!loadedImages.contains(image))
+        	loadedImages.add(image);
 
 
         smallBodyModel.addPropertyChangeListener(image);
@@ -96,11 +97,12 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     {
         ImageCube image = getImageFromKey(key);
 //        loadedImages.remove(image);
-
+        if (image == null) return;
         List<vtkProp> actors = imageToActorsMap.get(image);
 
-        for (vtkProp act : actors)
-            actorToImageMap.remove(act);
+        if (actors != null)
+        	for (vtkProp act : actors)
+        		actorToImageMap.remove(act);
 
         imageToActorsMap.remove(image);
 
