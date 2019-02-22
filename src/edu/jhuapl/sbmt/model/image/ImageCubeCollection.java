@@ -74,7 +74,12 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
             return;
 
         ImageCube image = createImage(key, smallBodyModel);
-        if (!loadedImages.contains(image))
+        if (loadedImages.contains(image))
+        {
+        	loadedImages.remove(image);
+        	loadedImages.add(image);
+        }
+        else
         	loadedImages.add(image);
 
 
@@ -179,6 +184,13 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     public Vector<ImageCube> getLoadedImages()
     {
         return loadedImages;
+    }
+
+    public void setLoadedImageVisibility(int index, boolean visible)
+    {
+    	loadedImages.get(index).setVisible(visible);
+    	this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
     }
 
 	public void setModelManager(ModelManager modelManager)
