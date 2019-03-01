@@ -12,6 +12,7 @@ import java.util.Map;
 import edu.jhuapl.sbmt.util.BackplaneInfo;
 
 import altwg.Fits.HeaderTag;
+import altwg.Fits.HeaderTags;
 import altwg.util.FitsHeader;
 import altwg.util.FitsHeader.FitsHeaderBuilder;
 import altwg.util.FitsUtil;
