@@ -35,11 +35,11 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
+import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics;
 import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics.Sample;
 
@@ -51,14 +51,14 @@ public class OTESSpectrum extends BasicSpectrum
     double time;
     String extension = "";
 
-    public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument) throws IOException
+    public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument) throws IOException
     {
         this(filename, smallBodyModel, instrument, false, false);
     }
 
-    public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, smallBodyModel, instrument, headless, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());

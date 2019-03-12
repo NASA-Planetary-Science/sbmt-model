@@ -33,19 +33,19 @@ import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.gui.spectrum.model.SpectrumKey;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 
 public abstract class BasicSpectrum extends Spectrum
 {
     PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    protected SmallBodyModel smallBodyModel;
-    protected SpectralInstrument instrument;
+    protected ISmallBodyModel smallBodyModel;
+    protected ISpectralInstrument instrument;
 
     protected String fullpath; // The actual path of the spectrum stored on the
                                // local disk (after downloading from the server)
@@ -109,14 +109,14 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected SpectrumColoringStyle coloringStyle = SpectrumColoringStyle.RGB;
 
-    public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument) throws IOException
+    public BasicSpectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument) throws IOException
     {
         this(filename, smallBodyModel, instrument, false, false);
     }
 
-    public BasicSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    public BasicSpectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         File file = FileCache.getFileFromServer(filename);
         this.serverpath = filename; // path on server relative to data
@@ -155,7 +155,7 @@ public abstract class BasicSpectrum extends Spectrum
     }
 
     @Override
-    public SpectralInstrument getInstrument()
+    public ISpectralInstrument getInstrument()
     {
         return instrument;
     }

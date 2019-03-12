@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
 import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
@@ -285,7 +285,7 @@ public class NIRS3 extends BasicSpectrumInstrument
 
     @Override
     public Spectrum getSpectrumInstance(String filename,
-            SmallBodyModel smallBodyModel)
+            ISmallBodyModel smallBodyModel)
             throws IOException
     {
         return new NIRS3Spectrum(filename, smallBodyModel, this);

@@ -22,6 +22,7 @@ import edu.jhuapl.saavtk.util.FileCache.UnauthorizedAccessException;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 
 public class LidarBrowseDataCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -53,7 +54,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
 
     public LidarBrowseDataCollection(SmallBodyModel smallBodyModel)
     {
-        this.polyhedralModelConfig = smallBodyModel.getSmallBodyConfig();
+        this.polyhedralModelConfig = (SmallBodyViewConfig)smallBodyModel.getSmallBodyConfig();
     }
 
     protected LidarDataPerUnit createLidarDataPerUnitWhateverThatIs(String path, BodyViewConfig config, LidarLoadingListener listener) throws IOException

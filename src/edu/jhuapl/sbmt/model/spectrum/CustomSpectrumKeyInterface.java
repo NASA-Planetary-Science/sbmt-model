@@ -8,17 +8,21 @@ import crucible.crust.metadata.impl.InstanceGetter;
 public interface CustomSpectrumKeyInterface extends SpectrumKeyInterface
 {
 	public void setSpectrumFilename(String spectrumfilename);
-	
+
 	public String getSpectrumFilename();
-	
+
+	public String getPointingFilename();
+
+	public void setPointingFilename(String pointingFilename);
+
 	public void setSpectraType(ISpectraType type);
-	
+
 	static CustomSpectrumKeyInterface retrieve(Metadata objectMetadata)
 	{
 		final Key<String> key = Key.of("customspectrumtype");
 		Key<CustomSpectrumKeyInterface> CUSTOM_SPECTRUM_KEY = Key.of("customSpectrum");
 		ProvidableFromMetadata<CustomSpectrumKeyInterface> metadata = InstanceGetter.defaultInstanceGetter().of(CUSTOM_SPECTRUM_KEY);
 		return metadata.provide(objectMetadata);
-		
+
 	}
 }

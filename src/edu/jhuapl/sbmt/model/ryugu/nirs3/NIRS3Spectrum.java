@@ -29,10 +29,10 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 
 
 public class NIRS3Spectrum extends BasicSpectrum
@@ -40,8 +40,8 @@ public class NIRS3Spectrum extends BasicSpectrum
     boolean footprintGenerated = false;
     File infoFile, spectrumFile;
 
-    public NIRS3Spectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument) throws IOException
+    public NIRS3Spectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument) throws IOException
     {
         super(filename, smallBodyModel, instrument);
     }

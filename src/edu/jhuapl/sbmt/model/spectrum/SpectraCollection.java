@@ -17,15 +17,13 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.model.eros.NISSpectrum;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3Spectrum;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum.SpectrumKey;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 public class SpectraCollection extends AbstractModel implements PropertyChangeListener
 {
@@ -36,7 +34,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     private HashMap<vtkProp, String> actorToFileMap = new HashMap<vtkProp, String>();
     private HashMap<Spectrum, List<vtkProp>> spectrumToActorsMap = new HashMap<Spectrum, List<vtkProp>>();
     private HashMap<vtkProp, Spectrum> actorToSpectrumMap = new HashMap<vtkProp, Spectrum>();
-    private SmallBodyModel shapeModel;
+    private ISmallBodyModel shapeModel;
 
     boolean selectAll=false;
     final double minFootprintSeparation=0.001;
@@ -45,7 +43,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     Map<Spectrum,Integer> ordinals=Maps.newHashMap();
     final static int defaultOrdinal=0;
 
-    public SpectraCollection(SmallBodyModel eros)
+    public SpectraCollection(ISmallBodyModel eros)
     {
         this.shapeModel = eros;
     }
@@ -105,7 +103,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return minFootprintSeparation;
     }
 
-    public boolean containsKey(SpectrumKey key)
+    public boolean containsKey(SpectrumKeyInterface key)
     {
         for (Spectrum spectrum : spectrumToActorsMap.keySet())
         {
@@ -122,7 +120,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     }
 
 
-    public Spectrum getSpectrumFromKey(SpectrumKey key)
+    public Spectrum getSpectrumFromKey(SpectrumKeyInterface key)
     {
         for (Spectrum spectrum : spectrumToActorsMap.keySet())
         {
@@ -133,17 +131,17 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return null;
     }
 
-    public Spectrum addSpectrum(SpectrumKey key) throws IOException
+    public Spectrum addSpectrum(SpectrumKeyInterface key) throws IOException
     {
-        return addSpectrum(getSpectrumFromKey(key).getFullPath(), key.instrument, false);
+        return addSpectrum(getSpectrumFromKey(key).getFullPath(), key.getInstrument(), false);
     }
 
-    public Spectrum addSpectrum(String path, SpectralInstrument instrument, SpectrumColoringStyle coloringStyle) throws IOException
+    public Spectrum addSpectrum(String path, ISpectralInstrument instrument, SpectrumColoringStyle coloringStyle) throws IOException
     {
         return addSpectrum(path, instrument, coloringStyle, false);
     }
 
-    public Spectrum addSpectrum(String path, SpectralInstrument instrument, SpectrumColoringStyle coloringStyle, boolean isCustom) throws IOException
+    public Spectrum addSpectrum(String path, ISpectralInstrument instrument, SpectrumColoringStyle coloringStyle, boolean isCustom) throws IOException
     {
         Spectrum spec = addSpectrum(path, instrument, isCustom);
         spec.setColoringStyle(coloringStyle);
@@ -151,7 +149,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
     }
 
 
-    public Spectrum addSpectrum(String path, SpectralInstrument instrument, boolean isCustom) throws IOException
+    public Spectrum addSpectrum(String path, ISpectralInstrument instrument, boolean isCustom) throws IOException
     {
         if (fileToSpectrumMap.containsKey(path))
         {
@@ -225,7 +223,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         return spectrum;
     }
 
-    public void removeSpectrum(SpectrumKey key)
+    public void removeSpectrum(SpectrumKeyInterface key)
     {
         if (!containsKey(key))
             return;
@@ -234,7 +232,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
 //        System.out.println("SpectraCollection: removeSpectrum: file to spectrum map " + fileToSpectrumMap);
 //        System.out.println("SpectraCollection: removeSpectrum: image full path "+ image.getFullPath());
 //        System.out.println("SpectraCollection: removeSpectrum: key is " + key);
-        removeSpectrum(key.name);
+        removeSpectrum(key.getName());
     }
 
     public void removeSpectrum(String path)
@@ -273,7 +271,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
             removeSpectrum(path);
     }
 
-    public void removeAllSpectraForInstrument(SpectralInstrument instrument)
+    public void removeAllSpectraForInstrument(ISpectralInstrument instrument)
     {
         HashMap<String, Spectrum> map = (HashMap<String, Spectrum>)fileToSpectrumMap.clone();
         for (String path : map.keySet())
@@ -417,7 +415,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    public void setColoringStyleForInstrument(SpectrumColoringStyle style, SpectralInstrument instrument)
+    public void setColoringStyleForInstrument(SpectrumColoringStyle style, ISpectralInstrument instrument)
     {
         for (String file : this.fileToSpectrumMap.keySet())
         {
@@ -432,7 +430,7 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    public void setChannelColoring(int[] channels, double[] mins, double[] maxs, SpectralInstrument instrument)
+    public void setChannelColoring(int[] channels, double[] mins, double[] maxs, ISpectralInstrument instrument)
     {
         for (String file : this.fileToSpectrumMap.keySet())
         {

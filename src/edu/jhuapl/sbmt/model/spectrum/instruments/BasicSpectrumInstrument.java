@@ -1,19 +1,17 @@
 package edu.jhuapl.sbmt.model.spectrum.instruments;
 
-import crucible.crust.metadata.api.Key;
-import crucible.crust.metadata.api.Metadata;
-import crucible.crust.metadata.impl.SettableMetadata;
-import crucible.crust.metadata.api.Version;
+import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.SpectraType;
 import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
 import edu.jhuapl.sbmt.query.QueryBase;
 
 import crucible.crust.metadata.api.Key;
 import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.MetadataManager;
 import crucible.crust.metadata.api.Version;
 import crucible.crust.metadata.impl.SettableMetadata;
 
-public abstract class BasicSpectrumInstrument implements SpectralInstrument
+public abstract class BasicSpectrumInstrument implements ISpectralInstrument, MetadataManager
 {
     protected String bandCenterUnit;
     protected String displayName;
@@ -21,10 +19,10 @@ public abstract class BasicSpectrumInstrument implements SpectralInstrument
     protected SpectrumMath spectrumMath;
     protected double[] bandCenters;
 
-//    public BasicSpectrumInstrument()
-//    {
-//
-//    }
+    public BasicSpectrumInstrument()
+    {
+
+    }
 
     public BasicSpectrumInstrument(String bandCenterUnit, String displayName,
             QueryBase queryBase, SpectrumMath spectrumMath)

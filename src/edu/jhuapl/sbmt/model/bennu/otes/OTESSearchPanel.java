@@ -21,8 +21,8 @@ import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
 import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
+import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.SpectraCollection;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 public class OTESSearchPanel extends SpectrumSearchController
 {
@@ -30,7 +30,7 @@ public class OTESSearchPanel extends SpectrumSearchController
 
     public OTESSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
-            Renderer renderer, SpectralInstrument instrument, boolean isSearchView)
+            Renderer renderer, ISpectralInstrument instrument, boolean isSearchView)
     {
         super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument, isSearchView);
 
