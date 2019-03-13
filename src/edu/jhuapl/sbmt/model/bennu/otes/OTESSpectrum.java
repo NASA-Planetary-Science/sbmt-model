@@ -36,6 +36,8 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
+import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
@@ -50,6 +52,8 @@ public class OTESSpectrum extends BasicSpectrum
     File infoFile, spectrumFile;
     double time;
     String extension = "";
+    private SpectraHierarchicalSearchSpecification<OREXSearchSpec> specIO;
+    private InstrumentMetadata<OREXSearchSpec> instrumentMetadata;
 
     public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
             ISpectralInstrument instrument) throws IOException
@@ -61,7 +65,10 @@ public class OTESSpectrum extends BasicSpectrum
             ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, smallBodyModel, instrument, headless, isCustom);
+        System.out.println("OTESSpectrum: OTESSpectrum: filename " + filename);
         extension = FilenameUtils.getExtension(serverpath.toString());
+        this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
+        instrumentMetadata = specIO.getInstrumentMetadata("OTES");
     }
 
     @Override
@@ -106,6 +113,11 @@ public class OTESSpectrum extends BasicSpectrum
 
     public String getSpectrumPathOnServer()
     {
+    	if (serverpath.contains("ote_calrd"))
+    		spec = instrumentMetadata.getSpecs().get(0);
+    	else
+    		spec = instrumentMetadata.getSpecs().get(1);
+
         if (isCustomSpectra)
         {
             return serverpath;
@@ -560,6 +572,8 @@ public class OTESSpectrum extends BasicSpectrum
     {
         return time;
     }
+
+
 
 
 }

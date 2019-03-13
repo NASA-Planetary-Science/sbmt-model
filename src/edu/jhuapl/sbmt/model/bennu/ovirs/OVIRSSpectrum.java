@@ -36,6 +36,9 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
+import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
+import edu.jhuapl.sbmt.model.bennu.otes.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
@@ -52,17 +55,36 @@ public class OVIRSSpectrum extends BasicSpectrum
     double boresightLatDeg, boresightLonDeg;
     double[] calibratedRadianceUncertainty;
     Vector3D boresightIntercept;
+    private SpectraHierarchicalSearchSpecification<OREXSearchSpec> specIO;
+    private InstrumentMetadata<OREXSearchSpec> instrumentMetadata;
 
     public OVIRSSpectrum(String filename, ISmallBodyModel smallBodyModel,
             ISpectralInstrument instrument) throws IOException
     {
         super(filename, smallBodyModel, instrument, false, false);
+        this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
+        instrumentMetadata = specIO.getInstrumentMetadata("OVIRS");
+
+        if (serverpath.contains("ote_calrd"))
+    		spec = instrumentMetadata.getSpecs().get(0);
+    	else
+    		spec = instrumentMetadata.getSpecs().get(1);
+
     }
 
     public OVIRSSpectrum(String filename, ISmallBodyModel smallBodyModel,
             ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, smallBodyModel, instrument, headless, isCustom);
+        this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
+        instrumentMetadata = specIO.getInstrumentMetadata("OVIRS");
+
+        if (serverpath.contains("l3esci_reff"))
+    		spec = instrumentMetadata.getSpecs().get(0);
+    	else if (serverpath.contains("l3csci"))
+    		spec = instrumentMetadata.getSpecs().get(1);
+    	else if (serverpath.contains("l3esci_radf"))
+    		spec = instrumentMetadata.getSpecs().get(2);
     }
 
     @Override
