@@ -138,6 +138,13 @@ public class ColorImage extends Image implements PropertyChangeListener
         }
     }
 
+    @Override
+    public boolean equals(Object obj)
+    {
+    	if (!(obj instanceof ColorImage)) return false;
+    	return getColorKey().equals(((ColorImage)obj).getColorKey());
+
+    }
 
     public String getImageName()
     {
