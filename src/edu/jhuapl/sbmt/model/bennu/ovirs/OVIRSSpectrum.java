@@ -37,7 +37,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
-import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
+import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.model.bennu.otes.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
@@ -55,8 +55,8 @@ public class OVIRSSpectrum extends BasicSpectrum
     double boresightLatDeg, boresightLonDeg;
     double[] calibratedRadianceUncertainty;
     Vector3D boresightIntercept;
-    private SpectraHierarchicalSearchSpecification<OREXSearchSpec> specIO;
-    private InstrumentMetadata<OREXSearchSpec> instrumentMetadata;
+    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
+    private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
 
     public OVIRSSpectrum(String filename, ISmallBodyModel smallBodyModel,
             ISpectralInstrument instrument) throws IOException

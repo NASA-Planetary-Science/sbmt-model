@@ -22,7 +22,7 @@ import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 import edu.jhuapl.sbmt.model.bennu.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.model.eros.NISSpectrum;
-import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3Spectrum;
+import edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu.NIRS3Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
 
 public class SpectraCollection extends AbstractModel implements PropertyChangeListener
@@ -133,7 +133,12 @@ public class SpectraCollection extends AbstractModel implements PropertyChangeLi
 
     public Spectrum addSpectrum(SpectrumKeyInterface key) throws IOException
     {
-        return addSpectrum(getSpectrumFromKey(key).getFullPath(), key.getInstrument(), false);
+        return addSpectrum(key.getName(), key.getInstrument(), false);
+    }
+
+    public Spectrum addSpectrum(SpectrumKeyInterface key, boolean isCustom) throws IOException
+    {
+        return addSpectrum(key.getName(), key.getInstrument(), isCustom);
     }
 
     public Spectrum addSpectrum(String path, ISpectralInstrument instrument, SpectrumColoringStyle coloringStyle) throws IOException

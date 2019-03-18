@@ -3,13 +3,14 @@ package edu.jhuapl.sbmt.model.ryugu.nirs3;
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu.NIRS3Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
 import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
 
 public class NIRS3 extends BasicSpectrumInstrument
 {
-    public static int bandCentersLength = 127;
+    public static int bandCentersLength = 128;
 
 
     static
@@ -20,7 +21,8 @@ public class NIRS3 extends BasicSpectrumInstrument
     public NIRS3()
     {
         super("cm^-1", "NIRS3", NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance());
-        bandCenters = new double[]{ 1249.11, // 0
+        bandCenters = new double[]{
+        		1249.11, // 0
                 1267.65, // 1
                 1286.19, // 2
                 1304.71, // 3

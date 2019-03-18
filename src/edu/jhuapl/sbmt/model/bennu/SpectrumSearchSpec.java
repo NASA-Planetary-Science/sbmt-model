@@ -6,7 +6,7 @@ import java.util.Hashtable;
 
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
-public class OREXSearchSpec extends Hashtable<String, String> implements SearchSpec
+public class SpectrumSearchSpec extends Hashtable<String, String> implements SearchSpec
 {
     String dataName;
     String dataRootLocation;
@@ -17,12 +17,12 @@ public class OREXSearchSpec extends Hashtable<String, String> implements SearchS
     String yAxisUnits;
     String dataDescription;
 
-    public OREXSearchSpec()
+    public SpectrumSearchSpec()
     {
 
     }
 
-    public OREXSearchSpec(String name, String location, String dataPath, String filename, ImageSource source, String xAxisUnits, String yAxisUnits, String dataDescription)
+    public SpectrumSearchSpec(String name, String location, String dataPath, String filename, ImageSource source, String xAxisUnits, String yAxisUnits, String dataDescription)
     {
         put("dataName", dataName = name);
         put("dataRootLocation", dataRootLocation = location);
@@ -53,7 +53,7 @@ public class OREXSearchSpec extends Hashtable<String, String> implements SearchS
         writer.newLine();
     }
 
-    public OREXSearchSpec(Hashtable<String, String> copy)
+    public SpectrumSearchSpec(Hashtable<String, String> copy)
     {
         putAll(copy);
     }

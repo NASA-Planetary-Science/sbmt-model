@@ -26,7 +26,8 @@ public class NIRS3SpectrumReader extends BasicFileReader
         try
         {
             Scanner scanner=new Scanner(new File(filename));
-            scanner.nextLine();
+//            String nextLine = scanner.nextLine();
+//            System.out.println("NIRS3SpectrumReader: read: next line " + line);
             while (scanner.hasNextLine())
             {
             	spectra.add(new NIRS3SpectrumData(new File(filename).getName(), scanner.nextLine()));

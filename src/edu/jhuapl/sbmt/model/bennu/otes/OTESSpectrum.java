@@ -37,7 +37,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
-import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
+import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
 import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
@@ -52,8 +52,8 @@ public class OTESSpectrum extends BasicSpectrum
     File infoFile, spectrumFile;
     double time;
     String extension = "";
-    private SpectraHierarchicalSearchSpecification<OREXSearchSpec> specIO;
-    private InstrumentMetadata<OREXSearchSpec> instrumentMetadata;
+    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
+    private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
 
     public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
             ISpectralInstrument instrument) throws IOException

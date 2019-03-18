@@ -10,7 +10,6 @@ import vtk.vtkActor;
 import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
-import edu.jhuapl.sbmt.gui.spectrum.model.SpectrumKey;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
 
@@ -69,31 +68,31 @@ public abstract class Spectrum extends AbstractModel implements PropertyChangeLi
     public abstract void setMetadata(SearchSpec spec);
     public abstract SearchSpec getMetadata();
 
-    protected SpectrumKey key;
+    protected SpectrumKeyInterface key;
 
     public Spectrum()
     {
         this.key = null;
     }
 
-    public Spectrum(SpectrumKey key)
+    public Spectrum(SpectrumKeyInterface key)
     {
         this.key = key;
     }
 
-    public SpectrumKey getKey()
+    public SpectrumKeyInterface getKey()
     {
         return key;
     }
 
-    public void setKey(SpectrumKey key)
+    public void setKey(SpectrumKeyInterface key)
     {
         this.key = key;
     }
 
     public String getSpectrumName()
     {
-        return new File(key.name).getName();
+        return new File(key.getName()).getName();
     }
 
 //    /**

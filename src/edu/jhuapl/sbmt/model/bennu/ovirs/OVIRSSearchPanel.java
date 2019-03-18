@@ -20,7 +20,7 @@ import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
-import edu.jhuapl.sbmt.model.bennu.OREXSearchSpec;
+import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.SpectraCollection;
 
@@ -118,7 +118,7 @@ public class OVIRSSearchPanel extends SpectrumSearchController
         SpectraCollection collection = (SpectraCollection)model.getModelManager().getModel(ModelNames.SPECTRA);
         for (int i=0; i<lines.size(); ++i)
         {
-            OREXSearchSpec spectrumSpec = new OREXSearchSpec();
+            SpectrumSearchSpec spectrumSpec = new SpectrumSearchSpec();
             spectrumSpec.fromFile(lines.get(0));
             collection.tagSpectraWithMetadata(createSpectrumName(i), spectrumSpec);
         }

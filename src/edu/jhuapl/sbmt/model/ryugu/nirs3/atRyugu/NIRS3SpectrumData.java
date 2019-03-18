@@ -21,8 +21,14 @@ public class NIRS3SpectrumData
 		System.out.println("NIRS3SpectrumData: NIRS3SpectrumData: midtime is " + midTimeComplete);
 		et = TimeUtil.str2et(midTimeComplete);
 		scanner.next(); // skip the UTC end
-		for (int i = 0; i < NIRS3.bandCentersLength; i++)
-			spectrum[i] = Double.parseDouble(scanner.next());
+		scanner.next();  //skip the other geo fields
+		scanner.next();
+		scanner.next();
+		scanner.next();
+		scanner.next();
+		scanner.next();
+		for (int i = 9; i < NIRS3.bandCentersLength+9; i++)
+			spectrum[i-9] = Double.parseDouble(scanner.next());
 		scanner.close();
 	}
 

@@ -750,15 +750,15 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected String initLocalInfoFileFullPath()
     {
-        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+        String configFilename = new File(getKey().getName()).getParent() + File.separator + "config.txt";
         MapUtil configMap = new MapUtil(configFilename);
         String[] spectrumFilenames = configMap.getAsArray(SPECTRUM_FILENAMES);
         for (int i=0; i<spectrumFilenames.length; ++i)
         {
-            String filename = new File(getKey().name).getName();
+            String filename = new File(getKey().getName()).getName();
             if (filename.equals(spectrumFilenames[i]))
             {
-                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(PerspectiveImage.INFOFILENAMES)[i];
+                return new File(getKey().getName()).getParent() + File.separator + configMap.getAsArray(PerspectiveImage.INFOFILENAMES)[i];
             }
         }
 
@@ -767,15 +767,15 @@ public abstract class BasicSpectrum extends Spectrum
 
     protected String initLocalSpectrumFileFullPath()
     {
-        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+        String configFilename = new File(getKey().getName()).getParent() + File.separator + "config.txt";
         MapUtil configMap = new MapUtil(configFilename);
         String[] spectrumFilenames = configMap.getAsArray(SPECTRUM_FILENAMES);
         for (int i=0; i<spectrumFilenames.length; ++i)
         {
-            String filename = new File(getKey().name).getName();
+            String filename = new File(getKey().getName()).getName();
             if (filename.equals(spectrumFilenames[i]))
             {
-                return new File(getKey().name).getParent() + File.separator + configMap.getAsArray(SPECTRUM_NAMES)[i];
+                return new File(getKey().getName()).getParent() + File.separator + configMap.getAsArray(SPECTRUM_NAMES)[i];
             }
         }
 

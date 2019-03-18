@@ -131,4 +131,12 @@ public class CustomSpectrumKey implements CustomSpectrumKeyInterface, StorableAs
 		this.pointingFilename = pointingFilename;
 	}
 
+	@Override
+    public String toString()
+    {
+        return "CustomSpectrumKey [name=" + name
+                + ", fileType=" + fileType + ", instrument=" + instrument
+                + ", imageType=" + spectrumType + "]";
+    }
+
 }

@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.bennu.ovirs;
+package edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -35,12 +35,12 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.sbmt.gui.spectrum.SpectrumPopupMenu;
 
-public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyChangeListener
+public class NIRS3SpectrumInfoPanel extends ModelInfoWindow implements PropertyChangeListener
 {
     private ModelManager modelManager;
-    private OVIRSSpectrum spectrum;
+    private NIRS3Spectrum spectrum;
 
-    public OVIRSSpectrumInfoPanel(OVIRSSpectrum spectrum, ModelManager modelManager)
+    public NIRS3SpectrumInfoPanel(NIRS3Spectrum spectrum, ModelManager modelManager)
     {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -54,6 +54,8 @@ public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyC
         XYSeries series = new XYSeries("NIRS3 Spectrum");
         double[] wavelengths = spectrum.getxData();
         double[] spect = spectrum.getSpectrum();
+        System.out.println("NIRS3SpectrumInfoPanel: NIRS3SpectrumInfoPanel: data length " + wavelengths.length);
+        System.out.println("NIRS3SpectrumInfoPanel: NIRS3SpectrumInfoPanel: spec length " + spect.length);
         for (int i=0; i<wavelengths.length; ++i)
             series.add(wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);
