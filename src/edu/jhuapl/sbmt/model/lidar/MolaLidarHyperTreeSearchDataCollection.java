@@ -159,17 +159,6 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                 computeTracks();
                 removeTracksThatAreTooSmall();
 
-                assignInitialColorToTrack();
-
-//                System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
-
-
-                updateTrackPolydata();
-
-//                System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
-
                 loading=false;
 
                 return null;
@@ -187,8 +176,6 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
-        selectPoint(-1);
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
@@ -243,8 +230,7 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
         }*/
 
        // Reset internal state vars
-       radialOffset = 0.0;
-       initTranslationArray();
+       initModelState();
     }
 
     public FSHyperTreeSkeleton getCurrentSkeleton()

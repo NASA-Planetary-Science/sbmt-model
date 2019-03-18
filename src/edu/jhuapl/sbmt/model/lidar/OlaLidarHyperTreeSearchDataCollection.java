@@ -192,11 +192,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 		};
 		dataLoader.executeDialog();
 
-		radialOffset = 0.0;
-
 		computeTracks();
-
-		removeTracksThatAreTooSmall();
 
 		// sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
 		List<Track> tracksToRemove=Lists.newArrayList();
@@ -206,14 +202,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 		for (Track t : tracksToRemove)
 			tracks.remove(t);
 
-		assignInitialColorToTrack();
-
-		updateTrackPolydata();
-
-		selectPoint(-1);
-
-		//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-
+        removeTracksThatAreTooSmall();
 	}
 
 	static vtkPoints points=new vtkPoints();
@@ -269,6 +258,7 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 		localFileMap.putAll(getCurrentSkeleton().getFileMap());
 
 		tracks.clear();
+		initModelState();
 
 		int size = originalPoints.size();
 		if (size == 0)
@@ -399,7 +389,8 @@ public class OlaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollec
 			}
 		});
 
-
+        // Reset internal state vars
+        initModelState();
 	}
 
 
