@@ -472,6 +472,7 @@ public class NIRS3Spectrum extends BasicSpectrum
 	            else if (val > 1.0)
 	                val = 1.0;
 
+	            System.out.println("NIRS3Spectrum: getChannelColor: minmax diff " + (channelsColoringMaxValue[i] - channelsColoringMinValue[i]));
 	            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
 	            color[i] = slope * (val - channelsColoringMinValue[i]);
 	        }
