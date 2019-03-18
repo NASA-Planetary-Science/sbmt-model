@@ -18,9 +18,8 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,23 +37,20 @@ import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquar
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import vtk.vtkActor;
-import vtk.vtkCellArray;
-import vtk.vtkIdList;
-import vtk.vtkPoints;
-import vtk.vtkPolyData;
-import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
-import vtk.vtkUnsignedCharArray;
 import vtk.vtkUnstructuredGrid;
 
 import edu.jhuapl.saavtk.io.readers.IpwgPlyReader;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
+import edu.jhuapl.saavtk.pick.PickEvent;
+import edu.jhuapl.saavtk.pick.PickUtil;
 import edu.jhuapl.saavtk.util.ColorUtil;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
@@ -62,7 +58,6 @@ import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.lidar.BasicLidarPoint;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
@@ -77,29 +72,19 @@ public class LidarSearchDataCollection extends AbstractModel
 
 	// State vars
 	protected List<Track> tracks;
-	private ImmutableList<Integer> selectedTrackIdxL;
-	private int selectedPointIdx;
+	private ImmutableSet<Track> selectedTrackS;
 
-	private Vector3D[] translationArr;
-	protected double radialOffset;
+	private Map<Track, Vector3D> translationM;
+	private Map<Track, Double> errorM;
+	private double radialOffset;
 
 	// VTK vars
-	private vtkPolyData polydata; // target points
-	private vtkPolyData selectedPointPolydata;
+	private VtkPointPainter vPointPainter;
+	private VtkTrackPainter vTrackPainter;
+	private List<vtkProp> vActorL;
 
-	protected List<LidarPoint> originalPoints = new ArrayList<LidarPoint>();
+	protected List<LidarPoint> originalPoints = new ArrayList<>();
 	protected Map<LidarPoint, Integer> originalPointsSourceFiles = Maps.newHashMap();
-
-	private List<vtkProp> actors = new ArrayList<vtkProp>();
-	private vtkPolyDataMapper pointsMapper;
-	private vtkPolyDataMapper selectedPointMapper;
-	private vtkActor actor;
-	private vtkActor selectedPointActor;
-	private vtkPolyData emptyPolyData; // an empty polydata for resetting
-
-	private vtkPolyData scPosPolyData; // spacecraft points
-	private vtkPolyDataMapper scPosMapper;
-	private vtkActor scPosActor;
 
 	private String dataSource;
 	private double startDate;
@@ -110,12 +95,6 @@ public class LidarSearchDataCollection extends AbstractModel
 
 	private double timeSeparationBetweenTracks = 10.0; // In seconds
 	private int minTrackLength = 5;
-	private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
-	private boolean enableTrackErrorComputation = false;
-	private double trackError;
-	protected float lightnessSpanBase = 0.5f;
-
-	private boolean showSpacecraftPosition = false;
 
 	/**
 	 * Standard Constructor
@@ -127,96 +106,78 @@ public class LidarSearchDataCollection extends AbstractModel
 		refSmallBodyModel = aSmallBodyModel;
 
 		tracks = new ArrayList<>();
-		selectedTrackIdxL = ImmutableList.of();
-		selectedPointIdx = -1;
+		selectedTrackS = ImmutableSet.of();
 
-		translationArr = new Vector3D[0];
+		translationM = new HashMap<>();
+		errorM = new HashMap<>();
 		radialOffset = 0.0;
 
-		// Initialize an empty polydata for resetting
-		emptyPolyData = new vtkPolyData();
-		vtkPoints points = new vtkPoints();
-		vtkCellArray vert = new vtkCellArray();
-		emptyPolyData.SetPoints(points);
-		emptyPolyData.SetVerts(vert);
-		vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
-		colors.SetNumberOfComponents(4);
-		emptyPolyData.GetCellData().SetScalars(colors);
+		vPointPainter = new VtkPointPainter(this);
+		vTrackPainter = new VtkTrackPainter(this);
 
-		polydata = new vtkPolyData();
-		polydata.DeepCopy(emptyPolyData);
+		vActorL = new ArrayList<>();
+		vActorL.add(vTrackPainter.getActor());
+		vActorL.add(vPointPainter.getActor());
 
-		selectedPointPolydata = new vtkPolyData();
-		selectedPointPolydata.DeepCopy(emptyPolyData);
-
-		pointsMapper = new vtkPolyDataMapper();
-		pointsMapper.SetScalarModeToUseCellData();
-		pointsMapper.SetInputData(polydata);
-
-		selectedPointMapper = new vtkPolyDataMapper();
-		selectedPointMapper.SetInputData(selectedPointPolydata);
-
-		actor = new SaavtkLODActor();
-		actor.SetMapper(pointsMapper);
-		((SaavtkLODActor) actor).setQuadricDecimatedLODMapper(polydata);
-		actor.GetProperty().SetPointSize(2.0);
-
-		actors.add(actor);
-
-		selectedPointActor = new SaavtkLODActor();
-		selectedPointActor.SetMapper(selectedPointMapper);
-		((SaavtkLODActor) selectedPointActor).setQuadricDecimatedLODMapper(selectedPointPolydata);
-		selectedPointActor.GetProperty().SetColor(0.1, 0.1, 1.0);
-		selectedPointActor.GetProperty().SetPointSize(7.0);
-
-		actors.add(selectedPointActor);
-
-		scPosPolyData = new vtkPolyData();
-		scPosPolyData.DeepCopy(emptyPolyData);
-		scPosMapper = new vtkPolyDataMapper();
-		scPosMapper.SetInputData(scPosPolyData);
-		scPosActor = new vtkActor();
-		scPosActor.SetMapper(scPosMapper);
-		actors.add(scPosActor);
+		setPointSize(2);
 	}
 
 	/**
-	 * Helper method that initializes the internal translation array. The
-	 * translation array is used to store a translation vector for each Track.
-	 * Initialization of the translation array will set each Track to have no
-	 * translation (Zero vector).
+	 * Returns the cumulative error for the specified Track.
+	 * <P>
+	 * The cumulative error is defined as the summation of all of the error for
+	 * each LidarPoint associated with the Track.
+	 *
+	 * @param aTrack
+	 * @return
 	 */
-	protected void initTranslationArray()
+	public double getTrackError(Track aTrack)
 	{
-		int trackCnt = tracks.size();
-		translationArr = new Vector3D[trackCnt];
-		for (int c1 = 0; c1 < trackCnt; c1++)
-			translationArr[c1] = Vector3D.ZERO;
+		// Utilize the cached value
+		Double tmpErr = errorM.get(aTrack);
+		if (tmpErr != null)
+			return tmpErr;
+
+		// Calculate the error
+		tmpErr = 0.0;
+		int begIdx = aTrack.startId;
+		int endIdx = aTrack.stopId;
+		Vector3D tmpVect = getTranslation(aTrack);
+		for (int c1 = begIdx; c1 <= endIdx; c1++)
+		{
+			LidarPoint tmpLP = getPoint(c1);
+
+			double[] ptLidar = tmpLP.getTargetPosition().toArray();
+
+			ptLidar = transformLidarPoint(tmpVect, ptLidar);
+			double[] ptClosest = refSmallBodyModel.findClosestPoint(ptLidar);
+			tmpErr += MathUtil.distance2Between(ptLidar, ptClosest);
+		}
+
+		// Update the cache and return the error
+		errorM.put(aTrack, tmpErr);
+		return tmpErr;
 	}
 
 	/**
-	 * Method that returns a list corresponding to the selected track indexes.
+	 * Method that returns the list of selected Tracks.
 	 */
-	public ImmutableList<Integer> getSelectedTracks()
+	public ImmutableList<Track> getSelectedTracks()
 	{
-		return selectedTrackIdxL;
+		return selectedTrackS.asList();
 	}
 
 	/**
-	 * Method that sets in the list of selected track indexes.
+	 * Method that sets in the list of selected Tracks.
 	 */
-	public void setSelectedTracks(List<Integer> aIdxL)
+	public void setSelectedTracks(List<Track> aTrackL)
 	{
 		// Bail if the selection has not changed
-		if (aIdxL.equals(selectedTrackIdxL) == true)
+		if (aTrackL.equals(selectedTrackS.asList()) == true)
 			return;
 
 		// Update our selection
-		Set<Integer> tmpS = new LinkedHashSet<>(aIdxL);
-		selectedTrackIdxL = ImmutableList.copyOf(tmpS);
-
-		// Send out notification of the selection change
-		pcs.firePropertyChange(Properties.MODEL_PICKED, null, null);
+		selectedTrackS = ImmutableSet.copyOf(aTrackL);
 	}
 
 	public double getOffsetScale()
@@ -241,8 +202,6 @@ public class LidarSearchDataCollection extends AbstractModel
 		runQuery(dataSource, startDate, stopDate, cubeList, pointInRegionChecker, timeSeparationBetweenTracks,
 				minTrackLength);
 
-		selectPoint(-1);
-
 		this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
 
@@ -252,8 +211,6 @@ public class LidarSearchDataCollection extends AbstractModel
 	{
 		runQuery(dataSource, startDate, stopDate, cubeList, pointInRegionChecker, timeSeparationBetweenTracks,
 				minTrackLength, minRange, maxRange);
-
-		selectPoint(-1);
 
 		this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
@@ -362,10 +319,6 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		computeTracks();
 		removeTracksThatAreTooSmall();
-
-		assignInitialColorToTrack();
-
-		updateTrackPolydata();
 	}
 
 	protected void runQuery(String dataSource, double startDate, double stopDate, TreeSet<Integer> cubeList,
@@ -474,10 +427,6 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		computeTracks();
 		removeTracksThatAreTooSmall();
-
-		assignInitialColorToTrack();
-
-		updateTrackPolydata();
 	}
 
 	public void loadTrackAscii(File file, LIDARTextInputType type) throws IOException
@@ -485,7 +434,7 @@ public class LidarSearchDataCollection extends AbstractModel
 		LidarTextFormatReader textReader = new LidarTextFormatReader(file, localFileMap.inverse().get(file.toString()),
 				originalPoints, originalPointsSourceFiles, tracks);
 		textReader.process(type);
-		initTranslationArray();
+		initModelState();
 //
 //        InputStream fs = new FileInputStream(file.getAbsolutePath());
 //        InputStreamReader isr = new InputStreamReader(fs);
@@ -617,16 +566,8 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		track.stopId = originalPoints.size() - 1;
 		tracks.add(track);
-		initTranslationArray();
+		initModelState();
 		track.registerSourceFileIndex(fileId, localFileMap);
-	}
-
-	private void skip(DataInputStream in, int n) throws IOException
-	{
-		for (int i = 0; i < n; ++i)
-		{
-			in.readByte();
-		}
 	}
 
 	public void loadTrackOlaL2(File file) throws IOException
@@ -644,7 +585,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		track.stopId = originalPoints.size() - 1;
 		tracks.add(track);
-		initTranslationArray();
+		initModelState();
 		track.registerSourceFileIndex(fileId, localFileMap);
 	}
 
@@ -674,7 +615,7 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		track.stopId = originalPoints.size() - 1;
 		tracks.add(track);
-		initTranslationArray();
+		initModelState();
 		track.registerSourceFileIndex(fileId, localFileMap);
 	}
 
@@ -725,19 +666,37 @@ public class LidarSearchDataCollection extends AbstractModel
 		}
 
 		removeTracksThatAreTooSmall();
-		assignInitialColorToTrack();
-		updateTrackPolydata();
 	}
 
 	/**
-	 * Returns the LidarPoint corresponding to the specified cellId
+	 * Returns the LidarPoint associated with the specified vtkActor and cellId.
+	 * <P>
+	 * Returns null if there is no LidarPoint corresponding the specified
+	 * vtkActor / cellId.
 	 *
-	 * @param aCellId
+	 * @param aActor The vtkActor associated with the pick action
+	 * @param aCellId The cell id associated with the pick action
 	 */
-	public LidarPoint getLidarPointFromCellId(int aCellId)
+	public LidarPoint getLidarPointFromVtkPick(vtkActor aActor, int aCellId)
 	{
-		int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
-		return originalPoints.get(tmpIdx);
+		// Return the LidarPoint associated with the vPointPainter
+		if (aActor == vPointPainter.getActor())
+			return vPointPainter.getPoint();
+
+		// Bail if aActor is not associated with a relevant VtkTrackPainter
+		VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(aActor);
+		if (tmpTrackPainter == null)
+			return null;
+
+		return tmpTrackPainter.getLidarPointFromCellId(aCellId);
+	}
+
+	/**
+	 * Returns the LidarPoint at the specified index.
+	 */
+	public LidarPoint getPoint(int aIdx)
+	{
+		return originalPoints.get(aIdx);
 	}
 
 	/**
@@ -749,31 +708,14 @@ public class LidarSearchDataCollection extends AbstractModel
 	}
 
 	/**
-	 * Return the track with the specified trackId
+	 * Return the Track at the specified index.
 	 *
-	 * @param trackId
+	 * @param aIdx
 	 * @return
 	 */
-	public Track getTrack(int trackId)
+	public Track getTrack(int aIdx)
 	{
-		return tracks.get(trackId);
-	}
-
-	/**
-	 * Returns the track ID corresponding to the specified cellId.
-	 *
-	 * @param aCellId
-	 */
-	public int getTrackIdFromCellId(int aCellId)
-	{
-		int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
-		for (int i = 0; i < tracks.size(); ++i)
-		{
-			if (getTrack(i).containsId(tmpIdx))
-				return i;
-		}
-
-		return -1;
+		return tracks.get(aIdx);
 	}
 
 	/**
@@ -787,22 +729,115 @@ public class LidarSearchDataCollection extends AbstractModel
 	public int getNumberOfVisibleTracks()
 	{
 		int numVisibleTracks = 0;
-		int numTracks = getNumberOfTracks();
-		for (int i = 0; i < numTracks; ++i)
-			if (getTrack(i).getIsVisible() == true)
+		for (Track aTrack : tracks)
+			if (aTrack.getIsVisible() == true)
 				++numVisibleTracks;
 
 		return numVisibleTracks;
 	}
 
-/*
- * int nextId=0; Map<Integer, Integer> trackIds=Maps.newHashMap(); // map from
- * hash codes to ids
- *
- * private Integer getTrackId(Track track) { int hash=track.hashCode(); if
- * (trackIds.containsKey(hash)) return trackIds.get(hash); else {
- * trackIds.put(hash, nextId); nextId++; return trackIds.get(hash); } }
- */
+	/**
+	 * Method that will process the specified PickEvent.
+	 * <P>
+	 * The selected Tracks will be updated to reflect the PickEvent action.
+	 *
+	 * @param aPickEvent
+	 */
+	public void handlePickAction(PickEvent aPickEvent)
+	{
+		// Retrieve the selected lidar Point and corresponding Track
+		Track tmpTrack = null;
+		LidarPoint tmpPoint = null;
+		vtkProp tmpActor = aPickEvent.getPickedProp();
+		if (tmpActor == vPointPainter.getActor())
+		{
+			tmpPoint = vPointPainter.getPoint();
+			tmpTrack = vPointPainter.getTrack();
+		}
+		else
+		{
+			// Bail if tmpActor is not associated with a relevant VtkTrackPainter
+			VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(tmpActor);
+			if (tmpTrackPainter == null)
+				return;
+
+			// Update the selected LidarPoint
+			int tmpCellId = aPickEvent.getPickedCellId();
+			tmpPoint = tmpTrackPainter.getLidarPointFromCellId(tmpCellId);
+
+			// Determine the Track that was selected
+			tmpTrack = tmpTrackPainter.getTrackFromCellId(tmpCellId);
+			if (tmpTrack == null)
+				return;
+
+			// Update the VtkLidaPoint to reflect the selected point
+			vPointPainter.setData(tmpPoint, tmpTrack);
+		}
+
+		// Determine if this is a modified action
+		boolean isModifyKey = PickUtil.isModifyKey(aPickEvent.getMouseEvent());
+
+		// Determine the Tracks that will be marked as selected
+		List<Track> tmpL = getSelectedTracks();
+		tmpL = new ArrayList<>(tmpL);
+
+		if (isModifyKey == false)
+			tmpL = ImmutableList.of(tmpTrack);
+		else if (tmpL.contains(tmpTrack) == false)
+			tmpL.add(tmpTrack);
+
+		// Update the selected Tracks
+		setSelectedTracks(tmpL);
+
+		updateVtkVars();
+
+		// Send out notification of the picked Track
+		pcs.firePropertyChange(Properties.MODEL_PICKED, null, null);
+	}
+
+	/**
+	 * Sets the selected LidarPoint
+	 *
+	 * @param aLidarPoint The LidarPoint of interest
+	 * @param aLidarTrack The Track associated with the LidarPoint
+	 */
+	public void setSelectedPoint(LidarPoint aLidarPoint, Track aLidarTrack)
+	{
+		vPointPainter.setData(aLidarPoint, aLidarTrack);
+		vPointPainter.updateVtkVars();
+
+		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+	}
+
+	/**
+	 * Helper method which will cause the LidarSearchDataCollection model to be
+	 * properly initialized.
+	 * <P>
+	 * This method should be called after the track / point data has been
+	 * updated. This method is responsible for initializing various internal
+	 * state.
+	 */
+	protected void initModelState()
+	{
+		selectedTrackS = ImmutableSet.of();
+
+		// Reset state vars
+		translationM = new HashMap<>();
+		for (Track aTrack : tracks)
+			translationM.put(aTrack, Vector3D.ZERO);
+
+		errorM = new HashMap<>();
+		radialOffset = 0.0;
+
+		// Reset VTK vars
+		vPointPainter.setData(null, null);
+		vTrackPainter.setTracks(tracks);
+
+		// Setup the initial colors for all the Tracks
+		assignInitialColorToTrack();
+
+		updateVtkVars();
+	}
 
 	protected void computeLoadedTracks()
 	{
@@ -827,6 +862,7 @@ public class LidarSearchDataCollection extends AbstractModel
 	protected void computeTracks()
 	{
 		tracks.clear();
+		initModelState();
 
 		int size = originalPoints.size();
 		if (size == 0)
@@ -867,8 +903,7 @@ public class LidarSearchDataCollection extends AbstractModel
 		track.timeRange = new String[] { TimeUtil.et2str(t0), TimeUtil.et2str(t1) };
 
 		// Reset internal state vars
-		initTranslationArray();
-		radialOffset = 0.0;
+		initModelState();
 	}
 
 	/**
@@ -876,21 +911,22 @@ public class LidarSearchDataCollection extends AbstractModel
 	 * translated using the current radial offset and translation before being
 	 * saved out. If false, the original points are saved out unmodified.
 	 *
-	 * @param aTrackId
+	 * @param aTrack
 	 * @param aOutfile
 	 * @param transformPoint
 	 * @throws IOException
 	 */
-	public void saveTrack(int aTrackId, File aOutfile, boolean transformPoint) throws IOException
+	public void saveTrack(Track aTrack, File aOutfile, boolean transformPoint) throws IOException
 	{
 		FileWriter fstream = new FileWriter(aOutfile);
 		BufferedWriter out = new BufferedWriter(fstream);
 
-		int startId = tracks.get(aTrackId).startId;
-		int stopId = tracks.get(aTrackId).stopId;
+		int startId = aTrack.startId;
+		int stopId = aTrack.stopId;
 
 		String newline = System.getProperty("line.separator");
 
+		Vector3D tmpVect = getTranslation(aTrack);
 		for (int i = startId; i <= stopId; ++i)
 		{
 			LidarPoint pt = originalPoints.get(i);
@@ -898,8 +934,8 @@ public class LidarSearchDataCollection extends AbstractModel
 			double[] scpos = pt.getSourcePosition().toArray();
 			if (transformPoint)
 			{
-				target = transformLidarPoint(aTrackId, target);
-				scpos = transformScpos(aTrackId, scpos, target);
+				target = transformLidarPoint(tmpVect, target);
+				scpos = transformScpos(tmpVect, scpos, target);
 			}
 
 			String timeString = TimeUtil.et2str(pt.getTime());
@@ -915,14 +951,17 @@ public class LidarSearchDataCollection extends AbstractModel
 
 	public void saveAllVisibleTracksToFolder(File folder, boolean transformPoint) throws IOException
 	{
-		int numTracks = getNumberOfTracks();
-		for (int i = 0; i < numTracks; ++i)
+		int tmpIdx = -1;
+		for (Track aTrack : tracks)
 		{
-			if (getTrack(i).getIsVisible() == true)
-			{
-				File file = new File(folder.getAbsolutePath(), "track" + i + ".txt");
-				saveTrack(i, file, transformPoint);
-			}
+			tmpIdx++;
+
+			// Skip to next if Track is not visible
+			if (aTrack.getIsVisible() == false)
+				continue;
+
+			File file = new File(folder.getAbsolutePath(), "track" + tmpIdx + ".txt");
+			saveTrack(aTrack, file, transformPoint);
 		}
 	}
 
@@ -933,16 +972,16 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		String newline = System.getProperty("line.separator");
 
-		for (int aTrackId = 0; aTrackId < tracks.size(); aTrackId++)
+		for (Track aTrack : tracks)
 		{
 			// Skip to next if Track is not visible
-			Track tmpTrack = tracks.get(aTrackId);
-			if (tmpTrack.getIsVisible() == false)
+			if (aTrack.getIsVisible() == false)
 				continue;
 
 			// Save each individual lidar point
-			int startId = tmpTrack.startId;
-			int stopId = tmpTrack.stopId;
+			int startId = aTrack.startId;
+			int stopId = aTrack.stopId;
+			Vector3D tmpVect = getTranslation(aTrack);
 			for (int i = startId; i <= stopId; ++i)
 			{
 				LidarPoint pt = originalPoints.get(i);
@@ -950,8 +989,8 @@ public class LidarSearchDataCollection extends AbstractModel
 				double[] scpos = pt.getSourcePosition().toArray();
 				if (transformPoint)
 				{
-					target = transformLidarPoint(aTrackId, target);
-					scpos = transformScpos(aTrackId, scpos, target);
+					target = transformLidarPoint(tmpVect, target);
+					scpos = transformScpos(tmpVect, scpos, target);
 				}
 
 				String timeString = TimeUtil.et2str(pt.getTime());
@@ -965,7 +1004,10 @@ public class LidarSearchDataCollection extends AbstractModel
 		out.close();
 	}
 
-	protected void assignInitialColorToTrack()
+	/**
+	 * Helper method that will initialize all the Tracks with a default color.
+	 */
+	private void assignInitialColorToTrack()
 	{
 		int tmpIdx = 0;
 		Color[] colorArr = ColorUtil.generateColors(tracks.size());
@@ -977,90 +1019,93 @@ public class LidarSearchDataCollection extends AbstractModel
 	}
 
 	/**
-	 * Sets the color associated with the Track at the specified index.
+	 * Sets the color associated with the specified Track.
 	 */
-	public void setTrackColor(int aIdx, Color aColor)
+	public void setTrackColor(Track aTrack, Color aColor)
 	{
 		// Delegate
-		List<Integer> tmpL = ImmutableList.of(aIdx);
+		List<Track> tmpL = ImmutableList.of(aTrack);
 		setTrackColor(tmpL, aColor);
 	}
 
 	/**
-	 * Sets the color associated with the Tracks at the specified indexes.
+	 * Sets the color associated with the specified list of Tracks.
 	 */
-	public void setTrackColor(List<Integer> aIdxL, Color aColor)
+	public void setTrackColor(List<Track> aTrackL, Color aColor)
 	{
-		for (int aIdx : aIdxL)
-			tracks.get(aIdx).color = aColor;
+		for (Track aTrack : aTrackL)
+		{
+			aTrack.color = aColor;
+			getVtkTrackPainter(aTrack).markStale();
+		}
+		vPointPainter.markStale();
 
-		updateTrackPolydata();
+		updateVtkVars();
 	}
 
 	/**
-	 * Method that will set the Tracks associated with the specified indexs to
-	 * visible and set all other Tracks to invisible.
+	 * Method that will set the list of Tracks to visible and set all other
+	 * Tracks to invisible.
 	 *
-	 * @param aIdxL
+	 * @param aTrackL
 	 */
-	public void hideOtherTracksExcept(List<Integer> aIdxL)
+	public void hideOtherTracksExcept(List<Track> aTrackL)
 	{
-		Set<Integer> tmpSet = new HashSet<>(aIdxL);
+		Set<Track> tmpSet = new HashSet<>(aTrackL);
 
 		// Update the visibility flag on each Track
-		for (int aIdx = 0; aIdx < tracks.size(); aIdx++)
+		for (Track aTrack : tracks)
 		{
-			Track tmpTrack = tracks.get(aIdx);
-			boolean isVisible = tmpSet.contains(aIdx);
-			tmpTrack.isVisible = isVisible;
-		}
+			boolean isVisible = tmpSet.contains(aTrack);
+			aTrack.isVisible = isVisible;
 
-		updateTrackPolydata();
+			getVtkTrackPainter(aTrack).markStale();
+		}
+		vPointPainter.markStale();
+
+		updateVtkVars();
 	}
 
 	/**
-	 * Sets the Track corresponding to the specified index to be visible.
+	 * Sets the specified Track to be visible.
 	 *
-	 * @param aId
+	 * @param aTrack
 	 * @param aBool True if the Track should be visible
 	 */
-	public void setTrackVisible(int aId, boolean aBool)
+	public void setTrackVisible(Track aTrack, boolean aBool)
 	{
 		// Delegate
-		List<Integer> tmpL = ImmutableList.of(aId);
+		List<Track> tmpL = ImmutableList.of(aTrack);
 		setTrackVisible(tmpL, aBool);
 	}
 
 	/**
-	 * Sets the Tracks corresponding to the specified indexes to be visible.
+	 * Sets the specified lists of Tracks to be visible.
 	 *
-	 * @param aIdArr
+	 * @param aTrackL
 	 * @param aBool True if the Tracks should be visible
 	 */
-	public void setTrackVisible(List<Integer> aIdxL, boolean aBool)
+	public void setTrackVisible(List<Track> aTrackL, boolean aBool)
 	{
-		for (int aIdx : aIdxL)
-			tracks.get(aIdx).isVisible = aBool;
+		for (Track aTrack : aTrackL)
+		{
+			aTrack.isVisible = aBool;
+			getVtkTrackPainter(aTrack).markStale();
+		}
+		vPointPainter.markStale();
 
-		updateTrackPolydata();
-		selectedPointIdx = -1;
-		updateSelectedPoint();
-	}
-
-	private int getDisplayPointIdFromOriginalPointId(int ptId)
-	{
-		return displayedPointToOriginalPointMap.indexOf(ptId);
+		updateVtkVars();
 	}
 
 	/**
 	 * Helper method that takes the given lidar point and returns a corresponding
-	 * point that takes into account the radial offset and translation of the
-	 * associated Hrack.
+	 * point that takes into account the radial offset and the specified
+	 * translation vector.
 	 *
-	 * @param aTrackId Index of the Track the lidar point is associated with.
+	 * @param aVect The translation vector of interest.
 	 * @param aPt The lidar point of interest.
 	 */
-	private double[] transformLidarPoint(int aTrackId, double[] aPt)
+	protected double[] transformLidarPoint(Vector3D aVect, double[] aPt)
 	{
 		if (radialOffset != 0.0)
 		{
@@ -1069,8 +1114,7 @@ public class LidarSearchDataCollection extends AbstractModel
 			aPt = MathUtil.latrec(lla);
 		}
 
-		Vector3D tmpVect = translationArr[aTrackId];
-		return new double[] { aPt[0] + tmpVect.getX(), aPt[1] + tmpVect.getY(), aPt[2] + tmpVect.getZ() };
+		return new double[] { aPt[0] + aVect.getX(), aPt[1] + aVect.getY(), aPt[2] + aVect.getZ() };
 	}
 
 	/**
@@ -1079,12 +1123,12 @@ public class LidarSearchDataCollection extends AbstractModel
 	 * and apply that offset to the spacecraft (rather than computing the radial
 	 * offset directly for the spacecraft).
 	 *
-	 * @param aTrackId Index of the Track the lidar point is associated with.
+	 * @param aVect The translation vector of interest.
 	 * @param scpos
 	 * @param lidarPoint
 	 * @return
 	 */
-	private double[] transformScpos(int aTrackId, double[] scpos, double[] lidarPoint)
+	private double[] transformScpos(Vector3D aVect, double[] scpos, double[] lidarPoint)
 	{
 		if (radialOffset != 0.0)
 		{
@@ -1097,95 +1141,42 @@ public class LidarSearchDataCollection extends AbstractModel
 			scpos[2] += (offsetLidarPoint[2] - lidarPoint[2]);
 		}
 
-		Vector3D tmpVect = translationArr[aTrackId];
-		return new double[] { scpos[0] + tmpVect.getX(), scpos[1] + tmpVect.getY(), scpos[2] + tmpVect.getZ() };
+		return new double[] { scpos[0] + aVect.getX(), scpos[1] + aVect.getY(), scpos[2] + aVect.getZ() };
 	}
 
-	protected void updateTrackPolydata()
+	/**
+	 * Helper method that returns the VtkTrackPainter corresponding to the
+	 * specified actor.
+	 */
+	private VtkTrackPainter getVtkTrackPainterForActor(vtkProp aActor)
 	{
-		// Place the points into polydata
-		polydata.DeepCopy(emptyPolyData);
-		scPosPolyData.DeepCopy(emptyPolyData);
+		if (aActor == vTrackPainter.getActor())
+			return vTrackPainter;
 
-		vtkPoints points = polydata.GetPoints();
-		vtkCellArray vert = polydata.GetVerts();
-		vtkUnsignedCharArray colors = (vtkUnsignedCharArray) polydata.GetCellData().GetScalars();
+		return null;
+	}
 
-//        vtkPoints scPoints=scPosPolyData.GetPoints();
-//        vtkCellArray scVert=scPosPolyData.GetVerts();
-		vtkUnsignedCharArray scColors = (vtkUnsignedCharArray) scPosPolyData.GetCellData().GetScalars();
+	/**
+	 * Helper method that returns the VtkTrackPainter corresponding to the
+	 * specified Track.
+	 */
+	private VtkTrackPainter getVtkTrackPainter(Track aTrack)
+	{
+		return vTrackPainter;
+	}
 
-		vtkIdList idList = new vtkIdList();
-		idList.SetNumberOfIds(1);
+	/**
+	 * Helper method that will update all relevant VTK vars.
+	 * <P>
+	 * A notification will be sent out to PropertyChange listeners of the
+	 * {@link Properties#MODEL_CHANGED} event.
+	 */
+	private void updateVtkVars()
+	{
+		vPointPainter.updateVtkVars();
+		vTrackPainter.updateVtkVars();
 
-		displayedPointToOriginalPointMap.clear();
-
-		int numTracks = getNumberOfTracks();
-
-		for (int j = 0; j < numTracks; ++j)
-		{
-			Track track = getTrack(j);
-			int startId = track.startId;
-			int stopId = track.stopId;
-			if (track.getIsVisible() == true)
-			{
-				// Variables to keep track of intensities
-				double minIntensity = Double.POSITIVE_INFINITY;
-				double maxIntensity = Double.NEGATIVE_INFINITY;
-				List<Double> intensityList = new LinkedList<Double>();
-
-				// Go through each point in the track
-				for (int i = startId; i <= stopId; i++)
-				{
-
-					double[] pt = originalPoints.get(i).getTargetPosition().toArray();
-					pt = transformLidarPoint(j, pt);
-					int id = points.InsertNextPoint(pt);
-					idList.SetId(0, id);
-					vert.InsertNextCell(idList);
-
-					// pt=originalPoints.get(i).getSourcePosition().toArray();
-					// pt=transformLidarPoint(pt);
-					// scPoints.InsertNextPoint(pt);
-					// scVert.InsertNextCell(idList);
-
-					double intensityReceived = originalPoints.get(i).getIntensityReceived();
-					minIntensity = (intensityReceived < minIntensity) ? intensityReceived : minIntensity;
-					maxIntensity = (intensityReceived > maxIntensity) ? intensityReceived : maxIntensity;
-					intensityList.add(intensityReceived);
-
-					displayedPointToOriginalPointMap.add(i);
-				}
-
-				// Assign colors to each point in that track
-				Color trackColor = track.color;
-				float[] trackHSL = ColorUtil.getHSLColorComponents(trackColor);
-				Color plotColor;
-				for (double intensity : intensityList)
-				{
-					plotColor = ColorUtil.scaleLightness(trackHSL, intensity, minIntensity, maxIntensity, lightnessSpanBase);
-					colors.InsertNextTuple4(plotColor.getRed(), plotColor.getGreen(), plotColor.getBlue(),
-							plotColor.getAlpha());
-					scColors.InsertNextTuple4(plotColor.getRed(), plotColor.getGreen(), plotColor.getBlue(),
-							plotColor.getAlpha());
-				}
-			}
-		}
-		polydata.GetCellData().GetScalars().Modified();
-		polydata.Modified();
-
-		if (!showSpacecraftPosition)
-			scPosActor.VisibilityOff();
-		else
-		{
-			scPosActor.VisibilityOn();
-			scPosPolyData.GetCellData().GetScalars().Modified();
-			scPosPolyData.Modified();
-		}
-
-		if (enableTrackErrorComputation)
-			computeTrackError();
-
+		// Notify our listeners
 		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
 
@@ -1207,14 +1198,21 @@ public class LidarSearchDataCollection extends AbstractModel
 			}
 		}
 
-		initTranslationArray();
+		initModelState();
 	}
 
 	public void removeAllLidarData()
 	{
-		polydata.DeepCopy(emptyPolyData);
-		originalPoints.clear();
 		tracks.clear();
+		selectedTrackS = ImmutableSet.of();
+
+		translationM.clear();
+		errorM.clear();
+
+		vPointPainter.setData(null, null);
+		vTrackPainter.setTracks(tracks);
+
+		originalPoints.clear();
 //        fileBounds.clear();
 		localFileMap.clear();
 
@@ -1223,114 +1221,113 @@ public class LidarSearchDataCollection extends AbstractModel
 		this.stopDate = -Double.MIN_VALUE;
 		this.cubeList = null;
 
-		selectPoint(-1);
-
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		updateVtkVars();
 	}
 
-	public List<vtkProp> getProps()
+	@Override
+	public String getClickStatusBarText(vtkProp aProp, int aCellId, double[] aPickPosition)
 	{
-		return actors;
-	}
+		// Bail if there is no data
+		if (tracks.isEmpty() == true || originalPoints.isEmpty() == true)
+			return "";
 
-	/**
-	 * Returns whether or not <tt>prop</tt> is the prop used for the actual data
-	 * points as opposed the selection prop which is used for showing only the
-	 * selected point.
-	 *
-	 * @param prop
-	 * @return
-	 */
-	public boolean isDataPointsProp(vtkProp prop)
-	{
-		return prop == actor || prop == scPosActor;
-	}
+		// Bail if there is no VtkTrackPainter associated with the actor (aProp)
+		VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(aProp);
+		if (tmpTrackPainter == null)
+			return "";
 
-	public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
-	{
-		if (!originalPoints.isEmpty() && !tracks.isEmpty())
+		try
 		{
-			try
-			{
-				cellId = displayedPointToOriginalPointMap.get(cellId);
-				double et = originalPoints.get(cellId).getTime();
-				/*
-				 * double[] target =
-				 * originalPoints.get(cellId).getTargetPosition().toArray();
-				 * double[] scpos =
-				 * originalPoints.get(cellId).getSourcePosition().toArray(); double
-				 * range_m = Math.sqrt( (target[0]-scpos[0])*(target[0]-scpos[0]) +
-				 * (target[1]-scpos[1])*(target[1]-scpos[1]) +
-				 * (target[2]-scpos[2])*(target[2]-scpos[2]))*1000;
-				 */
-				LidarPoint p = originalPoints.get(cellId);
-				double range = p.getSourcePosition().subtract(p.getTargetPosition()).getNorm() * 1000; // m
-				return String.format(
-						"Lidar point acquired at " + TimeUtil.et2str(et) + ", ET = %f, unmodified range = %f m", et, range);
-			}
-			catch (Exception e)
-			{
+			// TODO: This is badly designed hack to prevent the program from
+			// crashing by just sticking bad index checks in a silent try-catch
+			// block. This is indicative of defective logic.
+			LidarPoint tmpLP = tmpTrackPainter.getLidarPointFromCellId(aCellId);
 
-			}
+			double et = tmpLP.getTime();
+			double range = tmpLP.getSourcePosition().subtract(tmpLP.getTargetPosition()).getNorm() * 1000; // m
+			return String.format("Lidar point acquired at " + TimeUtil.et2str(et) + ", ET = %f, unmodified range = %f m",
+					et, range);
+		}
+		catch (Exception aExp)
+		{
 		}
 
 		return "";
 	}
 
-	public void setOffset(double offset)
+	@Override
+	public List<vtkProp> getProps()
 	{
-		if (offset == radialOffset)
-			return;
-
-		radialOffset = offset;
-
-		updateTrackPolydata();
-		updateSelectedPoint();
+		return vActorL;
 	}
 
 	/**
-	 * Returns the translation associated with the Track at the specified index.
-	 *
-	 * @param aIdx
+	 * Sets in the radial offset of all Tracks in this model.
 	 */
-	public Vector3D getTranslation(int aIdx)
+	public void setOffset(double aOffset)
 	{
-		return translationArr[aIdx];
+		// Update the radialOffset
+		if (radialOffset == aOffset)
+			return;
+		radialOffset = aOffset;
+
+		// Invalidate the cache vars
+		errorM = new HashMap<>();
+
+		// Invalidate the VTK render vars
+		vPointPainter.markStale();
+		vTrackPainter.markStale();
+
+		updateVtkVars();
 	}
 
 	/**
-	 * Set in the translation amount for each Track at the specified indexes.
+	 * Returns the translation associated with the specified Track.
 	 *
-	 * @param aIdxL A list of indexes corresponding to the Tracks.
+	 * @param aTrack The Track of interest.
+	 */
+	public Vector3D getTranslation(Track aTrack)
+	{
+		return translationM.get(aTrack);
+	}
+
+	/**
+	 * Set in the translation amount for each of the specified Tracks.
+	 *
+	 * @param aTrackL The list of Tracks of interest.
 	 * @param aVect The vector that defines the translation amount.
 	 */
-	public void setTranslation(List<Integer> aIdxL, Vector3D aVect)
+	public void setTranslation(List<Track> aTrackL, Vector3D aVect)
 	{
-		for (int aIdx : aIdxL)
-			translationArr[aIdx] = aVect;
+		for (Track aTrack : aTrackL)
+		{
+			errorM.remove(aTrack);
 
-		updateTrackPolydata();
-		updateSelectedPoint();
+			translationM.put(aTrack, aVect);
+
+			getVtkTrackPainter(aTrack).markStale();
+		}
+		vPointPainter.markStale();
+
+		updateVtkVars();
 	}
 
-	public void setPointSize(int size)
+	/**
+	 * Sets in the baseline point size for all of the tracks
+	 *
+	 * @param aSize
+	 */
+	public void setPointSize(int aSize)
 	{
-		if (actor != null)
-		{
-			actor.GetProperty().SetPointSize(size);
+		vTrackPainter.setPointSize(aSize);
+		vPointPainter.setPointSize(aSize * 3.5);
 
-			pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-		}
+		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
 
 	public int getNumberOfPoints()
 	{
 		return originalPoints.size();
-	}
-
-	public double getTimeOfPoint(int i)
-	{
-		return originalPoints.get(i).getTime();
 	}
 
 	/**
@@ -1340,15 +1337,14 @@ public class LidarSearchDataCollection extends AbstractModel
 	 * fittedLinePoint is the point on the line closest to the first point of the
 	 * track.
 	 */
-	private void fitLineToTrack(int aTrackId, double[] fittedLinePoint, double[] fittedLineDirection)
+	private void fitLineToTrack(Track aTrack, double[] fittedLinePoint, double[] fittedLineDirection)
 	{
-		Track track = tracks.get(aTrackId);
-		int startId = track.startId;
-		int stopId = track.stopId;
-
+		int startId = aTrack.startId;
+		int stopId = aTrack.stopId;
 		if (startId == stopId)
 			return;
 
+		Vector3D tmpVect = getTranslation(aTrack);
 		try
 		{
 			double t0 = originalPoints.get(startId).getTime();
@@ -1360,7 +1356,7 @@ public class LidarSearchDataCollection extends AbstractModel
 				for (int i = startId; i <= stopId; ++i)
 				{
 					LidarPoint lp = originalPoints.get(i);
-					double[] target = transformLidarPoint(aTrackId, lp.getTargetPosition().toArray());
+					double[] target = transformLidarPoint(tmpVect, lp.getTargetPosition().toArray());
 					fitter.addObservedPoint(1.0, lp.getTime() - t0, target[j]);
 				}
 
@@ -1374,7 +1370,7 @@ public class LidarSearchDataCollection extends AbstractModel
 			// track point
 			// as this makes it easier to do distance computations along the line.
 			double[] dist = new double[1];
-			double[] target = transformLidarPoint(aTrackId, originalPoints.get(startId).getTargetPosition().toArray());
+			double[] target = transformLidarPoint(tmpVect, originalPoints.get(startId).getTargetPosition().toArray());
 			MathUtil.nplnpt(lineStartPoint, fittedLineDirection, target, fittedLinePoint, dist);
 		}
 		catch (Exception e)
@@ -1383,11 +1379,10 @@ public class LidarSearchDataCollection extends AbstractModel
 		}
 	}
 
-	private double distanceOfClosestPointOnLineToStartOfLine(double[] point, int trackId, double[] fittedLinePoint,
+	private double distanceOfClosestPointOnLineToStartOfLine(double[] point, Track aTrack, double[] fittedLinePoint,
 			double[] fittedLineDirection)
 	{
-		Track track = tracks.get(trackId);
-		if (track.startId == track.stopId)
+		if (aTrack.startId == aTrack.stopId)
 			return 0.0;
 
 		double[] pnear = new double[3];
@@ -1401,26 +1396,25 @@ public class LidarSearchDataCollection extends AbstractModel
 	 * Run gravity program on specified track and return potential, acceleration,
 	 * and elevation as function of distance and time.
 	 *
-	 * @param aTrackId
+	 * @param aTrack
 	 * @throws Exception
 	 */
-	public void getGravityDataForTrack(int aTrackId, List<Double> potential, List<Double> acceleration,
+	public void getGravityDataForTrack(Track aTrack, List<Double> potential, List<Double> acceleration,
 			List<Double> elevation, List<Double> distance, List<Double> time) throws Exception
 	{
-		Track track = tracks.get(aTrackId);
-
-		if (originalPoints.size() == 0 || track.startId < 0 || track.stopId < 0)
+		if (originalPoints.size() == 0 || aTrack.startId < 0 || aTrack.stopId < 0)
 			throw new IOException();
 
 		// Run the gravity program
-		int startId = tracks.get(aTrackId).startId;
-		int stopId = tracks.get(aTrackId).stopId;
+		Vector3D tmpVect = getTranslation(aTrack);
+		int startId = aTrack.startId;
+		int stopId = aTrack.stopId;
 		List<double[]> xyzPointList = new ArrayList<double[]>();
 		for (int i = startId; i <= stopId; ++i)
 		{
 			LidarPoint pt = originalPoints.get(i);
 			double[] target = pt.getTargetPosition().toArray();
-			target = transformLidarPoint(aTrackId, target);
+			target = transformLidarPoint(tmpVect, target);
 			xyzPointList.add(target);
 		}
 		List<Point3D> accelerationVector = new ArrayList<Point3D>();
@@ -1430,150 +1424,34 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		double[] fittedLinePoint = new double[3];
 		double[] fittedLineDirection = new double[3];
-		fitLineToTrack(aTrackId, fittedLinePoint, fittedLineDirection);
-		for (int i = track.startId; i <= track.stopId; ++i)
+		fitLineToTrack(aTrack, fittedLinePoint, fittedLineDirection);
+		for (int i = aTrack.startId; i <= aTrack.stopId; ++i)
 		{
 			double[] point = originalPoints.get(i).getTargetPosition().toArray();
-			point = transformLidarPoint(aTrackId, point);
-			double dist = distanceOfClosestPointOnLineToStartOfLine(point, aTrackId, fittedLinePoint, fittedLineDirection);
+			point = transformLidarPoint(tmpVect, point);
+			double dist = distanceOfClosestPointOnLineToStartOfLine(point, aTrack, fittedLinePoint, fittedLineDirection);
 			distance.add(dist);
 			time.add(originalPoints.get(i).getTime());
 		}
 	}
 
-	/**
-	 * select a point
-	 *
-	 * @param ptId point id which must be id of a displayed point, not an
-	 * original point
-	 */
-	public void selectPoint(int ptId)
+	private double[] getCentroidOfTrack(Track aTrack)
 	{
-		if (ptId >= 0)
-			selectedPointIdx = displayedPointToOriginalPointMap.get(ptId);
-		else
-			selectedPointIdx = -1;
-
-		selectedPointPolydata.DeepCopy(emptyPolyData);
-		vtkPoints points = selectedPointPolydata.GetPoints();
-		vtkCellArray vert = selectedPointPolydata.GetVerts();
-		vtkUnsignedCharArray colors = (vtkUnsignedCharArray) selectedPointPolydata.GetCellData().GetScalars();
-
-		if (ptId >= 0)
-		{
-			vtkIdList idList = new vtkIdList();
-			int id1 = points.InsertNextPoint(polydata.GetPoints().GetPoint(ptId));
-			idList.InsertNextId(id1);
-
-			if (showSpacecraftPosition)
-			{
-				int id2 = points.InsertNextPoint(scPosPolyData.GetPoints().GetPoint(ptId));
-				idList.InsertNextId(id2);
-			}
-
-			vert.InsertNextCell(idList);
-
-			colors.InsertNextTuple4(0, 0, 255, 255);
-		}
-
-		selectedPointPolydata.Modified();
-
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-	}
-
-	public void deselectSelectedPoint()
-	{
-		selectedPointPolydata.DeepCopy(emptyPolyData);
-		selectedPointPolydata.Modified();
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-	}
-
-	public void updateSelectedPoint()
-	{
-		int ptId = -1;
-		if (selectedPointIdx >= 0)
-			ptId = getDisplayPointIdFromOriginalPointId(selectedPointIdx);
-
-		if (ptId < 0)
-		{
-			selectedPointPolydata.DeepCopy(emptyPolyData);
-		}
-		else
-		{
-			vtkPoints points = new vtkPoints();
-			points.InsertNextPoint(polydata.GetPoints().GetPoint(ptId));
-			if (showSpacecraftPosition)
-				points.InsertNextPoint(scPosPolyData.GetPoints().GetPoint(ptId));
-			selectedPointPolydata.SetPoints(points);
-		}
-
-		selectedPointPolydata.Modified();
-
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-	}
-
-	public int getNumberOfPointsPerTrack(int trackId)
-	{
-		return tracks.get(trackId).getNumberOfPoints();
-	}
-
-	public void setEnableTrackErrorComputation(boolean enable)
-	{
-		enableTrackErrorComputation = enable;
-		if (enable)
-			computeTrackError();
-	}
-
-	int lastNumberOfPointsForTrackError = 0;
-
-	private void computeTrackError()
-	{
-		trackError = 0.0;
-
-		vtkPoints points = polydata.GetPoints();
-		int numberOfPoints = points.GetNumberOfPoints();
-		double[] pt = new double[3];
-		for (int i = 0; i < numberOfPoints; ++i)
-		{
-			points.GetPoint(i, pt);
-			double[] closestPt = refSmallBodyModel.findClosestPoint(pt);
-			trackError += MathUtil.distance2Between(pt, closestPt);
-		}
-
-		if (numberOfPoints > 0)
-			trackError /= (double) numberOfPoints;
-
-		trackError = Math.sqrt(trackError);
-		lastNumberOfPointsForTrackError = (int) numberOfPoints;
-	}
-
-	public int getLastNumberOfPointsForTrackError()
-	{
-		return lastNumberOfPointsForTrackError;
-	}
-
-	public double getTrackError()
-	{
-		return trackError;
-	}
-
-	private double[] getCentroidOfTrack(int trackId)
-	{
-		Track track = tracks.get(trackId);
-		int startId = track.startId;
-		int stopId = track.stopId;
+		Vector3D tmpVect = getTranslation(aTrack);
+		int startId = aTrack.startId;
+		int stopId = aTrack.stopId;
 
 		double[] centroid = { 0.0, 0.0, 0.0 };
 		for (int i = startId; i <= stopId; ++i)
 		{
 			LidarPoint lp = originalPoints.get(i);
-			double[] target = transformLidarPoint(trackId, lp.getTargetPosition().toArray());
+			double[] target = transformLidarPoint(tmpVect, lp.getTargetPosition().toArray());
 			centroid[0] += target[0];
 			centroid[1] += target[1];
 			centroid[2] += target[2];
 		}
 
-		int trackSize = track.getNumberOfPoints();
+		int trackSize = aTrack.getNumberOfPoints();
 		if (trackSize > 0)
 		{
 			centroid[0] /= trackSize;
@@ -1591,26 +1469,25 @@ public class LidarSearchDataCollection extends AbstractModel
 	 * pointOnPlane is the point on the plane closest to the centroid of the
 	 * track.
 	 */
-	private void fitPlaneToTrack(int trackId, double[] pointOnPlane, RealMatrix planeOrientation)
+	private void fitPlaneToTrack(Track aTrack, double[] pointOnPlane, RealMatrix planeOrientation)
 	{
-		Track track = tracks.get(trackId);
-		int startId = track.startId;
-		int stopId = track.stopId;
-
+		int startId = aTrack.startId;
+		int stopId = aTrack.stopId;
 		if (startId == stopId)
 			return;
 
+		Vector3D tmpVect = getTranslation(aTrack);
 		try
 		{
-			double[] centroid = getCentroidOfTrack(trackId);
+			double[] centroid = getCentroidOfTrack(aTrack);
 
 			// subtract out the centroid from the track
-			int trackSize = track.getNumberOfPoints();
+			int trackSize = aTrack.getNumberOfPoints();
 			double[][] points = new double[3][trackSize];
 			for (int i = startId, j = 0; i <= stopId; ++i, ++j)
 			{
 				LidarPoint lp = originalPoints.get(i);
-				double[] target = transformLidarPoint(trackId, lp.getTargetPosition().toArray());
+				double[] target = transformLidarPoint(tmpVect, lp.getTargetPosition().toArray());
 				points[0][j] = target[0] - centroid[0];
 				points[1][j] = target[1] - centroid[1];
 				points[2][j] = target[2] - centroid[2];
@@ -1639,24 +1516,22 @@ public class LidarSearchDataCollection extends AbstractModel
 	 * XY plane in the new coordinate system, and saves the reoriented track and
 	 * the transformation to a file.
 	 *
-	 * @param trackId
+	 * @param aTrack The Track of interest.
 	 * @param outfile - save reoriented track to this file
 	 * @param rotationMatrixFile - save transformation matrix to this file
 	 * @throws IOException
 	 */
-	public void reprojectedTrackOntoFittedPlane(int trackId, File outfile, File rotationMatrixFile) throws IOException
+	public void reprojectedTrackOntoFittedPlane(Track aTrack, File outfile, File rotationMatrixFile) throws IOException
 	{
-		Track track = tracks.get(trackId);
-		int startId = track.startId;
-		int stopId = track.stopId;
-
+		int startId = aTrack.startId;
+		int stopId = aTrack.stopId;
 		if (startId == stopId)
 			return;
 
 		double[] pointOnPlane = new double[3];
 		RealMatrix planeOrientation = new Array2DRowRealMatrix(3, 3);
 
-		fitPlaneToTrack(trackId, pointOnPlane, planeOrientation);
+		fitPlaneToTrack(aTrack, pointOnPlane, planeOrientation);
 		planeOrientation = new LUDecomposition(planeOrientation).getSolver().getInverse();
 
 		FileWriter fstream = new FileWriter(outfile);
@@ -1664,10 +1539,11 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		String newline = System.getProperty("line.separator");
 
+		Vector3D tmpVect = getTranslation(aTrack);
 		for (int i = startId; i <= stopId; ++i)
 		{
 			LidarPoint lp = originalPoints.get(i);
-			double[] target = transformLidarPoint(trackId, lp.getTargetPosition().toArray());
+			double[] target = transformLidarPoint(tmpVect, lp.getTargetPosition().toArray());
 
 			target[0] = target[0] - pointOnPlane[0];
 			target[1] = target[1] - pointOnPlane[1];
@@ -1708,19 +1584,19 @@ public class LidarSearchDataCollection extends AbstractModel
 	 * translated using the current radial offset and translation before being
 	 * saved out. If false, the original points are saved out unmodified.
 	 *
-	 * @param aTrackId
+	 * @param aTrack
 	 * @param outfile
 	 * @param transformPoint
 	 * @throws IOException
 	 */
-	public void saveTrackBinary(int aTrackId, File outfile, boolean transformPoint) throws IOException
+	public void saveTrackBinary(Track aTrack, File outfile, boolean transformPoint) throws IOException
 	{
 		outfile = new File(outfile.getAbsolutePath() + ".bin");
 		DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfile)));
 
-		int startId = tracks.get(aTrackId).startId;
-		int stopId = tracks.get(aTrackId).stopId;
-
+		Vector3D tmpVect = getTranslation(aTrack);
+		int startId = aTrack.startId;
+		int stopId = aTrack.stopId;
 		for (int i = startId; i <= stopId; ++i)
 		{
 			LidarPoint pt = originalPoints.get(i);
@@ -1728,8 +1604,8 @@ public class LidarSearchDataCollection extends AbstractModel
 			double[] scpos = pt.getSourcePosition().toArray();
 			if (transformPoint)
 			{
-				target = transformLidarPoint(aTrackId, target);
-				scpos = transformScpos(aTrackId, scpos, target);
+				target = transformLidarPoint(tmpVect, target);
+				scpos = transformScpos(tmpVect, scpos, target);
 			}
 
 			FileUtil.writeDoubleAndSwap(out, pt.getTime());
@@ -1742,15 +1618,6 @@ public class LidarSearchDataCollection extends AbstractModel
 		}
 
 		out.close();
-	}
-
-	public void setShowSpacecraftPosition(boolean show)
-	{
-		showSpacecraftPosition = show;
-		updateTrackPolydata();
-		// selectedPoint=-1;
-		updateSelectedPoint();
-		this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
 
 	public double getTimeSeparationBetweenTracks()
