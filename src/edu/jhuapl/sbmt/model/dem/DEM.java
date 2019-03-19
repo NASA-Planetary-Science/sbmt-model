@@ -562,9 +562,10 @@ public class DEM extends SmallBodyModel implements PropertyChangeListener
                 x = data[xIdx][m][n];
                 y = data[yIdx][m][n];
                 z = data[zIdx][m][n];
-
                 // Check to see if x,y,z values are all valid
-                boolean valid = x != INVALID_VALUE && y != INVALID_VALUE && z != INVALID_VALUE && data[7][m][n] != 0;
+                boolean valid = x != INVALID_VALUE && y != INVALID_VALUE && z != INVALID_VALUE;
+                if (data.length > 6)
+                	valid = (valid && (data[7][m][n] != 0));
 
                 // Check to see if data for all backplanes are also valid
                 for(int i=0; i<numBackPlanes; i++)
