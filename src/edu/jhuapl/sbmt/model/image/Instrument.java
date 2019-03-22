@@ -14,6 +14,7 @@ public enum Instrument
     OLA("OLA"),
     MAPCAM("MAPCAM"),
     POLYCAM("POLYCAM"),
+    NAVCAM("NAVCAM"),
     IMAGING_DATA("Imaging Data"),
     MVIC("MVIC"),
     LEISA("LEISA"),
