@@ -1,6 +1,8 @@
 package edu.jhuapl.sbmt.model.lidar;
 
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -47,8 +49,10 @@ import vtk.vtkUnstructuredGrid;
 
 import edu.jhuapl.saavtk.io.readers.IpwgPlyReader;
 import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
+import edu.jhuapl.saavtk.pick.DefaultPicker;
 import edu.jhuapl.saavtk.pick.PickEvent;
 import edu.jhuapl.saavtk.pick.PickUtil;
 import edu.jhuapl.saavtk.util.ColorUtil;
@@ -59,6 +63,8 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
+import edu.jhuapl.sbmt.gui.lidar.ItemEventType;
+import edu.jhuapl.sbmt.gui.lidar.TrackEventListener;
 import edu.jhuapl.sbmt.lidar.BasicLidarPoint;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperPointWithFileTag;
@@ -71,6 +77,8 @@ public class LidarSearchDataCollection extends AbstractModel
 	private PolyhedralModel refSmallBodyModel;
 
 	// State vars
+	private List<TrackEventListener> myListenerL;
+
 	protected List<Track> tracks;
 	private ImmutableSet<Track> selectedTrackS;
 
@@ -105,6 +113,8 @@ public class LidarSearchDataCollection extends AbstractModel
 	{
 		refSmallBodyModel = aSmallBodyModel;
 
+		myListenerL = new ArrayList<>();
+
 		tracks = new ArrayList<>();
 		selectedTrackS = ImmutableSet.of();
 
@@ -120,6 +130,22 @@ public class LidarSearchDataCollection extends AbstractModel
 		vActorL.add(vPointPainter.getActor());
 
 		setPointSize(2);
+	}
+
+	/**
+	 * Adds a listener to this manager.
+	 */
+	public void addListener(TrackEventListener aListener)
+	{
+		myListenerL.add(aListener);
+	}
+
+	/**
+	 * Removes a listener from this manager.
+	 */
+	public void delListener(TrackEventListener aListener)
+	{
+		myListenerL.remove(aListener);
 	}
 
 	/**
@@ -178,6 +204,9 @@ public class LidarSearchDataCollection extends AbstractModel
 
 		// Update our selection
 		selectedTrackS = ImmutableSet.copyOf(aTrackL);
+
+		// Send out the appropriate notifications
+		notifyListeners(ItemEventType.ItemsSelected);
 	}
 
 	public double getOffsetScale()
@@ -737,65 +766,6 @@ public class LidarSearchDataCollection extends AbstractModel
 	}
 
 	/**
-	 * Method that will process the specified PickEvent.
-	 * <P>
-	 * The selected Tracks will be updated to reflect the PickEvent action.
-	 *
-	 * @param aPickEvent
-	 */
-	public void handlePickAction(PickEvent aPickEvent)
-	{
-		// Retrieve the selected lidar Point and corresponding Track
-		Track tmpTrack = null;
-		LidarPoint tmpPoint = null;
-		vtkProp tmpActor = aPickEvent.getPickedProp();
-		if (tmpActor == vPointPainter.getActor())
-		{
-			tmpPoint = vPointPainter.getPoint();
-			tmpTrack = vPointPainter.getTrack();
-		}
-		else
-		{
-			// Bail if tmpActor is not associated with a relevant VtkTrackPainter
-			VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(tmpActor);
-			if (tmpTrackPainter == null)
-				return;
-
-			// Update the selected LidarPoint
-			int tmpCellId = aPickEvent.getPickedCellId();
-			tmpPoint = tmpTrackPainter.getLidarPointFromCellId(tmpCellId);
-
-			// Determine the Track that was selected
-			tmpTrack = tmpTrackPainter.getTrackFromCellId(tmpCellId);
-			if (tmpTrack == null)
-				return;
-
-			// Update the VtkLidaPoint to reflect the selected point
-			vPointPainter.setData(tmpPoint, tmpTrack);
-		}
-
-		// Determine if this is a modified action
-		boolean isModifyKey = PickUtil.isModifyKey(aPickEvent.getMouseEvent());
-
-		// Determine the Tracks that will be marked as selected
-		List<Track> tmpL = getSelectedTracks();
-		tmpL = new ArrayList<>(tmpL);
-
-		if (isModifyKey == false)
-			tmpL = ImmutableList.of(tmpTrack);
-		else if (tmpL.contains(tmpTrack) == false)
-			tmpL.add(tmpTrack);
-
-		// Update the selected Tracks
-		setSelectedTracks(tmpL);
-
-		updateVtkVars();
-
-		// Send out notification of the picked Track
-		pcs.firePropertyChange(Properties.MODEL_PICKED, null, null);
-	}
-
-	/**
 	 * Sets the selected LidarPoint
 	 *
 	 * @param aLidarPoint The LidarPoint of interest
@@ -837,6 +807,10 @@ public class LidarSearchDataCollection extends AbstractModel
 		assignInitialColorToTrack();
 
 		updateVtkVars();
+
+		// Send out the appropriate notifications
+		notifyListeners(ItemEventType.ItemsChanged);
+		notifyListeners(ItemEventType.ItemsSelected);
 	}
 
 	protected void computeLoadedTracks()
@@ -1222,6 +1196,10 @@ public class LidarSearchDataCollection extends AbstractModel
 		this.cubeList = null;
 
 		updateVtkVars();
+
+		// Send out the appropriate notifications
+		notifyListeners(ItemEventType.ItemsChanged);
+		notifyListeners(ItemEventType.ItemsSelected);
 	}
 
 	@Override
@@ -1310,6 +1288,9 @@ public class LidarSearchDataCollection extends AbstractModel
 		vPointPainter.markStale();
 
 		updateVtkVars();
+
+		// Send out the appropriate notifications
+		notifyListeners(ItemEventType.ItemsMutated);
 	}
 
 	/**
@@ -1323,6 +1304,15 @@ public class LidarSearchDataCollection extends AbstractModel
 		vPointPainter.setPointSize(aSize * 3.5);
 
 		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+	}
+
+	/**
+	 * Sends out notification to all the listeners of the specified event.
+	 */
+	private void notifyListeners(ItemEventType aEventType)
+	{
+		for (TrackEventListener aListener : myListenerL)
+			aListener.handleTrackEvent(this, aEventType);
 	}
 
 	public int getNumberOfPoints()
@@ -1638,6 +1628,95 @@ public class LidarSearchDataCollection extends AbstractModel
 	public void setMinTrackLength(int value)
 	{
 		this.minTrackLength = value;
+	}
+
+	/**
+	 * TODO: We should be notified of the "DefaultPicker" through different means
+	 * and not rely on unrelated third party handling...
+	 */
+	public void handleDefaultPickerManagement(DefaultPicker aDefaultPicker, ModelManager aModelManager)
+	{
+		aDefaultPicker.addPropertyChangeListener(new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent aEvent)
+			{
+				// Bail if not the right event type
+				if (Properties.MODEL_PICKED.equals(aEvent.getPropertyName()) == false)
+					return;
+
+				PickEvent pickEvent = (PickEvent) aEvent.getNewValue();
+				boolean isPass = aModelManager.getModel(pickEvent.getPickedProp()) == LidarSearchDataCollection.this;
+				if (isPass == false)
+					return;
+
+				// Delegate
+				handlePickAction(pickEvent);
+			}
+		});
+	}
+
+	/**
+	 * Helper method that will process the specified PickEvent.
+	 * <P>
+	 * The selected Tracks will be updated to reflect the PickEvent action.
+	 *
+	 * @param aPickEvent
+	 */
+	private void handlePickAction(PickEvent aPickEvent)
+	{
+		// Bail if the 1st button was not pushed
+		if (aPickEvent.getMouseEvent().getButton() != 1)
+			return;
+
+		// Retrieve the selected lidar Point and corresponding Track
+		Track tmpTrack = null;
+		LidarPoint tmpPoint = null;
+		vtkProp tmpActor = aPickEvent.getPickedProp();
+		if (tmpActor == vPointPainter.getActor())
+		{
+			tmpPoint = vPointPainter.getPoint();
+			tmpTrack = vPointPainter.getTrack();
+		}
+		else
+		{
+			// Bail if tmpActor is not associated with a relevant VtkTrackPainter
+			VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(tmpActor);
+			if (tmpTrackPainter == null)
+				return;
+
+			// Update the selected LidarPoint
+			int tmpCellId = aPickEvent.getPickedCellId();
+			tmpPoint = tmpTrackPainter.getLidarPointFromCellId(tmpCellId);
+
+			// Determine the Track that was selected
+			tmpTrack = tmpTrackPainter.getTrackFromCellId(tmpCellId);
+			if (tmpTrack == null)
+				return;
+
+			// Update the VtkLidaPoint to reflect the selected point
+			vPointPainter.setData(tmpPoint, tmpTrack);
+		}
+
+		// Determine if this is a modified action
+		boolean isModifyKey = PickUtil.isModifyKey(aPickEvent.getMouseEvent());
+
+		// Determine the Tracks that will be marked as selected
+		List<Track> tmpL = getSelectedTracks();
+		tmpL = new ArrayList<>(tmpL);
+
+		if (isModifyKey == false)
+			tmpL = ImmutableList.of(tmpTrack);
+		else if (tmpL.contains(tmpTrack) == false)
+			tmpL.add(tmpTrack);
+
+		// Update the selected Tracks
+		setSelectedTracks(tmpL);
+
+		updateVtkVars();
+
+		// Send out notification of the picked Track
+		pcs.firePropertyChange(Properties.MODEL_PICKED, null, null);
 	}
 
 }
