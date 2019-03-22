@@ -308,8 +308,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
-      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+      	this.flip = key.getFlip();
+      	this.rotation = key.getRotation();
+
         this.transposeFITSData = transposeData;
 
         initialize();
@@ -330,8 +331,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
-      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+      	this.flip = key.getFlip();
+    	this.rotation = key.getRotation();
 
         initialize();
     }
