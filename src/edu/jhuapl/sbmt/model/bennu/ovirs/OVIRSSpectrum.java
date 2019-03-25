@@ -69,7 +69,8 @@ public class OVIRSSpectrum extends BasicSpectrum
     		spec = instrumentMetadata.getSpecs().get(0);
     	else
     		spec = instrumentMetadata.getSpecs().get(1);
-
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
     }
 
     public OVIRSSpectrum(String filename, ISmallBodyModel smallBodyModel,
@@ -85,6 +86,8 @@ public class OVIRSSpectrum extends BasicSpectrum
     		spec = instrumentMetadata.getSpecs().get(1);
     	else if (serverpath.contains("l3esci_radf"))
     		spec = instrumentMetadata.getSpecs().get(2);
+    	double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
     }
 
     @Override

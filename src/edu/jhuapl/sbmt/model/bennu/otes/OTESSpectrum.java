@@ -59,6 +59,8 @@ public class OTESSpectrum extends BasicSpectrum
             ISpectralInstrument instrument) throws IOException
     {
         this(filename, smallBodyModel, instrument, false, false);
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
     }
 
     public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
@@ -69,6 +71,8 @@ public class OTESSpectrum extends BasicSpectrum
         extension = FilenameUtils.getExtension(serverpath.toString());
         this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
         instrumentMetadata = specIO.getInstrumentMetadata("OTES");
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
     }
 
     @Override

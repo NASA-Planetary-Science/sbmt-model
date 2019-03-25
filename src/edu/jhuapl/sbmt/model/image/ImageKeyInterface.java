@@ -31,4 +31,8 @@ public interface ImageKeyInterface
 
 	String getOriginalName();
 
+	String getFlip();
+
+	public double getRotation();
+
 }
