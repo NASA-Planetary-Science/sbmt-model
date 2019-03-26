@@ -39,22 +39,10 @@ import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
 {
-    public enum TrackFileType
-    {
-        TEXT
-    };
-
     private Map<String, Hayabusa2LidarHypertreeSkeleton> skeletons = new HashMap<String, Hayabusa2LidarHypertreeSkeleton>();
     private Hayabusa2LidarHypertreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
-    private boolean loading=false;
     Map<Integer, List<Hayabusa2LidarPoint>> filesWithPoints = new HashMap<Integer, List<Hayabusa2LidarPoint>>();
-
-    @Override
-    public boolean isLoading()
-    {
-        return loading;
-    }
 
     public Hayabusa2LidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
@@ -145,7 +133,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
             {
                 Stopwatch sw=new Stopwatch();
                 sw.start();
-                loading=true;
 
                  originalPoints.clear();
                  filesWithPoints.clear();
@@ -196,7 +183,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
                 }
 
                 cancel(true);
-                loading=false;
 
 //                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
@@ -207,11 +193,8 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 
         };
         dataLoader.executeDialog();
-        initTranslationArray(originalPoints.size());
 //        System.out.println(
 //                "Hayabusa2LidarSearchDataCollection: setLidarData: before while loop");
-
-        radialOffset = 0.0;
 
         computeTracks();
 
@@ -219,8 +202,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 //        System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
         sw.reset();
         sw.start();
-
-        removeTracksThatAreTooSmall();
 
         // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
         List<Track> tracksToRemove=Lists.newArrayList();
@@ -230,25 +211,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         for (Track t : tracksToRemove)
             tracks.remove(t);
 
-//        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
-//        sw.reset();
-//        sw.start();
-
-        assignInitialColorToTrack();
-
-//        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-//        sw.reset();
-//        sw.start();
-
-        updateTrackPolydata();
-
-//        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
-//        sw.reset();
-//        sw.start();
-
-        selectPoint(-1);
-
-//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        removeTracksThatAreTooSmall();
     }
 
     static vtkPoints points=new vtkPoints();
@@ -300,6 +263,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 		localFileMap.putAll(getCurrentSkeleton().getFileMap());
 
 		tracks.clear();
+		initModelState();
 
 		int size = originalPoints.size();
 		if (size == 0)
@@ -429,7 +393,8 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 			}
 		});
 
-
+        // Reset internal state vars
+        initModelState();
     }
 
 
