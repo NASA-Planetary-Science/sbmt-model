@@ -310,8 +310,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
-      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+      	this.flip = key.getFlip();
+      	this.rotation = key.getRotation();
+
         this.transposeFITSData = transposeData;
 
         initialize();
@@ -332,8 +333,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
-      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+      	this.flip = key.getFlip();
+    	this.rotation = key.getRotation();
 
         initialize();
     }
@@ -2387,8 +2388,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // for offlimb
         getOffLimbTexture();
         if (offLimbActor==null && offLimbTexture != null) {
-            loadOffLimbPlane();
-            if (footprintActors.contains(offLimbActor))
+	        loadOffLimbPlane();
+        	if (footprintActors.contains(offLimbActor))
                 footprintActors.remove(offLimbActor);
             footprintActors.add(offLimbActor);
             if (footprintActors.contains(offLimbBoundaryActor))
@@ -4957,6 +4958,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             offLimbActor.SetVisibility(offLimbVisibility?1:0);
             offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
         }
+
+
     }
 
 
@@ -4997,7 +5000,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         offLimbVisibility=visible;
         offLimbBoundaryVisibility = visible;
-        if (offLimbActor==null)
+        if (offLimbVisibility && offLimbActor==null)
             loadOffLimbPlane();
 
         if (offLimbActor != null)

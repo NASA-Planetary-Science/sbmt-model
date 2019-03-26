@@ -9,6 +9,7 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
+import edu.jhuapl.sbmt.model.image.ImageType;
 
 import nom.tam.fits.FitsException;
 
@@ -33,8 +34,15 @@ public class OcamsFlightImage extends BasicPerspectiveImage
         // this so the image is displayed properly.
         if (key.getSource() == ImageSource.SPICE)
         {
-            ImageDataUtil.flipImageYAxis(rawImage);
-            ImageDataUtil.rotateImage(rawImage, 90);
+        	if (key.getImageType() != ImageType.NAVCAM_FLIGHT_IMAGE)
+        	{
+        		ImageDataUtil.flipImageYAxis(rawImage);
+        		ImageDataUtil.rotateImage(rawImage, 90);
+        	}
+        	else
+        	{
+        		ImageDataUtil.flipImageYAxis(rawImage);
+        	}
         }
         else
         {
