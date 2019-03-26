@@ -67,7 +67,6 @@ public class OTESSpectrum extends BasicSpectrum
             ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, smallBodyModel, instrument, headless, isCustom);
-        System.out.println("OTESSpectrum: OTESSpectrum: filename " + filename);
         extension = FilenameUtils.getExtension(serverpath.toString());
         this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
         instrumentMetadata = specIO.getInstrumentMetadata("OTES");
@@ -554,7 +553,9 @@ public class OTESSpectrum extends BasicSpectrum
             {
                 double val = 0.0;
                 if (channelsToColorBy[i] < instrument.getBandCenters().length)
+                {
                     val = spectrum[channelsToColorBy[i]];
+                }
                 else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                     val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
                 else

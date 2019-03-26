@@ -384,7 +384,10 @@ public class NISSpectrum extends BasicSpectrum
         {
             double val = 0.0;
             if (channelsToColorBy[i] < instrument.getBandCenters().length)
+            {
                 val = spectrum[channelsToColorBy[i]];
+                System.out.println("NISSpectrum: getChannelColor: value is " + val);
+            }
             else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                 val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
             else
@@ -397,6 +400,7 @@ public class NISSpectrum extends BasicSpectrum
 
             double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
             color[i] = slope * (val - channelsColoringMinValue[i]);
+            System.out.println("NISSpectrum: getChannelColor: color " + color[i]);
         }
 
         return color;

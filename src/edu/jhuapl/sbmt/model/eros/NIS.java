@@ -18,7 +18,7 @@ public class NIS extends BasicSpectrumInstrument
 
     public NIS()
     {
-        super("cm^-1", "NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath());
+        super("nm", "NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath());
         bandCenters = new double[]{
                 816.2,  // 0
                 837.8,  // 1

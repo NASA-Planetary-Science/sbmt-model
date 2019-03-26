@@ -54,8 +54,6 @@ public class NIRS3SpectrumInfoPanel extends ModelInfoWindow implements PropertyC
         XYSeries series = new XYSeries("NIRS3 Spectrum");
         double[] wavelengths = spectrum.getxData();
         double[] spect = spectrum.getSpectrum();
-        System.out.println("NIRS3SpectrumInfoPanel: NIRS3SpectrumInfoPanel: data length " + wavelengths.length);
-        System.out.println("NIRS3SpectrumInfoPanel: NIRS3SpectrumInfoPanel: spec length " + spect.length);
         for (int i=0; i<wavelengths.length; ++i)
             series.add(wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);

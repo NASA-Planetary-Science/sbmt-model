@@ -450,33 +450,27 @@ public class NIRS3Spectrum extends BasicSpectrum
 	        for (int i=0; i<3; ++i)
 	        {
 	            double val = 0.0;
-	            System.out.println("NIRS3Spectrum: getChannelColor: channel " + channelsToColorBy[i]);
 	            if (channelsToColorBy[i] < instrument.getBandCenters().length)
 	            {
-//	            	System.out.println("NIRS3Spectrum: getChannelColor: color 1");
 	                val = spectrum[channelsToColorBy[i]];
+	                System.out.println("NIRS3Spectrum: getChannelColor: val is " + val);
 	            }
 	            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
 	            {
-//	            	System.out.println("NIRS3Spectrum: getChannelColor: color 2");
 	                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
 	            }
 	            else
 	            {
-//	            	System.out.println("NIRS3Spectrum: getChannelColor: color 3");
 	                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
 	            }
-//	            System.out.println("NIRS3Spectrum: getChannelColor: val is " + val);
 	            if (val < 0.0)
 	                val = 0.0;
 	            else if (val > 1.0)
 	                val = 1.0;
 
-	            System.out.println("NIRS3Spectrum: getChannelColor: minmax diff " + (channelsColoringMaxValue[i] - channelsColoringMinValue[i]));
 	            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
 	            color[i] = slope * (val - channelsColoringMinValue[i]);
 	        }
-	        System.out.println("NIRS3Spectrum: getChannelColor: returning " + color[0] + " " + color[1] + " " + color[2]);
 	        return color;
         }
     }
