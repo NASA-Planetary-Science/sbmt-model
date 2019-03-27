@@ -85,7 +85,6 @@ public class NIRS3Spectrum extends BasicSpectrum
 
     protected String getLocalSpectrumFilePathOnServer()
     {
-    	System.out.println("NIRS3Spectrum: getLocalSpectrumFilePathOnServer: server path is " + serverpath);
         return serverpath;
     }
 
@@ -94,7 +93,6 @@ public class NIRS3Spectrum extends BasicSpectrum
     {
         if (isCustomSpectra)
         {
-        	System.out.println("NIRS3Spectrum: getInfoFilePathOnServer: custom file " + getLocalInfoFilePathOnServer());
             return getLocalInfoFilePathOnServer();
         }
         else
@@ -133,8 +131,6 @@ public class NIRS3Spectrum extends BasicSpectrum
 
             vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
                     spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
-            System.out.println("NIRS3Spectrum: generateFootprint: sc pos " + spacecraftPosition[0] + " " + spacecraftPosition[1] +
-            		" " + spacecraftPosition[2]);
 
             if (tmp==null)
                 return;
@@ -149,7 +145,6 @@ public class NIRS3Spectrum extends BasicSpectrum
             for (int i=0; i<angles.length; i++)
 
             {
-            	System.out.println("NIRS3Spectrum: generateFootprint: angle " + angles[i]);
                 vtkPolyData tmp2=new vtkPolyData();
 
 	            Rotation rot=new Rotation(lookUnit, Math.toRadians(angles[i]));
@@ -157,10 +152,6 @@ public class NIRS3Spectrum extends BasicSpectrum
 	            Vector3D g2=rot.applyTo(f2);
 	            Vector3D g3=rot.applyTo(f3);
 	            Vector3D g4=rot.applyTo(f4);
-	            System.out.println("NIRS3Spectrum: generateFootprint: g1 " + g1);
-	            System.out.println("NIRS3Spectrum: generateFootprint: g2 " + g2);
-	            System.out.println("NIRS3Spectrum: generateFootprint: g3 " + g3);
-	            System.out.println("NIRS3Spectrum: generateFootprint: g4 " + g4);
 	            vtksbCellLocator tree=new vtksbCellLocator();
 	            tree.SetDataSet(tmp);
 	            tree.SetTolerance(1e-12);
@@ -174,7 +165,6 @@ public class NIRS3Spectrum extends BasicSpectrum
 	            tmp2 = PolyDataUtil.computeFrustumIntersection(tmp, tree, ploc, spacecraftPosition, g1.toArray(), g2.toArray(), g3.toArray(), g4.toArray());
                 if (tmp2 == null)
                 {
-                	System.out.println("NIRS3Spectrum: generateFootprint: temp2 is null");
                     try
                     {
                         throw new Exception("Frustum intersection is null - this needs to be handled better");
@@ -243,7 +233,6 @@ public class NIRS3Spectrum extends BasicSpectrum
             infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
         else
             infoFile = new File(getInfoFilePathOnServer());
-        System.out.println("NIRS3Spectrum: readPointingFromInfoFile: info file is " + infoFile.getAbsolutePath());
         //
         InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
         reader.read();
@@ -314,7 +303,6 @@ public class NIRS3Spectrum extends BasicSpectrum
             footprintActor = new vtkActor();
             footprintActor.SetMapper(footprintMapper);
             vtkProperty footprintProperty = footprintActor.GetProperty();
-            System.out.println("NIRS3Spectrum: getProps: getting channel color");
             double[] color = getChannelColor();
             footprintProperty.SetColor(color[0], color[1], color[2]);
             footprintProperty.SetLineWidth(2.0);
@@ -453,7 +441,6 @@ public class NIRS3Spectrum extends BasicSpectrum
 	            if (channelsToColorBy[i] < instrument.getBandCenters().length)
 	            {
 	                val = spectrum[channelsToColorBy[i]];
-	                System.out.println("NIRS3Spectrum: getChannelColor: val is " + val);
 	            }
 	            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
 	            {
