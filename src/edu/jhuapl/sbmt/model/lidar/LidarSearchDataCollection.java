@@ -1015,6 +1015,8 @@ public class LidarSearchDataCollection extends AbstractModel
 		vPointPainter.markStale();
 
 		updateVtkVars();
+
+		notifyListeners(ItemEventType.ItemsMutated);
 	}
 
 	/**
@@ -1038,6 +1040,8 @@ public class LidarSearchDataCollection extends AbstractModel
 		vPointPainter.markStale();
 
 		updateVtkVars();
+
+		notifyListeners(ItemEventType.ItemsMutated);
 	}
 
 	/**
@@ -1069,6 +1073,8 @@ public class LidarSearchDataCollection extends AbstractModel
 		vPointPainter.markStale();
 
 		updateVtkVars();
+
+		notifyListeners(ItemEventType.ItemsMutated);
 	}
 
 	/**
