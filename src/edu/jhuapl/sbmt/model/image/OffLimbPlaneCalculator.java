@@ -171,8 +171,9 @@ public class OffLimbPlaneCalculator
                 offLimbTexture.InterpolateOn();
                 offLimbTexture.RepeatOff();
                 offLimbTexture.EdgeClampOn();
+                offLimbTexture.Modified();
             }
-            img.setDisplayedImageRange(img.getDisplayedRange()); // match off-limb image intensity range to that of the on-body footprint; the "img" method call also takes care of syncing the off-limb vtkTexture object with the displayed raw image, above and beyond what the parent class has to do for the on-body geometry
+//            img.setDisplayedImageRange(img.getDisplayedRange()); // match off-limb image intensity range to that of the on-body footprint; the "img" method call also takes care of syncing the off-limb vtkTexture object with the displayed raw image, above and beyond what the parent class has to do for the on-body geometry
 
             // setup off-limb mapper and actor
             vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();
