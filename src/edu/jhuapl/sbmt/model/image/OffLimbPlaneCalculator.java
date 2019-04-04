@@ -195,14 +195,17 @@ public class OffLimbPlaneCalculator
             offLimbBoundary.DeepCopy(edgeFilter.GetOutput());
             vtkPolyDataMapper boundaryMapper=new vtkPolyDataMapper();
             boundaryMapper.SetInputData(offLimbBoundary);
+            boundaryMapper.ScalarVisibilityOff();
+
             if (offLimbBoundaryActor==null)
                 offLimbBoundaryActor=new vtkActor();
             offLimbBoundaryActor.SetMapper(boundaryMapper);
 
+
             // get color from default boundary color of image
-//            Color color =
+
             // set boundary color to this color
-            offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
+            offLimbBoundaryActor.GetProperty().SetColor(new double[] {1/255, 0, 1/255});
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
             offLimbBoundaryActor.Modified();
         }
