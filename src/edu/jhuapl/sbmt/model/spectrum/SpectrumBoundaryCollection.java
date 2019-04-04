@@ -17,7 +17,6 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum.SpectrumKey;
 
 import nom.tam.fits.FitsException;
 
@@ -38,7 +37,7 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
     }
 
     protected SpectrumBoundary createBoundary(
-            SpectrumKey key,
+            SpectrumKeyInterface key,
             SmallBodyModel smallBodyModel, SpectraCollection collection) throws IOException, FitsException
     {
         Spectrum spectrum = collection.getSpectrumFromKey(key);
@@ -49,7 +48,7 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
         return boundary;
     }
 
-    private boolean containsKey(SpectrumKey key)
+    private boolean containsKey(SpectrumKeyInterface key)
     {
         for (SpectrumBoundary boundary : boundaryToActorsMap.keySet())
         {
@@ -60,7 +59,7 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
         return false;
     }
 
-    private SpectrumBoundary getBoundaryFromKey(SpectrumKey key)
+    private SpectrumBoundary getBoundaryFromKey(SpectrumKeyInterface key)
     {
         for (SpectrumBoundary boundary : boundaryToActorsMap.keySet())
         {
@@ -72,7 +71,7 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
     }
 
 
-    public void addBoundary(SpectrumKey key, SpectraCollection collection) throws FitsException, IOException
+    public void addBoundary(SpectrumKeyInterface key, SpectraCollection collection) throws FitsException, IOException
     {
         if (containsKey(key))
             return;
@@ -94,7 +93,7 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    public void removeBoundary(SpectrumKey key)
+    public void removeBoundary(SpectrumKeyInterface key)
     {
         SpectrumBoundary boundary = getBoundaryFromKey(key);
 
@@ -136,18 +135,18 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
         {
             return "";
         }
-        File file = new File(boundary.getKey().name);
+        File file = new File(boundary.getKey().getName());
         return "Boundary of image " + file.getName();
     }
 
     public String getBoundaryName(vtkActor actor)
     {
-        return actorToBoundaryMap.get(actor).getKey().name;
+        return actorToBoundaryMap.get(actor).getKey().getName();
     }
 
-    public ImmutableSet<SpectrumKey> getSpectrumKeys()
+    public ImmutableSet<SpectrumKeyInterface> getSpectrumKeys()
     {
-        ImmutableSet.Builder<SpectrumKey> builder = ImmutableSet.builder();
+        ImmutableSet.Builder<SpectrumKeyInterface> builder = ImmutableSet.builder();
         for (SpectrumBoundary boundary : boundaryToActorsMap.keySet())
         {
             builder.add(boundary.getKey());
@@ -160,12 +159,12 @@ public class SpectrumBoundaryCollection extends AbstractModel implements Propert
         return actorToBoundaryMap.get(actor);
     }
 
-    public SpectrumBoundary getBoundary(SpectrumKey key)
+    public SpectrumBoundary getBoundary(SpectrumKeyInterface key)
     {
         return getBoundaryFromKey(key);
     }
 
-    public boolean containsBoundary(SpectrumKey key)
+    public boolean containsBoundary(SpectrumKeyInterface key)
     {
         return containsKey(key);
     }

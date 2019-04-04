@@ -165,6 +165,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private int[] currentMask = new int[4];
 
     private IntensityRange[] displayedRange = new IntensityRange[1];
+    private IntensityRange offLimbDisplayedRange = new IntensityRange(0, 255);
+	private boolean contrastSynced = false; // by default, the contrast of offlimb is not synced with on limb
     private double imageOpacity = 1.0;
 
     private double[][] spacecraftPositionOriginal = new double[1][3];
@@ -308,8 +310,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
-      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+      	this.flip = key.getFlip();
+      	this.rotation = key.getRotation();
+
         this.transposeFITSData = transposeData;
 
         initialize();
@@ -330,8 +333,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-      this.rotation = key.getInstrument() != null ? key.getInstrument().getRotation() : 0.0;
-      this.flip = key.getInstrument() != null ? key.getInstrument().getFlip() : "None";
+      	this.flip = key.getFlip();
+    	this.rotation = key.getRotation();
 
         initialize();
     }
@@ -2383,9 +2386,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         // for offlimb
+        getOffLimbTexture();
         if (offLimbActor==null && offLimbTexture != null) {
-            loadOffLimbPlane();
-            if (footprintActors.contains(offLimbActor))
+	        loadOffLimbPlane();
+        	if (footprintActors.contains(offLimbActor))
                 footprintActors.remove(offLimbActor);
             footprintActors.add(offLimbActor);
             if (footprintActors.contains(offLimbBoundaryActor))
@@ -2483,6 +2487,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return maxPhase;
     }
 
+    public IntensityRange getOffLimbDisplayedRange()
+    {
+        return offLimbDisplayedRange;
+    }
+
     public IntensityRange getDisplayedRange()
     {
         return displayedRange[currentSlice];
@@ -2512,95 +2521,106 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             if (range != null)
                 displayedRange[currentSlice] = range;
 
-            float minValue = getMinValue();
-            float maxValue = getMaxValue();
-            float dx = (maxValue-minValue)/255.0f;
-            float min = minValue + displayedRange[currentSlice].min*dx;
-            float max = minValue + displayedRange[currentSlice].max*dx;
-
-            // Update the displayed image
-            vtkLookupTable lut = new vtkLookupTable();
-            lut.SetTableRange(min, max);
-            lut.SetValueRange(0.0, 1.0);
-            lut.SetHueRange(0.0, 0.0);
-            lut.SetSaturationRange(0.0, 0.0);
-            //lut.SetNumberOfTableValues(402);
-            lut.SetRampToLinear();
-            lut.Build();
-
-            // for 3D images, take the current slice
-            vtkImageData image2D = rawImage;
-            if (imageDepth > 1)
-            {
-                vtkImageReslice slicer = new vtkImageReslice();
-                slicer.SetInputData(rawImage);
-                slicer.SetOutputDimensionality(2);
-                slicer.SetInterpolationModeToNearestNeighbor();
-                slicer.SetOutputSpacing(1.0, 1.0, 1.0);
-                slicer.SetResliceAxesDirectionCosines(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-
-                slicer.SetOutputOrigin(0.0, 0.0, (double)currentSlice);
-                slicer. SetResliceAxesOrigin(0.0, 0.0, (double)currentSlice);
-
-                slicer.SetOutputExtent(0, imageWidth-1, 0, imageHeight-1, 0, 0);
-
-                slicer.Update();
-                image2D = slicer.GetOutput();
-            }
-
-            vtkImageMapToColors mapToColors = new vtkImageMapToColors();
-            mapToColors.SetInputData(image2D);
-            mapToColors.SetOutputFormatToRGBA();
-            mapToColors.SetLookupTable(lut);
-            mapToColors.Update();
-
-            vtkImageData mapToColorsOutput = mapToColors.GetOutput();
-            vtkImageData maskSourceOutput = maskSource.GetOutput();
-
-            vtkImageMask maskFilter = new vtkImageMask();
-            maskFilter.SetImageInputData(mapToColorsOutput);
-            maskFilter.SetMaskInputData(maskSourceOutput);
-            maskFilter.Update();
+            vtkImageData img = getImageWithDisplayedRange(range, false);
 
             if (displayedImage == null)
                 displayedImage = new vtkImageData();
-            vtkImageData maskFilterOutput = maskFilter.GetOutput();
-            displayedImage.DeepCopy(maskFilterOutput);
+            displayedImage.DeepCopy(img);
 
-            maskFilter.Delete();
-            mapToColors.Delete();
-            lut.Delete();
-            mapToColorsOutput.Delete();
-            maskSourceOutput.Delete();
-            maskFilterOutput.Delete();
-
-            //vtkPNGWriter writer = new vtkPNGWriter();
-            //writer.SetFileName("fit.png");
-            //writer.SetInput(displayedImage);
-            //writer.Write();
 
         }
-        vtkImageData image=new vtkImageData();
-        image.DeepCopy(getDisplayedImage());
-        // for offlimb
-        if ((System.getProperty("java.awt.headless") == null) || System.getProperty("java.awt.headless").equalsIgnoreCase("false"))
-        {
-            if (offLimbTexture==null )
-            {
-                offLimbTexture=new vtkTexture();
-                offLimbTexture.SetInputData(image);
-                offLimbTexture.Modified();
-            }
-        }
+
 
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-
     }
 
-    //    private static void printpt(double[] p, String s)
-    //    {
-    //        System.out.println(s + " " + p[0] + " " + p[1] + " " + p[2]);
-    //    }
+
+	public void setOfflimbImageRange(IntensityRange intensityRange) {
+
+		if (intensityRange != null) {
+            offLimbDisplayedRange = intensityRange;
+
+			vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
+
+			offLimbTexture.SetInputData(image);
+			image.Delete();
+			offLimbTexture.Modified();
+
+	        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		}
+
+
+	}
+
+
+	 private vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb) {
+	    	float minValue = getMinValue();
+	        float maxValue = getMaxValue();
+	        float dx = (maxValue-minValue)/255.0f;
+
+	        float min = minValue;
+	        float max = maxValue;
+	        if (!offlimb) {
+		        min = minValue + displayedRange[currentSlice].min*dx;
+		        max = minValue + displayedRange[currentSlice].max*dx;
+	        }
+	        else {
+	        	min = minValue + offLimbDisplayedRange.min*dx;
+		        max = minValue + offLimbDisplayedRange.max*dx;
+	        }
+
+	        // Update the displayed image
+	        vtkLookupTable lut = new vtkLookupTable();
+	        lut.SetTableRange(min, max);
+	        lut.SetValueRange(0.0, 1.0);
+	        lut.SetHueRange(0.0, 0.0);
+	        lut.SetSaturationRange(0.0, 0.0);
+	        //lut.SetNumberOfTableValues(402);
+	        lut.SetRampToLinear();
+	        lut.Build();
+
+	        // for 3D images, take the current slice
+	        vtkImageData image2D = rawImage;
+	        if (imageDepth > 1)
+	        {
+	            vtkImageReslice slicer = new vtkImageReslice();
+	            slicer.SetInputData(rawImage);
+	            slicer.SetOutputDimensionality(2);
+	            slicer.SetInterpolationModeToNearestNeighbor();
+	            slicer.SetOutputSpacing(1.0, 1.0, 1.0);
+	            slicer.SetResliceAxesDirectionCosines(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+
+	            slicer.SetOutputOrigin(0.0, 0.0, (double)currentSlice);
+	            slicer. SetResliceAxesOrigin(0.0, 0.0, (double)currentSlice);
+
+	            slicer.SetOutputExtent(0, imageWidth-1, 0, imageHeight-1, 0, 0);
+
+	            slicer.Update();
+	            image2D = slicer.GetOutput();
+	        }
+
+	        vtkImageMapToColors mapToColors = new vtkImageMapToColors();
+	        mapToColors.SetInputData(image2D);
+	        mapToColors.SetOutputFormatToRGBA();
+	        mapToColors.SetLookupTable(lut);
+	        mapToColors.Update();
+
+	        vtkImageData mapToColorsOutput = mapToColors.GetOutput();
+	        vtkImageData maskSourceOutput = maskSource.GetOutput();
+
+	        vtkImageMask maskFilter = new vtkImageMask();
+	        maskFilter.SetImageInputData(mapToColorsOutput);
+	        maskFilter.SetMaskInputData(maskSourceOutput);
+	        maskFilter.Update();
+
+	        vtkImageData maskFilterOutput = maskFilter.GetOutput();
+	        mapToColors.Delete();
+	        lut.Delete();
+	        mapToColorsOutput.Delete();
+	        maskSourceOutput.Delete();
+	        maskFilter.Delete();
+	        return maskFilterOutput;
+	    }
 
 
 
@@ -4313,6 +4333,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void firePropertyChange()
     {
+    	// with significant property changes, the offlimb plane needs to be recalculated
+    	calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
@@ -4928,6 +4950,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
         offLimbActor=calculator.getOffLimbActor();
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
+        offLimbTexture = calculator.getOffLimbTexture();
 
         // set initial visibilities
         if (offLimbActor != null)
@@ -4935,6 +4958,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             offLimbActor.SetVisibility(offLimbVisibility?1:0);
             offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility?1:0);
         }
+
+
     }
 
 
@@ -4975,7 +5000,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         offLimbVisibility=visible;
         offLimbBoundaryVisibility = visible;
-        if (offLimbActor==null)
+        if (offLimbVisibility && offLimbActor==null)
             loadOffLimbPlane();
 
         if (offLimbActor != null)
@@ -5007,7 +5032,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public vtkTexture getOffLimbTexture()
     {
-        return offLimbTexture;
+    	if (offLimbTexture==null )
+    	{ // if offlimbtexture is null, initialize it.
+    		vtkImageData image=new vtkImageData();
+    		image.DeepCopy(getDisplayedImage());
+    		offLimbTexture=new vtkTexture();
+    		offLimbTexture.SetInputData(image);
+    		offLimbTexture.Modified();
+    		return offLimbTexture;
+    	}
+    	return offLimbTexture;
     }
 
     public void setOffLimbTexture(vtkTexture offLimbTexture)
@@ -5018,5 +5052,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         return offLimbFootprintDepth;
     }
+
+
+	public void setContrastSynced(boolean selected) {
+		this.contrastSynced = selected;
+		if (contrastSynced) {
+			// if we just changed this to true, update the values to match
+			offLimbDisplayedRange = getDisplayedRange();
+			setOfflimbImageRange(offLimbDisplayedRange);
+	        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		}
+	}
+
+	public boolean isContrastSynced() {
+		return contrastSynced;
+	}
+
+
 
 }

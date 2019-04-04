@@ -38,13 +38,13 @@ public class Sbmt2SimpleSmallBody extends SmallBodyModel
 	@Override
     public double getDensity()
     {
-        return getSmallBodyConfig().density;
+		return ((SmallBodyViewConfig)getSmallBodyConfig()).density;
     }
 
 	@Override
     public double getRotationRate()
     {
-        return getSmallBodyConfig().rotationRate;
+		return ((SmallBodyViewConfig)getSmallBodyConfig()).rotationRate;
     }
 
 }

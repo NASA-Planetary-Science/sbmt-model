@@ -3,9 +3,8 @@ package edu.jhuapl.sbmt.model.spectrum;
 import java.io.IOException;
 import java.util.Hashtable;
 
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 
 public class SpectrumInstrumentFactory
 {
@@ -22,10 +21,9 @@ public class SpectrumInstrumentFactory
     }
 
     static public Spectrum getSpectrumForName(String instrumentName, String filename,
-            SmallBodyModel smallBodyModel) throws IOException
+            ISmallBodyModel smallBodyModel) throws IOException
     {
-        SpectralInstrument instrument = getInstrumentForName(instrumentName);
+        ISpectralInstrument instrument = getInstrumentForName(instrumentName);
         return instrument.getSpectrumInstance(filename, smallBodyModel);
     }
-
 }

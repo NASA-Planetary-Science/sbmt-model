@@ -89,7 +89,9 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
         }
         else
         {
-            image = loadedImages.get(loadedImageKeys.indexOf(key));
+//            image = loadedImages.get(loadedImageKeys.indexOf(key));
+            loadedImages.remove(image);
+        	loadedImages.add(image);
         }
 
         smallBodyModel.addPropertyChangeListener(image);
@@ -111,11 +113,12 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     {
         ColorImage image = getImageFromKey(key);
 //        loadedImages.remove(image);
-
+        if (image == null) return;
         List<vtkProp> actors = imageToActorsMap.get(image);
 
-        for (vtkProp act : actors)
-            actorToImageMap.remove(act);
+        if (actors != null)
+        	for (vtkProp act : actors)
+        		actorToImageMap.remove(act);
 
         imageToActorsMap.remove(image);
 

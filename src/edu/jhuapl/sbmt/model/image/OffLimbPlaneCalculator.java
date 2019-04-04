@@ -58,15 +58,16 @@ public class OffLimbPlaneCalculator
         double[] focalPoint=new double[3];
         double[] upVector=new double[3];
         img.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
-        final double fov=img.getMaxFovAngle();
+        final double fovx=img.getHorizontalFovAngle();//img.getMaxFovAngle();
+        final double fovy=img.getVerticalFovAngle();
 
         // (1b) guess at a resolution for the macro-pixels; these will be used to create quadrilateral cells (i.e. what will eventually be the off-limb geometry) in the camera view-plane
         int res=(int)Math.sqrt(img.getFootprint(img.getDefaultSlice()).GetNumberOfPoints());    // for now just grab the number of points in the on-body footprint; assuming img is roughly planar we apply sqrt to get an approximate number of points on a "side" of the on-body geometry, within the rectangular frustuma
         int[] resolution=new int[]{res,res};    // cast to int and store s- and t- resolutions; NOTE: s and t can be thought of as respectively "horizontal" and "vertical" when viewing the image in the "Properties..." pane (t-hat cross s-hat = look direction in a righthanded coordinate system)
         // allow for later possibility of unequal macro-pixel resolutions; take the highest resolution
-        int szMax=Math.max(resolution[0], resolution[1]);
-        int szW=szMax;//(int)(aspect*szMax);
-        int szH=szMax;
+//        int szMax=Math.max(resolution[0], resolution[1]);
+        int szW=resolution[0];//szMax;//(int)(aspect*szMax);
+        int szH=resolution[1];//szMax;
 
 
         // Step (2): Shoot rays from the camera position toward each macro-pixel & record which ones don't hit the body (these will comprise the off-limb geometry)
@@ -79,7 +80,8 @@ public class OffLimbPlaneCalculator
         if (img.maxFrustumDepth[currentSlice]==0)
             img.maxFrustumDepth[currentSlice]=scPos.getNorm()+img.getSmallBodyModel().getBoundingBoxDiagonalLength();
         double maxRayDepth=(img.minFrustumDepth[currentSlice]+img.maxFrustumDepth[currentSlice]);
-        double ffac=maxRayDepth*Math.tan(Math.toRadians(fov/2));    // img is the scaling factor in the plane perpendicular to the boresight, which maps unit vectors from the camera position onto the chosen max depth, in frustum coordinates, thus forming a ray
+        double ffacx=maxRayDepth*Math.tan(Math.toRadians(fovx/2));    // img is the scaling factor in the plane perpendicular to the boresight, which maps unit vectors from the camera position onto the chosen max depth, in frustum coordinates, thus forming a ray
+        double ffacy=maxRayDepth*Math.tan(Math.toRadians(fovy/2));
 
         // (2b) figure out rotations lookRot and upRot, which transform frustum (s,t) coordinates into a direction in 3D space, pointing in the implied direction from the 3D camera position:
         //    (A) lookRot * negative z-hat = look-hat               [ transform negative z-hat from 3D space into the look direction ; img is the boresight of the camera ]
@@ -100,8 +102,8 @@ public class OffLimbPlaneCalculator
         for (int i=-szW/2; i<=szW/2; i++)
             for (int j=-szH/2; j<=szH/2; j++)
             {
-                double s=(double)i/((double)szW/2)*ffac;
-                double t=(double)j/((double)szW/2)*ffac;
+                double s=(double)i/((double)szW/2)*ffacx;
+                double t=(double)j/((double)szH/2)*ffacy;
                 Vector3D ray=new Vector3D(s,t,-maxRayDepth);  // ray construction starts from s,t coordinates each on the interval [-1 1]
                 ray=upRot.applyTo(lookRot.applyTo(ray));//upRot.applyInverseTo(lookRot.applyInverseTo(ray.normalize()));
                 Vector3D rayEnd=ray.add(scPos);
@@ -142,13 +144,14 @@ public class OffLimbPlaneCalculator
         vtkPolyData imagePolyData=new vtkPolyData();
         imagePolyData.SetPoints(tempImagePolyData.GetPoints());
         imagePolyData.SetPolys(cells);
-        double sfac=offLimbFootprintDepth*Math.tan(Math.toRadians(fov/2)); // scaling factor that "fits" the polydata into the frustum at the given footprintDepth (in the s,t plane perpendicular to the boresight)
+        double sfacx=offLimbFootprintDepth*Math.tan(Math.toRadians(fovx/2)); // scaling factor that "fits" the polydata into the frustum at the given footprintDepth (in the s,t plane perpendicular to the boresight)
+        double sfacy=offLimbFootprintDepth*Math.tan(Math.toRadians(fovy/2));
         // make sure all points are reset with the correct transformation (though on-body cells have been culled, topology of the remaining cells doesn't need to be touched; just the respective points need to be unprojected into 3d space)
         for (int i=0; i<imagePolyData.GetNumberOfPoints(); i++)
         {
             Vector3D pt=new Vector3D(imagePolyData.GetPoint(i));            // here's a pixel coordinate
             pt=pt.subtract(new Vector3D((double)szW/2,(double)szH/2,0));    // move the origin to the center of the image, so values range from [-szW/2 szW/2] and [szH/2 szH/2]
-            pt=new Vector3D(pt.getX()/((double)szW/2)*sfac,pt.getY()/((double)szH/2)*sfac,-offLimbFootprintDepth); // a number of things happen here; first a conversion to s,t-coordinates on [-1 1] in each direction, then scaling of the s,t-coordinates to fit the physical dimensions of the frustum at the chosen depth, and finally translation along the boresight axis to the chosen depth
+            pt=new Vector3D(pt.getX()/((double)szW/2)*sfacx,pt.getY()/((double)szH/2)*sfacy,-offLimbFootprintDepth); // a number of things happen here; first a conversion to s,t-coordinates on [-1 1] in each direction, then scaling of the s,t-coordinates to fit the physical dimensions of the frustum at the chosen depth, and finally translation along the boresight axis to the chosen depth
             pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));               // transform from (s,t) coordinates into the implied 3D direction vector, with origin at the camera's position in space; depth along the boresight was enforced on the previous line
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
         }
@@ -168,8 +171,9 @@ public class OffLimbPlaneCalculator
                 offLimbTexture.InterpolateOn();
                 offLimbTexture.RepeatOff();
                 offLimbTexture.EdgeClampOn();
+                offLimbTexture.Modified();
             }
-            img.setDisplayedImageRange(img.getDisplayedRange()); // match off-limb image intensity range to that of the on-body footprint; the "img" method call also takes care of syncing the off-limb vtkTexture object with the displayed raw image, above and beyond what the parent class has to do for the on-body geometry
+//            img.setDisplayedImageRange(img.getDisplayedRange()); // match off-limb image intensity range to that of the on-body footprint; the "img" method call also takes care of syncing the off-limb vtkTexture object with the displayed raw image, above and beyond what the parent class has to do for the on-body geometry
 
             // setup off-limb mapper and actor
             vtkPolyDataMapper offLimbMapper=new vtkPolyDataMapper();

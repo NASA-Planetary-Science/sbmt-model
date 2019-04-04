@@ -194,6 +194,14 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
         }
     }
 
+    @Override
+    public boolean equals(Object obj)
+    {
+    	if (!(obj instanceof ImageCube)) return false;
+    	return getImageCubeKey().equals(((ImageCube)obj).getImageCubeKey());
+
+    }
+
 
     public String getImageName()
     {

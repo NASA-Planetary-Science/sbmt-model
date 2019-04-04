@@ -1,6 +1,8 @@
 package edu.jhuapl.sbmt.model.eros;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,10 +22,10 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 
 public class NISSpectrum extends BasicSpectrum
 {
@@ -45,7 +47,7 @@ public class NISSpectrum extends BasicSpectrum
     static public final int NUMBER_OF_VERTICES_OFFSET = 259+2;
     static public final int POLYGON_START_COORDINATES_OFFSET = 260+2;
 
-    double[] spectrumEros=new double[NIS.bandCentersLength];
+    double[] spectrumErrors=new double[NIS.bandCentersLength];
 
     /**
      * Because instances of NISSpectrum can be expensive, we want there to be
@@ -74,7 +76,7 @@ public class NISSpectrum extends BasicSpectrum
 //    }
 
 
-    public NISSpectrum(String filename, SmallBodyModel smallBodyModel, SpectralInstrument instrument) throws IOException
+    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel, ISpectralInstrument instrument) throws IOException
     {
         super(filename, smallBodyModel, instrument);
 
@@ -110,7 +112,7 @@ public class NISSpectrum extends BasicSpectrum
         {
             // The following min and max clamps the value between 0 and 1.
             spectrum[i] = Math.min(1.0, Math.max(0.0, Double.parseDouble(values.get(CALIBRATED_GE_DATA_OFFSET + i))));
-            spectrumEros[i] = Double.parseDouble(values.get(CALIBRATED_GE_NOISE_OFFSET + i));
+            spectrumErrors[i] = Double.parseDouble(values.get(CALIBRATED_GE_NOISE_OFFSET + i));
         }
 
         for (int i=0; i<3; ++i)
@@ -240,7 +242,7 @@ public class NISSpectrum extends BasicSpectrum
 
     public double[] getSpectrumErrors()
     {
-        return spectrumEros;
+        return spectrumErrors;
     }
 
   /*  public static String[] getDerivedParameters()
@@ -335,7 +337,7 @@ public class NISSpectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-/*        FileWriter fstream = new FileWriter(file);
+        FileWriter fstream = new FileWriter(file);
         BufferedWriter out = new BufferedWriter(fstream);
 
         String nl = System.getProperty("line.separator");
@@ -357,18 +359,20 @@ public class NISSpectrum extends BasicSpectrum
             out.write((i+1) + " " + instrument.getBandCenters()[i] + " " + spectrum[i] + nl);
         }
 
+        NISSpectrumMath spectrumMath = NISSpectrumMath.getSpectrumMath();
+
         out.write(nl + nl + "Derived Values" + nl);
-        for (int i=0; i<derivedParameters.length; ++i)
+        for (int i=0; i<spectrumMath.getDerivedParameters().length; ++i)
         {
-            out.write(derivedParameters[i] + " = " + evaluateDerivedParameters(i) + nl);
+            out.write(spectrumMath.getDerivedParameters()[i] + " = " + evaluateDerivedParameters(i) + nl);
         }
 
-        for (int i=0; i<spectrumMath.userDefinedDerivedParameters.size(); ++i)
+        for (int i=0; i<spectrumMath.getAllUserDefinedDerivedParameters().size(); ++i)
         {
-            out.write(spectrumMath.userDefinedDerivedParameters.get(i).GetFunction() + " = " + spectrumMath.evaluateUserDefinedDerivedParameters(i) + nl);
+            out.write(spectrumMath.getAllUserDefinedDerivedParameters().get(i).GetFunction() + " = " + spectrumMath.evaluateUserDefinedDerivedParameters(i, spectrum) + nl);
         }
 
-        out.close();*/
+        out.close();
     }
 
 
@@ -380,7 +384,9 @@ public class NISSpectrum extends BasicSpectrum
         {
             double val = 0.0;
             if (channelsToColorBy[i] < instrument.getBandCenters().length)
+            {
                 val = spectrum[channelsToColorBy[i]];
+            }
             else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                 val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
             else
