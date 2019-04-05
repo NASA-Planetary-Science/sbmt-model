@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.image;
 
+import java.awt.Color;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -203,9 +205,9 @@ public class OffLimbPlaneCalculator
 
 
             // get color from default boundary color of image
-
             // set boundary color to this color
-            offLimbBoundaryActor.GetProperty().SetColor(new double[] {1/255, 0, 1/255});
+            Color color = img.getBoundaryColor();
+            offLimbBoundaryActor.GetProperty().SetColor(new double[] {color.getRed()/255, color.getGreen()/255, color.getBlue()/255});
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
             offLimbBoundaryActor.Modified();
         }

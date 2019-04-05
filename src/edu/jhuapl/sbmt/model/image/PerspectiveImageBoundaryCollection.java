@@ -15,6 +15,8 @@ import vtk.vtkActor;
 import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.saavtk.model.ModelManager;
+import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -31,18 +33,29 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
             Color.GREEN.darker(), Color.MAGENTA, Color.CYAN.darker(), Color.BLUE,
             Color.GRAY, Color.DARK_GRAY, Color.BLACK};
     private int initialColorIndex = 0;
+	private ModelManager modelManager;
+	private ModelNames imgCollectionModelName;
 
-    public PerspectiveImageBoundaryCollection(SmallBodyModel smallBodyModel)
+    public PerspectiveImageBoundaryCollection(SmallBodyModel smallBodyModel, ModelManager modelManager, ModelNames imgCollectionModelName)
     {
         this.smallBodyModel = smallBodyModel;
+        this.modelManager = modelManager;
+        this.imgCollectionModelName = imgCollectionModelName;
     }
 
     protected PerspectiveImageBoundary createBoundary(
             ImageKeyInterface key,
             SmallBodyModel smallBodyModel) throws IOException, FitsException
     {
-        PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, true), smallBodyModel);
-        boundary.setBoundaryColor(initialColors[initialColorIndex++]);
+        ImageCollection images = (ImageCollection)modelManager.getModel(imgCollectionModelName);
+    	PerspectiveImage image = (PerspectiveImage) images.getImage(key);
+    	if(image ==null) {
+            image = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, true);
+    	}
+        PerspectiveImageBoundary boundary = new PerspectiveImageBoundary(image, smallBodyModel);
+        Color color = initialColors[initialColorIndex++];
+        boundary.setBoundaryColor(color);
+        image.setBoundaryColor(color);
         if (initialColorIndex >= initialColors.length)
             initialColorIndex = 0;
         return boundary;
