@@ -3027,7 +3027,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double nln = 32.0;
     private double kmatrix00 = 1.0;
     private double kmatrix11 = 1.0;
-	private Color offLimbBoundaryColor;
+	private Color offLimbBoundaryColor = Color.RED; // default
 	private Color boundaryColor;
 
     private void parseLabelKeyValuePair(
@@ -5074,20 +5074,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public void setOfflimbBoundaryColor(Color color) {
 		this.offLimbBoundaryColor = color;
-		offLimbBoundaryActor.GetProperty().SetColor(color.getRed()/255., color.getBlue()/255., color.getGreen()/255.);
+		offLimbBoundaryActor.GetProperty().SetColor(color.getRed()/255., color.getGreen()/255., color.getBlue()/255.);
 		offLimbBoundaryActor.Modified();
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
 
-	/**
-	 * Get the boundary color for this image
-	 * @return color as r, g, b array
-	 */
-	public Color getBoundaryColor() {
-        return boundaryColor;
-	}
-	public void setBoundaryColor(Color color) {
-        this.boundaryColor = color;
+	public Color getOfflimbBoundaryColor() {
+		return offLimbBoundaryColor;
 	}
 
 

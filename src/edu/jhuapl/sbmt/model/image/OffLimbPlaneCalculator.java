@@ -206,7 +206,7 @@ public class OffLimbPlaneCalculator
 
             // get color from default boundary color of image
             // set boundary color to this color
-            Color color = img.getBoundaryColor();
+            Color color = img.getOfflimbBoundaryColor();
             offLimbBoundaryActor.GetProperty().SetColor(new double[] {color.getRed()/255, color.getGreen()/255, color.getBlue()/255});
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
             offLimbBoundaryActor.Modified();
