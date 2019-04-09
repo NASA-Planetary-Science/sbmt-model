@@ -3,6 +3,7 @@ package edu.jhuapl.sbmt.model.dem;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -325,7 +326,14 @@ public class DEMBoundaryCollection extends AbstractModel implements PropertyChan
 
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
-        return "Boundary of maplet";
+    	DEMBoundary boundary = actorToBoundaryMap.get(prop);
+        if(boundary == null)
+        {
+            return "";
+        }
+        File file = new File(boundary.getKey().displayName);
+        return "Boundary of maplet " + file.getName();
+
     }
 
     public DEMBoundary getBoundary(vtkProp actor)
