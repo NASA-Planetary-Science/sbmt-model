@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.eros;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
 import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
@@ -18,7 +18,7 @@ public class NIS extends BasicSpectrumInstrument
 
     public NIS()
     {
-        super("cm^-1", "NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath());
+        super("nm", "NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath());
         bandCenters = new double[]{
                 816.2,  // 0
                 837.8,  // 1
@@ -161,7 +161,7 @@ public class NIS extends BasicSpectrumInstrument
 
     @Override
     public Spectrum getSpectrumInstance(String filename,
-            SmallBodyModel smallBodyModel) throws IOException
+            ISmallBodyModel smallBodyModel) throws IOException
     {
         return new NISSpectrum(filename, smallBodyModel, this);
     }

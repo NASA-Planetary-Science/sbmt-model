@@ -33,6 +33,7 @@ import edu.jhuapl.saavtk.util.MapUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
 import edu.jhuapl.sbmt.gui.image.model.custom.CustomCylindricalImageKey;
@@ -802,7 +803,7 @@ public class CylindricalImage extends Image
             // Otherwise, try vtk's built in reader
 //        	System.out.println("CylindricalImage: loadImage: using png reader");
             vtkPNGReader reader = new vtkPNGReader();
-            reader.SetFileName(imageFile);
+            reader.SetFileName(SafeURLPaths.instance().getString(imageFile));
             reader.Update();
             rawImage.DeepCopy(reader.GetOutput());
         }

@@ -15,7 +15,6 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum.SpectrumKey;
 
 public class SpectrumBoundary extends AbstractModel implements PropertyChangeListener
 {
@@ -65,7 +64,7 @@ public class SpectrumBoundary extends AbstractModel implements PropertyChangeLis
         return props;
     }
 
-    public SpectrumKey getKey()
+    public SpectrumKeyInterface getKey()
     {
         return spectrum.getKey();
     }

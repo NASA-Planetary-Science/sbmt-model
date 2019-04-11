@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.bennu;
+package edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,16 +15,18 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
+import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.model.bennu.otes.SpectraHierarchicalSearchSpecification;
 
-public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchSpecification<SpectrumSearchSpec>
+public class Hayabusa2SpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchSpecification<SpectrumSearchSpec>
 {
     private static Gson gson = null;
-    List<OREXSpectrumInstrumentMetadata<SpectrumSearchSpec>> info = null;
+    List<Hayabusa2SpectrumInstrumentMetadata<SpectrumSearchSpec>> info = null;
     private File path;
     private String pathString;
 
-    public OREXSpectrumInstrumentMetadataIO(String instrumentName) throws FileNotFoundException
+    public Hayabusa2SpectrumInstrumentMetadataIO(String instrumentName) throws FileNotFoundException
     {
         super(instrumentName);
         GsonBuilder builder = new GsonBuilder();
@@ -39,7 +41,7 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     	// TODO Auto-generated method stub
     	try
 		{
-    		OREXSpectrumInstrumentMetadataIO specIO = new OREXSpectrumInstrumentMetadataIO(rootName);
+    		Hayabusa2SpectrumInstrumentMetadataIO specIO = new Hayabusa2SpectrumInstrumentMetadataIO(rootName);
     		specIO.setPathString(pathString);
     		return specIO;
 		}
@@ -73,14 +75,14 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     public void readMetadata(File file) throws FileNotFoundException
     {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-        Type collectionType = new TypeToken<List<OREXSpectrumInstrumentMetadata<SpectrumSearchSpec>>>(){}.getType();
+        Type collectionType = new TypeToken<List<Hayabusa2SpectrumInstrumentMetadata<SpectrumSearchSpec>>>(){}.getType();
         info = gson.fromJson(bufferedReader, collectionType);
     }
 
     public InstrumentMetadata<SpectrumSearchSpec> readMetadataFromFileForInstrument(File file, String instrumentName) throws FileNotFoundException
     {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-        Type collectionType = new TypeToken<List<OREXSpectrumInstrumentMetadata<SpectrumSearchSpec>>>(){}.getType();
+        Type collectionType = new TypeToken<List<Hayabusa2SpectrumInstrumentMetadata<SpectrumSearchSpec>>>(){}.getType();
         info = gson.fromJson(bufferedReader, collectionType);
         return getInstrumentMetadata(instrumentName);
     }
@@ -91,7 +93,7 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     @Override
     public InstrumentMetadata<SpectrumSearchSpec> getInstrumentMetadata(String instrumentName)
     {
-        for (OREXSpectrumInstrumentMetadata<SpectrumSearchSpec> instInfo : info)
+        for (Hayabusa2SpectrumInstrumentMetadata<SpectrumSearchSpec> instInfo : info)
         {
             if (instInfo.getInstrumentName().equals(instrumentName))
             {
@@ -175,72 +177,3 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     }
 
 }
-
-
-
-
-
-
-//
-//
-//    private class InfoTranslator implements JsonDeserializer<OREXSpectrumInstrumentMetadata>, JsonSerializer<OREXSpectrumInstrumentMetadata> {
-//        public OREXSpectrumInstrumentMetadata deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-//            JsonObject jobj = json.getAsJsonObject();
-//            OREXSpectrumInstrumentMetadata info = new OREXSpectrumInstrumentMetadata();
-////            info.setInstrumentName(jobj.get("instrumentName").getAsString());
-////            info = gson.fromJson(json, OREXSpectrumInstrumentMetadata.class);
-////            System.out.println(
-////                    "MetadataTest2.InfoTranslator: deserialize: specs " + jobj.get("specs").getAsJsonArray());
-////            info.setSpecs(jobj.get("specs").getAsJsonArray());
-////            System.out.println(
-////                    "MetadataTest2.InfoTranslator: deserialize: " + gson.fromJson(jobj.get("specs"), OREXSearchSpec.class));
-////            System.out.println(
-////                    "MetadataTest2.InfoTranslator: deserialize: " + jobj.get("specs").getAsJso);
-//
-//            return info;
-//        }
-//
-//       public JsonElement serialize(OREXSpectrumInstrumentMetadata src, Type typeOfSrc, JsonSerializationContext context) {
-//            JsonObject jobj = new JsonObject();
-//            jobj.addProperty("instrumentName", src.getInstrumentName());
-////            jobj.addProperty("specs", gson.toJson(src.getSpecs()));
-//            jobj.add("specs", gson.toJsonTree(src.getSpecs()));
-////            jobj.addProperty("price", src.getPrice());
-////            jobj.add("writer", gson.toJson(src.getAuthor()));
-//            return jobj;
-//       }
-//    }
-//
-//    private class SpecTranslator implements JsonDeserializer<OREXSearchSpec>, JsonSerializer<OREXSearchSpec> {
-//        public OREXSearchSpec deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-//            JsonArray jobj = json.getAsJsonArray();
-//            System.out.println(
-//                    "MetadataTest2.SpecTranslator: deserialize: jobj " + jobj);
-//
-//            OREXSearchSpec spec = new OREXSearchSpec();
-////            spec.dataName = json.getAsJsonArray().get(0).getAsJsonArray().get(0);
-////            spec.dataName = jobj.get("dataName").getAsString();
-////            spec.dataRootLocation = jobj.get("dataRootLocation").getAsString();
-////            spec.dataPath = jobj.get("dataPath").getAsString();
-////            spec.dataListFilename = jobj.get("dataListFileName").getAsString();
-////            spec.source = jobj.get("source").getAsString();
-////            spec.xAxisUnits = jobj.get("xAxisUnits").getAsString();
-////            spec.yAxisUnits = jobj.get("yAxisUnits").getAsString();
-////            spec.dataDescription = jobj.get("dataDescription").getAsString();
-//            return spec;
-//        }
-//
-//       public JsonElement serialize(OREXSearchSpec src, Type typeOfSrc, JsonSerializationContext context) {
-//            JsonObject jobj = new JsonObject();
-//            jobj.addProperty("dataName", src.getDataName());
-//            jobj.addProperty("dataRootLocation", src.getDataRootLocation());
-//            jobj.addProperty("dataPath", src.getDataPath());
-//            jobj.addProperty("dataListFilename", src.getDataListFilename());
-//            jobj.addProperty("source", src.getSource().toString());
-//            jobj.addProperty("xAxisUnits", src.getxAxisUnits());
-//            jobj.addProperty("yAxisUnits", src.getyAxisUnits());
-//            jobj.addProperty("dataDescription", src.getDataDescription());
-//            return jobj;
-//       }
-//    }
-

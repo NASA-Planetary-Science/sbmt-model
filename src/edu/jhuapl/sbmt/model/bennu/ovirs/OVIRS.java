@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.bennu.ovirs;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.spectrum.Spectrum;
 import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
 import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
@@ -2816,7 +2816,7 @@ public class OVIRS extends BasicSpectrumInstrument
 
     @Override
     public Spectrum getSpectrumInstance(String filename,
-            SmallBodyModel smallBodyModel)
+            ISmallBodyModel smallBodyModel)
             throws IOException
     {
         return new OVIRSSpectrum(filename, smallBodyModel, this);
