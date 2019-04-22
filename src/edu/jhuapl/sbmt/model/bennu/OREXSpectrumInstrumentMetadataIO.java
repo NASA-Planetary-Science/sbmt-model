@@ -24,31 +24,20 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     private File path;
     private String pathString;
 
-    public OREXSpectrumInstrumentMetadataIO(String instrumentName) throws FileNotFoundException
+    public OREXSpectrumInstrumentMetadataIO(String instrumentName)
     {
         super(instrumentName);
         GsonBuilder builder = new GsonBuilder();
         builder.setPrettyPrinting();
         gson = builder.create();
-
     }
 
     @Override
     public SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> clone()
     {
-    	// TODO Auto-generated method stub
-    	try
-		{
-    		OREXSpectrumInstrumentMetadataIO specIO = new OREXSpectrumInstrumentMetadataIO(rootName);
-    		specIO.setPathString(pathString);
-    		return specIO;
-		}
-    	catch (FileNotFoundException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return null;
+        OREXSpectrumInstrumentMetadataIO specIO = new OREXSpectrumInstrumentMetadataIO(rootName);
+        specIO.setPathString(pathString);
+        return specIO;
     }
 
     @Override
