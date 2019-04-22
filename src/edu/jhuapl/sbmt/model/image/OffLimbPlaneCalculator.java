@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.image;
 
+import java.awt.Color;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -195,10 +197,17 @@ public class OffLimbPlaneCalculator
             offLimbBoundary.DeepCopy(edgeFilter.GetOutput());
             vtkPolyDataMapper boundaryMapper=new vtkPolyDataMapper();
             boundaryMapper.SetInputData(offLimbBoundary);
+            boundaryMapper.ScalarVisibilityOff();
+
             if (offLimbBoundaryActor==null)
                 offLimbBoundaryActor=new vtkActor();
             offLimbBoundaryActor.SetMapper(boundaryMapper);
-            offLimbBoundaryActor.GetProperty().SetColor(0, 0, 1);
+
+
+            // get color from default boundary color of image
+            // set boundary color to this color
+            Color color = img.getOfflimbBoundaryColor();
+            offLimbBoundaryActor.GetProperty().SetColor(new double[] {color.getRed()/255, color.getGreen()/255, color.getBlue()/255});
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
             offLimbBoundaryActor.Modified();
         }
