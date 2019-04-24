@@ -94,7 +94,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         for (vtkProp act : imagePieces)
             actorToImageMap.put(act, image);
 //        System.out.println("ImageCollection: addImage: firing listener " + sw.elapsedMillis() + " ms");
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
 //        System.out.println("ImageCollection: addImage: fired listener " + sw.elapsedMillis() + " ms");
 
     }
@@ -140,7 +140,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     public void propertyChange(PropertyChangeEvent evt)
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, evt.getNewValue());
     }
 
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
