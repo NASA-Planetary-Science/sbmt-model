@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu;
 
+import java.io.FileNotFoundException;
+
 public interface InstrumentMetadataIO<S extends SearchSpec>
 {
 
@@ -7,5 +9,7 @@ public interface InstrumentMetadataIO<S extends SearchSpec>
             String instrumentName);
 
     void readHierarchyForInstrument(String instrumentName);
+
+    void loadMetadata() throws FileNotFoundException;
 
 }

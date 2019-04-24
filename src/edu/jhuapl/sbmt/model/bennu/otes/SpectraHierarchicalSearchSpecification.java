@@ -1,6 +1,5 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
-import java.io.FileNotFoundException;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,8 +27,6 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
         // Initialize container objects
         selectedDatasets = new LinkedList<Integer>();
     }
-
-    public abstract void loadMetadata() throws FileNotFoundException;
 
     public abstract SpectraHierarchicalSearchSpecification<S> clone();
 
