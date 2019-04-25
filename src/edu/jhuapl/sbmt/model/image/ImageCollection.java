@@ -116,7 +116,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         smallBodyModel.removePropertyChangeListener(image);
         image.imageAboutToBeRemoved();
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
         this.pcs.firePropertyChange(Properties.MODEL_REMOVED, null, image);
     }
 
