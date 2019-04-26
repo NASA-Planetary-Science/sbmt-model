@@ -90,7 +90,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         for (vtkProp act : boundaryPieces)
             actorToBoundaryMap.put(act, boundary);
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, boundary);
     }
 
     public void removeBoundary(ImageKeyInterface key)
@@ -112,7 +112,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
             boundary.removePropertyChangeListener(this);
             smallBodyModel.removePropertyChangeListener(boundary);
 
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, boundary);
         }
     }
 
@@ -175,7 +175,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
         {
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, evt.getNewValue());
         }
     }
 }
