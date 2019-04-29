@@ -35,11 +35,13 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
+import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
+import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics;
 import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics.Sample;
 
@@ -50,18 +52,26 @@ public class OTESSpectrum extends BasicSpectrum
     File infoFile, spectrumFile;
     double time;
     String extension = "";
+    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
+    private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
 
-    public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument) throws IOException
+    public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument) throws IOException
     {
         this(filename, smallBodyModel, instrument, false, false);
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
     }
 
-    public OTESSpectrum(String filename, SmallBodyModel smallBodyModel,
-            SpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, smallBodyModel, instrument, headless, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());
+        this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
+        instrumentMetadata = specIO.getInstrumentMetadata("OTES");
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
     }
 
     @Override
@@ -106,6 +116,11 @@ public class OTESSpectrum extends BasicSpectrum
 
     public String getSpectrumPathOnServer()
     {
+    	if (serverpath.contains("ote_calrd"))
+    		spec = instrumentMetadata.getSpecs().get(0);
+    	else
+    		spec = instrumentMetadata.getSpecs().get(1);
+
         if (isCustomSpectra)
         {
             return serverpath;
@@ -538,7 +553,9 @@ public class OTESSpectrum extends BasicSpectrum
             {
                 double val = 0.0;
                 if (channelsToColorBy[i] < instrument.getBandCenters().length)
+                {
                     val = spectrum[channelsToColorBy[i]];
+                }
                 else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
                     val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
                 else
@@ -560,6 +577,8 @@ public class OTESSpectrum extends BasicSpectrum
     {
         return time;
     }
+
+
 
 
 }

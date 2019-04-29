@@ -32,10 +32,10 @@ import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.instruments.SpectralInstrument;
+import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
 import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics;
 import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics.Sample;
-import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.query.IQueryBase;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListSearchMetadata;
 import edu.jhuapl.sbmt.tools.Authenticator;
@@ -80,7 +80,7 @@ public class SpectrumBoundsCalculator
         }
         SmallBodyModel body = SbmtModelFactory.createSmallBodyModel(config);
 
-        SpectralInstrument instrument;
+        ISpectralInstrument instrument;
         String instName = args[0];
         if (instName.equalsIgnoreCase("OTES")) {
             instrument = new OTES();
@@ -104,7 +104,7 @@ public class SpectrumBoundsCalculator
             fw = new FileWriter(boundsFile);
             BufferedWriter bw = new BufferedWriter(fw);
 
-            QueryBase queryType = instrument.getQueryBase();
+            IQueryBase queryType = instrument.getQueryBase();
             List<List<String>> spectrafiles = new ArrayList<List<String>>();
             if (queryType instanceof FixedListQuery)
             {

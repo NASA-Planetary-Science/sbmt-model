@@ -1,7 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
+import edu.jhuapl.sbmt.query.ISearchResultsMetadata;
 import edu.jhuapl.sbmt.query.SearchMetadata;
-import edu.jhuapl.sbmt.query.SearchResultsMetadata;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 
 // This must be final because it is a singleton with a clone() method.
@@ -32,7 +32,7 @@ public final class OTESQuery extends FixedListQuery
     }
 
     @Override
-    public SearchResultsMetadata runQuery(SearchMetadata queryMetadata)
+    public ISearchResultsMetadata runQuery(SearchMetadata queryMetadata)
     {
         // TODO Auto-generated method stub
         return super.runQuery(queryMetadata);

@@ -3,19 +3,20 @@ package edu.jhuapl.sbmt.model.lorri;
 import java.io.File;
 import java.io.IOException;
 
-import nom.tam.fits.FitsException;
-
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 
+import nom.tam.fits.FitsException;
+
 public class LorriImage extends PerspectiveImage
 {
-    public LorriImage(ImageKey key,
+    public LorriImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
@@ -40,8 +41,8 @@ public class LorriImage extends PerspectiveImage
     @Override
     protected String initializeFitFileFullPath()
     {
-        ImageKey key = getKey();
-        return FileCache.getFileFromServer(key.name + ".fit").getAbsolutePath();
+        ImageKeyInterface key = getKey();
+        return FileCache.getFileFromServer(key.getName() + ".fit").getAbsolutePath();
     }
 
     @Override
@@ -67,16 +68,16 @@ public class LorriImage extends PerspectiveImage
     @Override
     protected String initializeInfoFileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String result = null;
 
         // if the source is GASKELL, then return a null
-        if (key.source == null || key.source != null && (key.source == ImageSource.GASKELL || key.source == ImageSource.CORRECTED))
+        if (key.getSource() == null || key.getSource() != null && (key.getSource() == ImageSource.GASKELL || key.getSource() == ImageSource.CORRECTED))
             result = null;
         else
         {
-            File keyFile = new File(key.name);
-            String infodir = key.source == ImageSource.CORRECTED_SPICE ? "infofiles-corrected" : "infofiles";
+            File keyFile = new File(key.getName());
+            String infodir = key.getSource() == ImageSource.CORRECTED_SPICE ? "infofiles-corrected" : "infofiles";
             String pointingFileName = keyFile.getParentFile().getParent() + "/" + infodir + "/" + keyFile.getName() + ".INFO";
 
             try {
@@ -92,16 +93,16 @@ public class LorriImage extends PerspectiveImage
     @Override
     protected String initializeSumfileFullPath()
     {
-        ImageKey key = getKey();
+        ImageKeyInterface key = getKey();
         String result = null;
 
         // if the source is SPICE, then return a null
-        if (key.source == null || key.source != null && (key.source == ImageSource.SPICE || key.source == ImageSource.CORRECTED_SPICE))
+        if (key.getSource() == null || key.getSource() != null && (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.CORRECTED_SPICE))
             result = null;
         else
         {
-            File keyFile = new File(key.name);
-            String sumdir = key.source == ImageSource.CORRECTED ? "sumfiles-corrected" : "sumfiles";
+            File keyFile = new File(key.getName());
+            String sumdir = key.getSource() == ImageSource.CORRECTED ? "sumfiles-corrected" : "sumfiles";
             String sumFilename = keyFile.getParentFile().getParent() + "/" + sumdir + "/" + keyFile.getName() + ".SUM";
 
             try {

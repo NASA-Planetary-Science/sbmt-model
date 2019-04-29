@@ -18,7 +18,6 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.Image.ImageKey;
 
 import nom.tam.fits.FitsException;
 
@@ -35,12 +34,12 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         this.smallBodyModel = smallBodyModel;
     }
 
-    protected Image createImage(ImageKey key, SmallBodyModel smallBodyModel) throws FitsException, IOException
+    protected Image createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel) throws FitsException, IOException
     {
         return SbmtModelFactory.createImage(key, smallBodyModel, false);
     }
 
-    private boolean containsKey(ImageKey key)
+    private boolean containsKey(ImageKeyInterface key)
     {
         for (Image image : imageToActorsMap.keySet())
         {
@@ -51,7 +50,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         return false;
     }
 
-    private Image getImageFromKey(ImageKey key)
+    private Image getImageFromKey(ImageKeyInterface key)
     {
         for (Image image : imageToActorsMap.keySet())
         {
@@ -67,7 +66,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         return imageToActorsMap.keySet();
     }
 
-    public void addImage(ImageKey key) throws FitsException, IOException
+    public void addImage(ImageKeyInterface key) throws FitsException, IOException
     {
         if (containsKey(key))
         {
@@ -95,12 +94,12 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         for (vtkProp act : imagePieces)
             actorToImageMap.put(act, image);
 //        System.out.println("ImageCollection: addImage: firing listener " + sw.elapsedMillis() + " ms");
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
 //        System.out.println("ImageCollection: addImage: fired listener " + sw.elapsedMillis() + " ms");
 
     }
 
-    public void removeImage(ImageKey key)
+    public void removeImage(ImageKeyInterface key)
     {
         if (!containsKey(key))
             return;
@@ -117,7 +116,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         smallBodyModel.removePropertyChangeListener(image);
         image.imageAboutToBeRemoved();
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
         this.pcs.firePropertyChange(Properties.MODEL_REMOVED, null, image);
     }
 
@@ -129,7 +128,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     {
         HashMap<Image, List<vtkProp>> map = (HashMap<Image, List<vtkProp>>)imageToActorsMap.clone();
         for (Image image : map.keySet())
-            if (image.getKey().source == source)
+            if (image.getKey().getSource() == source)
                 removeImage(image.getKey());
     }
 
@@ -141,7 +140,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     public void propertyChange(PropertyChangeEvent evt)
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, evt.getNewValue());
     }
 
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
@@ -178,12 +177,12 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         return actorToImageMap.get(actor);
     }
 
-    public Image getImage(ImageKey key)
+    public Image getImage(ImageKeyInterface key)
     {
         return getImageFromKey(key);
     }
 
-    public boolean containsImage(ImageKey key)
+    public boolean containsImage(ImageKeyInterface key)
     {
         return containsKey(key);
     }

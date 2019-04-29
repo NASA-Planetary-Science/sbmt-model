@@ -4,13 +4,13 @@
 //import java.io.IOException;
 //import java.util.ArrayList;
 //
-//import edu.jhuapl.saavtk.metadata.Key;
-//import edu.jhuapl.saavtk.metadata.Metadata;
-//import edu.jhuapl.saavtk.metadata.MetadataManager;
-//import edu.jhuapl.saavtk.metadata.Serializers;
-//import edu.jhuapl.saavtk.metadata.SettableMetadata;
-//import edu.jhuapl.saavtk.metadata.TrackedMetadataManager;
-//import edu.jhuapl.saavtk.metadata.Version;
+//import crucible.crust.metadata.api.Key;
+//import crucible.crust.metadata.api.Metadata;
+//import crucible.crust.metadata.api.MetadataManager;
+//import crucible.crust.metadata.api.Serializers;
+//import crucible.crust.metadata.impl.SettableMetadata;
+//import crucible.crust.metadata.api.TrackedMetadataManager;
+//import crucible.crust.metadata.api.Version;
 //import edu.jhuapl.sbmt.model.bennu.otes.OTESSearchSpecification;
 //import edu.jhuapl.sbmt.model.bennu.otes.SpectraHierarchicalSearchSpecification;
 //import edu.jhuapl.sbmt.model.image.ImageSource;
