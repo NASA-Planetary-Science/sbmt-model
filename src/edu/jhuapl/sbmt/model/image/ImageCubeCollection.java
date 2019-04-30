@@ -74,7 +74,13 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
             return;
 
         ImageCube image = createImage(key, smallBodyModel);
-        loadedImages.add(image);
+        if (loadedImages.contains(image))
+        {
+        	loadedImages.remove(image);
+        	loadedImages.add(image);
+        }
+        else
+        	loadedImages.add(image);
 
 
         smallBodyModel.addPropertyChangeListener(image);
@@ -96,11 +102,12 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     {
         ImageCube image = getImageFromKey(key);
 //        loadedImages.remove(image);
-
+        if (image == null) return;
         List<vtkProp> actors = imageToActorsMap.get(image);
 
-        for (vtkProp act : actors)
-            actorToImageMap.remove(act);
+        if (actors != null)
+        	for (vtkProp act : actors)
+        		actorToImageMap.remove(act);
 
         imageToActorsMap.remove(image);
 
@@ -178,6 +185,18 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     {
         return loadedImages;
     }
+
+    public void setLoadedImageVisibility(int index, boolean visible)
+    {
+    	loadedImages.get(index).setVisible(visible);
+    	this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
+    }
+
+	public void setModelManager(ModelManager modelManager)
+	{
+		this.modelManager = modelManager;
+	}
 
 //    public void setShowFrustums(boolean b)
 //    {

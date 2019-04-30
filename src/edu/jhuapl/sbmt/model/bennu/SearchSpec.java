@@ -3,8 +3,9 @@ package edu.jhuapl.sbmt.model.bennu;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-import edu.jhuapl.saavtk.metadata.MetadataManager;
 import edu.jhuapl.sbmt.model.image.ImageSource;
+
+import crucible.crust.metadata.api.MetadataManager;
 
 
 public interface SearchSpec extends MetadataManager

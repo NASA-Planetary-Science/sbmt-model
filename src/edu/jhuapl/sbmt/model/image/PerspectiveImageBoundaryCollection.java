@@ -18,7 +18,6 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.Image.ImageKey;
 
 import nom.tam.fits.FitsException;
 
@@ -39,7 +38,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     }
 
     protected PerspectiveImageBoundary createBoundary(
-            ImageKey key,
+            ImageKeyInterface key,
             SmallBodyModel smallBodyModel) throws IOException, FitsException
     {
         PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, true), smallBodyModel);
@@ -49,7 +48,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return boundary;
     }
 
-    private boolean containsKey(ImageKey key)
+    private boolean containsKey(ImageKeyInterface key)
     {
         for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
         {
@@ -60,7 +59,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return false;
     }
 
-    private PerspectiveImageBoundary getBoundaryFromKey(ImageKey key)
+    private PerspectiveImageBoundary getBoundaryFromKey(ImageKeyInterface key)
     {
         for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
         {
@@ -72,7 +71,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     }
 
 
-    public void addBoundary(ImageKey key) throws FitsException, IOException
+    public void addBoundary(ImageKeyInterface key) throws FitsException, IOException
     {
         if (containsKey(key))
             return;
@@ -91,10 +90,10 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         for (vtkProp act : boundaryPieces)
             actorToBoundaryMap.put(act, boundary);
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, boundary);
     }
 
-    public void removeBoundary(ImageKey key)
+    public void removeBoundary(ImageKeyInterface key)
     {
         PerspectiveImageBoundary boundary = getBoundaryFromKey(key);
 
@@ -113,7 +112,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
             boundary.removePropertyChangeListener(this);
             smallBodyModel.removePropertyChangeListener(boundary);
 
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, boundary);
         }
     }
 
@@ -138,18 +137,18 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         {
             return "";
         }
-        File file = new File(boundary.getKey().name);
+        File file = new File(boundary.getKey().getName());
         return "Boundary of image " + file.getName();
     }
 
     public String getBoundaryName(vtkActor actor)
     {
-        return actorToBoundaryMap.get(actor).getKey().name;
+        return actorToBoundaryMap.get(actor).getKey().getName();
     }
 
-    public ImmutableSet<ImageKey> getImageKeys()
+    public ImmutableSet<ImageKeyInterface> getImageKeys()
     {
-        ImmutableSet.Builder<ImageKey> builder = ImmutableSet.builder();
+        ImmutableSet.Builder<ImageKeyInterface> builder = ImmutableSet.builder();
         for (PerspectiveImageBoundary boundary : boundaryToActorsMap.keySet())
         {
             builder.add(boundary.getKey());
@@ -162,12 +161,12 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
         return actorToBoundaryMap.get(actor);
     }
 
-    public PerspectiveImageBoundary getBoundary(ImageKey key)
+    public PerspectiveImageBoundary getBoundary(ImageKeyInterface key)
     {
         return getBoundaryFromKey(key);
     }
 
-    public boolean containsBoundary(ImageKey key)
+    public boolean containsBoundary(ImageKeyInterface key)
     {
         return containsKey(key);
     }
@@ -176,7 +175,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     {
         if (Properties.MODEL_CHANGED.equals(evt.getPropertyName()))
         {
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, evt.getNewValue());
         }
     }
 }

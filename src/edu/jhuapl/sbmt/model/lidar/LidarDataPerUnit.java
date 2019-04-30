@@ -413,7 +413,7 @@ public class LidarDataPerUnit extends AbstractModel implements PropertyChangeLis
         {
             double[] pt = originalPoints.GetPoint(i);
             LatLon lla = MathUtil.reclat(pt);
-            lla.rad += offset*offsetMultiplier;
+            lla = new LatLon(lla.lat, lla.lon, lla.rad + offset*offsetMultiplier);
             pt = MathUtil.latrec(lla);
             points.SetPoint(i, pt);
         }

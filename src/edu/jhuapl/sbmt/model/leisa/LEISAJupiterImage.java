@@ -10,6 +10,8 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 
 import nom.tam.fits.BasicHDU;
@@ -18,7 +20,7 @@ import nom.tam.fits.FitsException;
 
 public class LEISAJupiterImage extends PerspectiveImage
 {
-    public static final int INITIAL_BAND = 127;
+	public static final int INITIAL_BAND = 127;
 
     private double[][] spectrumWavelengths;
     private double[][] spectrumBandwidths;
@@ -27,13 +29,14 @@ public class LEISAJupiterImage extends PerspectiveImage
 
     public ImageKey getKey()
     {
-        ImageKey key = super.getKey();
-        key.slice = getCurrentSlice();
-        key.band = getCurrentBand();
-        return key;
+        ImageKeyInterface key = super.getKey();
+        ImageKey newKey = new ImageKey(key.getName(), key.getSource(), key.getFileType(), key.getImageType(), key.getInstrument(), getCurrentBand(), getCurrentSlice(), key.getPointingFile());
+//        key.slice = getCurrentSlice();
+//        key.band = getCurrentBand();
+        return newKey;
     }
 
-    public LEISAJupiterImage(ImageKey key, SmallBodyModel smallBodyModel,
+    public LEISAJupiterImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {

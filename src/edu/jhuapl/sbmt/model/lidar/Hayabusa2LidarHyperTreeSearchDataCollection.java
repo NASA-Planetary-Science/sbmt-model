@@ -30,7 +30,6 @@ import edu.jhuapl.saavtk.gui.ProgressBarSwingWorker;
 import edu.jhuapl.saavtk.model.PointInRegionChecker;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
@@ -40,22 +39,10 @@ import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchDataCollection
 {
-    public enum TrackFileType
-    {
-        TEXT
-    };
-
     private Map<String, Hayabusa2LidarHypertreeSkeleton> skeletons = new HashMap<String, Hayabusa2LidarHypertreeSkeleton>();
     private Hayabusa2LidarHypertreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
-    private boolean loading=false;
     Map<Integer, List<Hayabusa2LidarPoint>> filesWithPoints = new HashMap<Integer, List<Hayabusa2LidarPoint>>();
-
-    @Override
-    public boolean isLoading()
-    {
-        return loading;
-    }
 
     public Hayabusa2LidarHyperTreeSearchDataCollection(SmallBodyModel smallBodyModel)
     {
@@ -136,7 +123,8 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
     {
         // In the old LidarSearchDataCollection class the cubeList came from a predetermined set of cubes all of equal size.
         // Here it corresponds to the list of leaves of an octree that intersect the bounding box of the user selection area.
-
+        setTimeSeparationBetweenTracks(timeSeparationBetweenTracks);
+        setMinTrackLength(minTrackLength);
 
         ProgressBarSwingWorker dataLoader=new ProgressBarSwingWorker(parentForProgressMonitor,"Loading Hayabusa2 Lidar datapoints ("+cubeList.size()+" individual chunks)")
         {
@@ -145,7 +133,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
             {
                 Stopwatch sw=new Stopwatch();
                 sw.start();
-                loading=true;
 
                  originalPoints.clear();
                  filesWithPoints.clear();
@@ -196,7 +183,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
                 }
 
                 cancel(true);
-                loading=false;
 
 //                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
@@ -207,11 +193,8 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 
         };
         dataLoader.executeDialog();
-        initTranslationArray(originalPoints.size());
 //        System.out.println(
 //                "Hayabusa2LidarSearchDataCollection: setLidarData: before while loop");
-
-        radialOffset = 0.0;
 
         computeTracks();
 
@@ -219,8 +202,6 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
 //        System.out.println("Hayabusa2LidarSearchDataCollection: setLidarData:  Compute Track Time="+sw.elapsedMillis()+" ms");
         sw.reset();
         sw.start();
-
-        removeTracksThatAreTooSmall();
 
         // sometimes the last track ends up with bad times because the user cancelled the search, so remove any that are bad in this respect
         List<Track> tracksToRemove=Lists.newArrayList();
@@ -230,25 +211,7 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
         for (Track t : tracksToRemove)
             tracks.remove(t);
 
-//        System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
-
-        assignInitialColorToTrack();
-
-//        System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-        sw.reset();
-        sw.start();
-
-
-        updateTrackPolydata();
-
-//        System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
-
-
-        selectPoint(-1);
-
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        removeTracksThatAreTooSmall();
     }
 
     static vtkPoints points=new vtkPoints();
@@ -296,59 +259,143 @@ public class Hayabusa2LidarHyperTreeSearchDataCollection extends LidarSearchData
     @Override
     protected void computeTracks()
     {
-        localFileMap.clear();
-        localFileMap.putAll(getCurrentSkeleton().getFileMap());
+    	localFileMap.clear();
+		localFileMap.putAll(getCurrentSkeleton().getFileMap());
 
-        tracks.clear();
+		tracks.clear();
+		initModelState();
 
-        int size = originalPoints.size();
-        if (size == 0)
-            return;
+		int size = originalPoints.size();
+		if (size == 0)
+			return;
 
+		ProgressBarSwingWorker trackComputer=new ProgressBarSwingWorker(parentForProgressMonitor,"Computing tracks from results")
+		{
 
-//        System.out.println("total points: " + originalPoints.size());
-        int totalpoints = 0;
-        Set<Integer> keys = filesWithPoints.keySet();
-        for (Integer key : keys) {
-            Track track = new Track();
-
-            track.registerSourceFileIndex(key, localFileMap);
-            List<Hayabusa2LidarPoint> currPoints = filesWithPoints.get(key);
-            Collections.sort(currPoints);
-            Hayabusa2LidarPoint start = currPoints.get(0);
-            Hayabusa2LidarPoint stop = currPoints.get(currPoints.size() - 1);
-
-            int istart = originalPoints.indexOf(start);
-            int istop = originalPoints.indexOf(stop);
-            track.timeRange = new String[]
-                    {TimeUtil.et2str(start.getTime()),
-                     TimeUtil.et2str(stop.getTime())};
-            // get start id and stop id from original points
-            track.startId = istart;
-            track.stopId = istop;
-            tracks.add(track);
-            totalpoints += (istop - istart + 1);
-
-        }
-
-//        System.out.println("total points in tracks: " + totalpoints);
+			@Override
+			protected Void doInBackground() throws Exception
+			{
 
 
-        // sort tracks by their starting time
-        Collections.sort(tracks, new Comparator<Track>() {
-            public int compare(Track track1, Track track2) {
-                double track1Start = TimeUtil.str2et(track1.timeRange[0]);
-                double track2Start = TimeUtil.str2et(track2.timeRange[0]);
-                return track1Start > track2Start ? 1 : track1Start < track2Start ? -1 : 0;
-            }
-        });
+				double prevTime;
+				Set<Integer> keys = filesWithPoints.keySet();
+				double count = 0;
+				double total = keys.size();
+
+				ArrayList<LidarPoint> allPointsSortedbyFileThenTime = Lists.newArrayList();
 
 
+				for (Integer fileNum : keys) {
+					// create a new track for this file
+					Track track = new Track();
+					track.registerSourceFileIndex(fileNum, localFileMap);
+
+					// get all current points and convert to a list, then sort by time
+					List<Hayabusa2LidarPoint> pntsFromCurrFile = filesWithPoints.get(fileNum);
+					Collections.sort(pntsFromCurrFile);
+
+					allPointsSortedbyFileThenTime.addAll(pntsFromCurrFile);
+
+					// get start and stop time of tracks in this file
+					Hayabusa2LidarPoint start = pntsFromCurrFile.get(0);
+					Hayabusa2LidarPoint stop = pntsFromCurrFile.get(pntsFromCurrFile.size() - 1);
+
+					// original start and stop points are first and last.
+					// this will change if points are separated by more than
+					// time separation between tracks
+					int istart = allPointsSortedbyFileThenTime.indexOf(start);
+					int istop = allPointsSortedbyFileThenTime.indexOf(stop);
+
+
+					prevTime = start.getTime();
+					for (Hayabusa2LidarPoint point : pntsFromCurrFile) {
+						double currentTime = point.getTime();
+						double diff = currentTime - prevTime;
+						if (diff >= getTimeSeparationBetweenTracks()) {
+							/*
+							 *  save current track before starting next one
+							 */
+							int iLastPoint = pntsFromCurrFile.indexOf(point) - 1;
+							istop = allPointsSortedbyFileThenTime.indexOf(pntsFromCurrFile.get(iLastPoint)); // get index of last point
+							stop = (Hayabusa2LidarPoint) allPointsSortedbyFileThenTime.get(istop); // get last point
+
+							// create the current track
+							track.timeRange = new String[]
+									{TimeUtil.et2str(start.getTime()),
+											TimeUtil.et2str(stop.getTime())};
+							track.startId = istart;
+							track.stopId = istop;
+							// and add to list of all tracks
+							tracks.add(track);
+
+							/*
+							 * start a new track beginning with current point
+							 */
+
+							track = new Track();
+							track.registerSourceFileIndex(fileNum, localFileMap);
+							istart = allPointsSortedbyFileThenTime.indexOf(point);
+							start = point;
+						}
+						else {
+							/*
+							 * We want to keep going since the time between these 2 points was
+							 * not greater than timeSeparationBetweenTracks.
+							 * But first lets check if it was the last point, so we can save
+							 * this track if it was.
+							 */
+							int indexOfPoint = pntsFromCurrFile.indexOf(point);
+							if (indexOfPoint == pntsFromCurrFile.size()-1) {
+								// this is the last point in the file, so finalize this last track
+								istop = allPointsSortedbyFileThenTime.indexOf(pntsFromCurrFile.get(indexOfPoint)); // get index of this point
+								stop = (Hayabusa2LidarPoint) allPointsSortedbyFileThenTime.get(istop); // get this point
+
+								// create the current track
+								track.timeRange = new String[]
+										{TimeUtil.et2str(start.getTime()),
+												TimeUtil.et2str(stop.getTime())};
+								track.startId = istart;
+								track.stopId = istop;
+								// and add to list of all tracks
+								tracks.add(track);
+							}
+						}
+						prevTime = currentTime;
+					}
+
+					count++;
+					double progressPercentage=((double)count/(double)total*100);
+					setProgress((int)progressPercentage);
+					if (isCancelled())
+						break;
+				}
+
+				originalPoints = allPointsSortedbyFileThenTime;
+
+				cancel(true);
+				return null;
+
+
+			}
+
+
+
+		};
+
+		trackComputer.executeDialog();
+
+		// sort tracks by their starting time
+		Collections.sort(tracks, new Comparator<Track>() {
+			public int compare(Track track1, Track track2) {
+				double track1Start = TimeUtil.str2et(track1.timeRange[0]);
+				double track2Start = TimeUtil.str2et(track2.timeRange[0]);
+				return track1Start > track2Start ? 1 : track1Start < track2Start ? -1 : 0;
+			}
+		});
+
+        // Reset internal state vars
+        initModelState();
     }
-
-
-
-
 
 
 

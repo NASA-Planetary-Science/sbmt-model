@@ -266,4 +266,9 @@ public class DEMCollection extends AbstractModel implements PropertyChangeListen
         }
     }
 
+	public void setModelManager(ModelManager modelManager)
+	{
+		this.modelManager = modelManager;
+	}
+
 }

@@ -32,17 +32,11 @@ import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperTreeSkeleton;
 
 public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataCollection    // currently implemented only for OLA lidar points, but could be revised to handle any points satisfying the LidarPoint interface.
 {
-    public enum TrackFileType
-    {
-        TEXT
-    };
-
     private Map<String, FSHyperTreeSkeleton> skeletons = new HashMap<String, FSHyperTreeSkeleton>();
     private FSHyperTreeSkeleton currentSkeleton;
     private JComponent parentForProgressMonitor;
     private boolean loading=false;
 
-    @Override
     public boolean isLoading()
     {
         return loading;
@@ -150,7 +144,6 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                         break;
                 }
                 cancel(true);
-                initTranslationArray(originalPoints.size());
 
 //                System.out.println("Data Reading Time="+sw.elapsedMillis()+" ms");
                 sw.reset();
@@ -163,31 +156,8 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                 sw.reset();
                 sw.start();
 
-                radialOffset = 0.0;
-//                translation[0] = translation[1] = translation[2] = 0.0;
-
                 computeTracks();
-
-//                System.out.println("Compute Track Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
-
                 removeTracksThatAreTooSmall();
-
-//                System.out.println("Remove Small Tracks Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
-
-                assignInitialColorToTrack();
-
-//                System.out.println("Assign Initial Colors Time="+sw.elapsedMillis()+" ms");
-                sw.reset();
-                sw.start();
-
-
-                updateTrackPolydata();
-
-//                System.out.println("UpdatePolyData Time="+sw.elapsedMillis()+" ms");
 
                 loading=false;
 
@@ -206,8 +176,6 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-
-        selectPoint(-1);
 
         pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
@@ -260,6 +228,9 @@ public class MolaLidarHyperTreeSearchDataCollection extends LidarSearchDataColle
             for (int j=track.startId; j<=track.stopId; j++)
                 track.registerSourceFileIndex(((MolaFSHyperPoint)originalPoints.get(j)).getFileNum(), getCurrentSkeleton().getFileMap());
         }*/
+
+       // Reset internal state vars
+       initModelState();
     }
 
     public FSHyperTreeSkeleton getCurrentSkeleton()

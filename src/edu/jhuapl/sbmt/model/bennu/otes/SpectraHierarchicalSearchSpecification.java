@@ -1,6 +1,5 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
-import java.io.FileNotFoundException;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,9 +9,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
-import edu.jhuapl.saavtk.metadata.MetadataManager;
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadataIO;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
+
+import crucible.crust.metadata.api.MetadataManager;
 
 public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpec> implements InstrumentMetadataIO<S>
 {
@@ -29,8 +29,6 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
         // Initialize container objects
         selectedDatasets = new LinkedList<Integer>();
     }
-
-    public abstract void loadMetadata() throws FileNotFoundException;
 
     public abstract SpectraHierarchicalSearchSpecification<S> clone();
 

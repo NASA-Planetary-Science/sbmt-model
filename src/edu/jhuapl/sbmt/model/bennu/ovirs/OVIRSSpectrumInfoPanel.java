@@ -51,7 +51,7 @@ public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyC
 
 
         // add the jfreechart graph
-        XYSeries series = new XYSeries("OVIRS Spectrum");
+        XYSeries series = new XYSeries("NIRS3 Spectrum");
         double[] wavelengths = spectrum.getxData();
         double[] spect = spectrum.getSpectrum();
         for (int i=0; i<wavelengths.length; ++i)

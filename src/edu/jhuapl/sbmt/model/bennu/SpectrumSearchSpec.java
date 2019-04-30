@@ -4,13 +4,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Hashtable;
 
-import edu.jhuapl.saavtk.metadata.Key;
-import edu.jhuapl.saavtk.metadata.Metadata;
-import edu.jhuapl.saavtk.metadata.SettableMetadata;
-import edu.jhuapl.saavtk.metadata.Version;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
-public class OREXSearchSpec extends Hashtable<String, String> implements SearchSpec
+import crucible.crust.metadata.api.Metadata;
+
+public class SpectrumSearchSpec extends Hashtable<String, String> implements SearchSpec
 {
     String dataName;
     String dataRootLocation;
@@ -21,12 +19,12 @@ public class OREXSearchSpec extends Hashtable<String, String> implements SearchS
     String yAxisUnits;
     String dataDescription;
 
-    public OREXSearchSpec()
+    public SpectrumSearchSpec()
     {
 
     }
 
-    public OREXSearchSpec(String name, String location, String dataPath, String filename, ImageSource source, String xAxisUnits, String yAxisUnits, String dataDescription)
+    public SpectrumSearchSpec(String name, String location, String dataPath, String filename, ImageSource source, String xAxisUnits, String yAxisUnits, String dataDescription)
     {
         put("dataName", dataName = name);
         put("dataRootLocation", dataRootLocation = location);
@@ -57,7 +55,7 @@ public class OREXSearchSpec extends Hashtable<String, String> implements SearchS
         writer.newLine();
     }
 
-    public OREXSearchSpec(Hashtable<String, String> copy)
+    public SpectrumSearchSpec(Hashtable<String, String> copy)
     {
         putAll(copy);
     }
@@ -134,62 +132,17 @@ public class OREXSearchSpec extends Hashtable<String, String> implements SearchS
         return get("dataDescription");
     }
 
-    Key<String> dataNameKey = Key.of("dataName");
-    Key<String> dataRootLocationKey = Key.of("dataRootLocation");
-    Key<String> dataPathKey = Key.of("dataPath");
-    Key<String> dataListFilenameKey = Key.of("dataListFilename");
-    Key<String> sourceKey = Key.of("source");
-    Key<String> xAxisUnitsKey = Key.of("xAxisUnits");
-    Key<String> yAxisUnitsKey = Key.of("yAxisUnits");
-    Key<String> dataDescriptionKey = Key.of("dataDescription");
+	@Override
+	public Metadata store()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public Metadata store()
-    {
-        System.out.println("OREXSearchSpec: store: storing");
-        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
-        write(dataNameKey, getDataName(), configMetadata);
-        write(dataRootLocationKey, getDataRootLocation(), configMetadata);
-        write(dataPathKey, getDataPath(), configMetadata);
-        write(dataListFilenameKey, getDataListFilename(), configMetadata);
-        write(sourceKey, get("source"), configMetadata);
-        write(xAxisUnitsKey, getxAxisUnits(), configMetadata);
-        write(yAxisUnitsKey, getyAxisUnits(), configMetadata);
-        write(dataDescriptionKey, getDataDescription(), configMetadata);
+	@Override
+	public void retrieve(Metadata source)
+	{
+		// TODO Auto-generated method stub
 
-
-
-        return configMetadata;
-    }
-
-    @Override
-    public void retrieve(Metadata sourceMetadata)
-    {
-        dataName = read(dataNameKey, sourceMetadata);
-        dataRootLocation = read(dataRootLocationKey, sourceMetadata);
-        dataPath = read(dataPathKey, sourceMetadata);
-        dataListFilename = read(dataListFilenameKey, sourceMetadata);
-        source = read(sourceKey, sourceMetadata);
-        xAxisUnits = read(xAxisUnitsKey, sourceMetadata);
-        yAxisUnits = read(yAxisUnitsKey, sourceMetadata);
-        dataDescription = read(dataDescriptionKey, sourceMetadata);
-
-    }
-
-    private <T> T read(Key<T> key, Metadata configMetadata)
-    {
-        if (configMetadata.hasKey(key) == false) return null;
-        T value = configMetadata.get(key);
-        if (value != null)
-            return value;
-        return null;
-    }
-
-    private <T> void write(Key<T> key, T value, SettableMetadata configMetadata)
-    {
-        if (value != null)
-        {
-            configMetadata.put(key, value);
-        }
-    }
+	}
 }
