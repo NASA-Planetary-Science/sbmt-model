@@ -1,8 +1,11 @@
 package edu.jhuapl.sbmt.model.bennu;
 
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 import vtk.vtkImageData;
+import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -49,6 +52,54 @@ public class OcamsFlightImage extends BasicPerspectiveImage
             ImageDataUtil.flipImageXAxis(rawImage);
             ImageDataUtil.rotateImage(rawImage, 180);
         }
+    }
+
+    @Override
+    public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
+    {
+        // Number format
+        DecimalFormat df = new DecimalFormat("#.0");
+        df.setRoundingMode(RoundingMode.HALF_UP);
+
+        // Construct status message
+        String status = "Pixel Coordinate = (";
+        if (key.getSource() != ImageSource.SPICE)
+        {
+	        status += df.format(pickPosition[1]);
+	        status += ", ";
+	        status += df.format(getImageWidth() - pickPosition[0]);
+	        status += ")";
+        }
+        else
+        {
+        	status += df.format(pickPosition[0]);
+ 	        status += ", ";
+ 	        status += df.format(pickPosition[1]);
+ 	        status += ")";
+        }
+
+     // Append raw pixel value information
+        status += ", Raw Value = ";
+        if(rawImage == null)
+        {
+            status += "Unavailable";
+        }
+        else
+        {
+            int ip0 = (int)Math.round(pickPosition[0]);
+            int ip1 = (int)Math.round(pickPosition[1]);
+            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            {
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+                status += pixelColumn[currentSlice];
+            }
+            else
+            {
+                status += "N/A";
+            }
+        }
+
+        return status;
     }
 
 }
