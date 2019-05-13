@@ -86,6 +86,7 @@ import edu.jhuapl.sbmt.util.BackplaneInfo;
 import edu.jhuapl.sbmt.util.BackplanesLabel;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
 
+import altwg.util.FileUtil;
 import crucible.crust.metadata.api.Key;
 import crucible.crust.metadata.api.Metadata;
 import crucible.crust.metadata.impl.FixedMetadata;
@@ -2464,7 +2465,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         // for offlimb
         getOffLimbTexture();
-        if (offLimbActor==null && offLimbTexture != null) {
+        if (offLimbActor==null && offLimbTexture != null)
+        {
             loadOffLimbPlane();
             if (footprintActors.contains(offLimbActor))
                 footprintActors.remove(offLimbActor);
@@ -3501,7 +3503,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             FileCache.getFileFromServer(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2));
 //            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally ");
             vtkPolyDataReader reader = new vtkPolyDataReader();
-            reader.SetFileName(intersectionFileName);
+            reader.SetFileName(intersectionFileName.substring(0, intersectionFileName.length() - 3));
             reader.Update();
             vtkPolyData footprint =  reader.GetOutput();
             return footprint;
@@ -5103,6 +5105,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
 
         calculator = new OffLimbPlaneCalculator(this);
+        calculator.setOffLimbTexture(offLimbTexture);
+
         double[] spacecraftPosition=new double[3];
         double[] focalPoint=new double[3];
         double[] upVector=new double[3];
@@ -5113,8 +5117,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        System.out.println("PerspectiveImage: loadOffLimbPlane: calculated offlimb plane " + sw.elapsedMillis());
         offLimbActor=calculator.getOffLimbActor();
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
-        offLimbTexture = calculator.getOffLimbTexture();
-
+//        calculator.setOffLimbTexture(offLimbTexture);
+//        offLimbTexture = calculator.getOffLimbTexture();
         // set initial visibilities
         if (offLimbActor != null)
         {
@@ -5195,11 +5199,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
     	if (offLimbTexture==null )
     	{ // if offlimbtexture is null, initialize it.
+    		System.out.println("PerspectiveImage: getOffLimbTexture: initializing");
     		vtkImageData image=new vtkImageData();
     		image.DeepCopy(getDisplayedImage());
     		offLimbTexture=new vtkTexture();
     		offLimbTexture.SetInputData(image);
     		offLimbTexture.Modified();
+    		System.out.println("PerspectiveImage: getOffLimbTexture: returning");
         return offLimbTexture;
     }
     	return offLimbTexture;
