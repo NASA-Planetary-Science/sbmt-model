@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 
 import com.google.common.collect.ImmutableMap;
 
 import vtk.vtkImageData;
+import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
@@ -118,5 +121,53 @@ public class ONCImage extends PerspectiveImage
         ImageKeyInterface key = getKey();
         if (key.getSource().equals(ImageSource.SPICE))
             ImageDataUtil.rotateImage(rawImage, -90);
+    }
+
+    @Override
+    public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
+    {
+        // Number format
+        DecimalFormat df = new DecimalFormat("#.0");
+        df.setRoundingMode(RoundingMode.HALF_UP);
+
+        // Construct status message
+        String status = "Pixel Coordinate = (";
+        if (key.getSource() == ImageSource.SPICE)
+        {
+	        status += df.format(pickPosition[1]);
+	        status += ", ";
+	        status += df.format(getImageWidth() - pickPosition[0]);
+	        status += ")";
+        }
+        else
+        {
+        	status += df.format(pickPosition[0]);
+ 	        status += ", ";
+ 	        status += df.format(pickPosition[1]);
+ 	        status += ")";
+        }
+
+     // Append raw pixel value information
+        status += ", Raw Value = ";
+        if(rawImage == null)
+        {
+            status += "Unavailable";
+        }
+        else
+        {
+            int ip0 = (int)Math.round(pickPosition[0]);
+            int ip1 = (int)Math.round(pickPosition[1]);
+            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            {
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+                status += pixelColumn[currentSlice];
+            }
+            else
+            {
+                status += "N/A";
+            }
+        }
+
+        return status;
     }
 }
