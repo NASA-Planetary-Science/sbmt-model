@@ -37,7 +37,7 @@ public class OffLimbPlaneCalculator
 
 	private vtkPolyData getOffLimbImageData(PerspectiveImage img, double offLimbFootprintDepth)
 	{
-		System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: image/double");
+//		System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: image/double");
 //		// see if one exists
 //		if (imagePolyData != null)
 //		{
@@ -133,9 +133,9 @@ public class OffLimbPlaneCalculator
         Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
 
-//    	imagePolyData = getOffLimbImageData(img, offLimbFootprintDepth);
-//    	if (imagePolyData != null)
-//    	{
+    	imagePolyData = getOffLimbImageData(img, offLimbFootprintDepth);
+    	if (imagePolyData != null)
+    	{
 //    		double sfacx=offLimbFootprintDepth*Math.tan(Math.toRadians(fovx/2)); // scaling factor that "fits" the polydata into the frustum at the given footprintDepth (in the s,t plane perpendicular to the boresight)
 //            double sfacy=offLimbFootprintDepth*Math.tan(Math.toRadians(fovy/2));
 //            // make sure all points are reset with the correct transformation (though on-body cells have been culled, topology of the remaining cells doesn't need to be touched; just the respective points need to be unprojected into 3d space)
@@ -147,9 +147,9 @@ public class OffLimbPlaneCalculator
 //                pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));               // transform from (s,t) coordinates into the implied 3D direction vector, with origin at the camera's position in space; depth along the boresight was enforced on the previous line
 //                imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
 //            }
-//    		makeActors(img);
-//    		return;
-//    	}
+    		makeActors(img);
+    		return;
+    	}
 
     	//pull from cache didn't work; build it in memory instead
 
@@ -217,7 +217,11 @@ public class OffLimbPlaneCalculator
             pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));               // transform from (s,t) coordinates into the implied 3D direction vector, with origin at the camera's position in space; depth along the boresight was enforced on the previous line
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
         }
-
+        String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent()
+				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
+				+ FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_"
+				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
+        saveToDisk(offLimbImageDataFileName);
         makeActors(img);
 
     }
