@@ -3,6 +3,7 @@ package edu.jhuapl.sbmt.model.image;
 import java.awt.Color;
 import java.io.File;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -16,9 +17,11 @@ import vtk.vtkImageData;
 import vtk.vtkImageToPolyDataFilter;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
 import vtk.vtkTexture;
 
+import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 
 public class OffLimbPlaneCalculator
@@ -31,6 +34,40 @@ public class OffLimbPlaneCalculator
     private vtkPolyData offLimbBoundary=null;
     private vtkActor offLimbBoundaryActor;
     private vtkPolyData imagePolyData;
+
+	private vtkPolyData getOffLimbImageData(PerspectiveImage img, double offLimbFootprintDepth)
+	{
+		System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: image/double");
+//		// see if one exists
+//		if (imagePolyData != null)
+//		{
+//			System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: polydata not null");
+//			return assembleFinalPolydataAtDepth(img, offLimbFootprintDepth);
+//		}
+
+		// try to fetch the offlimb image data from the file cache first
+		String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent()
+				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
+				+ FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_"
+				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
+		if (FileCache.isFileGettable(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2)))
+		// if (FileCache.isFileGettable(offLimbImageDataFileName))
+		{
+			FileCache.getFileFromServer(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2));
+			vtkPolyDataReader reader = new vtkPolyDataReader();
+			reader.SetFileName(offLimbImageDataFileName.substring(0, offLimbImageDataFileName.length() - 3));
+			reader.Update();
+			vtkPolyData offLimbImageData = reader.GetOutput();
+			return offLimbImageData;
+//			return assembleFinalPolydataAtDepth(img, offLimbFootprintDepth, offLimbImageData);
+		}
+		return null;
+//		// if it isn't in the cache, generate it, and store it
+//		generateOffLimbPlane(img);
+//		saveToDisk(offLimbImageDataFileName);
+//		System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: assembling at depth time: " + sw.elapsedMillis());
+//		return assembleFinalPolydataAtDepth(img, offLimbFootprintDepth);
+	}
 
     /**
      * Core off-limb geometry creation happens here.
@@ -55,7 +92,7 @@ public class OffLimbPlaneCalculator
      */
     public void loadOffLimbPlane(PerspectiveImage img,
             double offLimbFootprintDepth)  {
-        // Step (1): Discretize the view frustum into macro-pixels, from which geometry will later be derived
+    	 // Step (1): Discretize the view frustum into macro-pixels, from which geometry will later be derived
 
         // (1a) get camera parameters
         double[] spacecraftPosition=new double[3];
@@ -72,7 +109,6 @@ public class OffLimbPlaneCalculator
 //        int szMax=Math.max(resolution[0], resolution[1]);
         int szW=resolution[0];//szMax;//(int)(aspect*szMax);
         int szH=resolution[1];//szMax;
-
 
         // Step (2): Shoot rays from the camera position toward each macro-pixel & record which ones don't hit the body (these will comprise the off-limb geometry)
 
@@ -96,6 +132,28 @@ public class OffLimbPlaneCalculator
         Vector3D upVec=new Vector3D(upVector);
         Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
+
+//    	imagePolyData = getOffLimbImageData(img, offLimbFootprintDepth);
+//    	if (imagePolyData != null)
+//    	{
+//    		double sfacx=offLimbFootprintDepth*Math.tan(Math.toRadians(fovx/2)); // scaling factor that "fits" the polydata into the frustum at the given footprintDepth (in the s,t plane perpendicular to the boresight)
+//            double sfacy=offLimbFootprintDepth*Math.tan(Math.toRadians(fovy/2));
+//            // make sure all points are reset with the correct transformation (though on-body cells have been culled, topology of the remaining cells doesn't need to be touched; just the respective points need to be unprojected into 3d space)
+//            for (int i=0; i<imagePolyData.GetNumberOfPoints(); i++)
+//            {
+//                Vector3D pt=new Vector3D(imagePolyData.GetPoint(i));            // here's a pixel coordinate
+//                pt=pt.subtract(new Vector3D((double)szW/2,(double)szH/2,0));    // move the origin to the center of the image, so values range from [-szW/2 szW/2] and [szH/2 szH/2]
+//                pt=new Vector3D(pt.getX()/((double)szW/2)*sfacx,pt.getY()/((double)szH/2)*sfacy,-offLimbFootprintDepth); // a number of things happen here; first a conversion to s,t-coordinates on [-1 1] in each direction, then scaling of the s,t-coordinates to fit the physical dimensions of the frustum at the chosen depth, and finally translation along the boresight axis to the chosen depth
+//                pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));               // transform from (s,t) coordinates into the implied 3D direction vector, with origin at the camera's position in space; depth along the boresight was enforced on the previous line
+//                imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
+//            }
+//    		makeActors(img);
+//    		return;
+//    	}
+
+    	//pull from cache didn't work; build it in memory instead
+
+
 
         // (2c) use a vtkImageCanvasSource2D to represent the macro-pixels, with an unsigned char color type "true = (0, 0, 0) = ray hits surface" and "false = (255, 255, 255) = ray misses surface"... img might seem backwards but 0-values can be thought of as forming the "shadow" of the body against the sky as viewed by the camera
         // NOTE: img could be done more straightforwardly (and possibly more efficiently) just by using a java boolean[][] array... I think the present implementation is a hangover from prior experimentation with a vtkPolyDataSilhouette filter
@@ -160,7 +218,13 @@ public class OffLimbPlaneCalculator
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
         }
 
-        // keep a reference to a copy of the polydata
+        makeActors(img);
+
+    }
+
+    private void makeActors(PerspectiveImage img)
+    {
+    	// keep a reference to a copy of the polydata
         offLimbPlane=new vtkPolyData();
         offLimbPlane.DeepCopy(imagePolyData);
         PolyDataUtil.generateTextureCoordinates(img.getFrustum(), img.getImageWidth(), img.getImageHeight(), offLimbPlane); // generate (u,v) coords; individual components lie on the interval [0 1]; https://en.wikipedia.org/wiki/UV_mapping
@@ -213,8 +277,9 @@ public class OffLimbPlaneCalculator
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
             offLimbBoundaryActor.Modified();
         }
-
     }
+
+
     public vtkPolyData getOffLimbPlane()
     {
         return offLimbPlane;

@@ -266,7 +266,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     double offLimbFootprintDepth;
     private boolean offLimbVisibility;
     private boolean offLimbBoundaryVisibility;
-    OffLimbPlaneCalculator calculator;
+    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
     Stopwatch sw;
 
 
@@ -5014,10 +5014,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     protected void loadOffLimbPlane()
     {
-
-        calculator = new OffLimbPlaneCalculator();
-//        calculator.setOffLimbTexture(offLimbTexture);
-
         double[] spacecraftPosition=new double[3];
         double[] focalPoint=new double[3];
         double[] upVector=new double[3];
@@ -5026,7 +5022,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
         offLimbActor=calculator.getOffLimbActor();
         offLimbBoundaryActor=calculator.getOffLimbBoundaryActor();
-//        calculator.setOffLimbTexture(offLimbTexture);
         offLimbTexture = calculator.getOffLimbTexture();
         // set initial visibilities
         if (offLimbActor != null)
@@ -5108,13 +5103,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
     	if (offLimbTexture==null )
     	{ // if offlimbtexture is null, initialize it.
-    		System.out.println("PerspectiveImage: getOffLimbTexture: initializing");
     		vtkImageData image=new vtkImageData();
     		image.DeepCopy(getDisplayedImage());
     		offLimbTexture=new vtkTexture();
     		offLimbTexture.SetInputData(image);
     		offLimbTexture.Modified();
-    		System.out.println("PerspectiveImage: getOffLimbTexture: returning");
         return offLimbTexture;
     }
     	return offLimbTexture;
@@ -5137,7 +5130,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 			offLimbDisplayedRange = getDisplayedRange();
 			setOfflimbImageRange(offLimbDisplayedRange);
 	        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-}	}
+		}
+	}
 
 	public boolean isContrastSynced() {
 		return contrastSynced;
