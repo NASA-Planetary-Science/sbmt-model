@@ -26,7 +26,7 @@ public class Hayabusa2SpectrumInstrumentMetadataIO extends SpectraHierarchicalSe
     private File path;
     private String pathString;
 
-    public Hayabusa2SpectrumInstrumentMetadataIO(String instrumentName) throws FileNotFoundException
+    public Hayabusa2SpectrumInstrumentMetadataIO(String instrumentName)
     {
         super(instrumentName);
         GsonBuilder builder = new GsonBuilder();
@@ -38,19 +38,9 @@ public class Hayabusa2SpectrumInstrumentMetadataIO extends SpectraHierarchicalSe
     @Override
     public SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> clone()
     {
-    	// TODO Auto-generated method stub
-    	try
-		{
-    		Hayabusa2SpectrumInstrumentMetadataIO specIO = new Hayabusa2SpectrumInstrumentMetadataIO(rootName);
-    		specIO.setPathString(pathString);
-    		return specIO;
-		}
-    	catch (FileNotFoundException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return null;
+		Hayabusa2SpectrumInstrumentMetadataIO specIO = new Hayabusa2SpectrumInstrumentMetadataIO(rootName);
+		specIO.setPathString(pathString);
+		return specIO;
     }
 
     @Override

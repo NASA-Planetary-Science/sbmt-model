@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.image;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -2439,7 +2440,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             frustumActor.VisibilityOff();
         }
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
     public boolean isFrustumShowing()
@@ -2531,7 +2532,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
 
@@ -2546,7 +2547,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 			image.Delete();
 			offLimbTexture.Modified();
 
-	        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+	        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
 		}
 
 
@@ -3026,6 +3027,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double nln = 32.0;
     private double kmatrix00 = 1.0;
     private double kmatrix11 = 1.0;
+	private Color offLimbBoundaryColor = Color.RED; // default
+	private Color boundaryColor;
 
     private void parseLabelKeyValuePair(
             String key,
@@ -3947,7 +3950,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             this.meanHorizontalPixelScale = 0.0;
             this.meanVerticalPixelScale = 0.0;
 
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
         }
     }
 
@@ -4261,7 +4264,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.imageOpacity = imageOpacity;
         vtkProperty smallBodyProperty = footprintActor.GetProperty();
         smallBodyProperty.SetOpacity(imageOpacity);
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
     public double getMaxFrustumDepth(int slice)
@@ -4335,7 +4338,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
     	// with significant property changes, the offlimb plane needs to be recalculated
     	calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
     public void setCurrentMask(int[] masking)
@@ -4352,7 +4355,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         maskSource.FillBox(leftMask, imageWidth-1-rightMask, bottomMask, imageHeight-1-topMask);
         maskSource.Update();
 
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
         setDisplayedImageRange(null);
 
         for (int i=0; i<masking.length; ++i)
@@ -5066,6 +5069,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public boolean isContrastSynced() {
 		return contrastSynced;
+	}
+
+
+	public void setOfflimbBoundaryColor(Color color) {
+		this.offLimbBoundaryColor = color;
+		offLimbBoundaryActor.GetProperty().SetColor(color.getRed()/255., color.getGreen()/255., color.getBlue()/255.);
+		offLimbBoundaryActor.Modified();
+        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+	}
+
+	public Color getOfflimbBoundaryColor() {
+		return offLimbBoundaryColor;
 	}
 
 

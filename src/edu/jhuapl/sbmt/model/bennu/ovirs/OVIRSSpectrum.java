@@ -65,10 +65,12 @@ public class OVIRSSpectrum extends BasicSpectrum
         this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
         instrumentMetadata = specIO.getInstrumentMetadata("OVIRS");
 
-        if (serverpath.contains("ote_calrd"))
+        if (serverpath.contains("l3esci_reff"))
     		spec = instrumentMetadata.getSpecs().get(0);
-    	else
+    	else if (serverpath.contains("l3csci"))
     		spec = instrumentMetadata.getSpecs().get(1);
+    	else if (serverpath.contains("l3esci_radf"))
+    		spec = instrumentMetadata.getSpecs().get(2);
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
     }
