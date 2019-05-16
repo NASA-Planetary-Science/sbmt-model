@@ -2315,7 +2315,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return rawImage;
     }
 
-    protected vtkImageData getDisplayedImage()
+    public vtkImageData getDisplayedImage()
     {
         return displayedImage;
     }
@@ -3408,7 +3408,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             return false;
     }
 
-    protected vtkPolyData getFootprint(int defaultSlice)
+    public vtkPolyData getFootprint(int defaultSlice)
     {
         if (footprint[0].GetNumberOfPoints() > 0) return footprint[0];
         //first check the cache
@@ -3428,7 +3428,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
 //      String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_frustumIntersection.vtk";
         String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + key.getSource().name() + File.separator + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk.gz";
-//        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
+        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
         if (FileCache.isFileGettable(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2)))
 //      if (FileCache.isFileGettable(intersectionFileName))
         {
@@ -3557,6 +3557,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         writer.SetInputData(footprint[0]);
 //        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
         String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + key.getSource().name() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
+        System.out.println("PerspectiveImage: loadFootprint: saving to " + intersectionFileName);
         writer.SetFileName(new File(intersectionFileName).toString());
         writer.SetFileTypeToBinary();
         writer.Write();
