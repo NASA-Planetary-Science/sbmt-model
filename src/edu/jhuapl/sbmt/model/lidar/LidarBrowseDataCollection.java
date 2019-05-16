@@ -156,7 +156,7 @@ public class LidarBrowseDataCollection extends AbstractModel implements Property
         {
             is = getClass().getResourceAsStream(polyhedralModelConfig.lidarBrowseFileListResourcePath);
         }
-        else if (FileCache.isFileGettable(polyhedralModelConfig.lidarBrowseFileListResourcePath))
+        else if (FileCache.instance().isAccessible(polyhedralModelConfig.lidarBrowseFileListResourcePath))
         {
             try
             {

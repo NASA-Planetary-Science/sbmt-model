@@ -5,7 +5,6 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.saavtk.util.FileCache.FileInfo;
 import edu.jhuapl.saavtk2.event.Event;
 import edu.jhuapl.saavtk2.event.EventListener;
 import edu.jhuapl.saavtk2.table.MapAndShowTable;
@@ -86,11 +85,15 @@ public class DEMTable extends MapAndShowTable {
 	public void signalDemMapped(int row)
 	{
 		DEMKey key = availableKeys.get(row);
-		FileInfo fileInfo = FileCache.getFileInfoFromServer(key.fileName);
-		if (fileInfo.isNeedToDownload())
-		{
-			FileCache.getFileFromServer(key.fileName);
-		}
+		try
+        {
+            FileCache.refreshDownload(key.fileName);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return;
+        }
 
 	    fire(new CreateDEMEvent(this, availableKeys.get(row)));
 	}

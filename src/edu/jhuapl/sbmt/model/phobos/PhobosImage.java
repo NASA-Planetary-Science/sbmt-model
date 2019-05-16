@@ -119,7 +119,7 @@ public class PhobosImage extends PerspectiveImage
         else //if (keyFile.getName().startsWith("f"))
             labelFilename = key.getName() + ".lbl";
 
-        return FileCache.isFileGettable(labelFilename) ? FileCache.getFileFromServer(labelFilename).getAbsolutePath() : null;
+        return FileCache.instance().isAccessible(labelFilename) ? FileCache.getFileFromServer(labelFilename).getAbsolutePath() : null;
     }
 
     @Override
