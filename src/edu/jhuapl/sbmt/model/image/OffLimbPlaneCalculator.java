@@ -21,8 +21,20 @@ import vtk.vtkPolyDataReader;
 import vtk.vtkPolyDataWriter;
 import vtk.vtkTexture;
 
+import edu.jhuapl.saavtk.model.ShapeModelBody;
+import edu.jhuapl.saavtk.model.ShapeModelType;
+import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
+import edu.jhuapl.sbmt.client.SbmtModelFactory;
+import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.model.bennu.OcamsFlightImage;
+import edu.jhuapl.sbmt.tools.Authenticator;
 
 public class OffLimbPlaneCalculator
 {
@@ -342,4 +354,39 @@ public class OffLimbPlaneCalculator
         writer.SetFileTypeToBinary();
         writer.Write();
     }
+
+    public static void main(String[] args) throws Exception
+	{
+    	boolean reprocess = true;
+    	ShapeModelBody body = ShapeModelBody.RQ36;
+        ShapeModelType type = ShapeModelType.ALTWG_SPC_v20190121;
+    	boolean aplVersion = true;
+        final SafeURLPaths safeUrlPaths = SafeURLPaths.instance();
+//        String rootURL = safeUrlPaths.getUrl("/disks/d0180/htdocs-sbmt/internal/multi-mission/test");
+        String rootURL = safeUrlPaths.getUrl("http://sbmt.jhuapl.edu/sbmt/prod/");
+    	Configuration.setAPLVersion(aplVersion);
+        Configuration.setRootURL(rootURL);
+
+        SbmtMultiMissionTool.configureMission();
+
+         // authentication
+        Authenticator.authenticate();
+        NativeLibraryLoader.loadVtkLibraries();
+         // initialize view config
+        SmallBodyViewConfig.initialize();
+    	SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(body, type);
+    	SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config);
+    	ImageKeyInterface key = new ImageKey("http://sbmt.jhuapl.edu/sbmt/prod/data/bennu/altwg-spc-v20190121/polycam/images/ocams20181108t042907s071_pol_iofl2pan_53003.fits", ImageSource.GASKELL);
+    	OcamsFlightImage image = OcamsFlightImage.of(key, smallBodyModel, false);
+    	String outputDir = ".";
+    	String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + 1 + "_offLimbImageData.vtk";
+    	File file = new File(filename);
+    	if (file.exists() && (reprocess == false)) return;
+
+    	OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
+    	calculator.loadOffLimbPlane(image, new Vector3D(image.getSpacecraftPosition()).getNorm());
+//    	calculator.generateOffLimbPlane(image);
+    	if (!(new File(filename).exists())) new File(filename).getParentFile().mkdirs();
+    	calculator.saveToDisk(filename);
+	}
 }
