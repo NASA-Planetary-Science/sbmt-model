@@ -10,6 +10,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import vtk.vtkActor;
 import vtk.vtkCell;
 import vtk.vtkCellArray;
+import vtk.vtkCleanPolyData;
 import vtk.vtkFeatureEdges;
 import vtk.vtkIdList;
 import vtk.vtkImageCanvasSource2D;
@@ -148,23 +149,11 @@ public class OffLimbPlaneCalculator
     	imagePolyData = getOffLimbImageData(img, offLimbFootprintDepth);
     	if (imagePolyData != null)
     	{
-//    		double sfacx=offLimbFootprintDepth*Math.tan(Math.toRadians(fovx/2)); // scaling factor that "fits" the polydata into the frustum at the given footprintDepth (in the s,t plane perpendicular to the boresight)
-//            double sfacy=offLimbFootprintDepth*Math.tan(Math.toRadians(fovy/2));
-//            // make sure all points are reset with the correct transformation (though on-body cells have been culled, topology of the remaining cells doesn't need to be touched; just the respective points need to be unprojected into 3d space)
-//            for (int i=0; i<imagePolyData.GetNumberOfPoints(); i++)
-//            {
-//                Vector3D pt=new Vector3D(imagePolyData.GetPoint(i));            // here's a pixel coordinate
-//                pt=pt.subtract(new Vector3D((double)szW/2,(double)szH/2,0));    // move the origin to the center of the image, so values range from [-szW/2 szW/2] and [szH/2 szH/2]
-//                pt=new Vector3D(pt.getX()/((double)szW/2)*sfacx,pt.getY()/((double)szH/2)*sfacy,-offLimbFootprintDepth); // a number of things happen here; first a conversion to s,t-coordinates on [-1 1] in each direction, then scaling of the s,t-coordinates to fit the physical dimensions of the frustum at the chosen depth, and finally translation along the boresight axis to the chosen depth
-//                pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));               // transform from (s,t) coordinates into the implied 3D direction vector, with origin at the camera's position in space; depth along the boresight was enforced on the previous line
-//                imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
-//            }
     		makeActors(img);
     		return;
     	}
 
     	//pull from cache didn't work; build it in memory instead
-
 
 
         // (2c) use a vtkImageCanvasSource2D to represent the macro-pixels, with an unsigned char color type "true = (0, 0, 0) = ray hits surface" and "false = (255, 255, 255) = ray misses surface"... img might seem backwards but 0-values can be thought of as forming the "shadow" of the body against the sky as viewed by the camera
@@ -229,6 +218,9 @@ public class OffLimbPlaneCalculator
             pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));               // transform from (s,t) coordinates into the implied 3D direction vector, with origin at the camera's position in space; depth along the boresight was enforced on the previous line
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
         }
+
+
+
         String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent()
 				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
 				+ FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_"
@@ -240,6 +232,12 @@ public class OffLimbPlaneCalculator
 
     private void makeActors(PerspectiveImage img)
     {
+    	//clean up the polydata to merge overlapping sub pixels
+    	vtkCleanPolyData cleanFilter = new vtkCleanPolyData();
+        cleanFilter.SetInputData(imagePolyData);
+        cleanFilter.Update();
+        imagePolyData = cleanFilter.GetOutput();
+
     	// keep a reference to a copy of the polydata
         offLimbPlane=new vtkPolyData();
         offLimbPlane.DeepCopy(imagePolyData);
@@ -273,6 +271,7 @@ public class OffLimbPlaneCalculator
             edgeFilter.SetInputData(offLimbPlane);
             edgeFilter.BoundaryEdgesOn();
             edgeFilter.ManifoldEdgesOff();
+            edgeFilter.NonManifoldEdgesOff();
             edgeFilter.FeatureEdgesOff();
             edgeFilter.Update();
             offLimbBoundary=new vtkPolyData();
