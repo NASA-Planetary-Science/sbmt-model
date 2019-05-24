@@ -2,8 +2,6 @@ package edu.jhuapl.sbmt.model.lidar;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -22,24 +20,33 @@ import edu.jhuapl.saavtk.util.ColorUtil;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 
+import glum.item.ItemEventListener;
+import glum.item.ItemEventType;
+
 /**
- * Class which contains the logic to render a collection of lidar Tracks using
- * the VTK framework.
+ * Package private class which contains the logic to render a collection of
+ * lidar Tracks using the VTK framework.
  * <P>
  * This class supports the following configurable state:
  * <UL>
  * <LI>List of tracks
  * <LI>Point size
  * </UL>
+ *
+ * @author lopeznr1
  */
-public class VtkTrackPainter implements VtkPainter
+class VtkTrackPainter implements ItemEventListener, VtkPainter
 {
 	// Reference vars
-	private LidarSearchDataCollection refModel;
+	private LidarTrackManager refManager;
 
 	// State vars
-	private ImmutableList<Track> trackL;
+	private ImmutableList<LidarTrack> trackL;
 	private boolean isStale;
+
+	// Lookup vars
+	private List<LidarPoint> cellIdToPointLUL;
+	private List<LidarTrack> cellIdToTrackLUL;
 
 	// VTK vars
 	private vtkActor actor;
@@ -48,19 +55,21 @@ public class VtkTrackPainter implements VtkPainter
 
 	// TODO: Unknown vars
 	private float lightnessSpanBase = 0.5f;
-	private List<Integer> displayedPointToOriginalPointMap = new ArrayList<Integer>();
 
 	/**
 	 * Standard Constructor
 	 *
-	 * @param aModel
+	 * @param aManager
 	 */
-	public VtkTrackPainter(LidarSearchDataCollection aModel)
+	public VtkTrackPainter(LidarTrackManager aManager)
 	{
-		refModel = aModel;
+		refManager = aManager;
 
 		trackL = ImmutableList.of();
 		isStale = false;
+
+		cellIdToPointLUL = new ArrayList<>();
+		cellIdToTrackLUL = new ArrayList<>();
 
 		polydata = new vtkPolyData();
 		VtkUtil.clearPolyData(polydata);
@@ -73,6 +82,9 @@ public class VtkTrackPainter implements VtkPainter
 		actor.SetMapper(pointsMapper);
 		((SaavtkLODActor) actor).setQuadricDecimatedLODMapper(polydata);
 		actor.GetProperty().SetPointSize(2.0);
+
+		// Register for events of interest
+		refManager.addListener(this);
 	}
 
 	/**
@@ -82,8 +94,7 @@ public class VtkTrackPainter implements VtkPainter
 	 */
 	public LidarPoint getLidarPointFromCellId(int aCellId)
 	{
-		int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
-		return refModel.getPoint(tmpIdx);
+		return cellIdToPointLUL.get(aCellId);
 	}
 
 	/**
@@ -91,16 +102,9 @@ public class VtkTrackPainter implements VtkPainter
 	 *
 	 * @param aCellId
 	 */
-	public Track getTrackFromCellId(int aCellId)
+	public LidarTrack getTrackFromCellId(int aCellId)
 	{
-		int tmpIdx = displayedPointToOriginalPointMap.get(aCellId);
-		for (Track aTrack : trackL)
-		{
-			if (aTrack.containsId(tmpIdx) == true)
-				return aTrack;
-		}
-
-		return null;
+		return cellIdToTrackLUL.get(aCellId);
 	}
 
 	/**
@@ -111,14 +115,18 @@ public class VtkTrackPainter implements VtkPainter
 		actor.GetProperty().SetPointSize(aSize);
 	}
 
-	/**
-	 * Sets in the Tracks that VtkTrackGroup will render.
-	 */
-	public void setTracks(Collection<Track> aTrackL)
+	@Override
+	public void handleItemEvent(Object aSource, ItemEventType aEventType)
 	{
-		trackL = ImmutableList.copyOf(aTrackL);
-
-		markStale();
+		if (aEventType == ItemEventType.ItemsChanged)
+		{
+			trackL = refManager.getAllItems();
+			markStale();
+		}
+		if (aEventType == ItemEventType.ItemsMutated)
+		{
+			markStale();
+		}
 	}
 
 	@Override
@@ -149,54 +157,53 @@ public class VtkTrackPainter implements VtkPainter
 		vtkIdList idList = new vtkIdList();
 		idList.SetNumberOfIds(1);
 
-		displayedPointToOriginalPointMap.clear();
+		cellIdToPointLUL.clear();
+		cellIdToTrackLUL.clear();
 
-		for (Track aTrack : trackL)
+		for (LidarTrack aTrack : trackL)
 		{
-			int startId = aTrack.startId;
-			int stopId = aTrack.stopId;
-			if (aTrack.getIsVisible() == true)
+			// Skip to next if the Track is not visible
+			if (refManager.getIsVisible(aTrack) == false)
+				continue;
+
+			// Variables to keep track of intensities
+			double minIntensity = Double.POSITIVE_INFINITY;
+			double maxIntensity = Double.NEGATIVE_INFINITY;
+			List<Double> intensityList = new ArrayList<>();
+
+			// Go through each point in the track
+			Vector3D tmpTrans = refManager.getTranslation(aTrack);
+			for (LidarPoint tmpLP : aTrack.getPointList())
 			{
-				// Variables to keep track of intensities
-				double minIntensity = Double.POSITIVE_INFINITY;
-				double maxIntensity = Double.NEGATIVE_INFINITY;
-				List<Double> intensityList = new LinkedList<Double>();
+				double[] pt = tmpLP.getTargetPosition().toArray();
+				pt = refManager.transformLidarPoint(tmpTrans, pt);
+				int id = points.InsertNextPoint(pt);
+				idList.SetId(0, id);
+				vert.InsertNextCell(idList);
 
-				// Go through each point in the track
-				Vector3D tmpTrans = refModel.getTranslation(aTrack);
-				for (int i = startId; i <= stopId; i++)
-				{
-					LidarPoint tmpLP = refModel.getPoint(i);
+				// pt=originalPoints.get(i).getSourcePosition().toArray();
+				// pt=transformLidarPoint(pt);
+				// scPoints.InsertNextPoint(pt);
+				// scVert.InsertNextCell(idList);
 
-					double[] pt = tmpLP.getTargetPosition().toArray();
-					pt = refModel.transformLidarPoint(tmpTrans, pt);
-					int id = points.InsertNextPoint(pt);
-					idList.SetId(0, id);
-					vert.InsertNextCell(idList);
+				double intensityReceived = tmpLP.getIntensityReceived();
+				minIntensity = (intensityReceived < minIntensity) ? intensityReceived : minIntensity;
+				maxIntensity = (intensityReceived > maxIntensity) ? intensityReceived : maxIntensity;
+				intensityList.add(intensityReceived);
 
-					// pt=originalPoints.get(i).getSourcePosition().toArray();
-					// pt=transformLidarPoint(pt);
-					// scPoints.InsertNextPoint(pt);
-					// scVert.InsertNextCell(idList);
+				cellIdToPointLUL.add(tmpLP);
+				cellIdToTrackLUL.add(aTrack);
+			}
 
-					double intensityReceived = tmpLP.getIntensityReceived();
-					minIntensity = (intensityReceived < minIntensity) ? intensityReceived : minIntensity;
-					maxIntensity = (intensityReceived > maxIntensity) ? intensityReceived : maxIntensity;
-					intensityList.add(intensityReceived);
-
-					displayedPointToOriginalPointMap.add(i);
-				}
-
-				// Assign colors to each point in that track
-				Color trackColor = aTrack.color;
-				float[] trackHSL = ColorUtil.getHSLColorComponents(trackColor);
-				Color plotColor;
-				for (double intensity : intensityList)
-				{
-					plotColor = ColorUtil.scaleLightness(trackHSL, intensity, minIntensity, maxIntensity, lightnessSpanBase);
-					colors.InsertNextTuple4(plotColor.getRed(), plotColor.getGreen(), plotColor.getBlue(),
-							plotColor.getAlpha());
-				}
+			// Assign colors to each point in that track
+			Color trackColor = refManager.getColor(aTrack);
+			float[] trackHSL = ColorUtil.getHSLColorComponents(trackColor);
+			Color plotColor;
+			for (double intensity : intensityList)
+			{
+				plotColor = ColorUtil.scaleLightness(trackHSL, intensity, minIntensity, maxIntensity, lightnessSpanBase);
+				colors.InsertNextTuple4(plotColor.getRed(), plotColor.getGreen(), plotColor.getBlue(),
+						plotColor.getAlpha());
 			}
 		}
 		polydata.GetCellData().GetScalars().Modified();
