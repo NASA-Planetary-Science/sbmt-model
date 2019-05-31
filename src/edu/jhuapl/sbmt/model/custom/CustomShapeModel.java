@@ -22,7 +22,6 @@ public class CustomShapeModel extends SmallBodyModel
     {
         super(config,
                 new String[] { config.modelLabel },
-                new String[] { getModelFilename(config) },
                 null,
                 null,
                 null,

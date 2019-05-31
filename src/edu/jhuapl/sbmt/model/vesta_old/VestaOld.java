@@ -9,10 +9,6 @@ public class VestaOld extends SmallBodyModel
         "VESTA-old"
     };
 
-    static private final String[] modelFiles = {
-        "/VESTA_OLD/VESTA.vtk.gz"
-    };
-
     static private final String[] coloringFiles = {
         "/VESTA_OLD/VESTA_Slope",
         "/VESTA_OLD/VESTA_Elevation",
@@ -40,7 +36,6 @@ public class VestaOld extends SmallBodyModel
     {
         super(config,
                 modelNames,
-                modelFiles,
                 coloringFiles,
                 coloringNames,
                 coloringUnits,

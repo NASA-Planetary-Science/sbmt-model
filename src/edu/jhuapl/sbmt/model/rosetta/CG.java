@@ -14,14 +14,6 @@ public class CG extends SmallBodyModel
         "67P 16745283"
     };
 
-    static private final String[] modelFiles = {
-        "/DLR/67P/cg-dlr_spg-shap4s-v0.9_64m.ply.gz",
-        "/DLR/67P/cg-dlr_spg-shap4s-v0.9_32m.ply.gz",
-        "/DLR/67P/cg-dlr_spg-shap4s-v0.9_16m.ply.gz",
-        "/DLR/67P/cg-dlr_spg-shap4s-v0.9_8m.ply.gz",
-        "/DLR/67P/cg-dlr_spg-shap4s-v0.9_4m.ply.gz",
-        "/DLR/67P/cg-dlr_spg-shap4s-v0.9.ply.gz"
-    };
 /*
     static private final String[] coloringFiles = {
             "/DLR/67P/Slope",
@@ -42,7 +34,6 @@ public class CG extends SmallBodyModel
     {
         super(config,
                 modelNames,
-                modelFiles,
                 null,
                 null,
                 null,

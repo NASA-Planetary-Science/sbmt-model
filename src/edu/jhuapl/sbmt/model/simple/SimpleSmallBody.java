@@ -33,13 +33,11 @@ public class SimpleSmallBody extends SmallBodyModel
 
     public SimpleSmallBody(
             SmallBodyViewConfig config,
-            String[] modelNames,
-            String[] paths)
+            String[] modelNames)
     {
         super(config,
                 modelNames,
-                paths,
-                config.hasColoringData ? getColoringFiles(paths[0]) : null,
+                config.hasColoringData ? getColoringFiles(config.getShapeModelFileNames()[0]) : null,
                 config.hasColoringData ? coloringNames : null,
                 config.hasColoringData ? coloringUnits : null,
                 null,
@@ -52,7 +50,6 @@ public class SimpleSmallBody extends SmallBodyModel
     {
         super(config,
                 new String[] {config.body.toString()},
-                new String[] {config.rootDirOnServer},
                 config.hasColoringData ? getColoringFiles(config.rootDirOnServer) : null,
                 config.hasColoringData ? coloringNames : null,
                 config.hasColoringData ? coloringUnits : null,

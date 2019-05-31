@@ -20,21 +20,6 @@ public class Lutetia extends SmallBodyModel
         "LUTETIA 3145728"
     };
 
-    static private final String[] modelFiles = {
-        "/JORDA/LUTETIA/shape_res0.vtk.gz",
-        "/JORDA/LUTETIA/shape_res1.vtk.gz",
-        "/JORDA/LUTETIA/shape_res2.vtk.gz",
-        "/JORDA/LUTETIA/shape_res3.vtk.gz",
-        "/JORDA/LUTETIA/shape_res4.vtk.gz",
-        "/JORDA/LUTETIA/shape_res5.vtk.gz",
-        "/JORDA/LUTETIA/shape_res6.vtk.gz",
-        "/JORDA/LUTETIA/shape_res7.vtk.gz",
-        "/JORDA/LUTETIA/shape_res8.vtk.gz",
-        "/JORDA/LUTETIA/shape_res9.vtk.gz",
-        "/JORDA/LUTETIA/shape_res10.vtk.gz",
-        "/JORDA/LUTETIA/shape_res11.vtk.gz"
-    };
-
     static private final String[] coloringFiles = {
             "/JORDA/LUTETIA/Slope",
             "/JORDA/LUTETIA/Elevation",
@@ -54,7 +39,6 @@ public class Lutetia extends SmallBodyModel
     {
         super(config,
                 modelNames,
-                modelFiles,
                 coloringFiles,
                 coloringNames,
                 coloringUnits,

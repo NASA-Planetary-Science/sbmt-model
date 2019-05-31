@@ -47,7 +47,6 @@ public class Bennu extends SmallBodyModel
     {
         super(config,
                 modelNames,
-                getModelFiles(config),
                 getColoringFiles(config.rootDirOnServer),
                 coloringNames,
                 coloringUnits,
@@ -56,17 +55,6 @@ public class Bennu extends SmallBodyModel
                 ColoringValueType.CELLDATA,
                 false);
     }
-
-    private static final String[] getModelFiles(SmallBodyViewConfig config)
-    {
-        String[] paths = {
-                config.rootDirOnServer + "/ver64q.vtk.gz",
-                config.rootDirOnServer + "/ver128q.vtk.gz",
-                config.rootDirOnServer + "/ver256q.vtk.gz",
-                config.rootDirOnServer + "/ver512q.vtk.gz"
-        };
-        return paths;
-    };
 
     private static final String[] getColoringFiles(String path)
     {
