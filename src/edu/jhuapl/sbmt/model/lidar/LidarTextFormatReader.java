@@ -1,13 +1,6 @@
 package edu.jhuapl.sbmt.model.lidar;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Map;
 
 import edu.jhuapl.sbmt.lidar.BasicLidarPoint;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
@@ -51,9 +44,14 @@ enum LIDARTextInputType
         return name;
     }
 
-    public void parseLine(String line, List<LidarPoint> originalPoints, Map<LidarPoint,Integer> originalPointsSourceFiles, BufferedReader in, int fileId) throws IOException
+    public LidarPoint parseLine(String aLine) throws IOException
     {
-        String[] vals = line.trim().split("\\s+");
+   	 // Bail if the line is empty or starts with a comment: '#'
+   	 aLine = aLine.trim();
+   	 if (aLine.isEmpty() == true || aLine.startsWith("#") == true)
+   		 return null;
+
+        String[] vals = aLine.split("\\s+");
 
         double time = 0;
         double[] target = {0.0, 0.0, 0.0};
@@ -74,13 +72,13 @@ enum LIDARTextInputType
             albedo = Double.parseDouble(vals[3]);
             break;
         case TIME_WITH_LIDAR:
-            time = getTime(vals, in);
+            time = getTime(vals);
             target[0] = Double.parseDouble(vals[1]);
             target[1] = Double.parseDouble(vals[2]);
             target[2] = Double.parseDouble(vals[3]);
             break;
         case TIME_LIDAR_ALBEDO:
-            time = getTime(vals, in);
+            time = getTime(vals);
             target[0] = Double.parseDouble(vals[1]);
             target[1] = Double.parseDouble(vals[2]);
             target[2] = Double.parseDouble(vals[3]);
@@ -95,7 +93,7 @@ enum LIDARTextInputType
             scpos[2] = Double.parseDouble(vals[5]);
             break;
         case TIME_LIDAR_SC:
-            time = getTime(vals, in);
+            time = getTime(vals);
             target[0] = Double.parseDouble(vals[1]);
             target[1] = Double.parseDouble(vals[2]);
             target[2] = Double.parseDouble(vals[3]);
@@ -104,7 +102,7 @@ enum LIDARTextInputType
             scpos[2] = Double.parseDouble(vals[6]);
             break;
         case TIME_LIDAR_SC_ALBEDO:
-            time = getTime(vals, in);
+            time = getTime(vals);
             target[0] = Double.parseDouble(vals[1]);
             target[1] = Double.parseDouble(vals[2]);
             target[2] = Double.parseDouble(vals[3]);
@@ -114,8 +112,8 @@ enum LIDARTextInputType
             albedo = Double.parseDouble(vals[7]);
             break;
         case HAYABUSA2_LEVEL_2:
-            vals = line.trim().split(",");
-            time = getTime(vals, in);
+            vals = aLine.trim().split(",");
+            time = getTime(vals);
             target[0] = Double.parseDouble(vals[5])/1000.0;
             target[1] = Double.parseDouble(vals[6])/1000.0;
             target[2] = Double.parseDouble(vals[7])/1000.0;
@@ -127,13 +125,14 @@ enum LIDARTextInputType
         default:
             break;
         }
+
         double range = 0; // TODO
-        LidarPoint pt=new BasicLidarPoint(target, scpos, time, range, albedo);
-        originalPoints.add(pt);
-        originalPointsSourceFiles.put(pt, fileId);
+
+        LidarPoint retLP = new BasicLidarPoint(target, scpos, time, range, albedo);
+        return retLP;
     }
 
-    private double getTime(String[] vals, BufferedReader in) throws IOException
+    private double getTime(String[] vals) throws IOException
     {
         double time = 0;
         try
@@ -145,10 +144,7 @@ enum LIDARTextInputType
         {
             time = TimeUtil.str2et(vals[0]);
             if (time == -Double.MIN_VALUE)
-            {
-                in.close();
                 throw new IOException("Error: Incorrect file format!");
-            }
         }
         return time;
     }
@@ -160,45 +156,6 @@ enum LIDARTextInputType
 
 public class LidarTextFormatReader
 {
-    private File file;
-    private List<LidarPoint> originalPoints;
-    private Map<LidarPoint,Integer> originalPointsSourceFiles;
-    private List<Track> tracks;
-
-    int fileId = -1;
-
-    public LidarTextFormatReader(File file, int fileID, List<LidarPoint> originalPoints, Map<LidarPoint,Integer> originalPointsSourceFiles, List<Track> tracks) throws NumberFormatException, IOException
-    {
-        this.file = file;
-        this.fileId = fileID;
-        this.originalPoints = originalPoints;
-        this.originalPointsSourceFiles = originalPointsSourceFiles;
-        this.tracks = tracks;
-//        process();
-    }
-
-    public void process(LIDARTextInputType type) throws NumberFormatException, IOException
-    {
-        InputStream fs = new FileInputStream(file.getAbsolutePath());
-        InputStreamReader isr = new InputStreamReader(fs);
-        BufferedReader in = new BufferedReader(isr);
-
-        Track track = new Track();
-        track.startId = originalPoints.size();
-
-        String lineRead;
-        while ((lineRead = in.readLine()) != null)
-        {
-            type.parseLine(lineRead, originalPoints, originalPointsSourceFiles, in, fileId);
-        }
-
-        in.close();
-
-        track.stopId = originalPoints.size() - 1;
-        tracks.add(track);
-    }
-
-
 //    private void process() throws NumberFormatException, IOException
 //    {
 //        InputStream fs = new FileInputStream(file.getAbsolutePath());
