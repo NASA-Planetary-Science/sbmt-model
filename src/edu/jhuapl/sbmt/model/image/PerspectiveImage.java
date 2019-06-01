@@ -3428,7 +3428,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
 //      String intersectionFileName = new File(getFitFileFullPath()).getParent() + File.separator  + FilenameUtils.getBaseName(getFitFileFullPath()) + "_frustumIntersection.vtk";
         String intersectionFileName = new File(new File(getFitFileFullPath()).getParent()).getParent() + File.separator + "support" + File.separator  + key.getSource().name() + File.separator + FilenameUtils.getBaseName(getFitFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk.gz";
-        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
+//        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
         if (FileCache.isFileGettable(intersectionFileName.substring(intersectionFileName.indexOf("2") + 2)))
 //      if (FileCache.isFileGettable(intersectionFileName))
         {
