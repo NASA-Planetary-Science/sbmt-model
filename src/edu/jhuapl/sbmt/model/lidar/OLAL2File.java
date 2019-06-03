@@ -8,11 +8,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
-import edu.jhuapl.sbmt.lidar.hyperoctree.ola.OlaFSHyperPoint;
+import edu.jhuapl.sbmt.lidar.hyperoctree.FSHyperPointWithFileTag;
 
 public class OLAL2File
 {
@@ -31,14 +30,14 @@ public class OLAL2File
         this.id=id;
     }
 
-    public List<OlaFSHyperPoint> read()
+    public List<FSHyperPointWithFileTag> read()
     {
         return read(1);
     }
 
-    public List<OlaFSHyperPoint> read(double scale) // the fileNum field of the OLA point is set to -1 here
+    public List<FSHyperPointWithFileTag> read(double scale) // the fileNum field of the OLA point is set to -1 here
     {
-        List<OlaFSHyperPoint> points=Lists.newArrayList();
+        List<FSHyperPointWithFileTag> points= new ArrayList<>();
         DataInputStream in=null;
 
         try
@@ -70,7 +69,7 @@ public class OLAL2File
                 //
                 boolean noise = ((flagStatus == 0 || flagStatus == 1) ? false : true);
                 if (!noise)
-                    points.add(new OlaFSHyperPoint(tgPos[0]*scale, tgPos[1]*scale, tgPos[2]*scale, time, scPos[0]*scale, scPos[1]*scale, scPos[2]*scale, rangeToSC, intensityReceived, id));
+                    points.add(new FSHyperPointWithFileTag(tgPos[0]*scale, tgPos[1]*scale, tgPos[2]*scale, time, scPos[0]*scale, scPos[1]*scale, scPos[2]*scale, rangeToSC, intensityReceived, id));
             }
 
         }
