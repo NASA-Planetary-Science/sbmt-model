@@ -9,7 +9,7 @@ import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
-import edu.jhuapl.sbmt.model.dem.DEM;
+import edu.jhuapl.sbmt.dtm.model.DEM;
 
 public class CustomShapeModel extends SmallBodyModel
 {
