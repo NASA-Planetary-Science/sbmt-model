@@ -1,13 +1,16 @@
 package edu.jhuapl.sbmt.model.image;
 
 import java.awt.Color;
+import java.io.File;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import vtk.vtkActor;
 import vtk.vtkCell;
 import vtk.vtkCellArray;
+import vtk.vtkCleanPolyData;
 import vtk.vtkFeatureEdges;
 import vtk.vtkIdList;
 import vtk.vtkImageCanvasSource2D;
@@ -15,9 +18,24 @@ import vtk.vtkImageData;
 import vtk.vtkImageToPolyDataFilter;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkPolyDataReader;
+import vtk.vtkPolyDataWriter;
 import vtk.vtkTexture;
 
+import edu.jhuapl.saavtk.model.ShapeModelBody;
+import edu.jhuapl.saavtk.model.ShapeModelType;
+import edu.jhuapl.saavtk.util.Configuration;
+import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
+import edu.jhuapl.sbmt.client.SbmtModelFactory;
+import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
+import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.model.bennu.OcamsFlightImage;
+import edu.jhuapl.sbmt.tools.Authenticator;
 
 public class OffLimbPlaneCalculator
 {
@@ -28,7 +46,41 @@ public class OffLimbPlaneCalculator
     private vtkTexture offLimbTexture;
     private vtkPolyData offLimbBoundary=null;
     private vtkActor offLimbBoundaryActor;
+    private vtkPolyData imagePolyData;
 
+	private vtkPolyData getOffLimbImageData(PerspectiveImage img, double offLimbFootprintDepth)
+	{
+//		System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: image/double");
+//		// see if one exists
+//		if (imagePolyData != null)
+//		{
+//			System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: polydata not null");
+//			return assembleFinalPolydataAtDepth(img, offLimbFootprintDepth);
+//		}
+
+		// try to fetch the offlimb image data from the file cache first
+		String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent()
+				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
+				+ FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_"
+				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
+		if (FileCache.isFileGettable(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2)))
+		// if (FileCache.isFileGettable(offLimbImageDataFileName))
+		{
+			FileCache.getFileFromServer(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2));
+			vtkPolyDataReader reader = new vtkPolyDataReader();
+			reader.SetFileName(offLimbImageDataFileName.substring(0, offLimbImageDataFileName.length() - 3));
+			reader.Update();
+			vtkPolyData offLimbImageData = reader.GetOutput();
+			return offLimbImageData;
+//			return assembleFinalPolydataAtDepth(img, offLimbFootprintDepth, offLimbImageData);
+		}
+		return null;
+//		// if it isn't in the cache, generate it, and store it
+//		generateOffLimbPlane(img);
+//		saveToDisk(offLimbImageDataFileName);
+//		System.out.println("OffLimbPlaneCalculator: getOffLimbPlane: assembling at depth time: " + sw.elapsedMillis());
+//		return assembleFinalPolydataAtDepth(img, offLimbFootprintDepth);
+	}
 
     /**
      * Core off-limb geometry creation happens here.
@@ -53,7 +105,7 @@ public class OffLimbPlaneCalculator
      */
     public void loadOffLimbPlane(PerspectiveImage img,
             double offLimbFootprintDepth)  {
-        // Step (1): Discretize the view frustum into macro-pixels, from which geometry will later be derived
+    	 // Step (1): Discretize the view frustum into macro-pixels, from which geometry will later be derived
 
         // (1a) get camera parameters
         double[] spacecraftPosition=new double[3];
@@ -70,7 +122,6 @@ public class OffLimbPlaneCalculator
 //        int szMax=Math.max(resolution[0], resolution[1]);
         int szW=resolution[0];//szMax;//(int)(aspect*szMax);
         int szH=resolution[1];//szMax;
-
 
         // Step (2): Shoot rays from the camera position toward each macro-pixel & record which ones don't hit the body (these will comprise the off-limb geometry)
 
@@ -94,6 +145,16 @@ public class OffLimbPlaneCalculator
         Vector3D upVec=new Vector3D(upVector);
         Rotation lookRot=new Rotation(Vector3D.MINUS_K, lookVec.normalize());
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
+
+    	imagePolyData = getOffLimbImageData(img, offLimbFootprintDepth);
+    	if (imagePolyData != null)
+    	{
+    		makeActors(img);
+    		return;
+    	}
+
+    	//pull from cache didn't work; build it in memory instead
+
 
         // (2c) use a vtkImageCanvasSource2D to represent the macro-pixels, with an unsigned char color type "true = (0, 0, 0) = ray hits surface" and "false = (255, 255, 255) = ray misses surface"... img might seem backwards but 0-values can be thought of as forming the "shadow" of the body against the sky as viewed by the camera
         // NOTE: img could be done more straightforwardly (and possibly more efficiently) just by using a java boolean[][] array... I think the present implementation is a hangover from prior experimentation with a vtkPolyDataSilhouette filter
@@ -143,7 +204,7 @@ public class OffLimbPlaneCalculator
         }
 
         // (3c) assemble a "final" polydata from the new cell array and points of the temporary silhouette (img could eventually be run through some sort of cleaning filter to get rid of orphaned points)
-        vtkPolyData imagePolyData=new vtkPolyData();
+        imagePolyData=new vtkPolyData();
         imagePolyData.SetPoints(tempImagePolyData.GetPoints());
         imagePolyData.SetPolys(cells);
         double sfacx=offLimbFootprintDepth*Math.tan(Math.toRadians(fovx/2)); // scaling factor that "fits" the polydata into the frustum at the given footprintDepth (in the s,t plane perpendicular to the boresight)
@@ -158,7 +219,26 @@ public class OffLimbPlaneCalculator
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
         }
 
-        // keep a reference to a copy of the polydata
+
+
+        String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent()
+				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
+				+ FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_"
+				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
+        saveToDisk(offLimbImageDataFileName);
+        makeActors(img);
+
+    }
+
+    private void makeActors(PerspectiveImage img)
+    {
+    	//clean up the polydata to merge overlapping sub pixels
+    	vtkCleanPolyData cleanFilter = new vtkCleanPolyData();
+        cleanFilter.SetInputData(imagePolyData);
+        cleanFilter.Update();
+        imagePolyData = cleanFilter.GetOutput();
+
+    	// keep a reference to a copy of the polydata
         offLimbPlane=new vtkPolyData();
         offLimbPlane.DeepCopy(imagePolyData);
         PolyDataUtil.generateTextureCoordinates(img.getFrustum(), img.getImageWidth(), img.getImageHeight(), offLimbPlane); // generate (u,v) coords; individual components lie on the interval [0 1]; https://en.wikipedia.org/wiki/UV_mapping
@@ -191,6 +271,7 @@ public class OffLimbPlaneCalculator
             edgeFilter.SetInputData(offLimbPlane);
             edgeFilter.BoundaryEdgesOn();
             edgeFilter.ManifoldEdgesOff();
+            edgeFilter.NonManifoldEdgesOff();
             edgeFilter.FeatureEdgesOff();
             edgeFilter.Update();
             offLimbBoundary=new vtkPolyData();
@@ -211,8 +292,9 @@ public class OffLimbPlaneCalculator
             offLimbBoundaryActor.GetProperty().SetLineWidth(1);
             offLimbBoundaryActor.Modified();
         }
-
     }
+
+
     public vtkPolyData getOffLimbPlane()
     {
         return offLimbPlane;
@@ -263,4 +345,47 @@ public class OffLimbPlaneCalculator
         this.offLimbBoundaryActor = offLimbBoundaryActor;
     }
 
+    public void saveToDisk(String filename)
+    {
+        vtkPolyDataWriter writer = new vtkPolyDataWriter();
+        writer.SetInputData(imagePolyData);
+        writer.SetFileName(new File(filename).toString());
+        writer.SetFileTypeToBinary();
+        writer.Write();
+    }
+
+    public static void main(String[] args) throws Exception
+	{
+    	boolean reprocess = true;
+    	ShapeModelBody body = ShapeModelBody.RQ36;
+        ShapeModelType type = ShapeModelType.ALTWG_SPC_v20190121;
+    	boolean aplVersion = true;
+        final SafeURLPaths safeUrlPaths = SafeURLPaths.instance();
+//        String rootURL = safeUrlPaths.getUrl("/disks/d0180/htdocs-sbmt/internal/multi-mission/test");
+        String rootURL = safeUrlPaths.getUrl("http://sbmt.jhuapl.edu/sbmt/prod/");
+    	Configuration.setAPLVersion(aplVersion);
+        Configuration.setRootURL(rootURL);
+
+        SbmtMultiMissionTool.configureMission();
+
+         // authentication
+        Authenticator.authenticate();
+        NativeLibraryLoader.loadVtkLibraries();
+         // initialize view config
+        SmallBodyViewConfig.initialize();
+    	SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(body, type);
+    	SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config);
+    	ImageKeyInterface key = new ImageKey("http://sbmt.jhuapl.edu/sbmt/prod/data/bennu/altwg-spc-v20190121/polycam/images/ocams20181108t042907s071_pol_iofl2pan_53003.fits", ImageSource.GASKELL);
+    	OcamsFlightImage image = OcamsFlightImage.of(key, smallBodyModel, false);
+    	String outputDir = ".";
+    	String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + 1 + "_offLimbImageData.vtk";
+    	File file = new File(filename);
+    	if (file.exists() && (reprocess == false)) return;
+
+    	OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
+    	calculator.loadOffLimbPlane(image, new Vector3D(image.getSpacecraftPosition()).getNorm());
+//    	calculator.generateOffLimbPlane(image);
+    	if (!(new File(filename).exists())) new File(filename).getParentFile().mkdirs();
+    	calculator.saveToDisk(filename);
+	}
 }

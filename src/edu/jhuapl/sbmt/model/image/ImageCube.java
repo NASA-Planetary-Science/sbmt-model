@@ -344,7 +344,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
     }
 
 
-    protected vtkPolyData getFootprint(int defaultSlice)
+    public vtkPolyData getFootprint(int defaultSlice)
     {
         return footprint;
     }
