@@ -35,7 +35,7 @@ public class OcamsFlightImage extends BasicPerspectiveImage
     {
         // For some reason we need to do
         // this so the image is displayed properly.
-        if (key.getSource() == ImageSource.SPICE)
+        if (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.LOCAL_PERSPECTIVE)
         {
         	if (key.getImageType() != ImageType.NAVCAM_FLIGHT_IMAGE)
         	{
@@ -63,7 +63,7 @@ public class OcamsFlightImage extends BasicPerspectiveImage
 
         // Construct status message
         String status = "Pixel Coordinate = (";
-        if (key.getSource() != ImageSource.SPICE)
+        if ((key.getSource() != ImageSource.SPICE) && (key.getSource() != ImageSource.LOCAL_PERSPECTIVE))
         {
 	        status += df.format(pickPosition[1]);
 	        status += ", ";
