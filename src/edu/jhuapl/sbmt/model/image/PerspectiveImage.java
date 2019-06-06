@@ -127,9 +127,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private ModelManager modelManager;
     protected ModelManager getModelManager() { return modelManager; }
 
-    private vtkImageData rawImage;
+    protected vtkImageData rawImage;
     private vtkImageData displayedImage;
-    private int currentSlice = 0;
+    protected int currentSlice = 0;
 
     private double rotation = 0.0;
     public double getRotation() { return rotation; }
@@ -218,8 +218,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private vtkImageCanvasSource2D maskSource;
 
-    private int imageWidth;
-    private int imageHeight;
+    protected int imageWidth;
+    protected int imageHeight;
     protected int imageDepth = 1;
     private int numBands = BackplaneInfo.values().length;
 
