@@ -11,7 +11,7 @@ import java.util.Map;
 
 import edu.jhuapl.sbmt.util.BackplaneInfo;
 
-import altwg.Fits.HeaderTags;
+import altwg.Fits.HeaderTag;
 import altwg.util.FitsHeader;
 import altwg.util.FitsHeader.FitsHeaderBuilder;
 import altwg.util.FitsUtil;
@@ -47,17 +47,17 @@ public class MSIFits {
       // TODO need to reference productType in fits Header to determine which
       // keyword to display
 
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.HDRVERS));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.HDRVERS));
 
       // mission information
       headers.add(new HeaderCard("COMMENT", "Mission Information", false));
-      headers.add(new HeaderCard(HeaderTags.MISSION.toString(), "NEAR EARTH ASTEROID RENDEZVOUS",
-              HeaderTags.MISSION.comment()));
-      headers.add(new HeaderCard(HeaderTags.HOSTNAME.toString(), "NEAR",
-              HeaderTags.HOSTNAME.comment()));
+      headers.add(new HeaderCard(HeaderTag.MISSION.toString(), "NEAR EARTH ASTEROID RENDEZVOUS",
+              HeaderTag.MISSION.comment()));
+      headers.add(new HeaderCard(HeaderTag.HOSTNAME.toString(), "NEAR",
+              HeaderTag.HOSTNAME.comment()));
 
 //      headers.add(fitsHdr.getHeaderCard(HeaderTags.TARGET));
-      headers.add(new HeaderCard(HeaderTags.TARGET.toString(), "EROS",  HeaderTags.HOSTNAME.comment()));
+      headers.add(new HeaderCard(HeaderTag.TARGET.toString(), "EROS",  HeaderTag.HOSTNAME.comment()));
 //      headers.add(fitsHdr.getHeaderCard(HeaderTags.ORIGIN));
 
       // observation information
@@ -67,7 +67,7 @@ public class MSIFits {
       // data source
       headers.add(new HeaderCard("COMMENT", "Data Source", false));
  //     headers.add(fitsHdr.getHeaderCard(HeaderTags.DATASRC));
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.DATASRCF));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.DATASRCF));
 //      headers.add(fitsHdr.getHeaderCard(HeaderTags.DATASRCV));
 
       // timing information
@@ -80,12 +80,12 @@ public class MSIFits {
       DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
       Date date = new Date();
 
-      headers.add(new HeaderCard(HeaderTags.DATEPRD.toString(), dateFormat.format(date), null));
+      headers.add(new HeaderCard(HeaderTag.DATEPRD.toString(), dateFormat.format(date), null));
 
       // processing information
       headers.add(new HeaderCard("COMMENT", "Processing Information", false));
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.PRODNAME));
-      headers.add(fitsHdr.getHeaderCard(HeaderTags.PRODVERS));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.PRODNAME));
+      headers.add(fitsHdr.getHeaderCard(HeaderTag.PRODVERS));
 //      headers.add(fitsHdr.getHeaderCard(HeaderTags.CREATOR));
 
       return headers;
