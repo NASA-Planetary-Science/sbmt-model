@@ -105,54 +105,76 @@ public class CylindricalImage extends Image
 
     private void loadImageInfoFromConfigFile()
     {
-        if (getKey().getSource().equals(ImageSource.LOCAL_CYLINDRICAL))
+        ImageKeyInterface key = getKey();
+        ImageSource source = key.getSource();
+        if (source.equals(ImageSource.LOCAL_CYLINDRICAL) || source.equals(ImageSource.IMAGE_MAP))
         {
-            // Look in the config file and figure out which index this image
-            // corresponds to. The config file is located in the same folder
-            // as the image file
-        	final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
-            String configFilename = new File(getKey().getName()).getParent() + File.separator + "config.txt";
-            FixedMetadata metadata;
-			try
-			{
-				metadata = Serializers.deserialize(new File(configFilename.substring(5)), "CustomImages");
-				List<CustomImageKeyInterface> customImages = metadata.get(customImagesKey);
-				for (CustomImageKeyInterface info : customImages)
-				{
-					CustomCylindricalImageKey cylInfo = (CustomCylindricalImageKey)info;
-					String filename = new File(getKey().getName()).getName();
-					if (filename.equals(cylInfo.getImageFilename()))
-	                {
-						imageName = cylInfo.getName();
-	                    lowerLeftLat = cylInfo.lllat;
-	                    lowerLeftLon = cylInfo.lllon;
-	                    upperRightLat = cylInfo.urlat;
-	                    upperRightLon = cylInfo.urlon;
+            String imageBaseName = key.getName();
 
-	                    break;
-	                }
-				}
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-	            MapUtil configMap = new MapUtil(configFilename);
-	            String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-	            for (int i=0; i<imageFilenames.length; ++i)
-	            {
-	                String filename = new File(getKey().getName()).getName();
-	                if (filename.equals(imageFilenames[i]))
-	                {
-	                    imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
-	                    lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
-	                    lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
-	                    upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
-	                    upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
-	                    break;
-	                }
-	            }
+            // Look for an optional configuration file, which should be in the same directory as the image file.
+            String configFileBaseName = SafeURLPaths.instance().getString(new File(imageBaseName).getParent(), "config.txt");
+            File configFile = null;
+            try
+            {
+                configFile = FileCache.getFileFromServer(configFileBaseName);
+            }
+            catch (@SuppressWarnings("unused") Exception ignored)
+            {
+                // No config file available to tell us about the image. Assume it covers the whole body.
+                imageName = imageBaseName;
+                lowerLeftLat = -90.;
+                lowerLeftLon = 0.;
+                upperRightLat = 90.;
+                upperRightLon = 360.;
+            }
 
-			}
+            if (configFile != null)
+            {
+                try
+                {
+                    // First try metadata format.
+                    // Look in the config file and figure out which index this image
+                    // corresponds to.
+                    final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
+                    FixedMetadata metadata = Serializers.deserialize(configFile, "CustomImages");
+                    List<CustomImageKeyInterface> customImages = metadata.get(customImagesKey);
+                    for (CustomImageKeyInterface info : customImages)
+                    {
+                        CustomCylindricalImageKey cylInfo = (CustomCylindricalImageKey)info;
+                        String filename = new File(imageBaseName).getName();
+                        if (filename.equals(cylInfo.getImageFilename()))
+                        {
+                            imageName = cylInfo.getName();
+                            lowerLeftLat = cylInfo.lllat;
+                            lowerLeftLon = cylInfo.lllon;
+                            upperRightLat = cylInfo.urlat;
+                            upperRightLon = cylInfo.urlon;
+
+                            break;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Configuration file was not a metadata file, so look for an old-style txt format file.
+                    e.printStackTrace();
+                    MapUtil configMap = new MapUtil(configFile.getAbsolutePath());
+                    String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+                    for (int i=0; i<imageFilenames.length; ++i)
+                    {
+                        String filename = new File(imageBaseName).getName();
+                        if (filename.equals(imageFilenames[i]))
+                        {
+                            imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
+                            lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
+                            lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
+                            upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
+                            upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
