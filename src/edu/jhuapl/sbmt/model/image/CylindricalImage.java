@@ -15,6 +15,7 @@ import vtk.vtkCone;
 import vtk.vtkFloatArray;
 import vtk.vtkImageData;
 import vtk.vtkImageMapToColors;
+import vtk.vtkImageReader2;
 import vtk.vtkLookupTable;
 import vtk.vtkPNGReader;
 import vtk.vtkPlane;
@@ -83,15 +84,18 @@ public class CylindricalImage extends Image
      * @param key
      * @param smallBodyModel
      */
-    public CylindricalImage(
-            ImageKeyInterface key,
-            SmallBodyModel smallBodyModel)
+    public CylindricalImage(CustomCylindricalImageKey key, SmallBodyModel smallBodyModel)
     {
         super(key);
         this.smallBodyModel = smallBodyModel;
 
         footprint = new vtkPolyData();
         shiftedFootprint = new vtkPolyData();
+
+        this.lowerLeftLat = key.getLllat();
+        this.lowerLeftLon = key.getLllon();
+        this.upperRightLat = key.getUrlat();
+        this.upperRightLon = key.getUrlon();
 
         loadImageInfoFromConfigFile();
 
@@ -101,13 +105,13 @@ public class CylindricalImage extends Image
         {
             imageName = getKey().getName();
         }
-}
+    }
 
     private void loadImageInfoFromConfigFile()
     {
         ImageKeyInterface key = getKey();
         ImageSource source = key.getSource();
-        if (source.equals(ImageSource.LOCAL_CYLINDRICAL) || source.equals(ImageSource.IMAGE_MAP))
+        if (source.equals(ImageSource.LOCAL_CYLINDRICAL))
         {
             String imageBaseName = key.getName();
 
@@ -145,10 +149,10 @@ public class CylindricalImage extends Image
                         if (filename.equals(cylInfo.getImageFilename()))
                         {
                             imageName = cylInfo.getName();
-                            lowerLeftLat = cylInfo.lllat;
-                            lowerLeftLon = cylInfo.lllon;
-                            upperRightLat = cylInfo.urlat;
-                            upperRightLon = cylInfo.urlon;
+                            lowerLeftLat = cylInfo.getLllat();
+                            lowerLeftLon = cylInfo.getLllon();
+                            upperRightLat = cylInfo.getUrlat();
+                            upperRightLon = cylInfo.getUrlon();
 
                             break;
                         }
@@ -740,7 +744,7 @@ public class CylindricalImage extends Image
         if (smallBodyActor == null)
         {
             initialize();
-            loadImage(getKey().getName());
+            loadImage();
 
             smallBodyMapper = new vtkPolyDataMapper();
             smallBodyMapper.ScalarVisibilityOff();
@@ -787,49 +791,34 @@ public class CylindricalImage extends Image
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    protected void loadImage(String name)
+    protected void loadImage()
     {
-        String imageFile = null;
-        if (getKey().getSource() == ImageSource.IMAGE_MAP)
-            imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+        ImageKeyInterface key = getKey();
+
+        String imageFile = SafeURLPaths.instance().getString(key.getName());
+        if (key.getSource() == ImageSource.IMAGE_MAP)
+        {
+            imageFile = FileCache.getFileFromServer(imageFile).getAbsolutePath();
+        }
         else
-            imageFile = getKey().getName();
+        {
+            imageFile = imageFile.replaceFirst("^file:/*", "/");
+        }
+
+        if (!(new File(imageFile).isFile()))
+        {
+            throw new RuntimeException("Image file " + imageFile + " is not available");
+        }
 
         if (rawImage == null)
             rawImage = new vtkImageData();
 
-        // Check if image is a custom-supported one
-        if(VtkENVIReader.isENVIFilename(imageFile))
-        {
-            // Customized support for ENVI binary files
-        	if (imageFile.startsWith("file://"))
-            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
-            if (imageFile.startsWith("file:/"))
-            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
-            VtkENVIReader reader = new VtkENVIReader();
-            reader.SetFileName(imageFile);
-            reader.Update();
-            rawImage.DeepCopy(reader.GetOutput());
-        }
-        else
-        {
-            if (getKey().getSource() == ImageSource.IMAGE_MAP)
-                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
-            else
-                imageFile = getKey().getName();
-            if (imageFile.startsWith("file://"))
-            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
-            if (rawImage == null)
-                rawImage = new vtkImageData();
-
-            // Otherwise, try vtk's built in reader
-//        	System.out.println("CylindricalImage: loadImage: using png reader");
-            vtkPNGReader reader = new vtkPNGReader();
-            reader.SetFileName(SafeURLPaths.instance().getString(imageFile));
-            reader.Update();
-            rawImage.DeepCopy(reader.GetOutput());
-        }
         // TODO: add capability to read FITS images - this could be moved up into the Image class
+        // Handle two possible cases: ENVI or PNG.
+        vtkImageReader2 reader = VtkENVIReader.isENVIFilename(imageFile) ? new VtkENVIReader() : new vtkPNGReader();
+        reader.SetFileName(imageFile);
+        reader.Update();
+        rawImage.DeepCopy(reader.GetOutput());
 
         double[] scalarRange = rawImage.GetScalarRange();
         minValue = (float)scalarRange[0];
