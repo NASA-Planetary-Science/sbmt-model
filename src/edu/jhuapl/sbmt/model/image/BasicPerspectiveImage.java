@@ -39,16 +39,18 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
 
     protected String getImageFileName(ImageKeyInterface key)
     {
-        // Image file name is based on the key name.
-        String imageFileName = key.getName();
+        return getImageFileName(getKey().getImageFilename());
+    }
 
+    protected String getImageFileName(String imageName)
+    {
         // If the proposed name does not include the extension, add .fits.
-        if (!key.getName().matches("^.*\\.[^\\\\.]*$"))
+        if (!imageName.matches("^.*\\.[^\\\\.]*$"))
         {
-            imageFileName += ".fits";
+            imageName += ".fits";
         }
 
-        return imageFileName;
+        return imageName;
     }
 
     @Override
@@ -142,7 +144,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
                     }
                     if (line.length < 2) throw new ParseException("Cannot parse line " + String.join(" ", line) + " to get sum file/image file names", line.length > 0 ? line[0].length() : 0);
                     String sumFile = line[0] + ".SUM";
-                    String imageFile = line[line.length - 1];
+                    String imageFile = getImageFileName(line[line.length - 1]);
 
                     builder.put(imageFile, sumFile);
                 }
