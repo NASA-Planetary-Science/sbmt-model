@@ -196,7 +196,7 @@ public class LidarQueryUtil
 		Map<Integer, Set<LidarPoint>> filesWithPointM = new HashMap<>();
 
 		ProgressBarSwingWorker dataLoader = new ProgressBarSwingWorker(aParentComp,
-				"Loading lidar datapoints (" + cubeSet.size() + " individual chunks)") {
+				"Loading lidar datapoints (" + cubeSet.size() + " individual chunks)", false) {
 			@Override
 			protected Void doInBackground() throws Exception
 			{
