@@ -59,9 +59,9 @@ public class OffLimbPlaneCalculator
 //		}
 
 		// try to fetch the offlimb image data from the file cache first
-		String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent()
+		String offLimbImageDataFileName = new File(new File(img.getImageFileFullPath()).getParent()).getParent()
 				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
-				+ FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_"
+				+ FilenameUtils.getBaseName(img.getImageFileFullPath()) + "_"
 				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
 		if (FileCache.isFileGettable(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2)))
 		// if (FileCache.isFileGettable(offLimbImageDataFileName))
@@ -221,9 +221,9 @@ public class OffLimbPlaneCalculator
 
 
 
-        String offLimbImageDataFileName = new File(new File(img.getFitFileFullPath()).getParent()).getParent()
+        String offLimbImageDataFileName = new File(new File(img.getImageFileFullPath()).getParent()).getParent()
 				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
-				+ FilenameUtils.getBaseName(img.getFitFileFullPath()) + "_"
+				+ FilenameUtils.getBaseName(img.getImageFileFullPath()) + "_"
 				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
         saveToDisk(offLimbImageDataFileName);
         makeActors(img);
@@ -378,7 +378,7 @@ public class OffLimbPlaneCalculator
     	ImageKeyInterface key = new ImageKey("http://sbmt.jhuapl.edu/sbmt/prod/data/bennu/altwg-spc-v20190121/polycam/images/ocams20181108t042907s071_pol_iofl2pan_53003.fits", ImageSource.GASKELL);
     	OcamsFlightImage image = OcamsFlightImage.of(key, smallBodyModel, false);
     	String outputDir = ".";
-    	String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getFitFileFullPath()) + "_" + 1 + "_offLimbImageData.vtk";
+    	String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getImageFileFullPath()) + "_" + 1 + "_offLimbImageData.vtk";
     	File file = new File(filename);
     	if (file.exists() && (reprocess == false)) return;
 
