@@ -3567,7 +3567,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         vtkPolyDataWriter writer = new vtkPolyDataWriter();
         writer.SetInputData(footprint[0]);
 //        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
-        String intersectionFileName = new File(new File(getImageFileFullPath()).getParent()).getParent() + File.separator + "support" + key.getSource().name() + File.separator  + FilenameUtils.getBaseName(getImageFileFullPath()) + "_" + smallBodyModel.getModelResolution() + "_frustumIntersection.vtk";
+        String intersectionFileName = getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
 //        System.out.println("PerspectiveImage: loadFootprint: saving to " + intersectionFileName);
         writer.SetFileName(new File(intersectionFileName).toString());
         writer.SetFileTypeToBinary();
