@@ -3568,8 +3568,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         writer.SetInputData(footprint[0]);
 //        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
         String intersectionFileName = getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
+        File file = FileCache.instance().getFile(intersectionFileName);
 //        System.out.println("PerspectiveImage: loadFootprint: saving to " + intersectionFileName);
-        writer.SetFileName(new File(intersectionFileName).toString());
+        writer.SetFileName(file.getPath());
         writer.SetFileTypeToBinary();
         writer.Write();
     }
