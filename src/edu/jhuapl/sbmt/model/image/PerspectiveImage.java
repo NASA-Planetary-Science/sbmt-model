@@ -3449,7 +3449,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public String getPrerenderingFileNameBase()
     {
         String imageName = getKey().getName();
-        String topPath = smallBodyModel.serverPath("", getKey().getInstrument().getInstrumentName());
+
+        // TODO this needs work. The location will be in general different depending on whether the image is in the cache or a custom image.
+        // For now, check whether the instrument is defined. Cached images will have this, custom images will not. In the custom case, just
+        // look up one level.
+        IImagingInstrument instrument = getKey().getInstrument();
+        String topPath = instrument != null ? smallBodyModel.serverPath("", instrument.getInstrumentName()) : FileCache.instance().getFile(imageName).getParent();
 
         String result = SAFE_URL_PATHS.getString(topPath, "support", key.getSource().name(), FilenameUtils.getBaseName(imageName) + "_" + smallBodyModel.getModelResolution());
 
