@@ -12,13 +12,6 @@ public class Itokawa extends SmallBodyModel
             "HAY_A_AMICA_5_ITOKAWASHAPE_V1_0 ver512q"
     };
 
-    static private final String[] modelFiles = {
-            "/ITOKAWA/ver64q.vtk.gz",
-            "/ITOKAWA/ver128q.vtk.gz",
-            "/ITOKAWA/ver256q.vtk.gz",
-            "/ITOKAWA/ver512q.vtk.gz"
-    };
-
     static private final String[] coloringFiles = {
         "/ITOKAWA/Itokawa_Slope",
         "/ITOKAWA/Itokawa_Elevation",
@@ -53,7 +46,6 @@ public class Itokawa extends SmallBodyModel
     {
         super(config,
                 modelNames,
-                modelFiles,
                 coloringFiles,
                 coloringNames,
                 coloringUnits,

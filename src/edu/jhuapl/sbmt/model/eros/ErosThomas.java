@@ -14,15 +14,6 @@ public class ErosThomas extends SmallBodyModel
             "433 EROS PLATE MODEL MSI 200700"
     };
 
-    static private final String[] modelFiles = {
-            "/THOMAS/EROS/eros001708.obj.gz",
-            "/THOMAS/EROS/eros007790.obj.gz",
-            "/THOMAS/EROS/eros010152.obj.gz",
-            "/THOMAS/EROS/eros022540.obj.gz",
-            "/THOMAS/EROS/eros089398.obj.gz",
-            "/THOMAS/EROS/eros200700.obj.gz"
-    };
-
     static private final String[] coloringFiles = {
             "/THOMAS/EROS/Slope",
             "/THOMAS/EROS/Elevation",
@@ -46,7 +37,6 @@ public class ErosThomas extends SmallBodyModel
     {
         super(config,
                 modelNames,
-                modelFiles,
                 coloringFiles,
                 coloringNames,
                 coloringUnits,

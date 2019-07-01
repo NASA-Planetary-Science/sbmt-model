@@ -12,13 +12,6 @@ public class Eros extends SmallBodyModel
             "NEAR-A-MSI-5-EROSSHAPE-V1.0 ver512q"
     };
 
-    static private final String[] modelFiles = {
-            "/EROS/ver64q.vtk.gz",
-            "/EROS/ver128q.vtk.gz",
-            "/EROS/ver256q.vtk.gz",
-            "/EROS/ver512q.vtk.gz"
-    };
-
     static private final String[] coloringFiles = {
             "/EROS/Eros_Slope",
             "/EROS/Eros_Elevation",
@@ -56,7 +49,6 @@ public class Eros extends SmallBodyModel
     {
         super(config,
                 modelNames,
-                modelFiles,
                 coloringFiles,
                 coloringNames,
                 coloringUnits,

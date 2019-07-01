@@ -15,6 +15,7 @@ import vtk.vtkCone;
 import vtk.vtkFloatArray;
 import vtk.vtkImageData;
 import vtk.vtkImageMapToColors;
+import vtk.vtkImageReader2;
 import vtk.vtkLookupTable;
 import vtk.vtkPNGReader;
 import vtk.vtkPlane;
@@ -83,15 +84,18 @@ public class CylindricalImage extends Image
      * @param key
      * @param smallBodyModel
      */
-    public CylindricalImage(
-            ImageKeyInterface key,
-            SmallBodyModel smallBodyModel)
+    public CylindricalImage(CustomCylindricalImageKey key, SmallBodyModel smallBodyModel)
     {
         super(key);
         this.smallBodyModel = smallBodyModel;
 
         footprint = new vtkPolyData();
         shiftedFootprint = new vtkPolyData();
+
+        this.lowerLeftLat = key.getLllat();
+        this.lowerLeftLon = key.getLllon();
+        this.upperRightLat = key.getUrlat();
+        this.upperRightLon = key.getUrlon();
 
         loadImageInfoFromConfigFile();
 
@@ -101,58 +105,80 @@ public class CylindricalImage extends Image
         {
             imageName = getKey().getName();
         }
-}
+    }
 
     private void loadImageInfoFromConfigFile()
     {
-        if (getKey().getSource().equals(ImageSource.LOCAL_CYLINDRICAL))
+        ImageKeyInterface key = getKey();
+        ImageSource source = key.getSource();
+        if (source.equals(ImageSource.LOCAL_CYLINDRICAL))
         {
-            // Look in the config file and figure out which index this image
-            // corresponds to. The config file is located in the same folder
-            // as the image file
-        	final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
-            String configFilename = new File(getKey().getName()).getParent() + File.separator + "config.txt";
-            FixedMetadata metadata;
-			try
-			{
-				metadata = Serializers.deserialize(new File(configFilename.substring(5)), "CustomImages");
-				List<CustomImageKeyInterface> customImages = metadata.get(customImagesKey);
-				for (CustomImageKeyInterface info : customImages)
-				{
-					CustomCylindricalImageKey cylInfo = (CustomCylindricalImageKey)info;
-					String filename = new File(getKey().getName()).getName();
-					if (filename.equals(cylInfo.getImageFilename()))
-	                {
-						imageName = cylInfo.getName();
-	                    lowerLeftLat = cylInfo.lllat;
-	                    lowerLeftLon = cylInfo.lllon;
-	                    upperRightLat = cylInfo.urlat;
-	                    upperRightLon = cylInfo.urlon;
+            String imageBaseName = key.getName();
 
-	                    break;
-	                }
-				}
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-	            MapUtil configMap = new MapUtil(configFilename);
-	            String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-	            for (int i=0; i<imageFilenames.length; ++i)
-	            {
-	                String filename = new File(getKey().getName()).getName();
-	                if (filename.equals(imageFilenames[i]))
-	                {
-	                    imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
-	                    lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
-	                    lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
-	                    upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
-	                    upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
-	                    break;
-	                }
-	            }
+            // Look for an optional configuration file, which should be in the same directory as the image file.
+            String configFileBaseName = SafeURLPaths.instance().getString(new File(imageBaseName).getParent(), "config.txt");
+            File configFile = null;
+            try
+            {
+                configFile = FileCache.getFileFromServer(configFileBaseName);
+            }
+            catch (@SuppressWarnings("unused") Exception ignored)
+            {
+                // No config file available to tell us about the image. Assume it covers the whole body.
+                imageName = imageBaseName;
+                lowerLeftLat = -90.;
+                lowerLeftLon = 0.;
+                upperRightLat = 90.;
+                upperRightLon = 360.;
+            }
 
-			}
+            if (configFile != null)
+            {
+                try
+                {
+                    // First try metadata format.
+                    // Look in the config file and figure out which index this image
+                    // corresponds to.
+                    final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
+                    FixedMetadata metadata = Serializers.deserialize(configFile, "CustomImages");
+                    List<CustomImageKeyInterface> customImages = metadata.get(customImagesKey);
+                    for (CustomImageKeyInterface info : customImages)
+                    {
+                        CustomCylindricalImageKey cylInfo = (CustomCylindricalImageKey)info;
+                        String filename = new File(imageBaseName).getName();
+                        if (filename.equals(cylInfo.getImageFilename()))
+                        {
+                            imageName = cylInfo.getName();
+                            lowerLeftLat = cylInfo.getLllat();
+                            lowerLeftLon = cylInfo.getLllon();
+                            upperRightLat = cylInfo.getUrlat();
+                            upperRightLon = cylInfo.getUrlon();
+
+                            break;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Configuration file was not a metadata file, so look for an old-style txt format file.
+                    e.printStackTrace();
+                    MapUtil configMap = new MapUtil(configFile.getAbsolutePath());
+                    String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+                    for (int i=0; i<imageFilenames.length; ++i)
+                    {
+                        String filename = new File(imageBaseName).getName();
+                        if (filename.equals(imageFilenames[i]))
+                        {
+                            imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
+                            lowerLeftLat = configMap.getAsDoubleArray(LOWER_LEFT_LATITUDES)[i];
+                            lowerLeftLon = configMap.getAsDoubleArray(LOWER_LEFT_LONGITUDES)[i];
+                            upperRightLat = configMap.getAsDoubleArray(UPPER_RIGHT_LATITUDES)[i];
+                            upperRightLon = configMap.getAsDoubleArray(UPPER_RIGHT_LONGITUDES)[i];
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -718,7 +744,7 @@ public class CylindricalImage extends Image
         if (smallBodyActor == null)
         {
             initialize();
-            loadImage(getKey().getName());
+            loadImage();
 
             smallBodyMapper = new vtkPolyDataMapper();
             smallBodyMapper.ScalarVisibilityOff();
@@ -765,49 +791,34 @@ public class CylindricalImage extends Image
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 
-    protected void loadImage(String name)
+    protected void loadImage()
     {
-        String imageFile = null;
-        if (getKey().getSource() == ImageSource.IMAGE_MAP)
-            imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+        ImageKeyInterface key = getKey();
+
+        String imageFile = SafeURLPaths.instance().getString(key.getName());
+        if (key.getSource() == ImageSource.IMAGE_MAP)
+        {
+            imageFile = FileCache.getFileFromServer(imageFile).getAbsolutePath();
+        }
         else
-            imageFile = getKey().getName();
+        {
+            imageFile = imageFile.replaceFirst("^file:/*", "/");
+        }
+
+        if (!(new File(imageFile).isFile()))
+        {
+            throw new RuntimeException("Image file " + imageFile + " is not available");
+        }
 
         if (rawImage == null)
             rawImage = new vtkImageData();
 
-        // Check if image is a custom-supported one
-        if(VtkENVIReader.isENVIFilename(imageFile))
-        {
-            // Customized support for ENVI binary files
-        	if (imageFile.startsWith("file://"))
-            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
-            if (imageFile.startsWith("file:/"))
-            	imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
-            VtkENVIReader reader = new VtkENVIReader();
-            reader.SetFileName(imageFile);
-            reader.Update();
-            rawImage.DeepCopy(reader.GetOutput());
-        }
-        else
-        {
-            if (getKey().getSource() == ImageSource.IMAGE_MAP)
-                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
-            else
-                imageFile = getKey().getName();
-            if (imageFile.startsWith("file://"))
-            	imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
-            if (rawImage == null)
-                rawImage = new vtkImageData();
-
-            // Otherwise, try vtk's built in reader
-//        	System.out.println("CylindricalImage: loadImage: using png reader");
-            vtkPNGReader reader = new vtkPNGReader();
-            reader.SetFileName(SafeURLPaths.instance().getString(imageFile));
-            reader.Update();
-            rawImage.DeepCopy(reader.GetOutput());
-        }
         // TODO: add capability to read FITS images - this could be moved up into the Image class
+        // Handle two possible cases: ENVI or PNG.
+        vtkImageReader2 reader = VtkENVIReader.isENVIFilename(imageFile) ? new VtkENVIReader() : new vtkPNGReader();
+        reader.SetFileName(imageFile);
+        reader.Update();
+        rawImage.DeepCopy(reader.GetOutput());
 
         double[] scalarRange = rawImage.GetScalarRange();
         minValue = (float)scalarRange[0];

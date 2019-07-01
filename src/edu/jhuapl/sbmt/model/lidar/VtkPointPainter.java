@@ -15,9 +15,12 @@ import vtk.vtkUnsignedCharArray;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 
+import glum.item.ItemEventListener;
+import glum.item.ItemEventType;
+
 /**
- * Class which contains the logic to render a single selected lidar point using
- * the VTK framework.
+ * Package private class which contains the logic to render a single selected
+ * lidar point using the VTK framework.
  * <P>
  * This class supports the following configurable state:
  * <UL>
@@ -25,15 +28,17 @@ import edu.jhuapl.sbmt.lidar.LidarPoint;
  * <LI>Point color
  * <LI>Point size
  * </UL>
+ *
+ * @author lopeznr1
  */
-public class VtkPointPainter implements VtkPainter
+class VtkPointPainter implements ItemEventListener, VtkPainter
 {
 	// Reference vars
-	private LidarSearchDataCollection refModel;
+	private LidarTrackManager refManager;
 
 	// State vars
 	private LidarPoint lidarPoint;
-	private Track lidarTrack;
+	private LidarTrack lidarTrack;
 	private Color pointColor;
 	private boolean isStale;
 
@@ -45,11 +50,11 @@ public class VtkPointPainter implements VtkPainter
 	/**
 	 * Standard Constructor
 	 *
-	 * @param aModel
+	 * @param aManager
 	 */
-	public VtkPointPainter(LidarSearchDataCollection aModel)
+	public VtkPointPainter(LidarTrackManager aManager)
 	{
-		refModel = aModel;
+		refManager = aManager;
 
 		lidarPoint = null;
 		lidarTrack = null;
@@ -68,6 +73,23 @@ public class VtkPointPainter implements VtkPainter
 		actor.GetProperty().SetColor(pointColor.getRed() / 255.0, pointColor.getGreen() / 255.0,
 				pointColor.getBlue() / 255.0);
 		actor.GetProperty().SetPointSize(1.0);
+
+		// Register for events of interst
+		refManager.addListener(this);
+	}
+
+	@Override
+	public void handleItemEvent(Object aSource, ItemEventType aEventType)
+	{
+		if (aEventType == ItemEventType.ItemsChanged)
+		{
+			setData(null, null);
+			markStale();
+		}
+		if (aEventType == ItemEventType.ItemsMutated)
+		{
+			markStale();
+		}
 	}
 
 	/**
@@ -81,7 +103,7 @@ public class VtkPointPainter implements VtkPainter
 	/**
 	 * Returns the Track associated with this VtkPainter
 	 */
-	public Track getTrack()
+	public LidarTrack getTrack()
 	{
 		return lidarTrack;
 	}
@@ -89,7 +111,7 @@ public class VtkPointPainter implements VtkPainter
 	/**
 	 * Sets in the LidarPoint and corresponding Track.
 	 */
-	public void setData(LidarPoint aLidarPoint, Track aLidarTrack)
+	public void setData(LidarPoint aLidarPoint, LidarTrack aLidarTrack)
 	{
 		lidarPoint = aLidarPoint;
 		lidarTrack = aLidarTrack;
@@ -129,11 +151,11 @@ public class VtkPointPainter implements VtkPainter
 		vtkCellArray vert = polydata.GetVerts();
 		vtkUnsignedCharArray colors = (vtkUnsignedCharArray) polydata.GetCellData().GetScalars();
 
-		if (lidarPoint != null && lidarTrack != null && lidarTrack.getIsVisible() == true)
+		if (lidarPoint != null && lidarTrack != null && refManager.getIsVisible(lidarTrack) == true)
 		{
-			Vector3D tmpTrans = refModel.getTranslation(lidarTrack);
+			Vector3D tmpTrans = refManager.getTranslation(lidarTrack);
 			Vector3D tmpPos = lidarPoint.getTargetPosition();
-			double[] targPosArr = refModel.transformLidarPoint(tmpTrans, tmpPos.toArray());
+			double[] targPosArr = refManager.transformLidarPoint(tmpTrans, tmpPos.toArray());
 
 			int id1 = points.InsertNextPoint(targPosArr);
 			vtkIdList idList = new vtkIdList();
