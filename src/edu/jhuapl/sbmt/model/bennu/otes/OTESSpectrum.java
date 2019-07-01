@@ -35,6 +35,7 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
 import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
@@ -89,12 +90,13 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getLocalInfoFilePathOnServer()
     {
-        return Paths.get(getLocalSpectrumFilePathOnServer()).getParent().resolve(FilenameUtils.getBaseName(getLocalSpectrumFilePathOnServer()) + ".INFO").toString();
+    	String normalpath = SafeURLPaths.instance().getString(serverpath).substring(7);
+    	return FilenameUtils.removeExtension(normalpath) + ".INFO";
     }
 
     protected String getLocalSpectrumFilePathOnServer()
     {
-        return serverpath;
+        return SafeURLPaths.instance().getString(serverpath).substring(7);
     }
 
     protected String getInfoFilePathOnServer()
@@ -274,18 +276,25 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readPointingFromInfoFile()
     {
+        InfoFileReader reader = null;
         if (!isCustomSpectra)
+        {
             infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+            reader = new InfoFileReader(infoFile.getAbsolutePath());
+        }
         else
+        {
             infoFile = new File(getInfoFilePathOnServer());
+            reader = new InfoFileReader(infoFile.toString());
+        }
 //        String infoFilePath = getInfoFilePathOnServer();
 //        if (FileCache.isFileInCustomData(infoFilePath) == false)
 //            infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
 //        else
 //            infoFile = new File(infoFilePath);
         //
-
-        InfoFileReader reader = new InfoFileReader(infoFile.getAbsolutePath());
+//        System.out.println("OTESSpectrum: readPointingFromInfoFile: info file path " + SafeURLPaths.instance().getUrl(infoFile.getAbsolutePath()));
+//        InfoFileReader reader = new InfoFileReader(SafeURLPaths.instance().getString(infoFile.getAbsolutePath()));
         reader.read();
         //
         Vector3D origin = new Vector3D(reader.getSpacecraftPosition());
@@ -345,18 +354,18 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected void readSpectrumFromFile()
     {
+    	OTESSpectrumReader reader = null;
         if (!isCustomSpectra)
+        {
             spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+            reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
+        }
         else
-            spectrumFile = new File(getSpectrumPathOnServer());
-//        String spectrumFilePath = getSpectrumPathOnServer();
-//        if (FileCache.isFileInCustomData(spectrumFilePath) == false)
-//            spectrumFile = FileCache.getFileFromServer(getSpectrumPathOnServer());
-//        else
-//            spectrumFile = new File(spectrumFilePath);
-        OTESSpectrumReader reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
+        {
+            reader=new OTESSpectrumReader(getLocalSpectrumFilePathOnServer(), getNumberOfBands());
+        }
         reader.read();
-        //
+
         spectrum=reader.getData();
         xData = reader.getXAxis();
         time = reader.getSclk();

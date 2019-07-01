@@ -8,13 +8,13 @@ import vtk.vtkImageData;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
-import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
-public class LorriImage extends PerspectiveImage
+public class LorriImage extends BasicPerspectiveImage
 {
     public LorriImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
@@ -27,43 +27,27 @@ public class LorriImage extends PerspectiveImage
     protected void processRawImage(vtkImageData rawImage)
     {
         // Flip image along y axis. For some reason we need to do
-        // this so the image is displayed properly.
-        ImageDataUtil.flipImageYAxis(rawImage);
-        ImageDataUtil.rotateImage(rawImage, 180.0);
+        // this so the image is displayed properly, but only for
+        // SPICE pointings, which are most likely not correct.
+        ImageSource source = getKey().getSource();
+        if (source == ImageSource.SPICE)
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+            ImageDataUtil.rotateImage(rawImage, 180.0);
+        }
     }
 
     @Override
-    protected int[] getMaskSizes()
+    protected String getImageFileName(String imageName)
     {
-        return new int[]{0, 0, 0, 0};
-    }
+        // If the proposed name does not include the extension, add .fits.
+        if (!imageName.matches("^.*\\.[^\\\\.]*$"))
+        {
+            imageName += ".fit";
+        }
 
-    @Override
-    protected String initializeFitFileFullPath()
-    {
-        ImageKeyInterface key = getKey();
-        return FileCache.getFileFromServer(key.getName() + ".fit").getAbsolutePath();
+        return imageName;
     }
-
-    @Override
-    protected String initializeLabelFileFullPath()
-    {
-        return null;
-    }
-
-//    protected String initializeInfoFileFullPath()
-//    {
-//        ImageKey key = getKey();
-//        File keyFile = new File(key.name);
-//        String pointingFileName = null;
-//
-//        if (key.source == ImageSource.WCS_CORRECTED)
-//            pointingFileName = keyFile.getParentFile().getParent() + "/wcsinfofiles/" + keyFile.getName() + ".INFO";
-//        else
-//            pointingFileName = keyFile.getParentFile().getParent() + "/infofiles/" + keyFile.getName() + ".INFO";
-//
-//        return FileCache.getFileFromServer(pointingFileName).getAbsolutePath();
-//    }
 
     @Override
     protected String initializeInfoFileFullPath()
@@ -90,28 +74,4 @@ public class LorriImage extends PerspectiveImage
         return result;
     }
 
-    @Override
-    protected String initializeSumfileFullPath()
-    {
-        ImageKeyInterface key = getKey();
-        String result = null;
-
-        // if the source is SPICE, then return a null
-        if (key.getSource() == null || key.getSource() != null && (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.CORRECTED_SPICE))
-            result = null;
-        else
-        {
-            File keyFile = new File(key.getName());
-            String sumdir = key.getSource() == ImageSource.CORRECTED ? "sumfiles-corrected" : "sumfiles";
-            String sumFilename = keyFile.getParentFile().getParent() + "/" + sumdir + "/" + keyFile.getName() + ".SUM";
-
-            try {
-                result = FileCache.getFileFromServer(sumFilename).getAbsolutePath();
-            } catch (Exception e) {
-                result = null;
-            }
-        }
-
-        return result;
-    }
 }

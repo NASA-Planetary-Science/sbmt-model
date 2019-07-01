@@ -59,16 +59,12 @@ public class OffLimbPlaneCalculator
 //		}
 
 		// try to fetch the offlimb image data from the file cache first
-		String offLimbImageDataFileName = new File(new File(img.getImageFileFullPath()).getParent()).getParent()
-				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
-				+ FilenameUtils.getBaseName(img.getImageFileFullPath()) + "_"
-				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
-		if (FileCache.isFileGettable(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2)))
-		// if (FileCache.isFileGettable(offLimbImageDataFileName))
+		String offLimbImageDataFileName = img.getPrerenderingFileNameBase() + "_offLimbImageData.vtk.gz";
+		if (FileCache.isFileGettable(offLimbImageDataFileName))
 		{
-			FileCache.getFileFromServer(offLimbImageDataFileName.substring(offLimbImageDataFileName.indexOf("2") + 2));
+			File file = FileCache.getFileFromServer(offLimbImageDataFileName);
 			vtkPolyDataReader reader = new vtkPolyDataReader();
-			reader.SetFileName(offLimbImageDataFileName.substring(0, offLimbImageDataFileName.length() - 3));
+			reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));
 			reader.Update();
 			vtkPolyData offLimbImageData = reader.GetOutput();
 			return offLimbImageData;
@@ -221,11 +217,9 @@ public class OffLimbPlaneCalculator
 
 
 
-        String offLimbImageDataFileName = new File(new File(img.getImageFileFullPath()).getParent()).getParent()
-				+ File.separator + "support" + File.separator + img.key.getSource().name() + File.separator
-				+ FilenameUtils.getBaseName(img.getImageFileFullPath()) + "_"
-				+ img.getSmallBodyModel().getModelResolution() + "_offLimbImageData.vtk.gz";
-        saveToDisk(offLimbImageDataFileName);
+        String offLimbImageDataFileName = img.getPrerenderingFileNameBase() + "_offLimbImageData.vtk.gz";
+        saveToDisk(FileCache.instance().getFile(offLimbImageDataFileName).getPath());
+        FileCache.refreshStateInfo(offLimbImageDataFileName);
         makeActors(img);
 
     }
@@ -347,6 +341,7 @@ public class OffLimbPlaneCalculator
 
     public void saveToDisk(String filename)
     {
+        new File(filename).getParentFile().mkdirs();
         vtkPolyDataWriter writer = new vtkPolyDataWriter();
         writer.SetInputData(imagePolyData);
         writer.SetFileName(new File(filename).toString());
