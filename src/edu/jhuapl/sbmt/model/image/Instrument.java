@@ -15,7 +15,7 @@ public enum Instrument
     MAPCAM("MAPCAM"),
     POLYCAM("POLYCAM"),
     NAVCAM("NAVCAM"),
-    IMAGING_DATA("Imaging Data"),
+    IMAGING_DATA("Imaging"),
     MVIC("MVIC"),
     LEISA("LEISA"),
     LORRI("LORRI"),
