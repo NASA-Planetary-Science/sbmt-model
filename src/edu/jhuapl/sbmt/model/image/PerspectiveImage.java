@@ -3422,7 +3422,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             vtkPolyData footprint = smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[defaultSlice],
                     frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
 //            System.out.println("PerspectiveImage: getFootprint: footprint creation " + sw.elapsedMillis());
-            System.out.println("PerspectiveImage: getFootprint: footprint is " + footprint);
             return footprint;
         }
     }
@@ -3430,23 +3429,19 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private vtkPolyData checkForExistingFootprint()
     {
         String intersectionFileName = getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
-        System.out.println("PerspectiveImage: checkForExistingFootprint: checking for " + intersectionFileName);
         if (FileCache.isFileGettable(intersectionFileName))
         {
-            System.out.println(
-                    "PerspectiveImage: checkForExistingFootprint: getting from server");
+//            System.out.println(
+//                    "PerspectiveImage: checkForExistingFootprint: getting from server");
             File file = FileCache.getFileFromServer(intersectionFileName);
-            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally " + file.getAbsolutePath());
+//            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally " + file.getAbsolutePath());
             vtkPolyDataReader reader = new vtkPolyDataReader();
 //            reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));	//This is wrong.  The old code was stripping off .gz from the intersection name.  This now further removes .vtk which is bad.
             reader.SetFileName(file.getAbsolutePath());	//now just reads in the file path as it should.
-            System.out.println("PerspectiveImage: checkForExistingFootprint:filename is " + reader.GetFileName());
             reader.Update();
             vtkPolyData footprint =  reader.GetOutput();
-            System.out.println("PerspectiveImage: checkForExistingFootprint: returning " + footprint);
             return footprint;
         }
-        System.out.println("PerspectiveImage: checkForExistingFootprint: not gettable returning null");
         return null;
     }
 
