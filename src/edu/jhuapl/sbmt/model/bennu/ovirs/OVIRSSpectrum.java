@@ -40,11 +40,11 @@ import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
 import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.model.bennu.otes.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
-import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
-import edu.jhuapl.sbmt.model.spectrum.coloring.SpectrumColoringStyle;
-import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics;
-import edu.jhuapl.sbmt.model.spectrum.statistics.SpectrumStatistics.Sample;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumColoringStyle;
+import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics;
+import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics.Sample;
 
 
 public class OVIRSSpectrum extends BasicSpectrum

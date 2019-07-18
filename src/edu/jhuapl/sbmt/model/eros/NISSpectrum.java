@@ -24,8 +24,8 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
-import edu.jhuapl.sbmt.model.spectrum.BasicSpectrum;
-import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.ISpectralInstrument;
 
 public class NISSpectrum extends BasicSpectrum
 {

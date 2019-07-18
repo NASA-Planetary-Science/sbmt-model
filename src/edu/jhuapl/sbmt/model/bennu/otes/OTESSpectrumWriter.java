@@ -24,7 +24,7 @@ public class OTESSpectrumWriter extends BasicFileWriter
         try
         {
             double[] calibratedRadiance = otes.getSpectrum();
-            double[] waveNumber = otes.getxData();
+            Double[] waveNumber = otes.getxData();
             BufferedWriter writer = new BufferedWriter(new FileWriter(new File(filename)));
             writer.write("# ET time");
             writer.newLine();

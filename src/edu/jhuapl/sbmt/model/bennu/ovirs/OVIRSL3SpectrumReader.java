@@ -19,7 +19,7 @@ public class OVIRSL3SpectrumReader extends BasicFileReader
 //    double[] calibratedRadiance;
 //    double[] calibratedRadianceUncertainty;
     double[] yValues;
-    double[] xValues;
+    Double[] xValues;
     int numberEntries = 1393;
     int interceptFlag = 0;
     int fovFlag = 0;
@@ -46,7 +46,7 @@ public class OVIRSL3SpectrumReader extends BasicFileReader
                 boresightZ = stream.readDouble();
 
             numberEntries = stream.readInt();
-            xValues=new double[numberEntries];
+            xValues=new Double[numberEntries];
             yValues=new double[numberEntries];
 
             for (int i=0; i<numberEntries; i++)
@@ -73,7 +73,7 @@ public class OVIRSL3SpectrumReader extends BasicFileReader
         return yValues;
     }
 
-    public double[] getXAxis()
+    public Double[] getXAxis()
     {
         return xValues;
     }

@@ -3,9 +3,9 @@ package edu.jhuapl.sbmt.model.bennu.ovirs;
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
-import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.Spectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 
 public class OVIRS extends BasicSpectrumInstrument
 {
@@ -20,7 +20,7 @@ public class OVIRS extends BasicSpectrumInstrument
     public OVIRS()
     {
         super("um", "OVIRS", OVIRSQuery.getInstance(), OVIRSSpectrumMath.getInstance());
-        bandCenters = new double[]{    //unit: microns
+        bandCenters = new Double[]{    //unit: microns
                 0.392000, //0
                 0.394000, //1
                 0.396000, //2
@@ -2821,4 +2821,22 @@ public class OVIRS extends BasicSpectrumInstrument
     {
         return new OVIRSSpectrum(filename, smallBodyModel, this);
     }
+
+    @Override
+	public double[] getRGBMaxVals()
+	{
+		return new double[] {0.00005, 0.0001, 0.002};
+	}
+
+	@Override
+	public int[] getRGBDefaultIndices()
+	{
+		return new int[] {736, 500, 50};
+	}
+
+	@Override
+	public String[] getDataTypeNames()
+	{
+		return new String[] {"I/F", "REF"};
+	}
 }

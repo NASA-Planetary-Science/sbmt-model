@@ -17,22 +17,23 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
+import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
-import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
-import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchController;
 import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
-import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
-import edu.jhuapl.sbmt.model.spectrum.SpectraCollection;
+import edu.jhuapl.sbmt.spectrum.model.core.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectraCollection;
+import edu.jhuapl.sbmt.spectrum.ui.AbstractSpectrumSearchController;
 
-public class OVIRSSearchPanel extends SpectrumSearchController
+public class OVIRSSearchPanel extends AbstractSpectrumSearchController
 {
     String fileExtension = "";
 
-    public OVIRSSearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
+    public OVIRSSearchPanel(BodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
             Renderer renderer, ISpectralInstrument instrument, boolean isSearchView)
     {
-        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument, isSearchView);
+        super(smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.hierarchicalSpectraSearchSpecification,
+        		smallBodyConfig.hasHypertreeBasedSpectraSearch, modelManager, infoPanelManager, pickManager, renderer, instrument, isSearchView);
 
         setupComboBoxes();
         setColoringComboBox();

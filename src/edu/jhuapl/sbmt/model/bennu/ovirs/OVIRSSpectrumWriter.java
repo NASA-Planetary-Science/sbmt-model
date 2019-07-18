@@ -13,7 +13,7 @@ public class OVIRSSpectrumWriter extends BasicFileWriter
 {
     Vector3D boresightIntercetp;
     double et;
-    double[] xData;
+    Double[] xData;
     double[] yData;
 
     OVIRSSpectrum ovirs;

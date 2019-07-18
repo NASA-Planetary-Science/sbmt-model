@@ -12,7 +12,7 @@ public class OTESSpectrumReader extends BasicFileReader
 //    String sourceFileName;
     double sclk;
     double[] yValues;
-    double[] xValues;
+    Double[] xValues;
     int numberEntries = 0;
 
     public OTESSpectrumReader(String filename, int numberEntries)
@@ -27,7 +27,7 @@ public class OTESSpectrumReader extends BasicFileReader
     {
         try
         {
-            xValues=new double[numberEntries];
+            xValues=new Double[numberEntries];
             yValues=new double[numberEntries];
 //            System.out.println("OTESSpectrumReader: read: reading " + filename);
 //            BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
@@ -69,7 +69,7 @@ public class OTESSpectrumReader extends BasicFileReader
         return yValues;
     }
 
-    public double[] getXAxis()
+    public Double[] getXAxis()
     {
         return xValues;
     }

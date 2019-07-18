@@ -3,9 +3,9 @@ package edu.jhuapl.sbmt.model.bennu.otes;
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
-import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.Spectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 
 public class OTES extends BasicSpectrumInstrument
 {
@@ -21,7 +21,7 @@ public class OTES extends BasicSpectrumInstrument
     public OTES()
     {
          super("cm^-1", "OTES", OTESQuery.getInstance(), OTESSpectrumMath.getInstance());
-         bandCenters = new double[]{ 8.660700e+00, // 0
+         bandCenters = new Double[]{ 8.660700e+00, // 0
                  1.732140e+01, // 1
                  2.598210e+01, // 2
                  3.464280e+01, // 3
@@ -733,6 +733,24 @@ public class OTES extends BasicSpectrumInstrument
     {
         return new OTESSpectrum(filename, smallBodyModel, this);
     }
+
+	@Override
+	public double[] getRGBMaxVals()
+	{
+		return new double[] {0.000007, 0.000007, 0.000007};
+	}
+
+	@Override
+	public int[] getRGBDefaultIndices()
+	{
+		return new int[] {50, 100, 150};
+	}
+
+	@Override
+	public String[] getDataTypeNames()
+	{
+		return new String[] {"L2", "L3"};
+	}
 
 
 }

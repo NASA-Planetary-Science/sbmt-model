@@ -3,9 +3,9 @@ package edu.jhuapl.sbmt.model.eros;
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
-import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.Spectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 
 public class NIS extends BasicSpectrumInstrument
 {
@@ -19,7 +19,7 @@ public class NIS extends BasicSpectrumInstrument
     public NIS()
     {
         super("nm", "NIS", NisQuery.getInstance(), NISSpectrumMath.getSpectrumMath());
-        bandCenters = new double[]{
+        bandCenters = new Double[]{
                 816.2,  // 0
                 837.8,  // 1
                 859.4,  // 2
@@ -165,6 +165,27 @@ public class NIS extends BasicSpectrumInstrument
     {
         return new NISSpectrum(filename, smallBodyModel, this);
     }
+
+
+	@Override
+	public double[] getRGBMaxVals()
+	{
+		return new double[] { 0.5, 0.5, 0.5 };
+	}
+
+
+	@Override
+	public int[] getRGBDefaultIndices()
+	{
+		return new int[] { 1, 25, 50 };
+	}
+
+
+	@Override
+	public String[] getDataTypeNames()
+	{
+		return new String[] {};
+	}
 
 
 

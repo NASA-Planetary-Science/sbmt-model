@@ -33,7 +33,7 @@ import edu.jhuapl.saavtk.gui.ModelInfoWindow;
 import edu.jhuapl.saavtk.model.Model;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
-import edu.jhuapl.sbmt.gui.spectrum.SpectrumPopupMenu;
+import edu.jhuapl.sbmt.spectrum.ui.SpectrumPopupMenu;
 
 public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyChangeListener
 {
@@ -52,10 +52,10 @@ public class OVIRSSpectrumInfoPanel extends ModelInfoWindow implements PropertyC
 
         // add the jfreechart graph
         XYSeries series = new XYSeries("NIRS3 Spectrum");
-        double[] wavelengths = spectrum.getxData();
+        Double[] wavelengths = spectrum.getxData();
         double[] spect = spectrum.getSpectrum();
         for (int i=0; i<wavelengths.length; ++i)
-            series.add(wavelengths[i], spect[i]);
+            series.add((double)wavelengths[i], spect[i]);
         XYDataset xyDataset = new XYSeriesCollection(series);
         JFreeChart chart = ChartFactory.createXYLineChart
                 (spectrum.getDataName(), spectrum.getxAxisUnits(), spectrum.getyAxisUnits(),

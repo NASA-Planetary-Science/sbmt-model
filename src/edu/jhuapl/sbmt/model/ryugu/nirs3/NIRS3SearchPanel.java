@@ -17,19 +17,20 @@ import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
+import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
-import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
-import edu.jhuapl.sbmt.gui.spectrum.SpectrumSearchPanel;
-import edu.jhuapl.sbmt.model.spectrum.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.ui.AbstractSpectrumSearchPanel;
 
-public class NIRS3SearchPanel extends SpectrumSearchPanel
+public class NIRS3SearchPanel extends AbstractSpectrumSearchPanel
 {
 
-    public NIRS3SearchPanel(SmallBodyViewConfig smallBodyConfig, ModelManager modelManager,
+    public NIRS3SearchPanel(BodyViewConfig smallBodyConfig, ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager, PickManager pickManager,
             Renderer renderer, ISpectralInstrument instrument)
     {
-        super(smallBodyConfig, modelManager, infoPanelManager, pickManager, renderer, instrument);
+        super(smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.hierarchicalSpectraSearchSpecification,
+        		 modelManager, infoPanelManager, pickManager, renderer, instrument);
         // TODO Auto-generated constructor stub
 
 

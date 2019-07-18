@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.otes;
 
-import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumMath;
 
 public class OTESSpectrumMath extends SpectrumMath
 {

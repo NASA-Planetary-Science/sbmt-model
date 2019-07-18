@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu.NIRS3Spectrum;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
-import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.Spectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 
 public class NIRS3 extends BasicSpectrumInstrument
 {
-    public static int bandCentersLength = 128;
+	public static int bandCentersLength = 128;
 
 
     static
@@ -21,7 +21,7 @@ public class NIRS3 extends BasicSpectrumInstrument
     public NIRS3()
     {
         super("cm^-1", "NIRS3", NIRS3Query.getInstance(), NIRS3SpectrumMath.getInstance());
-        bandCenters = new double[]{
+        bandCenters = new Double[]{
         		1249.11, // 0
                 1267.65, // 1
                 1286.19, // 2
@@ -292,6 +292,28 @@ public class NIRS3 extends BasicSpectrumInstrument
     {
         return new NIRS3Spectrum(filename, smallBodyModel, this);
     }
+
+
+	@Override
+	public double[] getRGBMaxVals()
+	{
+		return new double[] { 0.00005, 0.0001, 0.002 };
+	}
+
+
+	@Override
+	public int[] getRGBDefaultIndices()
+	{
+		return new int[] {100, 70, 40};
+	}
+
+
+	@Override
+	public String[] getDataTypeNames()
+	{
+		// TODO Auto-generated method stub
+		return new String[] { };
+	}
 
 
 }
