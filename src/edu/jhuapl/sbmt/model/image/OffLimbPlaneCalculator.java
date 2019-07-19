@@ -64,7 +64,8 @@ public class OffLimbPlaneCalculator
 		{
 			File file = FileCache.getFileFromServer(offLimbImageDataFileName);
 			vtkPolyDataReader reader = new vtkPolyDataReader();
-			reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));
+//			reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));
+			reader.SetFileName(file.getAbsolutePath());
 			reader.Update();
 			vtkPolyData offLimbImageData = reader.GetOutput();
 			return offLimbImageData;
