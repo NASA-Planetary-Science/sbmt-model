@@ -15,11 +15,13 @@ import javax.swing.JOptionPane;
 import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.util.Configuration;
+import edu.jhuapl.sbmt.query.ISearchResultsMetadata;
 import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.SearchResultsMetadata;
 import edu.jhuapl.sbmt.query.database.DatabaseQueryBase;
 import edu.jhuapl.sbmt.query.database.DatabaseSearchMetadata;
 import edu.jhuapl.sbmt.query.database.SpectraDatabaseSearchMetadata;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 
 import crucible.crust.metadata.api.Metadata;
 import crucible.crust.metadata.api.Version;
@@ -98,7 +100,7 @@ public final class NisQuery extends DatabaseQueryBase
     }
 
     @Override
-    public SearchResultsMetadata runQuery(SearchMetadata queryMetadata)
+    public ISearchResultsMetadata<BasicSpectrum> runQuery(SearchMetadata queryMetadata)
     {
         FixedMetadata metadata = queryMetadata.getMetadata();
         double fromIncidence = metadata.get(DatabaseSearchMetadata.FROM_INCIDENCE);

@@ -1,10 +1,10 @@
 package edu.jhuapl.sbmt.model.image;
 
 import edu.jhuapl.saavtk.config.TypedLookup;
-import edu.jhuapl.sbmt.client.SpectralMode;
 import edu.jhuapl.sbmt.config.SessionConfiguration;
 import edu.jhuapl.sbmt.imaging.instruments.ImagingInstrumentConfiguration;
 import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectralMode;
 
 public class BasicImagingInstrument extends ImagingInstrument
 {

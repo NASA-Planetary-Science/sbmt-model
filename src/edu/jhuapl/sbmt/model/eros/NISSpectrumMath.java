@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.eros;
 
-import edu.jhuapl.sbmt.spectrum.model.core.SpectrumMath;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
 
 public class NISSpectrumMath extends SpectrumMath
 {

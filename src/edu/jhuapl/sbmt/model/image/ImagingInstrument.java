@@ -1,10 +1,10 @@
 package edu.jhuapl.sbmt.model.image;
 
-import edu.jhuapl.sbmt.client.SpectralMode;
 import edu.jhuapl.sbmt.query.IQueryBase;
 import edu.jhuapl.sbmt.query.QueryBase;
 import edu.jhuapl.sbmt.query.database.GenericPhpQuery;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectralMode;
 
 import crucible.crust.metadata.api.Key;
 import crucible.crust.metadata.api.Metadata;

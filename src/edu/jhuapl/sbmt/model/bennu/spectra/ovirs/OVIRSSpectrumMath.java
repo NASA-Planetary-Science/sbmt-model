@@ -1,17 +1,17 @@
-package edu.jhuapl.sbmt.model.ryugu.nirs3;
+package edu.jhuapl.sbmt.model.bennu.spectra.ovirs;
 
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
 
-public class NIRS3SpectrumMath extends SpectrumMath
+public class OVIRSSpectrumMath extends SpectrumMath
 {
-    private static NIRS3SpectrumMath spectrumMath=new NIRS3SpectrumMath();
+    private static OVIRSSpectrumMath spectrumMath=new OVIRSSpectrumMath();
 
-    public static NIRS3SpectrumMath getInstance()
+    public static OVIRSSpectrumMath getInstance()
     {
         return spectrumMath;
     }
 
-    private NIRS3SpectrumMath()
+    private OVIRSSpectrumMath()
     {
         // TODO Auto-generated constructor stub
     }
@@ -19,7 +19,7 @@ public class NIRS3SpectrumMath extends SpectrumMath
     @Override
     public int getNumberOfBandsPerRawSpectrum()
     {
-        return NIRS3.bandCentersLength;
+        return OVIRS.bandCentersLength;
     }
 
     @Override

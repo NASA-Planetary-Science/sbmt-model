@@ -1,7 +1,5 @@
 package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -19,8 +17,9 @@ import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
-import edu.jhuapl.sbmt.spectrum.model.core.ISpectralInstrument;
-import edu.jhuapl.sbmt.spectrum.ui.AbstractSpectrumSearchPanel;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.ui.oldWay.AbstractSpectrumSearchPanel;
 
 public class NIRS3SearchPanel extends AbstractSpectrumSearchPanel
 {
@@ -31,8 +30,6 @@ public class NIRS3SearchPanel extends AbstractSpectrumSearchPanel
     {
         super(smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.hierarchicalSpectraSearchSpecification,
         		 modelManager, infoPanelManager, pickManager, renderer, instrument);
-        // TODO Auto-generated constructor stub
-
 
         setupComboBoxes();
 
@@ -58,36 +55,36 @@ public class NIRS3SearchPanel extends AbstractSpectrumSearchPanel
     }
 
     @Override
-    protected void setSpectrumSearchResults(List<List<String>> results)
+    protected void setSpectrumSearchResults(List<BasicSpectrum> results)
     {
 
         spectrumResultsLabelText = results.size() + " spectra matched";
         resultsLabel.setText(spectrumResultsLabelText);
 
-        List<String> matchedImages=Lists.newArrayList();
-        for (List<String> res : results)
-        {
-            //String path = NisQuery.getNisPath(res);
-            //matchedImages.add(path);
+//        List<String> matchedImages=Lists.newArrayList();
+//        for (BasicSpectrum res : results)
+//        {
+//            //String path = NisQuery.getNisPath(res);
+//            //matchedImages.add(path);
+//
+//            String basePath=FilenameUtils.getPath(res.getFullPath());
+//            String filename=FilenameUtils.getBaseName(res.getFullPath());
+//
+//            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
+////            File file=FileCache.getFileFromServer("/"+infoFile.toString());
+//
+//            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
+//
+//        }
 
-            String basePath=FilenameUtils.getPath(res.get(0));
-            String filename=FilenameUtils.getBaseName(res.get(0));
 
-            Path infoFile=Paths.get(basePath).resolveSibling("infofiles-corrected/"+filename+".INFO");
-//            File file=FileCache.getFileFromServer("/"+infoFile.toString());
-
-            matchedImages.add(FilenameUtils.getBaseName(infoFile.toString()));
-
-        }
-
-
-        spectrumRawResults = matchedImages;
+        spectrumRawResults = results;
 
         String[] formattedResults = new String[results.size()];
 
         // add the results to the list
         int i=0;
-        for (String str : matchedImages)
+        for (BasicSpectrum spectrum : spectrumRawResults)
         {
             //String fileNum=str.substring(9,str.length()-5);
             //System.out.println(fileNum);
@@ -97,7 +94,7 @@ public class NIRS3SearchPanel extends AbstractSpectrumSearchPanel
  //                   fileNum
 //                    + ", day: " + str.substring(10, 13) + "/" + str.substring(5, 9)+" ("+detailedTime+")"
 //                    );
-            formattedResults[i]=str;//FilenameUtils.getBaseName(str);
+            formattedResults[i]=spectrum.getDataName();//FilenameUtils.getBaseName(str);
             ++i;
         }
 
@@ -115,6 +112,5 @@ public class NIRS3SearchPanel extends AbstractSpectrumSearchPanel
     {
         return "/earth/hayabusa2/nirs3/spectra/"+FilenameUtils.getBaseName(currentSpectrumRaw)+".spect";
     }
-
 
 }

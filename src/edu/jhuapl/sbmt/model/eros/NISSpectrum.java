@@ -11,21 +11,13 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
-import vtk.vtkDoubleArray;
-import vtk.vtkIdTypeArray;
-import vtk.vtkPolyData;
-import vtk.vtkTriangle;
-
-import edu.jhuapl.saavtk.model.GenericPolyhedralModel;
 import edu.jhuapl.saavtk.util.FileUtil;
-import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
-import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
-import edu.jhuapl.sbmt.spectrum.model.core.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
 
 public class NISSpectrum extends BasicSpectrum
 {
@@ -49,181 +41,27 @@ public class NISSpectrum extends BasicSpectrum
 
     double[] spectrumErrors=new double[NIS.bandCentersLength];
 
-    /**
-     * Because instances of NISSpectrum can be expensive, we want there to be
-     * no more than one instance of this class per image file on the server.
-     * Hence this class was created to manage the creation and deletion of
-     * NISSpectrums. Anyone needing a NISSpectrum should use this factory class to
-     * create NISSpectrums and should NOT call the constructor directly.
-     */
-//    public static class NISSpectrumFactory
-//    {
-//        static private WeakHashMap<NISSpectrum, Object> spectra =
-//            new WeakHashMap<NISSpectrum, Object>();
-//
-//        static /*public*/ NISSpectrum createSpectrum(String name, SmallBodyModel eros) throws IOException
-//        {
-//            for (NISSpectrum spectrum : spectra.keySet())
-//            {
-//                if (spectrum.getServerPath().equals(name))
-//                    return spectrum;
-//            }
-//
-//            NISSpectrum spectrum = new NISSpectrum(name, eros);
-//            spectra.put(spectrum, null);
-//            return spectrum;
-//        }
-//    }
+    ISmallBodyModel smallBodyModel;
 
-
-    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel, ISpectralInstrument instrument) throws IOException
+    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel,
+            ISpectralInstrument instrument) throws IOException
     {
-        super(filename, smallBodyModel, instrument);
-
-        List<String> values = FileUtil.getFileWordsAsStringList(fullpath);
-
-        dateTime = new DateTime(values.get(DATE_TIME_OFFSET), DateTimeZone.UTC);
-
-        double metOffsetToMiddle = Double.parseDouble(values.get(MET_OFFSET_TO_MIDDLE_OFFSET));
-        dateTime = dateTime.plusMillis((int)metOffsetToMiddle);
-
-        duration = Double.parseDouble(values.get(DURATION_OFFSET));
-        minIncidence = Double.parseDouble(values.get(INCIDENCE_OFFSET+1));
-        maxIncidence = Double.parseDouble(values.get(INCIDENCE_OFFSET+2));
-        minEmission= Double.parseDouble(values.get(EMISSION_OFFSET+1));
-        maxEmission = Double.parseDouble(values.get(EMISSION_OFFSET+2));
-        minPhase = Double.parseDouble(values.get(PHASE_OFFSET+1));
-        maxPhase= Double.parseDouble(values.get(PHASE_OFFSET+2));
-        range = Double.parseDouble(values.get(RANGE_OFFSET));
-        polygon_type_flag = Short.parseShort(values.get(POLYGON_TYPE_FLAG_OFFSET));
-
-        int footprintSize = Integer.parseInt(values.get(NUMBER_OF_VERTICES_OFFSET));
-        for (int i=0; i<footprintSize; ++i)
-        {
-            int latIdx = POLYGON_START_COORDINATES_OFFSET + i*2;
-            int lonIdx = POLYGON_START_COORDINATES_OFFSET + i*2 + 1;
-
-            latLons.add(new LatLon(Double.parseDouble(values.get(latIdx)) * Math.PI / 180.0,
-                                   (360.0-Double.parseDouble(values.get(lonIdx))) * Math.PI / 180.0));
-        }
-
-
-        for (int i=0; i<getNumberOfBands(); ++i)
-        {
-            // The following min and max clamps the value between 0 and 1.
-            spectrum[i] = Math.min(1.0, Math.max(0.0, Double.parseDouble(values.get(CALIBRATED_GE_DATA_OFFSET + i))));
-            spectrumErrors[i] = Double.parseDouble(values.get(CALIBRATED_GE_NOISE_OFFSET + i));
-        }
-
-        for (int i=0; i<3; ++i)
-            spacecraftPosition[i] = Double.parseDouble(values.get(SPACECRAFT_POSITION_OFFSET + i));
-        for (int i=0; i<3; ++i)
-            frustum1[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + i));
-        for (int i=0; i<3; ++i)
-            frustum2[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 3 + i));
-        for (int i=0; i<3; ++i)
-            frustum3[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 6 + i));
-        for (int i=0; i<3; ++i)
-            frustum4[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 9 + i));
-        MathUtil.vhat(frustum1, frustum1);
-        MathUtil.vhat(frustum2, frustum2);
-        MathUtil.vhat(frustum3, frustum3);
-        MathUtil.vhat(frustum4, frustum4);
-
-        frustumCenter=new double[3];
-        for (int i=0; i<3; i++)
-            frustumCenter[i]=frustum1[i]+frustum2[i]+frustum3[i]+frustum4[i];
-
-        footprint = new vtkPolyData();
-        shiftedFootprint = new vtkPolyData();
-        footprintHeight=smallBodyModel.getMinShiftAmount();
-
-        isToSunVectorShowing=false;
+        this(filename, smallBodyModel, instrument, false);
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
-        toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
+    }
+
+    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel, ISpectralInstrument instrument, boolean isCustom) throws IOException
+    {
+        super(filename, instrument);
+        this.smallBodyModel = smallBodyModel;
+        xData = getBandCenters();
 
 //        spectrum=new double[getNumberOfBands()];
 //        spectrumEros=new double[getNumberOfBands()];
 
 
     }
-
-    @Override
-    public void generateFootprint()
-    {
-                if (!latLons.isEmpty())
-                {
-                    vtkPolyData tmp = smallBodyModel.computeFrustumIntersection(
-                            spacecraftPosition, frustum1, frustum2, frustum3, frustum4);
-                    if (tmp == null) return;
-                    vtkDoubleArray faceAreaFraction = new vtkDoubleArray();
-                    faceAreaFraction.SetName(faceAreaFractionArrayName);
-                    Frustum frustum = new Frustum(getFrustumOrigin(),
-                            getFrustumCorner(0), getFrustumCorner(1),
-                            getFrustumCorner(2), getFrustumCorner(3));
-                    for (int c = 0; c < tmp.GetNumberOfCells(); c++)
-                    {
-                        vtkIdTypeArray originalIds = (vtkIdTypeArray) tmp.GetCellData()
-                                .GetArray(GenericPolyhedralModel.cellIdsArrayName);
-                        int originalId = originalIds.GetValue(c);
-                        vtkTriangle tri = (vtkTriangle) smallBodyModel
-                                .getSmallBodyPolyData().GetCell(originalId); // tri on
-                                                                             // original
-                                                                             // body
-                                                                             // model
-                        vtkTriangle ftri = (vtkTriangle) tmp.GetCell(c); // tri on
-                                                                         // footprint
-                        faceAreaFraction.InsertNextValue(
-                                ftri.ComputeArea() / tri.ComputeArea());
-                    }
-                    tmp.GetCellData().AddArray(faceAreaFraction);
-
-                    if (tmp != null)
-                    {
-                        // Need to clear out scalar data since if coloring data is being
-                        // shown,
-                        // then the color might mix-in with the image.
-                        tmp.GetCellData().SetScalars(null);
-                        tmp.GetPointData().SetScalars(null);
-
-                        footprint.DeepCopy(tmp);
-
-                        shiftedFootprint.DeepCopy(tmp);
-                        PolyDataUtil.shiftPolyDataInMeanNormalDirection(
-                                shiftedFootprint, footprintHeight);
-
-                        createSelectionPolyData();
-                        createSelectionActor();
-                        createToSunVectorPolyData();
-                        createToSunVectorActor();
-                        createOutlinePolyData();
-                        createOutlineActor();
-                    }
-                }
-            }
-
-
-
-    //    private vtkPolyData loadFootprint()
-//    {
-//        String footprintFilename = serverpath.substring(0, serverpath.length()-4) + "_FOOTPRINT.VTK";
-//        File file = FileCache.getFileFromServer(footprintFilename);
-//
-//        if (file == null)
-//        {
-//            return null;
-//        }
-//
-//        vtkPolyDataReader footprintReader = new vtkPolyDataReader();
-//        footprintReader.SetFileName(file.getAbsolutePath());
-//        footprintReader.Update();
-//
-//        vtkPolyData polyData = new vtkPolyData();
-//        polyData.DeepCopy(footprintReader.GetOutput());
-//
-//        return polyData;
-//    }
 
     public double getRange()
     {
@@ -427,5 +265,84 @@ public class NISSpectrum extends BasicSpectrum
     {
         return NIS.bandCentersLength;
     }
+
+	@Override
+	public void readPointingFromInfoFile()
+	{
+		// TODO IMPLEMENT THIS FOR NIS - CURRENTLY DOESN'T USE INFO FILES
+
+	}
+
+	@Override
+	public void readSpectrumFromFile()
+	{
+		List<String> values = null;
+		try
+		{
+			values = FileUtil.getFileWordsAsStringList(fullpath);
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        dateTime = new DateTime(values.get(DATE_TIME_OFFSET), DateTimeZone.UTC);
+
+        double metOffsetToMiddle = Double.parseDouble(values.get(MET_OFFSET_TO_MIDDLE_OFFSET));
+        dateTime = dateTime.plusMillis((int)metOffsetToMiddle);
+
+        duration = Double.parseDouble(values.get(DURATION_OFFSET));
+        minIncidence = Double.parseDouble(values.get(INCIDENCE_OFFSET+1));
+        maxIncidence = Double.parseDouble(values.get(INCIDENCE_OFFSET+2));
+        minEmission= Double.parseDouble(values.get(EMISSION_OFFSET+1));
+        maxEmission = Double.parseDouble(values.get(EMISSION_OFFSET+2));
+        minPhase = Double.parseDouble(values.get(PHASE_OFFSET+1));
+        maxPhase= Double.parseDouble(values.get(PHASE_OFFSET+2));
+        range = Double.parseDouble(values.get(RANGE_OFFSET));
+        polygon_type_flag = Short.parseShort(values.get(POLYGON_TYPE_FLAG_OFFSET));
+
+        int footprintSize = Integer.parseInt(values.get(NUMBER_OF_VERTICES_OFFSET));
+        for (int i=0; i<footprintSize; ++i)
+        {
+            int latIdx = POLYGON_START_COORDINATES_OFFSET + i*2;
+            int lonIdx = POLYGON_START_COORDINATES_OFFSET + i*2 + 1;
+
+            latLons.add(new LatLon(Double.parseDouble(values.get(latIdx)) * Math.PI / 180.0,
+                                   (360.0-Double.parseDouble(values.get(lonIdx))) * Math.PI / 180.0));
+        }
+
+
+        for (int i=0; i<getNumberOfBands(); ++i)
+        {
+            // The following min and max clamps the value between 0 and 1.
+            spectrum[i] = Math.min(1.0, Math.max(0.0, Double.parseDouble(values.get(CALIBRATED_GE_DATA_OFFSET + i))));
+            spectrumErrors[i] = Double.parseDouble(values.get(CALIBRATED_GE_NOISE_OFFSET + i));
+        }
+
+        for (int i=0; i<3; ++i)
+            spacecraftPosition[i] = Double.parseDouble(values.get(SPACECRAFT_POSITION_OFFSET + i));
+        for (int i=0; i<3; ++i)
+            frustum1[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + i));
+        for (int i=0; i<3; ++i)
+            frustum2[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 3 + i));
+        for (int i=0; i<3; ++i)
+            frustum3[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 6 + i));
+        for (int i=0; i<3; ++i)
+            frustum4[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 9 + i));
+        MathUtil.vhat(frustum1, frustum1);
+        MathUtil.vhat(frustum2, frustum2);
+        MathUtil.vhat(frustum3, frustum3);
+        MathUtil.vhat(frustum4, frustum4);
+
+        frustumCenter=new double[3];
+        for (int i=0; i<3; i++)
+            frustumCenter[i]=frustum1[i]+frustum2[i]+frustum3[i]+frustum4[i];
+
+
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
+        toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
+	}
 
 }

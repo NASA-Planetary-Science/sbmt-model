@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
-import edu.jhuapl.sbmt.spectrum.model.core.Spectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.Spectrum;
 
 public class NIS extends BasicSpectrumInstrument
 {
