@@ -272,6 +272,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
     Stopwatch sw;
 
+    public vtkActor getOffLimbActor() {
+		return offLimbActor;
+	}
+
+    public vtkActor getOffLimbBoundaryActor() {
+		return offLimbBoundaryActor;
+	}
+
+    public vtkActor getFootprintActor() {
+		return footprintActor;
+	}
+
+    public vtkActor getFrustumActor() {
+		return frustumActor;
+	}
+
 
   public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,

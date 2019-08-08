@@ -41,6 +41,10 @@ public class PerspectiveImageBoundary extends AbstractModel implements PropertyC
     private static vtkPolyData emptyPolyData;
     private double offset =0.003;
 
+    public vtkActor getActor() {
+		return actor;
+	}
+
     public PerspectiveImageBoundary(PerspectiveImage image, SmallBodyModel smallBodyModel) throws IOException
     {
         this.image = image;
