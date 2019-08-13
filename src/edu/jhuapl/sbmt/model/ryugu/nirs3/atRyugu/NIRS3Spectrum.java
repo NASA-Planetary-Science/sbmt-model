@@ -19,13 +19,13 @@ import edu.jhuapl.sbmt.core.InstrumentMetadata;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
-import edu.jhuapl.sbmt.spectrum.model.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectrumColoringStyle;
 import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics;
 import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics.Sample;
+import edu.jhuapl.sbmt.spectrum.rendering.AdvancedSpectrumRenderer;
 
 
 public class NIRS3Spectrum extends BasicSpectrum
@@ -38,13 +38,13 @@ public class NIRS3Spectrum extends BasicSpectrum
     ISmallBodyModel smallBodyModel;
 
     public NIRS3Spectrum(String filename, ISmallBodyModel smallBodyModel,
-            ISpectralInstrument instrument) throws IOException
+    		BasicSpectrumInstrument instrument) throws IOException
     {
     	this(filename, smallBodyModel, instrument, false, false);
     }
 
     public NIRS3Spectrum(String filename, ISmallBodyModel smallBodyModel,
-            ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+            BasicSpectrumInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, instrument, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());

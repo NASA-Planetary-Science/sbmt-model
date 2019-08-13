@@ -1,38 +1,35 @@
 package edu.jhuapl.sbmt.model.bennu.spectra.otes;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.joda.time.DateTime;
 
-import edu.jhuapl.saavtk.colormap.Colormap;
-import edu.jhuapl.saavtk.colormap.Colormaps;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.core.InstrumentMetadata;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.io.OTESSpectrumReader;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.io.OTESSpectrumWriter;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
-import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
-import edu.jhuapl.sbmt.spectrum.model.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.model.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectrumColoringStyle;
-import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics;
-import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics.Sample;
+
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.ProvidesGenericObjectFromMetadata;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.InstanceGetter;
+import crucible.crust.metadata.impl.SettableMetadata;
 
 
 public class OTESSpectrum extends BasicSpectrum
@@ -40,25 +37,71 @@ public class OTESSpectrum extends BasicSpectrum
     File infoFile, spectrumFile;
     double time;
     String extension = "";
-    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
+    private SpectrumInstrumentMetadataIO specIO;
+//    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
     private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
-    ISmallBodyModel smallBodyModel;
+    double boundingBoxDiagonalLength;
+    boolean headless;
 
-    public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
-            ISpectralInstrument instrument) throws IOException
+    private static final Key<OTESSpectrum> OTESSPECTRUM_KEY = Key.of("OREXSpectrum");
+	private static final Key<String> FILENAME_KEY = Key.of("fileName");
+	private static final Key<SpectrumInstrumentMetadataIO> SPECIO_KEY = Key.of("spectrumIO");
+	private static final Key<Double> BOUNDINGBOX_KEY = Key.of("boundingBoxDiagonalLength");
+	private static final Key<BasicSpectrumInstrument> SPECTRALINSTRUMENT_KEY = Key.of("spectralInstrument");
+	private static final Key<Boolean> HEADLESS_KEY = Key.of("headless");
+	private static final Key<Boolean> ISCUSTOM_KEY = Key.of("isCustom");
+
+
+    public static void initializeSerializationProxy()
+	{
+    	InstanceGetter.defaultInstanceGetter().register(OTESSPECTRUM_KEY, (source) -> {
+
+    		String filename = source.get(FILENAME_KEY);
+    		ProvidesGenericObjectFromMetadata<SpectrumInstrumentMetadataIO> specIOMetadata = InstanceGetter.defaultInstanceGetter().providesGenericObjectFromMetadata(SPECIO_KEY);
+    		SpectrumInstrumentMetadataIO specIO = specIOMetadata.provide(source);
+    		double boundingBoxDiagonalLength = source.get(BOUNDINGBOX_KEY);
+    		Boolean headless = source.get(HEADLESS_KEY);
+    		Boolean isCustom = source.get(ISCUSTOM_KEY);
+
+    		OTESSpectrum spec = null;
+			try
+			{
+				spec = new OTESSpectrum(filename, specIO, boundingBoxDiagonalLength, new OTES(), headless, isCustom);
+			} catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		return spec;
+
+    	}, OTESSpectrum.class, spec -> {
+
+    		SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+    		result.put(FILENAME_KEY, spec.serverpath);
+    		result.put(SPECIO_KEY, spec.specIO);
+    		result.put(BOUNDINGBOX_KEY, spec.boundingBoxDiagonalLength);
+    		result.put(HEADLESS_KEY, spec.headless);
+    		result.put(ISCUSTOM_KEY, spec.isCustomSpectra);
+    		return result;
+    	});
+
+	}
+
+    public OTESSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
+    		BasicSpectrumInstrument instrument) throws IOException
     {
-        this(filename, smallBodyModel, instrument, false, false);
+        this(filename, specIO, boundingBoxDiagonalLength, instrument, false, false);
     }
 
-    public OTESSpectrum(String filename, ISmallBodyModel smallBodyModel,
-            ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    public OTESSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
+    		BasicSpectrumInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, instrument, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());
-        this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
-        this.smallBodyModel = smallBodyModel;
+        this.specIO = specIO;
         instrumentMetadata = specIO.getInstrumentMetadata("OTES");
-        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        this.boundingBoxDiagonalLength = boundingBoxDiagonalLength;
+        double dx = MathUtil.vnorm(spacecraftPosition) + boundingBoxDiagonalLength; //smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
     }
 
@@ -223,17 +266,17 @@ public class OTESSpectrum extends BasicSpectrum
         {
             //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
             //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
-        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
-            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
-            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
-            colormap.setRangeMin(0.0);  //was 5.4
-            colormap.setRangeMax(90.00); //was 81.7
+//        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
+//            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
+//            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
+//            colormap.setRangeMin(0.0);  //was 5.4
+//            colormap.setRangeMax(90.00); //was 81.7
 
-            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
-                    double[] color = new double[3];
-            color[0] = color2.getRed()/255.0;
-            color[1] = color2.getGreen()/255.0;
-            color[2] = color2.getBlue()/255.0;
+//            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
+            double[] color = new double[3];
+//            color[0] = color2.getRed()/255.0;
+//            color[1] = color2.getGreen()/255.0;
+//            color[2] = color2.getBlue()/255.0;
             return color;
         }
         else

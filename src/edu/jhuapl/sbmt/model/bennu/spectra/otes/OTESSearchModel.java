@@ -1,12 +1,12 @@
 package edu.jhuapl.sbmt.model.bennu.spectra.otes;
 
 import edu.jhuapl.saavtk.model.ModelManager;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
 
 public class OTESSearchModel extends BaseSpectrumSearchModel
 {
-    public OTESSearchModel(ModelManager modelManager, ISpectralInstrument instrument)
+    public OTESSearchModel(ModelManager modelManager, BasicSpectrumInstrument instrument)
     {
         super(modelManager, instrument);
 

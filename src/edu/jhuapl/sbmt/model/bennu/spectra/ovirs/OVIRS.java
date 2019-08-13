@@ -22,7 +22,7 @@ public class OVIRS extends BasicSpectrumInstrument
             ISmallBodyModel smallBodyModel)
             throws IOException
     {
-        return new OVIRSSpectrum(filename, smallBodyModel, this);
+        return new OVIRSSpectrum(filename, smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), this);
     }
 
     @Override

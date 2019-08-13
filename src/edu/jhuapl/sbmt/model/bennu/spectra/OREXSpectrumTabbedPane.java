@@ -14,11 +14,11 @@ import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSearchModel;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSearchModel;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.SpectrumAppearanceListener;
-import edu.jhuapl.sbmt.spectrum.model.rendering.SpectraCollection;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectrumColoringStyle;
+import edu.jhuapl.sbmt.spectrum.rendering.SpectraCollection;
 
 /**
  * A tabbed panel with browse and search options
@@ -31,7 +31,7 @@ public class OREXSpectrumTabbedPane extends JTabbedPane
             BodyViewConfig smallBodyConfig,
             ModelManager modelManager,
             SbmtInfoWindowManager sbmtInfoWindowManager, PickManager pickManager,
-            Renderer renderer, ISpectralInstrument instrument, SpectraCollection spectrumCollection)
+            Renderer renderer, BasicSpectrumInstrument instrument, SpectraCollection spectrumCollection)
     {
         setBorder(BorderFactory.createEmptyBorder());
         if (instrument.getDisplayName().equals(SpectraTypeFactory.findSpectraTypeForDisplayName("OTES").getDisplayName())) {

@@ -2,12 +2,12 @@ package edu.jhuapl.sbmt.model.bennu.spectra.ovirs;
 
 
 import edu.jhuapl.saavtk.model.ModelManager;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
 
 public class OVIRSSearchModel extends BaseSpectrumSearchModel
 {
-    public OVIRSSearchModel(ModelManager modelManager, ISpectralInstrument instrument)
+    public OVIRSSearchModel(ModelManager modelManager, BasicSpectrumInstrument instrument)
     {
         super(modelManager, instrument);
 

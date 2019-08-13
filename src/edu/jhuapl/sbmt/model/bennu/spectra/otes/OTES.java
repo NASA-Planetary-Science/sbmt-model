@@ -5,6 +5,7 @@ import java.io.IOException;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.Spectrum;
 
 public class OTES extends BasicSpectrumInstrument
@@ -16,13 +17,12 @@ public class OTES extends BasicSpectrumInstrument
         SpectrumInstrumentFactory.registerType("OTES", new OTES());
     }
 
-
     @Override
     public Spectrum getSpectrumInstance(String filename,
             ISmallBodyModel smallBodyModel)
             throws IOException
     {
-        return new OTESSpectrum(filename, smallBodyModel, this);
+        return new OTESSpectrum(filename, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), this);
     }
 
 	@Override

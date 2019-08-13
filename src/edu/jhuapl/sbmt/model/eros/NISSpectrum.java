@@ -17,7 +17,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 
 public class NISSpectrum extends BasicSpectrum
 {
@@ -44,14 +44,14 @@ public class NISSpectrum extends BasicSpectrum
     ISmallBodyModel smallBodyModel;
 
     public NISSpectrum(String filename, ISmallBodyModel smallBodyModel,
-            ISpectralInstrument instrument) throws IOException
+    		BasicSpectrumInstrument instrument) throws IOException
     {
         this(filename, smallBodyModel, instrument, false);
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
     }
 
-    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel, ISpectralInstrument instrument, boolean isCustom) throws IOException
+    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean isCustom) throws IOException
     {
         super(filename, instrument);
         this.smallBodyModel = smallBodyModel;

@@ -1,38 +1,29 @@
 package edu.jhuapl.sbmt.model.bennu.spectra.ovirs;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.joda.time.DateTime;
 
-import edu.jhuapl.saavtk.colormap.Colormap;
-import edu.jhuapl.saavtk.colormap.Colormaps;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.core.InstrumentMetadata;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.io.OVIRSSpectrumReader;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.io.OVIRSSpectrumWriter;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
-import edu.jhuapl.sbmt.spectrum.model.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.model.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectrumColoringStyle;
-import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics;
-import edu.jhuapl.sbmt.spectrum.model.statistics.SpectrumStatistics.Sample;
 
 
 public class OVIRSSpectrum extends BasicSpectrum
@@ -45,29 +36,27 @@ public class OVIRSSpectrum extends BasicSpectrum
     Vector3D boresightIntercept;
     private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
     private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
-    private ISmallBodyModel smallBodyModel;
 
-    public OVIRSSpectrum(String filename, ISmallBodyModel smallBodyModel,
-            ISpectralInstrument instrument) throws IOException
+    public OVIRSSpectrum(String filename, SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO, double boundingBoxDiagonalLength,
+    		BasicSpectrumInstrument instrument) throws IOException
     {
-    	this(filename, smallBodyModel, instrument, false, false);
+    	this(filename, specIO, boundingBoxDiagonalLength, instrument, false, false);
     }
 
-    public OVIRSSpectrum(String filename, ISmallBodyModel smallBodyModel,
-            ISpectralInstrument instrument, boolean headless, boolean isCustom) throws IOException
+    public OVIRSSpectrum(String filename, SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO, double boundingBoxDiagonalLength,
+    		BasicSpectrumInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, instrument, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());
-        this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
+        this.specIO = specIO;
         instrumentMetadata = specIO.getInstrumentMetadata("OVIRS");
-        this.smallBodyModel = smallBodyModel;
         if (serverpath.contains("l3esci_reff"))
     		spec = instrumentMetadata.getSpecs().get(0);
     	else if (serverpath.contains("l3csci"))
     		spec = instrumentMetadata.getSpecs().get(1);
     	else if (serverpath.contains("l3esci_radf"))
     		spec = instrumentMetadata.getSpecs().get(2);
-    	double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+    	double dx = MathUtil.vnorm(spacecraftPosition) + boundingBoxDiagonalLength;
         toSunVectorLength=dx;
     }
 
@@ -232,17 +221,17 @@ public class OVIRSSpectrum extends BasicSpectrum
         {
             //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
             //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
-        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
-            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
-            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
-            colormap.setRangeMin(0.0);  //was 5.4
-            colormap.setRangeMax(90.00); //was 81.7
-
-            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
-                    double[] color = new double[3];
-            color[0] = color2.getRed()/255.0;
-            color[1] = color2.getGreen()/255.0;
-            color[2] = color2.getBlue()/255.0;
+//        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
+//            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
+//            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
+//            colormap.setRangeMin(0.0);  //was 5.4
+//            colormap.setRangeMax(90.00); //was 81.7
+//
+//            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
+            double[] color = new double[3];
+//            color[0] = color2.getRed()/255.0;
+//            color[1] = color2.getGreen()/255.0;
+//            color[2] = color2.getBlue()/255.0;
             return color;
         }
         else

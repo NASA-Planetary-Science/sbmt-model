@@ -10,21 +10,21 @@ import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
-import edu.jhuapl.sbmt.spectrum.controllers.SpectrumColoringController;
-import edu.jhuapl.sbmt.spectrum.controllers.SpectrumResultsTableController;
+import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumColoringController;
+import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumResultsTableController;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.ISpectrumSearchModel;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
-import edu.jhuapl.sbmt.spectrum.model.rendering.SpectraCollection;
-import edu.jhuapl.sbmt.spectrum.model.rendering.SpectrumBoundaryCollection;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
-import edu.jhuapl.sbmt.spectrum.ui.SpectrumSearchPanel;
+import edu.jhuapl.sbmt.spectrum.rendering.SpectraCollection;
+import edu.jhuapl.sbmt.spectrum.rendering.SpectrumBoundaryCollection;
+import edu.jhuapl.sbmt.spectrum.ui.search.SpectrumSearchPanel;
 
 public class OREXSpectrumHypertreeSearchController
 {
     private ISpectrumSearchModel model;
     private SpectrumSearchPanel panel;
-    protected ISpectralInstrument instrument;
+    protected BasicSpectrumInstrument instrument;
     protected ModelManager modelManager;
     protected Renderer renderer;
     private SpectrumResultsTableController spectrumResultsTableController;
@@ -38,7 +38,7 @@ public class OREXSpectrumHypertreeSearchController
     		boolean hasHierarchicalSpectraSearch, double imageSearchDefaultMaxSpacecraftDistance, SpectraHierarchicalSearchSpecification spectraSpec,
 
     		ModelManager modelManager, SbmtInfoWindowManager infoPanelManager,
-            PickManager pickManager, Renderer renderer, ISpectralInstrument instrument, BaseSpectrumSearchModel model)
+            PickManager pickManager, Renderer renderer, BasicSpectrumInstrument instrument, BaseSpectrumSearchModel model)
     {
     	this.modelManager = modelManager;
         this.renderer = renderer;

@@ -13,8 +13,8 @@ import com.google.common.collect.Maps;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.ISpectralInstrument;
 
 public class NISSearchModel extends BaseSpectrumSearchModel
 {
@@ -53,7 +53,7 @@ public class NISSearchModel extends BaseSpectrumSearchModel
         return nisFileToSunPositionMap.get(fileName);
     }
 
-    public NISSearchModel(ModelManager modelManager, ISpectralInstrument instrument)
+    public NISSearchModel(ModelManager modelManager, BasicSpectrumInstrument instrument)
     {
     	 super(modelManager, instrument);
 

@@ -36,7 +36,7 @@ import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchParametersModel;
 import edu.jhuapl.sbmt.spectrum.model.hypertree.SpectraSearchDataCollection;
-import edu.jhuapl.sbmt.spectrum.ui.SpectrumHypertreeSearchParametersPanel;
+import edu.jhuapl.sbmt.spectrum.ui.search.SpectrumHypertreeSearchParametersPanel;
 
 public class OREXSpectrumHypertreeSearchParametersController
 {
