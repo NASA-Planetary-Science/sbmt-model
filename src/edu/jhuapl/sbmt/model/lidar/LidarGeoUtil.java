@@ -17,6 +17,7 @@ import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 
 import edu.jhuapl.saavtk.model.PolyhedralModel;
+import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Point3D;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
@@ -51,13 +52,14 @@ public class LidarGeoUtil
 			throw new IOException();
 
 		// Run the gravity program
-		Vector3D tmpVect = aManager.getTranslation(aTrack);
-		List<double[]> xyzPointList = new ArrayList<double[]>();
+		double radialOffset = aManager.getRadialOffset();
+		Vector3D transVect = aManager.getTranslation(aTrack);
+		List<double[]> xyzPointList = new ArrayList<>();
 		for (LidarPoint aLP : aTrack.getPointList())
 		{
-			double[] target = aLP.getTargetPosition().toArray();
-			target = aManager.transformLidarPoint(tmpVect, target);
-			xyzPointList.add(target);
+			Vector3D target = aLP.getTargetPosition();
+			target = transformTarget(transVect, radialOffset, target);
+			xyzPointList.add(target.toArray());
 		}
 
 		PolyhedralModel tmpSmallBodyModel = aManager.refSmallBodyModel;
@@ -71,8 +73,8 @@ public class LidarGeoUtil
 		fitLineToTrack(aManager, aTrack, fittedLinePoint, fittedLineDirection);
 		for (LidarPoint aLP : aTrack.getPointList())
 		{
-			double[] point = aLP.getTargetPosition().toArray();
-			point = aManager.transformLidarPoint(tmpVect, point);
+			Vector3D point = aLP.getTargetPosition();
+			point = transformTarget(transVect, radialOffset, point);
 			double dist = distanceOfClosestPointOnLineToStartOfLine(point, aTrack, fittedLinePoint, fittedLineDirection);
 			aDistanceL.add(dist);
 			aTimeL.add(aLP.getTime());
@@ -98,11 +100,11 @@ public class LidarGeoUtil
 	 * the transformation to a file.
 	 *
 	 * @param aTrack The Track of interest.
-	 * @param outfile - save reoriented track to this file
+	 * @param aFile - save reoriented track to this file
 	 * @param rotationMatrixFile - save transformation matrix to this file
 	 * @throws IOException
 	 */
-	public static void reprojectedTrackOntoFittedPlane(LidarTrackManager aManager, LidarTrack aTrack, File outfile,
+	public static void reprojectedTrackOntoFittedPlane(LidarTrackManager aManager, LidarTrack aTrack, File aFile,
 			File rotationMatrixFile) throws IOException
 	{
 		// Need at least 2 points to define a plane
@@ -115,16 +117,18 @@ public class LidarGeoUtil
 		fitPlaneToTrack(aManager, aTrack, pointOnPlane, planeOrientation);
 		planeOrientation = new LUDecomposition(planeOrientation).getSolver().getInverse();
 
-		FileWriter fstream = new FileWriter(outfile);
+		FileWriter fstream = new FileWriter(aFile);
 		BufferedWriter out = new BufferedWriter(fstream);
 
 		String newline = System.getProperty("line.separator");
 
-		Vector3D tmpVect = aManager.getTranslation(aTrack);
+		double radialOffset = aManager.getRadialOffset();
+		Vector3D transVect = aManager.getTranslation(aTrack);
 		for (LidarPoint aLP : aTrack.getPointList())
 		{
-			double[] target = aManager.transformLidarPoint(tmpVect, aLP.getTargetPosition().toArray());
+			Vector3D targetV = transformTarget(transVect, radialOffset, aLP.getTargetPosition());
 
+			double[] target = targetV.toArray();
 			target[0] = target[0] - pointOnPlane[0];
 			target[1] = target[1] - pointOnPlane[1];
 			target[2] = target[2] - pointOnPlane[2];
@@ -148,8 +152,65 @@ public class LidarGeoUtil
 		out.close();
 	}
 
+	/**
+	 * Helper method that takes the given point and returns a corresponding point
+	 * that takes into account the specified translation and the radial offset.
+	 *
+	 * @param aTranslationV The translation vector of interest.
+	 * @param aRadialOffset An offset in the radial direction.
+	 * @param aTargetV The point of interest.
+	 * @return
+	 */
+	public static Vector3D transformTarget(Vector3D aTranslationV, double aRadialOffset, Vector3D aTargetV)
+	{
+		double[] targetArr = aTargetV.toArray();
+
+		if (aRadialOffset != 0.0)
+		{
+			LatLon lla = MathUtil.reclat(targetArr);
+			lla = new LatLon(lla.lat, lla.lon, lla.rad + aRadialOffset);
+			targetArr = MathUtil.latrec(lla);
+		}
+
+		return new Vector3D(targetArr[0] + aTranslationV.getX(), targetArr[1] + aTranslationV.getY(),
+				targetArr[2] + aTranslationV.getZ());
+	}
+
+	/**
+	 * Similar to previous function but specific to spacecraft position. The
+	 * difference is that we calculate the radial offset we applied to the lidar
+	 * and apply that offset to the spacecraft (rather than computing the radial
+	 * offset directly for the spacecraft).
+	 *
+	 * @param aTranslationV The translation vector of interest.
+	 * @param aRadialOffset An offset out in radial direction.
+	 * @param aTargetV
+	 * @param aSourceV
+	 * @return
+	 */
+	public static Vector3D transformScpos(Vector3D aTranslationV, double aRadialOffset, Vector3D aTargetV,
+			Vector3D aSourceV)
+	{
+		double[] targetArr = aTargetV.toArray();
+		double[] sourceArr = aSourceV.toArray();
+
+		if (aRadialOffset != 0.0)
+		{
+			LatLon lla = MathUtil.reclat(targetArr);
+			lla = new LatLon(lla.lat, lla.lon, lla.rad + aRadialOffset);
+			double[] tmpArr = MathUtil.latrec(lla);
+
+			sourceArr[0] += (tmpArr[0] - targetArr[0]);
+			sourceArr[1] += (tmpArr[1] - targetArr[1]);
+			sourceArr[2] += (tmpArr[2] - targetArr[2]);
+		}
+
+		return new Vector3D(sourceArr[0] + aTranslationV.getX(), sourceArr[1] + aTranslationV.getY(),
+				sourceArr[2] + aTranslationV.getZ());
+	}
+
 	// TODO: Add javadoc
-	private static double distanceOfClosestPointOnLineToStartOfLine(double[] point, LidarTrack aTrack,
+	private static double distanceOfClosestPointOnLineToStartOfLine(Vector3D aPointV, LidarTrack aTrack,
 			double[] fittedLinePoint, double[] fittedLineDirection)
 	{
 		if (aTrack.getNumberOfPoints() <= 1)
@@ -157,7 +218,7 @@ public class LidarGeoUtil
 
 		double[] pnear = new double[3];
 		double[] dist = new double[1];
-		MathUtil.nplnpt(fittedLinePoint, fittedLineDirection, point, pnear, dist);
+		MathUtil.nplnpt(fittedLinePoint, fittedLineDirection, aPointV.toArray(), pnear, dist);
 
 		return MathUtil.distanceBetween(pnear, fittedLinePoint);
 	}
@@ -176,7 +237,8 @@ public class LidarGeoUtil
 		if (aTrack.getNumberOfPoints() <= 1)
 			return;
 
-		Vector3D tmpVect = aManager.getTranslation(aTrack);
+		double radialOffset = aManager.getRadialOffset();
+		Vector3D transVect = aManager.getTranslation(aTrack);
 		try
 		{
 			LidarPoint firstPt = aTrack.getPointList().get(0);
@@ -188,7 +250,7 @@ public class LidarGeoUtil
 				PolynomialFitter fitter = new PolynomialFitter(new LevenbergMarquardtOptimizer());
 				for (LidarPoint aLP : aTrack.getPointList())
 				{
-					double[] target = aManager.transformLidarPoint(tmpVect, aLP.getTargetPosition().toArray());
+					double[] target = transformTarget(transVect, radialOffset, aLP.getTargetPosition()).toArray();
 					fitter.addObservedPoint(1.0, aLP.getTime() - t0, target[j]);
 				}
 
@@ -202,7 +264,7 @@ public class LidarGeoUtil
 			// track point as this makes it easier to do distance computations
 			// along the line.
 			double[] dist = new double[1];
-			double[] target = aManager.transformLidarPoint(tmpVect, firstPt.getTargetPosition().toArray());
+			double[] target = transformTarget(transVect, radialOffset, firstPt.getTargetPosition()).toArray();
 			MathUtil.nplnpt(lineStartPoint, fittedLineDirection, target, fittedLinePoint, dist);
 		}
 		catch (Exception e)
@@ -226,7 +288,8 @@ public class LidarGeoUtil
 		if (numPts <= 1)
 			return;
 
-		Vector3D tmpVect = aManager.getTranslation(aTrack);
+		double radialOffset = aManager.getRadialOffset();
+		Vector3D transVect = aManager.getTranslation(aTrack);
 		try
 		{
 			double[] centroid = getCentroidOfTrack(aManager, aTrack);
@@ -236,10 +299,10 @@ public class LidarGeoUtil
 			int tmpIdx = 0;
 			for (LidarPoint aLP : aTrack.getPointList())
 			{
-				double[] target = aManager.transformLidarPoint(tmpVect, aLP.getTargetPosition().toArray());
-				points[0][tmpIdx] = target[0] - centroid[0];
-				points[1][tmpIdx] = target[1] - centroid[1];
-				points[2][tmpIdx] = target[2] - centroid[2];
+				Vector3D targetV = transformTarget(transVect, radialOffset, aLP.getTargetPosition());
+				points[0][tmpIdx] = targetV.getX() - centroid[0];
+				points[1][tmpIdx] = targetV.getY() - centroid[1];
+				points[2][tmpIdx] = targetV.getZ() - centroid[2];
 				tmpIdx++;
 			}
 			RealMatrix pointMatrix = new Array2DRowRealMatrix(points, false);
@@ -263,26 +326,27 @@ public class LidarGeoUtil
 	// TODO: Add javadoc
 	private static double[] getCentroidOfTrack(LidarTrackManager aManager, LidarTrack aTrack)
 	{
-		Vector3D tmpVect = aManager.getTranslation(aTrack);
+		double radialOffset = aManager.getRadialOffset();
+		Vector3D transVect = aManager.getTranslation(aTrack);
 
-		double[] centroid = { 0.0, 0.0, 0.0 };
+		double[] centroidArr = { 0.0, 0.0, 0.0 };
 		for (LidarPoint aLP : aTrack.getPointList())
 		{
-			double[] target = aManager.transformLidarPoint(tmpVect, aLP.getTargetPosition().toArray());
-			centroid[0] += target[0];
-			centroid[1] += target[1];
-			centroid[2] += target[2];
+			Vector3D targetV = transformTarget(transVect, radialOffset, aLP.getTargetPosition());
+			centroidArr[0] += targetV.getX();
+			centroidArr[1] += targetV.getY();
+			centroidArr[2] += targetV.getZ();
 		}
 
 		int trackSize = aTrack.getNumberOfPoints();
 		if (trackSize > 0)
 		{
-			centroid[0] /= trackSize;
-			centroid[1] /= trackSize;
-			centroid[2] /= trackSize;
+			centroidArr[0] /= trackSize;
+			centroidArr[1] /= trackSize;
+			centroidArr[2] /= trackSize;
 		}
 
-		return centroid;
+		return centroidArr;
 	}
 
 }
