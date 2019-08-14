@@ -266,6 +266,24 @@ public class NISSpectrum extends BasicSpectrum
         return NIS.bandCentersLength;
     }
 
+    @Override
+    public String getxAxisUnits()
+    {
+        return "";
+    }
+
+    @Override
+    public String getyAxisUnits()
+    {
+        return "";
+    }
+
+    @Override
+    public String getDataName()
+    {
+        return serverpath;
+    }
+
 	@Override
 	public void readPointingFromInfoFile()
 	{
@@ -276,6 +294,7 @@ public class NISSpectrum extends BasicSpectrum
 	@Override
 	public void readSpectrumFromFile()
 	{
+		if (fullpath == null) getFullPath();
 		List<String> values = null;
 		try
 		{

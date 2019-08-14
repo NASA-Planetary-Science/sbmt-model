@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.shapeModel;
 
+import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 
@@ -50,7 +51,7 @@ public class BennuV4 extends SmallBodyModel
             SlopeUnitsStr, // Tilt Standard Deviation
     };
 
-    public BennuV4(SmallBodyViewConfig config)
+    public BennuV4(BodyViewConfig config)
     {
         super(config,
                 modelNames,
@@ -63,7 +64,7 @@ public class BennuV4 extends SmallBodyModel
                 false);
     }
 
-    private static final String[] getColoringFiles(SmallBodyViewConfig config)
+    private static final String[] getColoringFiles(BodyViewConfig config)
     {
         return new String[] {
                 config.serverPath("coloring/Slope"),

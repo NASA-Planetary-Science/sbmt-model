@@ -1,12 +1,14 @@
 package edu.jhuapl.sbmt.model.eros;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -15,13 +17,14 @@ import javax.swing.JOptionPane;
 import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.util.Configuration;
+import edu.jhuapl.sbmt.client.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.query.ISearchResultsMetadata;
 import edu.jhuapl.sbmt.query.SearchMetadata;
-import edu.jhuapl.sbmt.query.SearchResultsMetadata;
 import edu.jhuapl.sbmt.query.database.DatabaseQueryBase;
 import edu.jhuapl.sbmt.query.database.DatabaseSearchMetadata;
 import edu.jhuapl.sbmt.query.database.SpectraDatabaseSearchMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 
 import crucible.crust.metadata.api.Metadata;
 import crucible.crust.metadata.api.Version;
@@ -102,6 +105,7 @@ public final class NisQuery extends DatabaseQueryBase
     @Override
     public ISearchResultsMetadata<BasicSpectrum> runQuery(SearchMetadata queryMetadata)
     {
+    	System.out.println("NisQuery: runQuery: running NIS query");
         FixedMetadata metadata = queryMetadata.getMetadata();
         double fromIncidence = metadata.get(DatabaseSearchMetadata.FROM_INCIDENCE);
         double toIncidence = metadata.get(DatabaseSearchMetadata.TO_INCIDENCE);
@@ -162,17 +166,71 @@ public final class NisQuery extends DatabaseQueryBase
                 }
                 args.put("cubes", cubesStr);
             }
-
+            System.out.println("NisQuery: runQuery: DB query");
             results = doQuery("searchnis.php", constructUrlArguments(args));
+
+
         }
         catch (Exception e)
         {
             e.printStackTrace();
+            System.out.println("NisQuery: runQuery: file list");
             results = getResultsFromFileListOnServer(getDataPath() + "/nisTimes.txt", getDataPath(), getGalleryPath(), "");
 
         }
 
-        return SearchResultsMetadata.of("", results);
+//        List<BasicSpectrum> tempResults = new ArrayList<BasicSpectrum>();
+        NISSearchResult tempResults = new NISSearchResult();
+        try
+        {
+        	System.out.println("NisQuery: runQuery: number of results " + results.size());
+        	for (List<String> res : results)
+        	{
+        		String path = NisQuery.getNisPath(res);
+            	BasicSpectrum spectrum = SbmtSpectrumModelFactory.createSpectrum(path, SpectrumInstrumentFactory.getInstrumentForName("NIS"));
+            	String str = path;
+                String[] tokens = str.split("/");
+                String filename = tokens[4];
+                String strippedFileName=str.replace("/NIS/2000/", "");
+                String detailedTime = NISSearchModel.nisFileToObservationTimeMap.get(strippedFileName);
+                List<String> result = new ArrayList<String>();
+                result.add(str);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                spectrum.setDateTime(new DateTime(sdf.parse(detailedTime).getTime()));
+//            	spectrum.setMetadata(spec);	//TODO is this needed for NIS?
+            	tempResults.addResult(spectrum);
+        	}
+        }
+        catch (Exception e)
+        {
+       	 	System.out.println("SpectrumStandardSearch: search: " + e.getLocalizedMessage());
+        }
+        System.out.println("NisQuery: runQuery: number of basic spectra " + tempResults.getResultlist().size());
+        return tempResults;
+    }
+
+    class NISSearchResult implements ISearchResultsMetadata<BasicSpectrum>
+    {
+    	List<BasicSpectrum> results = new ArrayList<BasicSpectrum>();
+
+    	public void addResult(BasicSpectrum spectrum)
+    	{
+    		results.add(spectrum);
+    	}
+
+		@Override
+		public FixedMetadata getMetadata()
+		{
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<BasicSpectrum> getResultlist()
+		{
+			return results;
+		}
     }
 
 //    /**

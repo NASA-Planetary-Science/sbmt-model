@@ -18,7 +18,7 @@ import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
 
 public class NISSearchModel extends BaseSpectrumSearchModel
 {
-    Map<String,String> nisFileToObservationTimeMap=Maps.newHashMap();
+    public static Map<String,String> nisFileToObservationTimeMap=Maps.newHashMap();
     static Map<String,Vector3D> nisFileToSunPositionMap=Maps.newHashMap();
 
     static
@@ -94,7 +94,6 @@ public class NISSearchModel extends BaseSpectrumSearchModel
 //        List<BasicSpectrum> matchedImages=Lists.newArrayList();
 //        if (matchedImages.size() > 0)
 //            fileExtension = FilenameUtils.getExtension(matchedImages.get(0).getFullPath());
-        this.results = spectrumRawResults;
 //        for (BasicSpectrum res : spectrumRawResults)
 //        {
 //            String path = NisQuery.getNisPath(res);
@@ -157,8 +156,9 @@ public class NISSearchModel extends BaseSpectrumSearchModel
 //            System.out.println("NISSearchModel: setSpectrumRawResults: adding " + res);
 //            this.results.add(result);
 //        }
+    	this.results = spectrumRawResults;
         super.setSpectrumRawResults(results);
-        fireResultsChanged();
-        fireResultsCountChanged(this.results.size());
+//        fireResultsChanged();
+//        fireResultsCountChanged(this.results.size());
     }
 }
