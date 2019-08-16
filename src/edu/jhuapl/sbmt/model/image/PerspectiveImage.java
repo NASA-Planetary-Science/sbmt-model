@@ -26,10 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.swing.ProgressMonitor;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import com.google.common.base.Stopwatch;
@@ -227,9 +226,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected int imageHeight;
     protected int imageDepth = 1;
     private int numBands = BackplaneInfo.values().length;
-
-//    private RawImageLoadingTask task;
-    private ProgressMonitor imageLoadingProgressMonitor;
 
     public int getNumBackplanes()
     {
@@ -622,7 +618,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             if (targetPixelCoordinates[0] != Double.MAX_VALUE && targetPixelCoordinates[1]  != Double.MAX_VALUE)
             {
                 int height = getImageHeight();
-                int width = getImageWidth();
                 double line = height - 1 - targetPixelCoordinates[0];
                 double sample = targetPixelCoordinates[1];
 
@@ -691,7 +686,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         Vector3D axis = new Vector3D(spacecraftPositionAdjusted[currentSlice]);
         axis.normalize();
         axis.negate();
-        Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees));
+        Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
 
         //        int slice = getCurrentSlice();
         int nslices = getNumberBands();
@@ -713,7 +708,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         //        System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " + pixelDelta[0]);
 
         double height = (double)getImageHeight();
-        double width = (double)getImageWidth();
         if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
         {
             targetPixelCoordinates = getPixelFromPoint(bodyOrigin);
@@ -786,8 +780,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     ////        calculateFrustum();
     //    }
 
-    private static double[] origin = { 0.0, 0.0, 0.0 };
-
     private void rotateTargetPixelDirectionToLocalOrigin(double[] direction)
     {
         Vector3D directionVector = new Vector3D(direction);
@@ -811,29 +803,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             footprintGenerated[slice] = false;
         }
     }
-
-    private void rotateBoresightTo(double[] direction)
-    {
-        Vector3D directionVector = new Vector3D(direction);
-        Vector3D boresightVector = new Vector3D(getBoresightDirection());
-
-        Rotation rotation = new Rotation(boresightVector, directionVector);
-
-        int nslices = getNumberBands();
-        for (int slice = 0; slice<nslices; slice++)
-        {
-            MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-
-            frusta[slice] = null;
-            footprintGenerated[slice] = false;
-        }
-    }
-
-
 
 
     public void calculateFrustum()
@@ -1321,16 +1290,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         // Create output stream and write contents of byte buffer
-        FileChannel fc = null;
-        try {
-            fc = new FileOutputStream(enviFilename).getChannel();
+        try (FileOutputStream stream = new FileOutputStream(enviFilename)) {
+            FileChannel fc = stream.getChannel();
+            bb.flip(); // flip() is a misleading name, nothing is being flipped.  Buffer end is set to curr pos and curr pos set to beginning.
+            fc.write(bb);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            return;
         }
-        bb.flip(); // flip() is a misleading name, nothing is being flipped.  Buffer end is set to curr pos and curr pos set to beginning.
-        fc.write(bb);
-        fc.close();
     }
 
     public String getEnviHeaderAppend()
@@ -1913,7 +1879,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // single file images (e.g. LORRI and LEISA)
         if (filenames.length == 1)
         {
-            Fits f = new Fits(filename);
+            try (Fits f = new Fits(filename)) {
             BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
             fitsAxes = h.getAxes();
@@ -2018,8 +1984,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
             // load in calibration info
             loadImageCalibrationData(f);
-
-            f.getStream().close();
+        }
         }
         // for multi-file images (e.g. MVIC)
         else if (filenames.length > 1)
@@ -2031,7 +1996,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
             for (int k=0; k<fitsDepth; k++)
             {
-                Fits f = new Fits(filenames[k]);
+                try (Fits f = new Fits(filenames[k])) {
                 BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
                 int[] multiImageAxes = h.getAxes();
@@ -2087,8 +2052,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     System.out.println("Data type not supported!");
                     return;
                 }
-
-                f.getStream().close();
+                }
             }
         }
         rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, transposeFITSData, array2D, array3D);
@@ -2202,9 +2166,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         if (getFitFileFullPath() != null)
         {
-            try {
-                String filename = getFitFileFullPath();
-                Fits f = new Fits(filename);
+            String filename = getFitFileFullPath();
+            try  (Fits f = new Fits(filename)) {
                 BasicHDU<?> h = f.getHDU(fitFileImageExtension);
 
                 int[] fitsAxes = h.getAxes();
@@ -2681,7 +2644,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             System.out.println("infoFileNames is null");
 
         int nfiles = infoFileNames.length;
-        int nslices = getNumberBands();
 
         //        if (nslices > 1)
         //            initSpacecraftStateVariables();
@@ -2748,12 +2710,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         int nfiles = infoFileNames.length;
 
-        boolean pad = nfiles > 1;
-
         for (int k=0; k<nfiles; k++)
         {
-            String[] start = new String[1];
-            String[] stop = new String[1];
             boolean[] ato = new boolean[1];
             ato[0] = true;
 
@@ -3074,7 +3032,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private String startTimeString = null;
     private String stopTimeString = null;
-    private double exposureDuration = 0.0;
 
     private String scTargetPositionString = null;
     private String targetSunPositionString = null;
@@ -3091,7 +3048,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double kmatrix00 = 1.0;
     private double kmatrix11 = 1.0;
 	private Color offLimbBoundaryColor = Color.RED; // default
-	private Color boundaryColor;
 
     private void parseLabelKeyValuePair(
             String key,
