@@ -1,7 +1,5 @@
 package edu.jhuapl.sbmt.model.bennu.spectra;
 
-import java.io.IOException;
-
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
@@ -45,15 +43,15 @@ public class OREXSpectrumTabbedPane extends JTabbedPane
 				public void spectrumFootprintVisbilityChanged(BasicSpectrum spectrum, boolean isVisible)
 				{
 					SpectrumColoringStyle style = SpectrumColoringStyle.getStyleForName(model.getColoringModel().getSpectrumColoringStyleName());
-					try
-					{
+//					try
+//					{
 						spectrumCollection.addSpectrum(spectrum, style);
-					}
-					catch (IOException e)
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+//					}
+//					catch (IOException e)
+//					{
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
 				}
 
 				@Override
@@ -92,15 +90,15 @@ public class OREXSpectrumTabbedPane extends JTabbedPane
 				public void spectrumFootprintVisbilityChanged(BasicSpectrum spectrum, boolean isVisible)
 				{
 					SpectrumColoringStyle style = SpectrumColoringStyle.getStyleForName(model.getColoringModel().getSpectrumColoringStyleName());
-					try
-					{
+//					try
+//					{
 						spectrumCollection.addSpectrum(spectrum, style);
-					}
-					catch (IOException e)
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+//					}
+//					catch (IOException e)
+//					{
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
 
 				}
 
