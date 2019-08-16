@@ -274,7 +274,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public double[] maxFrustumDepth;
     public double[] minFrustumDepth;
 
-    protected final boolean transposeFITSData;
+    private final boolean transposeFITSData;
 
     /*
      * For off-limb images
@@ -1303,7 +1303,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         out.write("ENVI\n");
         out.write("samples = " + imageWidth + "\n");
         out.write("lines = " + imageHeight + "\n");
-        out.write("bands = " + imageDepth + "\n");
+        out.write("bands = " + getImageDepth() + "\n");
         out.write("header offset = " + "0" + "\n");
         out.write("data type = " + "4" + "\n"); // 1 = byte, 2 = int, 3 = signed int, 4 = float
         out.write("interleave = " + interleaveType + "\n"); // bsq = band sequential, bil = band interleaved by line, bip = band interleaved
@@ -1323,7 +1323,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         out.close();
 
         // Configure byte buffer & endianess
-        ByteBuffer bb = ByteBuffer.allocate(4 * imageWidth * imageHeight * imageDepth); // 4 bytes per float
+        ByteBuffer bb = ByteBuffer.allocate(4 * imageWidth * imageHeight * getImageDepth()); // 4 bytes per float
         if (hostByteOrder)
         {
             // Little Endian = LSB stored first
@@ -1342,7 +1342,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
         case "bsq":
             // Band sequential: col, then row, then depth
-            for (int depth = 0; depth < imageDepth; depth++)
+            for (int depth = 0; depth < getImageDepth(); depth++)
             {
                 // for(int row = imageHeight-1; row >= 0; row--)
                 for (int row = 0; row < imageHeight; row++)
@@ -1359,7 +1359,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             // for(int row=imageHeight-1; row >= 0; row--)
             for (int row = 0; row < imageHeight; row++)
             {
-                for (int depth = 0; depth < imageDepth; depth++)
+                for (int depth = 0; depth < getImageDepth(); depth++)
                 {
                     for (int col = 0; col < imageWidth; col++)
                     {
@@ -1375,7 +1375,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             {
                 for (int col = 0; col < imageWidth; col++)
                 {
-                    for (int depth = 0; depth < imageDepth; depth++)
+                    for (int depth = 0; depth < getImageDepth(); depth++)
                     {
                         bb.putFloat(imageData[depth][row][col]);
                     }
@@ -2234,7 +2234,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         int[] dims = rawImage.GetDimensions();
         imageWidth = dims[0];
         imageHeight = dims[1];
-        imageDepth = dims[2];
+        int imageDepth = dims[2];
+
+        setImageDepth(imageDepth);
 
         int[] masking = getMaskSizes();
         int topMask = masking[0];
@@ -2291,6 +2293,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected int loadNumSlices()
     {
+        int imageDepth = getImageDepth();
         if (getFitFileFullPath() != null)
         {
             String filename = getFitFileFullPath();
@@ -2335,6 +2338,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             if (imageDepth > 1)
                 setCurrentSlice(imageDepth / 2);
         }
+
         return imageDepth;
     }
 
@@ -2723,7 +2727,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         // for 3D images, take the current slice
         vtkImageData image2D = rawImage;
-        if (imageDepth > 1)
+        if (getImageDepth() > 1)
         {
             vtkImageReslice slicer = new vtkImageReslice();
             slicer.SetInputData(rawImage);
@@ -4215,13 +4219,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         displayedImage.Delete();
         rawImage.Delete();
-        for (int i = 0; i < imageDepth; i++)
+
+        for (int i = 0; i < footprint.length; i++)
         {
             // Footprints can be null if no frustum intersection is found
             if (footprint[i] != null)
             {
                 footprint[i].Delete();
             }
+        }
+
+        for (int i = 0; i < shiftedFootprint.length; i++)
+        {
             if (shiftedFootprint[i] != null)
             {
                 shiftedFootprint[i].Delete();
@@ -4991,7 +5000,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.numberOfLines = numberOfLines;
     }
 
-    public void setImageDepth(int imageDepth)
+    private void setImageDepth(int imageDepth)
     {
         this.imageDepth = imageDepth;
     }
