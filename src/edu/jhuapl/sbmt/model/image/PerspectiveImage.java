@@ -2530,25 +2530,33 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void setDisplayedImageRange(IntensityRange range)
     {
-        if (rawImage.GetNumberOfScalarComponents() > 1)
+        if (rawImage != null)
         {
-            displayedImage = rawImage;
-            return;
+            if (rawImage.GetNumberOfScalarComponents() > 1)
+            {
+                displayedImage = rawImage;
+                return;
+            }
+
         }
 
         if (range == null || displayedRange[currentSlice].min != range.min || displayedRange[currentSlice].max != range.max)
         {
             //            displayedRange[currentSlice] = range != null ? range : new IntensityRange(0, 255);
             if (range != null)
+            {
                 displayedRange[currentSlice] = range;
+                saveImageInfo();
+            }
 
-            vtkImageData img = getImageWithDisplayedRange(range, false);
+            if (rawImage != null)
+            {
+                vtkImageData img = getImageWithDisplayedRange(range, false);
 
-            if (displayedImage == null)
-                displayedImage = new vtkImageData();
-            displayedImage.DeepCopy(img);
-
-
+                if (displayedImage == null)
+                    displayedImage = new vtkImageData();
+                displayedImage.DeepCopy(img);
+            }
         }
 
 
@@ -2566,6 +2574,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 			offLimbTexture.SetInputData(image);
 			image.Delete();
 			offLimbTexture.Modified();
+
+			saveImageInfo();
 
 	        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
 		}
