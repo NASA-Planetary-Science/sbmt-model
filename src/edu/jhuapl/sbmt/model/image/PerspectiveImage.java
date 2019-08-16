@@ -2234,9 +2234,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         int[] dims = rawImage.GetDimensions();
         imageWidth = dims[0];
         imageHeight = dims[1];
-        int imageDepth = dims[2];
-
-        setImageDepth(imageDepth);
+        imageDepth = dims[2];
 
         int[] masking = getMaskSizes();
         int topMask = masking[0];
@@ -2259,7 +2257,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         maskSource.FillBox(leftMask, imageWidth - 1 - rightMask, bottomMask, imageHeight - 1 - topMask);
         maskSource.Update();
 
-        for (int k = 0; k < imageDepth; k++)
+        for (int k = 0; k < getImageDepth(); k++)
         {
             footprint[k] = new vtkPolyData();
             // displayedRange[k] = new IntensityRange(1,0);
@@ -5000,7 +4998,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.numberOfLines = numberOfLines;
     }
 
-    private void setImageDepth(int imageDepth)
+    public void setImageDepth(int imageDepth)
     {
         this.imageDepth = imageDepth;
     }
