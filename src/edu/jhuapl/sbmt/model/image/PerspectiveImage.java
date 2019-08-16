@@ -242,11 +242,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected int imageWidth;
     protected int imageHeight;
     protected int imageDepth = 1;
-    private int numBands = BackplaneInfo.values().length;
+    private int numBackplanes = BackplaneInfo.values().length;
 
     public int getNumBackplanes()
     {
-        return numBands;
+        return numBackplanes;
     }
 
     private String pngFileFullPath; // The actual path of the PNG image stored on the local disk (after downloading
@@ -3984,7 +3984,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (!returnNullIfContainsLimb)
             normals = smallBodyModel.getCellNormals();
 
-        float[] data = new float[numBands * imageHeight * imageWidth];
+        float[] data = new float[numBackplanes * imageHeight * imageWidth];
 
         vtksbCellLocator cellLocator = smallBodyModel.getCellLocator();
 
@@ -4154,7 +4154,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                         return null;
 
                     data[index(j, i, 0)] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
-                    for (int k = 1; k < numBands; ++k)
+                    for (int k = 1; k < numBackplanes; ++k)
                         data[index(j, i, k)] = PDS_NA;
                 }
             }
