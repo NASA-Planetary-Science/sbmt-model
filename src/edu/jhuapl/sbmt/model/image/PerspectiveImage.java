@@ -1051,14 +1051,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     applyFrameAdjustments[0] = offset;
                 }
 
-                if (SPACECRAFT_POSITION.equals(token) ||
-                        SUN_POSITION_LT.equals(token) ||
-                        token.endsWith(FRUSTUM1) ||
-                        token.endsWith(FRUSTUM2) ||
-                        token.endsWith(FRUSTUM3) ||
-                        token.endsWith(FRUSTUM4) ||
-                        token.endsWith(BORESIGHT_DIRECTION) ||
-                        token.endsWith(UP_DIRECTION))
+                if (SPACECRAFT_POSITION.equals(token) || //
+                        SUN_POSITION_LT.equals(token) || //
+                        token.endsWith(FRUSTUM1) || //
+                        token.endsWith(FRUSTUM2) || //
+                        token.endsWith(FRUSTUM3) || //
+                        token.endsWith(FRUSTUM4) || //
+                        token.endsWith(BORESIGHT_DIRECTION) || //
+                        token.endsWith(UP_DIRECTION)) //
                 {
                     st.nextToken();
                     st.nextToken();
@@ -2670,23 +2670,23 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             IntensityRange[] displayRange = new IntensityRange[1];
             IntensityRange[] offLimbDisplayRange = new IntensityRange[1];
 
-            loadImageInfo(
-                    infoFileNames[k],
-                    k,
-                    pad,
-                    start,
-                    stop,
-                    spacecraftPositionOriginal,
-                    sunPositionOriginal,
-                    frustum1Original,
-                    frustum2Original,
-                    frustum3Original,
-                    frustum4Original,
-                    boresightDirectionOriginal,
-                    upVectorOriginal,
-                    targetPixelCoordinates,
-                    ato,
-                    displayRange,
+            loadImageInfo( //
+                    infoFileNames[k], //
+                    k, //
+                    pad, //
+                    start, //
+                    stop, //
+                    spacecraftPositionOriginal, //
+                    sunPositionOriginal, //
+                    frustum1Original, //
+                    frustum2Original, //
+                    frustum3Original, //
+                    frustum4Original, //
+                    boresightDirectionOriginal, //
+                    upVectorOriginal, //
+                    targetPixelCoordinates, //
+                    ato, //
+                    displayRange, //
                     offLimbDisplayRange);
 
             // should startTime and stopTime be an array? -turnerj1
@@ -2746,23 +2746,23 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         IntensityRange[] displayRange = new IntensityRange[1];
         IntensityRange[] offLimbDisplayRange = new IntensityRange[1];
 
-        loadImageInfo(
-                filePath,
-                0,
-                false,
-                start,
-                stop,
-                spacecraftPositionOriginal,
-                sunPositionOriginal,
-                frustum1Original,
-                frustum2Original,
-                frustum3Original,
-                frustum4Original,
-                boresightDirectionOriginal,
-                upVectorOriginal,
-                targetPixelCoordinates,
-                ato,
-                displayRange,
+        loadImageInfo( //
+                filePath, //
+                0, //
+                false, //
+                start, //
+                stop, //
+                spacecraftPositionOriginal, //
+                sunPositionOriginal, //
+                frustum1Original, //
+                frustum2Original, //
+                frustum3Original, //
+                frustum4Original, //
+                boresightDirectionOriginal, //
+                upVectorOriginal, //
+                targetPixelCoordinates, //
+                ato, //
+                displayRange, //
                 offLimbDisplayRange);
 
         // should startTime and stopTime be an array? -turnerj1
@@ -2799,25 +2799,25 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
                 int slice = this.getNumberBands() / 2;
 
-                saveImageInfo(
-                        filename,
-                        slice,
-                        startTime,
-                        stopTime,
-                        spacecraftPositionOriginal,
-                        sunPositionOriginal,
-                        frustum1Original,
-                        frustum2Original,
-                        frustum3Original,
-                        frustum4Original,
-                        boresightDirectionOriginal,
-                        upVectorOriginal,
-                        targetPixelCoordinates,
-                        zoomFactor,
-                        rotationOffset,
-                        applyFrameAdjustments[0],
-                        false,
-                        getDisplayedRange(),
+                saveImageInfo( //
+                        filename, //
+                        slice, //
+                        startTime, //
+                        stopTime, //
+                        spacecraftPositionOriginal, //
+                        sunPositionOriginal, //
+                        frustum1Original, //
+                        frustum2Original, //
+                        frustum3Original, //
+                        frustum4Original, //
+                        boresightDirectionOriginal, //
+                        upVectorOriginal, //
+                        targetPixelCoordinates, //
+                        zoomFactor, //
+                        rotationOffset, //
+                        applyFrameAdjustments[0], //
+                        false, //
+                        getDisplayedRange(), //
                         getOffLimbDisplayedRange());
             }
         }
@@ -2842,25 +2842,25 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         int slice = (getNumberBands() - 1) / 2;
         try
         {
-            saveImageInfo(
-                    infoFileName,
-                    slice,
-                    startTime,
-                    stopTime,
-                    spacecraftPositionAdjusted,
-                    sunPositionAdjusted,
-                    frustum1Adjusted,
-                    frustum2Adjusted,
-                    frustum3Adjusted,
-                    frustum4Adjusted,
-                    boresightDirectionAdjusted,
-                    upVectorAdjusted,
-                    targetPixelCoordinates,
-                    zoomFactor,
-                    rotationOffset,
-                    applyFrameAdjustments[0],
-                    true,
-                    getDisplayedRange(),
+            saveImageInfo( //
+                    infoFileName, //
+                    slice, //
+                    startTime, //
+                    stopTime, //
+                    spacecraftPositionAdjusted, //
+                    sunPositionAdjusted, //
+                    frustum1Adjusted, //
+                    frustum2Adjusted, //
+                    frustum3Adjusted, //
+                    frustum4Adjusted, //
+                    boresightDirectionAdjusted, //
+                    upVectorAdjusted, //
+                    targetPixelCoordinates, //
+                    zoomFactor, //
+                    rotationOffset, //
+                    applyFrameAdjustments[0], //
+                    true, //
+                    getDisplayedRange(), //
                     getOffLimbDisplayedRange());
         }
         catch (NumberFormatException e)
@@ -3187,18 +3187,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 for (String element : vector)
                     value = value + element;
 
-                parseLabelKeyValuePair(
-                        key,
-                        value,
-                        startTime,
-                        stopTime,
-                        spacecraftPosition[slice],
-                        sunVector[slice],
-                        frustum1[slice],
-                        frustum2[slice],
-                        frustum3[slice],
-                        frustum4[slice],
-                        boresightDirection[slice],
+                parseLabelKeyValuePair( //
+                        key, //
+                        value, //
+                        startTime, //
+                        stopTime, //
+                        spacecraftPosition[slice], //
+                        sunVector[slice], //
+                        frustum1[slice], //
+                        frustum2[slice], //
+                        frustum3[slice], //
+                        frustum4[slice], //
+                        boresightDirection[slice], //
                         upVector[slice]);
 
                 vector.clear();
@@ -3239,18 +3239,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             else
                 value = stripQuotes(value);
 
-            parseLabelKeyValuePair(
-                    key,
-                    value,
-                    startTime,
-                    stopTime,
-                    spacecraftPosition[slice],
-                    sunVector[slice],
-                    frustum1[slice],
-                    frustum2[slice],
-                    frustum3[slice],
-                    frustum4[slice],
-                    boresightDirection[slice],
+            parseLabelKeyValuePair( //
+                    key, //
+                    value, //
+                    startTime, //
+                    stopTime, //
+                    spacecraftPosition[slice], //
+                    sunVector[slice], //
+                    frustum1[slice], //
+                    frustum2[slice], //
+                    frustum3[slice], //
+                    frustum4[slice], //
+                    boresightDirection[slice], //
                     upVector[slice]);
 
         }
@@ -3366,17 +3366,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         String[] start = new String[1];
         String[] stop = new String[1];
 
-        loadSumfile(
-                getSumfileFullPath(),
-                start,
-                stop,
-                spacecraftPositionOriginal,
-                sunPositionOriginal,
-                frustum1Original,
-                frustum2Original,
-                frustum3Original,
-                frustum4Original,
-                boresightDirectionOriginal,
+        loadSumfile( //
+                getSumfileFullPath(), //
+                start, //
+                stop, //
+                spacecraftPositionOriginal, //
+                sunPositionOriginal, //
+                frustum1Original, //
+                frustum2Original, //
+                frustum3Original, //
+                frustum4Original, //
+                boresightDirectionOriginal, //
                 upVectorOriginal);
 
         startTime = start[0];
@@ -3394,17 +3394,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         String[] start = new String[1];
         String[] stop = new String[1];
 
-        loadLabelFile(
-                getLabelFileFullPath(),
-                start,
-                stop,
-                spacecraftPositionOriginal,
-                sunPositionOriginal,
-                frustum1Original,
-                frustum2Original,
-                frustum3Original,
-                frustum4Original,
-                boresightDirectionOriginal,
+        loadLabelFile( //
+                getLabelFileFullPath(), //
+                start, //
+                stop, //
+                spacecraftPositionOriginal, //
+                sunPositionOriginal, //
+                frustum1Original, //
+                frustum2Original, //
+                frustum3Original, //
+                frustum4Original, //
+                boresightDirectionOriginal, //
                 upVectorOriginal);
 
         startTime = start[0];
