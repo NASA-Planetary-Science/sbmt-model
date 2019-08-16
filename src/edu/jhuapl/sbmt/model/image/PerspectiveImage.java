@@ -271,24 +271,28 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     Stopwatch sw;
 
 
-  public PerspectiveImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
-            boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
+  public PerspectiveImage( //
+          ImageKeyInterface key, //
+          SmallBodyModel smallBodyModel, //
+          boolean loadPointingOnly, //
+          boolean transposeData) throws FitsException, IOException //
     {
         this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
     }
 
 
-  public PerspectiveImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
-            boolean loadPointingOnly) throws FitsException, IOException
+  public PerspectiveImage( //
+          ImageKeyInterface key, //
+          SmallBodyModel smallBodyModel, //
+          boolean loadPointingOnly) throws FitsException, IOException //
     {
         this(key, smallBodyModel, null, loadPointingOnly, 0, true);
     }
 
-  public PerspectiveImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
-            boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
+  public PerspectiveImage( //
+          ImageKeyInterface key, //
+          SmallBodyModel smallBodyModel, //
+          boolean loadPointingOnly, int currentSlice) throws FitsException, IOException //
     {
         this(key, smallBodyModel, null, loadPointingOnly, currentSlice, true);
     }
@@ -299,10 +303,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      * image will be downloaded/loaded. The image itself will not be loaded.
      * Used by ImageBoundary to get pointing info.
      */
-  public PerspectiveImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
-            ModelManager modelManager,
-            boolean loadPointingOnly) throws FitsException, IOException
+  public PerspectiveImage( //
+          ImageKeyInterface key, //
+          SmallBodyModel smallBodyModel, //
+          ModelManager modelManager, //
+          boolean loadPointingOnly) throws FitsException, IOException //
     {
         this(key, smallBodyModel, modelManager, loadPointingOnly, 0, true);
     }
@@ -312,10 +317,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      * image will be downloaded/loaded. The image itself will not be loaded.
      * Used by ImageBoundary to get pointing info.
      */
-  protected PerspectiveImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
-            ModelManager modelManager,
-            boolean loadPointingOnly, int currentSlice, boolean transposeData) throws FitsException, IOException
+  protected PerspectiveImage( //
+          ImageKeyInterface key, //
+          SmallBodyModel smallBodyModel, //
+          ModelManager modelManager, //
+          boolean loadPointingOnly, //
+          int currentSlice, //
+          boolean transposeData) throws FitsException, IOException //
     {
         super(key);
         this.currentSlice = currentSlice;
@@ -922,24 +930,24 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
     }
 
-    protected void loadImageInfo(
-            String infoFilename,
+    protected void loadImageInfo( //
+            String infoFilename, //
             int startSlice,        // for loading multiple info files, the starting array index to put the info into
             boolean pad,           // if true, will pad out the rest of the array with the same info
-            String[] startTime,
-            String[] stopTime,
-            double[][] spacecraftPosition,
-            double[][] sunPosition,
-            double[][] frustum1,
-            double[][] frustum2,
-            double[][] frustum3,
-            double[][] frustum4,
-            double[][] boresightDirection,
-            double[][] upVector,
-            double[] targetPixelCoordinates,
-            boolean[] applyFrameAdjustments,
-            IntensityRange[] displayRange,
-            IntensityRange[] offlimbDisplayRange) throws NumberFormatException, IOException, FileNotFoundException
+            String[] startTime, //
+            String[] stopTime, //
+            double[][] spacecraftPosition, //
+            double[][] sunPosition, //
+            double[][] frustum1, //
+            double[][] frustum2, //
+            double[][] frustum3, //
+            double[][] frustum4, //
+            double[][] boresightDirection, //
+            double[][] upVector, //
+            double[] targetPixelCoordinates, //
+            boolean[] applyFrameAdjustments, //
+            IntensityRange[] displayRange, //
+            IntensityRange[] offlimbDisplayRange) throws NumberFormatException, IOException, FileNotFoundException //
     {
         if (infoFilename == null || infoFilename.endsWith("null"))
             throw new FileNotFoundException();
@@ -1183,11 +1191,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         in.close();
     }
 
-    public void exportAsEnvi(
+    public void exportAsEnvi( //
             String enviFilename, // no extensions
             String interleaveType, // "bsq", "bil", or "bip"
-            boolean hostByteOrder
-            ) throws IOException
+            boolean hostByteOrder //
+            ) throws IOException //
     {
         // Check if interleave type is recognized
         switch(interleaveType){
@@ -1304,27 +1312,27 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return "";
     }
 
-    public void saveImageInfo(
-            String infoFilename,
+    public void saveImageInfo( //
+            String infoFilename, //
             int slice,        // currently, we only support single-frame INFO files
-            String startTime,
-            String stopTime,
-            double[][] spacecraftPosition,
-            double[][] sunPosition,
-            double[][] frustum1,
-            double[][] frustum2,
-            double[][] frustum3,
-            double[][] frustum4,
-            double[][] boresightDirection,
-            double[][] upVector,
-            double[] targetPixelCoordinates,
-            double[] zoomFactor,
-            double[] rotationOffset,
-            boolean applyFrameAdjustments,
-            boolean flatten,
-            IntensityRange displayRange,
-            IntensityRange offLimbDisplayRange
-            ) throws NumberFormatException, IOException
+            String startTime, //
+            String stopTime, //
+            double[][] spacecraftPosition, //
+            double[][] sunPosition, //
+            double[][] frustum1, //
+            double[][] frustum2, //
+            double[][] frustum3, //
+            double[][] frustum4, //
+            double[][] boresightDirection, //
+            double[][] upVector, //
+            double[] targetPixelCoordinates, //
+            double[] zoomFactor, //
+            double[] rotationOffset, //
+            boolean applyFrameAdjustments, //
+            boolean flatten, //
+            IntensityRange displayRange, //
+            IntensityRange offLimbDisplayRange //
+            ) throws NumberFormatException, IOException //
     {
         // for testing purposes only:
         //        infoFilename = infoFilename + ".txt";
@@ -2878,18 +2886,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             s[i] = s[i].replace('D', 'E');
     }
 
-    protected void loadSumfile(
-            String sumfilename,
-            String[] startTime,
-            String[] stopTime,
-            double[][] spacecraftPosition,
-            double[][] sunVector,
-            double[][] frustum1,
-            double[][] frustum2,
-            double[][] frustum3,
-            double[][] frustum4,
-            double[][] boresightDirection,
-            double[][] upVector) throws IOException
+    protected void loadSumfile( //
+            String sumfilename, //
+            String[] startTime, //
+            String[] stopTime, //
+            double[][] spacecraftPosition, //
+            double[][] sunVector, //
+            double[][] frustum1, //
+            double[][] frustum2, //
+            double[][] frustum3, //
+            double[][] frustum4, //
+            double[][] boresightDirection, //
+            double[][] upVector) throws IOException //
     {
         if (sumfilename == null)
             throw new FileNotFoundException();
@@ -3049,19 +3057,19 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double kmatrix11 = 1.0;
 	private Color offLimbBoundaryColor = Color.RED; // default
 
-    private void parseLabelKeyValuePair(
-            String key,
-            String value,
-            String[] startTime,
-            String[] stopTime,
-            double[] spacecraftPosition,
-            double[] sunVector,
-            double[] frustum1,
-            double[] frustum2,
-            double[] frustum3,
-            double[] frustum4,
-            double[] boresightDirection,
-            double[] upVector) throws IOException
+    private void parseLabelKeyValuePair( //
+            String key, //
+            String value, //
+            String[] startTime, //
+            String[] stopTime, //
+            double[] spacecraftPosition, //
+            double[] sunVector, //
+            double[] frustum1, //
+            double[] frustum2, //
+            double[] frustum3, //
+            double[] frustum4, //
+            double[] boresightDirection, //
+            double[] upVector) throws IOException //
     {
         System.out.println("Label file key: " + key + " = " + value);
 
@@ -3122,18 +3130,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     }
 
-    protected void loadLabelFile(
-            String labelFileName,
-            String[] startTime,
-            String[] stopTime,
-            double[][] spacecraftPosition,
-            double[][] sunVector,
-            double[][] frustum1,
-            double[][] frustum2,
-            double[][] frustum3,
-            double[][] frustum4,
-            double[][] boresightDirection,
-            double[][] upVector) throws IOException
+    protected void loadLabelFile( //
+            String labelFileName, //
+            String[] startTime, //
+            String[] stopTime, //
+            double[][] spacecraftPosition, //
+            double[][] sunVector, //
+            double[][] frustum1, //
+            double[][] frustum2, //
+            double[][] frustum3, //
+            double[][] frustum4, //
+            double[][] boresightDirection, //
+            double[][] upVector) throws IOException //
     {
         System.out.println(labelFileName);
 
