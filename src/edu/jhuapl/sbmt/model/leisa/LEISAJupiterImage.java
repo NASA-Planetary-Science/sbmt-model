@@ -86,14 +86,14 @@ public class LEISAJupiterImage extends PerspectiveImage
 
     public boolean shiftBands() { return true; }
 
-    public int getNumberBands()
+    public int getImageDepth()
     {
         return 256;
     }
 
     protected int loadNumSlices()
     {
-        return getNumberBands();
+        return getImageDepth();
     }
 
     public double[] getPixelDirection(double sample, double line)

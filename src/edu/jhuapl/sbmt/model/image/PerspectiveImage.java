@@ -241,7 +241,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected int imageWidth;
     protected int imageHeight;
-    protected int imageDepth = 1;
+    private int imageDepth = 1;
     private int numBackplanes = BackplaneInfo.values().length;
 
     public int getNumBackplanes()
@@ -418,7 +418,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void copySpacecraftState()
     {
-        int nslices = getNumberBands();
+        int nslices = getImageDepth();
         for (int i = 0; i < nslices; i++)
         {
             spacecraftPositionAdjusted = MathUtil.copy(spacecraftPositionOriginal);
@@ -435,7 +435,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void resetSpacecraftState()
     {
         copySpacecraftState();
-        int nslices = getNumberBands();
+        int nslices = getImageDepth();
         for (int i = 0; i < nslices; i++)
         {
             frusta[i] = null;
@@ -525,12 +525,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public boolean shiftBands()
     {
         return false;
-    }
-
-    public int getNumberBands()
-    {
-        // return 1;
-        return imageDepth;
     }
 
     /**
@@ -720,7 +714,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         // int slice = getCurrentSlice();
-        int nslices = getNumberBands();
+        int nslices = getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
             frusta[slice] = null;
@@ -744,7 +738,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         double zoomRatio = 1.0 / zoomFactor;
 
-        int nslices = getNumberBands();
+        int nslices = getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
             for (int i = 0; i < 3; i++)
@@ -763,7 +757,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
 
         // int slice = getCurrentSlice();
-        int nslices = getNumberBands();
+        int nslices = getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
             MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
@@ -869,7 +863,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         Rotation rotation = new Rotation(directionVector, originPointingVector);
 
         // int slice = getCurrentSlice();
-        int nslices = getNumberBands();
+        int nslices = getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
             MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
@@ -1231,7 +1225,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // once we've read in all the frames, pad out any additional missing frames
         if (pad)
         {
-            int nslices = getNumberBands();
+            int nslices = getImageDepth();
             for (int i = slice + 1; i < nslices; i++)
             {
                 System.out.println("PerspectiveImage: loadImageInfo: num slices " + nslices + " and slice is " + slice + " and i is " + i + " and spacecraft pos length" + spacecraftPosition.length);
@@ -2772,7 +2766,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private void initSpacecraftStateVariables()
     {
-        int nslices = getNumberBands();
+        int nslices = getImageDepth();
         spacecraftPositionOriginal = new double[nslices][3];
         frustum1Original = new double[nslices][3];
         frustum2Original = new double[nslices][3];
@@ -2943,7 +2937,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 if (filename == null || filename.endsWith("/null"))
                     filename = sumFileName.substring(0, sumFileName.length() - 3) + "INFO";
 
-                int slice = this.getNumberBands() / 2;
+                int slice = this.getImageDepth() / 2;
 
                 saveImageInfo( //
                         filename, //
@@ -2985,7 +2979,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     public void saveImageInfo(String infoFileName)
     {
-        int slice = (getNumberBands() - 1) / 2;
+        int slice = (getImageDepth() - 1) / 2;
         try
         {
             saveImageInfo( //
