@@ -257,7 +257,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
   public double[] maxFrustumDepth;
   public double[] minFrustumDepth;
 
-    protected boolean transposeFITSData = true;
+    protected final boolean transposeFITSData;
 
 
     /*
@@ -280,8 +280,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean loadPointingOnly, boolean transposeData) throws FitsException, IOException
     {
         this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
-        setOffLimbFootprintVisibility(true);
-        offLimbBoundaryVisibility = true;
     }
 
 
@@ -289,14 +287,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
-        this(key, smallBodyModel, null, loadPointingOnly);
+        this(key, smallBodyModel, null, loadPointingOnly, 0, true);
     }
 
   public PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
     {
-        this(key, smallBodyModel, null, loadPointingOnly, currentSlice);
+        this(key, smallBodyModel, null, loadPointingOnly, currentSlice, true);
     }
 
 
@@ -310,7 +308,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             ModelManager modelManager,
             boolean loadPointingOnly) throws FitsException, IOException
     {
-        this(key, smallBodyModel, modelManager, loadPointingOnly, 0);
+        this(key, smallBodyModel, modelManager, loadPointingOnly, 0, true);
     }
 
     /**
@@ -318,7 +316,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      * image will be downloaded/loaded. The image itself will not be loaded.
      * Used by ImageBoundary to get pointing info.
      */
-  public PerspectiveImage(ImageKeyInterface key,
+  protected PerspectiveImage(ImageKeyInterface key,
             SmallBodyModel smallBodyModel,
             ModelManager modelManager,
             boolean loadPointingOnly, int currentSlice, boolean transposeData) throws FitsException, IOException
@@ -332,28 +330,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
       	this.rotation = key.getRotation();
 
         this.transposeFITSData = transposeData;
-
-        initialize();
-    }
-
-    /**
-     * If loadPointingOnly is true then only pointing information about this
-     * image will be downloaded/loaded. The image itself will not be loaded.
-     * Used by ImageBoundary to get pointing info.
-     */
-  public PerspectiveImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
-            ModelManager modelManager,
-            boolean loadPointingOnly, int currentSlice) throws FitsException, IOException
-    {
-        super(key);
-        this.currentSlice = currentSlice;
-        this.smallBodyModel = smallBodyModel;
-        this.modelManager = modelManager;
-        this.loadPointingOnly = loadPointingOnly;
-      	this.flip = key.getFlip();
-    	this.rotation = key.getRotation();
-
 
         initialize();
     }
