@@ -114,6 +114,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public static final String STOP_TIME = "STOP_TIME";
     public static final String SPACECRAFT_POSITION = "SPACECRAFT_POSITION";
     public static final String SUN_POSITION_LT = "SUN_POSITION_LT";
+    public static final String DISPLAY_RANGE = "DISPLAY_RANGE";
+    public static final String OFFLIMB_DISPLAY_RANGE = "OFFLIMB_DISPLAY_RANGE";
     public static final String TARGET_PIXEL_COORD = "TARGET_PIXEL_COORD";
     public static final String TARGET_ROTATION = "TARGET_ROTATION";
     public static final String TARGET_ZOOM_FACTOR = "TARGET_ZOOM_FACTOR";
@@ -990,7 +992,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[][] boresightDirection,
             double[][] upVector,
             double[] targetPixelCoordinates,
-            boolean[] applyFrameAdjustments) throws NumberFormatException, IOException, FileNotFoundException
+            boolean[] applyFrameAdjustments,
+            IntensityRange[] displayRange,
+            IntensityRange[] offlimbDisplayRange) throws NumberFormatException, IOException, FileNotFoundException
     {
         if (infoFilename == null || infoFilename.endsWith("null"))
             throw new FileNotFoundException();
@@ -1165,6 +1169,26 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                         upVector[slice][1] = y;
                         upVector[slice][2] = z;
                     }
+                }
+                if (token.equals(DISPLAY_RANGE))
+                {
+                    st.nextToken();
+                    st.nextToken();
+                    int min = Integer.parseInt(st.nextToken());
+                    st.nextToken();
+                    int max = Integer.parseInt(st.nextToken());
+                    st.nextToken();
+                    displayRange[0] = new IntensityRange(min, max);
+                }
+                if (token.equals(OFFLIMB_DISPLAY_RANGE))
+                {
+                    st.nextToken();
+                    st.nextToken();
+                    int min = Integer.parseInt(st.nextToken());
+                    st.nextToken();
+                    int max = Integer.parseInt(st.nextToken());
+                    st.nextToken();
+                    offlimbDisplayRange[0] = new IntensityRange(min, max);
                 }
             }
         }
@@ -1355,7 +1379,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             double[] zoomFactor,
             double[] rotationOffset,
             boolean applyFrameAdjustments,
-            boolean flatten) throws NumberFormatException, IOException
+            boolean flatten,
+            IntensityRange displayRange,
+            IntensityRange offLimbDisplayRange
+            ) throws NumberFormatException, IOException
     {
         // for testing purposes only:
         //        infoFilename = infoFilename + ".txt";
@@ -1384,6 +1411,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM3, frustum3[slice][0], frustum3[slice][1], frustum3[slice][2]));
         out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM4, frustum4[slice][0], frustum4[slice][1], frustum4[slice][2]));
         out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", SUN_POSITION_LT, sunPosition[slice][0], sunPosition[slice][1], sunPosition[slice][2]));
+        out.write(String.format("%-20s= ( %16d , %16d )\n", DISPLAY_RANGE, displayRange.min, displayRange.max));
+        out.write(String.format("%-20s= ( %16d , %16d )\n", OFFLIMB_DISPLAY_RANGE, offLimbDisplayRange.min, offLimbDisplayRange.max));
 
         boolean writeApplyAdustments = false;
 
@@ -2682,6 +2711,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
             //            System.out.println("Loading image: " + infoFileNames[k]);
 
+            IntensityRange[] displayRange = new IntensityRange[1];
+            IntensityRange[] offLimbDisplayRange = new IntensityRange[1];
+
             loadImageInfo(
                     infoFileNames[k],
                     k,
@@ -2697,12 +2729,23 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     boresightDirectionOriginal,
                     upVectorOriginal,
                     targetPixelCoordinates,
-                    ato);
+                    ato,
+                    displayRange,
+                    offLimbDisplayRange);
 
             // should startTime and stopTime be an array? -turnerj1
             startTime = start[0];
             stopTime = stop[0];
             applyFrameAdjustments[0] = ato[0];
+
+            if (displayRange[0] != null)
+            {
+                setDisplayedImageRange(displayRange[0]);
+            }
+            if (offLimbDisplayRange[0] != null)
+            {
+                setOfflimbImageRange(offLimbDisplayRange[0]);
+            }
 
             //            updateFrustumOffset();
 
@@ -2748,6 +2791,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         boolean[] ato = new boolean[1];
         ato[0] = true;
 
+        IntensityRange[] displayRange = new IntensityRange[1];
+        IntensityRange[] offLimbDisplayRange = new IntensityRange[1];
+
         loadImageInfo(
                 filePath,
                 0,
@@ -2763,12 +2809,24 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 boresightDirectionOriginal,
                 upVectorOriginal,
                 targetPixelCoordinates,
-                ato);
+                ato,
+                displayRange,
+                offLimbDisplayRange);
 
         // should startTime and stopTime be an array? -turnerj1
         startTime = start[0];
         stopTime = stop[0];
         applyFrameAdjustments[0] = ato[0];
+
+        if (displayRange[0] != null)
+        {
+            setDisplayedImageRange(displayRange[0]);
+        }
+        if (offLimbDisplayRange[0] != null)
+        {
+            setOfflimbImageRange(offLimbDisplayRange[0]);
+        }
+
     }
 
     private void saveImageInfo()
@@ -2806,7 +2864,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                         zoomFactor,
                         rotationOffset,
                         applyFrameAdjustments[0],
-                        false);
+                        false,
+                        getDisplayedRange(),
+                        getOffLimbDisplayedRange());
             }
         }
         catch (NumberFormatException e)
@@ -2847,7 +2907,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     zoomFactor,
                     rotationOffset,
                     applyFrameAdjustments[0],
-                    true);
+                    true,
+                    getDisplayedRange(),
+                    getOffLimbDisplayedRange());
         }
         catch (NumberFormatException e)
         {
