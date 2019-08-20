@@ -48,6 +48,7 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 
 	// Attributes
 	private final FeatureAttr timeFA;
+	private final FeatureAttr radiusFA;
 	private final FeatureAttr rangeFA;
 	private final FeatureAttr intensityFA;
 
@@ -93,6 +94,7 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 		refItem = aItem;
 
 		timeFA = aVLS.timeFA;
+		radiusFA = aVLS.radiusFA;
 		rangeFA = aVLS.rangeFA;
 		intensityFA = aVLS.intensityFA;
 
@@ -130,6 +132,8 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 	{
 		if (aFeatureType == FeatureType.Time)
 			return timeFA;
+		else if (aFeatureType == FeatureType.Radius)
+			return radiusFA;
 		else if (aFeatureType == FeatureType.Range)
 			return rangeFA;
 		else if (aFeatureType == FeatureType.Intensity)
@@ -219,6 +223,7 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 	public void vtkDispose()
 	{
 		timeFA.dispose();
+		radiusFA.dispose();
 		rangeFA.dispose();
 		intensityFA.dispose();
 

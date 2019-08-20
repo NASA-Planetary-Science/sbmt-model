@@ -65,6 +65,7 @@ public class VtkUtil
 	public static VtkLidarStruct formVtkLidarStruct(Iterator<LidarPoint> aPointIter)
 	{
 		FeatureAttrBuilder intensityFAB = new FeatureAttrBuilder();
+		vtkDoubleArray vRadiusDA = new vtkDoubleArray();
 		vtkDoubleArray vRangeDA = new vtkDoubleArray();
 		vtkDoubleArray vTimeDA = new vtkDoubleArray();
 		vtkPoints vSrcP = new vtkPoints();
@@ -77,30 +78,35 @@ public class VtkUtil
 		{
 			LidarPoint pt = aPointIter.next();
 
-			int id = vTgtP.InsertNextPoint(pt.getTargetPosition().toArray());
-			vtkVertex v = new vtkVertex();
-			v.GetPointIds().SetId(0, id);
+			int tgtId = vTgtP.InsertNextPoint(pt.getTargetPosition().toArray());
+			vtkVertex tgtV = new vtkVertex();
+			tgtV.GetPointIds().SetId(0, tgtId);
+			vTgtCA.InsertNextCell(tgtV);
 
 			// Keep track of features of interest
-			vTgtCA.InsertNextCell(v);
-			vRangeDA.InsertNextValue(pt.getSourcePosition().subtract(pt.getTargetPosition()).getNorm());
+			double radius = pt.getTargetPosition().getNorm();
+			vRadiusDA.InsertNextValue(radius);
+
+			double range = pt.getSourcePosition().subtract(pt.getTargetPosition()).getNorm();
+			vRangeDA.InsertNextValue(range);
 
 			double irec = pt.getIntensityReceived();
 			intensityFAB.addValue(irec);
 
-			int id2 = vSrcP.InsertNextPoint(pt.getSourcePosition().toArray());
-			vtkVertex v2 = new vtkVertex();
-			v2.GetPointIds().SetId(0, id2);
-			vSrcCA.InsertNextCell(v2);
+			int srcId = vSrcP.InsertNextPoint(pt.getSourcePosition().toArray());
+			vtkVertex srcV = new vtkVertex();
+			srcV.GetPointIds().SetId(0, srcId);
+			vSrcCA.InsertNextCell(srcV);
 			vTimeDA.InsertNextValue(pt.getTime());
 		}
 
 		// Instantiate the VtkLidarStruct
 		FeatureAttr timeFA = new VtkFeatureAttr(vTimeDA);
+		FeatureAttr radiusFA = new VtkFeatureAttr(vRadiusDA);
 		FeatureAttr rangeFA = new VtkFeatureAttr(vRangeDA);
 		FeatureAttr intensityFA = intensityFAB.build();
 
-		VtkLidarStruct retVLS = new VtkLidarStruct(timeFA, rangeFA, intensityFA, vSrcP, vSrcCA, vTgtP, vTgtCA);
+		VtkLidarStruct retVLS = new VtkLidarStruct(timeFA, radiusFA, rangeFA, intensityFA, vSrcP, vSrcCA, vTgtP, vTgtCA);
 		return retVLS;
 	}
 

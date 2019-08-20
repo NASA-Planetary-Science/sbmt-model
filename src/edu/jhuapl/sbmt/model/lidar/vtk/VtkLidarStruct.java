@@ -20,6 +20,7 @@ import edu.jhuapl.sbmt.model.lidar.feature.FeatureAttr;
 public class VtkLidarStruct
 {
 	public final FeatureAttr timeFA;
+	public final FeatureAttr radiusFA;
 	public final FeatureAttr rangeFA;
 	public final FeatureAttr intensityFA;
 
@@ -31,10 +32,11 @@ public class VtkLidarStruct
 	/**
 	 * Standard Constructor
 	 */
-	public VtkLidarStruct(FeatureAttr aTimeFA, FeatureAttr aRangeFA, FeatureAttr aIntensityFA, vtkPoints aSrcP,
-			vtkCellArray aSrcCA, vtkPoints aTgtP, vtkCellArray aTgtCA)
+	public VtkLidarStruct(FeatureAttr aTimeFA, FeatureAttr aRadiusFA, FeatureAttr aRangeFA, FeatureAttr aIntensityFA,
+			vtkPoints aSrcP, vtkCellArray aSrcCA, vtkPoints aTgtP, vtkCellArray aTgtCA)
 	{
 		timeFA = aTimeFA;
+		radiusFA = aRadiusFA;
 		rangeFA = aRangeFA;
 		intensityFA = aIntensityFA;
 
