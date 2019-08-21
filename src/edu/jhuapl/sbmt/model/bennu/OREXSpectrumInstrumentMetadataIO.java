@@ -50,7 +50,6 @@ public class OREXSpectrumInstrumentMetadataIO extends SpectraHierarchicalSearchS
     @Override
     public void loadMetadata() throws FileNotFoundException
     {
-    	System.out.println("OREXSpectrumInstrumentMetadataIO: loadMetadata: ");
         this.path = FileCache.getFileFromServer(pathString);
         readMetadata(path);
     }
