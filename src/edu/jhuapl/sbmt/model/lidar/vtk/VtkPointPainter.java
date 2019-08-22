@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.lidar;
+package edu.jhuapl.sbmt.model.lidar.vtk;
 
 import java.awt.Color;
 
@@ -14,13 +14,16 @@ import vtk.vtkUnsignedCharArray;
 
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
+import edu.jhuapl.sbmt.model.lidar.LidarGeoUtil;
+import edu.jhuapl.sbmt.model.lidar.LidarTrack;
+import edu.jhuapl.sbmt.model.lidar.LidarTrackManager;
 
 import glum.item.ItemEventListener;
 import glum.item.ItemEventType;
 
 /**
- * Package private class which contains the logic to render a single selected
- * lidar point using the VTK framework.
+ * Class which contains the logic to render a single selected lidar point using
+ * the VTK framework.
  * <P>
  * This class supports the following configurable state:
  * <UL>
@@ -31,7 +34,7 @@ import glum.item.ItemEventType;
  *
  * @author lopeznr1
  */
-class VtkPointPainter implements ItemEventListener, VtkPainter
+public class VtkPointPainter implements ItemEventListener, VtkResource
 {
 	// Reference vars
 	private LidarTrackManager refManager;
@@ -43,9 +46,9 @@ class VtkPointPainter implements ItemEventListener, VtkPainter
 	private boolean isStale;
 
 	// VTK vars
-	private vtkActor actor;
-	private vtkPolyData polydata;
-	private vtkPolyDataMapper pointsMapper;
+	private vtkActor vActor;
+	private vtkPolyData vPolydata;
+	private vtkPolyDataMapper vPointsMapper;
 
 	/**
 	 * Standard Constructor
@@ -61,35 +64,29 @@ class VtkPointPainter implements ItemEventListener, VtkPainter
 		pointColor = new Color(0.1f, 0.1f, 1.0f);
 		isStale = false;
 
-		polydata = new vtkPolyData();
-		VtkUtil.clearPolyData(polydata);
+		vPolydata = new vtkPolyData();
+		VtkUtil.clearPolyData(vPolydata);
 
-		pointsMapper = new vtkPolyDataMapper();
-		pointsMapper.SetInputData(polydata);
+		vPointsMapper = new vtkPolyDataMapper();
+		vPointsMapper.SetInputData(vPolydata);
 
-		actor = new SaavtkLODActor();
-		actor.SetMapper(pointsMapper);
-		((SaavtkLODActor) actor).setQuadricDecimatedLODMapper(polydata);
-		actor.GetProperty().SetColor(pointColor.getRed() / 255.0, pointColor.getGreen() / 255.0,
+		vActor = new SaavtkLODActor();
+		vActor.SetMapper(vPointsMapper);
+		((SaavtkLODActor) vActor).setQuadricDecimatedLODMapper(vPolydata);
+		vActor.GetProperty().SetColor(pointColor.getRed() / 255.0, pointColor.getGreen() / 255.0,
 				pointColor.getBlue() / 255.0);
-		actor.GetProperty().SetPointSize(1.0);
+		vActor.GetProperty().SetPointSize(1.0);
 
 		// Register for events of interst
 		refManager.addListener(this);
 	}
 
-	@Override
-	public void handleItemEvent(Object aSource, ItemEventType aEventType)
+	/**
+	 * Returns the vtkActor associated with the VtkPointPainter.
+	 */
+	public vtkActor getActor()
 	{
-		if (aEventType == ItemEventType.ItemsChanged)
-		{
-			setData(null, null);
-			markStale();
-		}
-		if (aEventType == ItemEventType.ItemsMutated)
-		{
-			markStale();
-		}
+		return vActor;
 	}
 
 	/**
@@ -116,7 +113,7 @@ class VtkPointPainter implements ItemEventListener, VtkPainter
 		lidarPoint = aLidarPoint;
 		lidarTrack = aLidarTrack;
 
-		markStale();
+		isStale = true;
 	}
 
 	/**
@@ -124,40 +121,51 @@ class VtkPointPainter implements ItemEventListener, VtkPainter
 	 */
 	public void setPointSize(double aSize)
 	{
-		actor.GetProperty().SetPointSize(aSize);
+		vActor.GetProperty().SetPointSize(aSize);
 	}
 
 	@Override
-	public vtkActor getActor()
+	public void handleItemEvent(Object aSource, ItemEventType aEventType)
 	{
-		return actor;
+		if (aEventType == ItemEventType.ItemsChanged)
+		{
+			setData(null, null);
+			isStale = true;
+		}
+		if (aEventType == ItemEventType.ItemsMutated)
+		{
+			isStale = true;
+		}
 	}
 
 	@Override
-	public void markStale()
+	public void vtkDispose()
 	{
-		isStale = true;
+		vActor.Delete();
+		vPolydata.Delete();
+		vPointsMapper.Delete();
 	}
 
 	@Override
-	public void updateVtkVars()
+	public void vtkUpdateState()
 	{
 		// Bail if we are not stale
 		if (isStale == false)
 			return;
 
-		VtkUtil.clearPolyData(polydata);
-		vtkPoints points = polydata.GetPoints();
-		vtkCellArray vert = polydata.GetVerts();
-		vtkUnsignedCharArray colors = (vtkUnsignedCharArray) polydata.GetCellData().GetScalars();
+		VtkUtil.clearPolyData(vPolydata);
+		vtkPoints points = vPolydata.GetPoints();
+		vtkCellArray vert = vPolydata.GetVerts();
+		vtkUnsignedCharArray colors = (vtkUnsignedCharArray) vPolydata.GetCellData().GetScalars();
 
 		if (lidarPoint != null && lidarTrack != null && refManager.getIsVisible(lidarTrack) == true)
 		{
-			Vector3D tmpTrans = refManager.getTranslation(lidarTrack);
-			Vector3D tmpPos = lidarPoint.getTargetPosition();
-			double[] targPosArr = refManager.transformLidarPoint(tmpTrans, tmpPos.toArray());
+			double radialOffset = refManager.getRadialOffset();
+			Vector3D translationV = refManager.getTranslation(lidarTrack);
+			Vector3D targetV = lidarPoint.getTargetPosition();
+			targetV = LidarGeoUtil.transformTarget(translationV, radialOffset, targetV);
 
-			int id1 = points.InsertNextPoint(targPosArr);
+			int id1 = points.InsertNextPoint(targetV.getX(), targetV.getY(), targetV.getZ());
 			vtkIdList idList = new vtkIdList();
 			idList.InsertNextId(id1);
 
@@ -169,7 +177,7 @@ class VtkPointPainter implements ItemEventListener, VtkPainter
 			colors.InsertNextTuple4(pointColor.getRed(), pointColor.getGreen(), pointColor.getBlue(), 255);
 		}
 //
-//		polydata.Modified();
+//		vPolydata.Modified();
 
 		isStale = false;
 	}
