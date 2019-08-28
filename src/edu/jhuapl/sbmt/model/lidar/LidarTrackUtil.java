@@ -52,7 +52,6 @@ public class LidarTrackUtil
 		String[] timeRangeArr = new String[] { TimeUtil.et2str(begPt.getTime()), TimeUtil.et2str(endPt.getTime()) };
 		if (timeRangeArr[0].length() == 0 || timeRangeArr[1].length() == 0)
 			return null;
-
 		// Form the list of the relevant points
 		LidarTrack retTrack = new LidarTrack(aIdGenerator.getNextId(), aPointL, ImmutableList.copyOf(aSourceS));
 		return retTrack;
@@ -75,11 +74,9 @@ public class LidarTrackUtil
 		int begIdx = 0;
 
 		LidarPoint prevPt = null;
-		System.out.println("LidarTrackUtil: formTracks: size is " + size);
 		for (int i = 0; i < size; i++)
 		{
 			LidarPoint currPt = aPointL.get(i);
-			System.out.println("LidarTrackUtil: formTracks: index " + i + " of " + size + " and currPnt time " + currPt.getTime());
 
 			if (prevPt != null && currPt.getTime() - prevPt.getTime() >= aTimeSeparationBetweenTracks)
 			{
@@ -121,7 +118,6 @@ public class LidarTrackUtil
 			return retTrackL;
 
 		Map<Integer, String> tmpFileM = new HashMap<>(aSkeleton.getFileMap());
-		System.out.println("LidarTrackUtil: formTracks: filemap " + tmpFileM);
 		// List that holds the LidarPoints which form a Track
 		List<LidarPoint> workPtL = new ArrayList<>();
 
@@ -131,41 +127,30 @@ public class LidarTrackUtil
 		{
 			// Keep track of sources associated with the track
 			String source = tmpFileM.get(aFileNum);
-			System.out.println("LidarTrackUtil: formTracks: source " + source + " from aFileNum " + aFileNum);
-			if (tmpSourceS.contains(source) == false)
-				tmpSourceS.add(source);
+//			if (tmpSourceS.contains(source) == false)
+//				tmpSourceS.add(source);
 
 			// Get all current points and sort by time
-			System.out.println("LidarTrackUtil: formTracks: getting points from " + aFilesWithPointM.get(aFileNum));
 			List<LidarPoint> pntsFromCurrFile = new ArrayList<>(aFilesWithPointM.get(aFileNum));
 			Collections.sort(pntsFromCurrFile);
 
-
-			System.out.println("LidarTrackUtil: formTracks: time sep " + aTimeSeparationBetweenTracks);
 			for (LidarPoint aLP : pntsFromCurrFile)
 			{
-				if (prevPt != null && Math.abs(aLP.getTime() - prevPt.getTime()) > 1)
-					System.out.println("LidarTrackUtil: formTracks: time diff " + (aLP.getTime() - prevPt.getTime()));
-				if (prevPt != null && Math.abs(aLP.getTime() - prevPt.getTime()) >= aTimeSeparationBetweenTracks)
+				if ((prevPt != null && Math.abs(aLP.getTime() - prevPt.getTime()) >= aTimeSeparationBetweenTracks))
 				{
-					tmpSourceS.clear();
-					if (tmpSourceS.contains(source) == false)
-					{
-						System.out.println("LidarTrackUtil: formTracks: adding source " + source);
-						tmpSourceS.add(source);
-					}
 					// Synthesize a new Track
 					LidarTrack tmpTrack = LidarTrackUtil.formTrack(aItGenerator, workPtL, tmpSourceS, aMinTrackLen);
 					if (tmpTrack != null)
 						retTrackL.add(tmpTrack);
 
 
-					// Keep track of sources associated with the track
+					// Keep track of sources associated with the track - this is a new file, so restart the source list for it
 					workPtL.clear();
 					tmpSourceS = new LinkedHashSet<>();
 					tmpSourceS.add(source);
 				}
-
+				if (tmpSourceS.contains(source) == false)
+					tmpSourceS.add(source);
 				workPtL.add(aLP);
 				prevPt = aLP;
 			}
