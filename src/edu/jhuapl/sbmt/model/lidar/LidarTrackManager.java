@@ -1,9 +1,9 @@
 package edu.jhuapl.sbmt.model.lidar;
 
-import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,12 +22,19 @@ import edu.jhuapl.saavtk.model.PolyhedralModel;
 import edu.jhuapl.saavtk.pick.DefaultPicker;
 import edu.jhuapl.saavtk.pick.PickEvent;
 import edu.jhuapl.saavtk.pick.PickUtil;
-import edu.jhuapl.saavtk.util.ColorUtil;
-import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.sbmt.gui.lidar.color.ColorProvider;
+import edu.jhuapl.sbmt.gui.lidar.color.ColorWheelGroupColorProvider;
+import edu.jhuapl.sbmt.gui.lidar.color.GroupColorProvider;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
-import edu.jhuapl.sbmt.util.TimeUtil;
+import edu.jhuapl.sbmt.model.lidar.feature.FeatureAttr;
+import edu.jhuapl.sbmt.model.lidar.feature.FeatureType;
+import edu.jhuapl.sbmt.model.lidar.vtk.VtkLidarPainter;
+import edu.jhuapl.sbmt.model.lidar.vtk.VtkLidarStruct;
+import edu.jhuapl.sbmt.model.lidar.vtk.VtkLidarUniPainter;
+import edu.jhuapl.sbmt.model.lidar.vtk.VtkPointPainter;
+import edu.jhuapl.sbmt.model.lidar.vtk.VtkUtil;
 
 import glum.item.ItemEventType;
 
@@ -37,12 +44,13 @@ import glum.item.ItemEventType;
  * The following features are supported:
  * <UL>
  * <LI>Event handling
- * <LI>Management to collection of lidar Tracks
- * <LI>Support for track selection
- * <LI>Configuration of associated rendering properties.
+ * <LI>Management to collection of LidarTracks
+ * <LI>Support for LidarTrack selection
+ * <LI>Configuration of associated rendering properties
  * <LI>Track offset translation
  * <LI>Track error calculation
  * <LI>Support to apply a radial offset to all Tracks
+ * <LI>Support to specify the point size to render Tracks
  * </UL>
  * <P>
  * Currently (VTK) rendering of Tracks is supported, however that capability
@@ -50,19 +58,22 @@ import glum.item.ItemEventType;
  *
  * @author lopeznr1
  */
-public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
+public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements LidarManager<LidarTrack>
 {
 	// Reference vars
 	protected final PolyhedralModel refSmallBodyModel;
 
 	// State vars
-	private Map<LidarTrack, TrackProp> propM;
+	private Map<LidarTrack, RenderProp> propM;
+	private GroupColorProvider sourceGCP;
+	private GroupColorProvider targetGCP;
 	private double radialOffset;
+	private double pointSize;
 
 	// VTK vars
+	private Map<LidarTrack, VtkLidarPainter<LidarTrack>> vPainterM;
+	private Map<vtkProp, VtkLidarPainter<LidarTrack>> vActorToPainterM;
 	private VtkPointPainter vPointPainter;
-	private VtkTrackPainter vTrackPainter;
-	private List<vtkProp> vActorL;
 
 	/**
 	 * Standard Constructor
@@ -74,14 +85,14 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		refSmallBodyModel = aSmallBodyModel;
 
 		propM = new HashMap<>();
+		sourceGCP = ColorWheelGroupColorProvider.Instance;
+		targetGCP = ColorWheelGroupColorProvider.Instance;
 		radialOffset = 0.0;
+		pointSize = 2.0;
 
+		vPainterM = new HashMap<>();
+		vActorToPainterM = new HashMap<>();
 		vPointPainter = new VtkPointPainter(this);
-		vTrackPainter = new VtkTrackPainter(this);
-
-		vActorL = new ArrayList<>();
-		vActorL.add(vTrackPainter.getActor());
-		vActorL.add(vPointPainter.getActor());
 
 		setPointSize(2);
 	}
@@ -101,47 +112,12 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		if (aActor == vPointPainter.getActor())
 			return vPointPainter.getPoint();
 
-		// Bail if aActor is not associated with a relevant VtkTrackPainter
-		VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(aActor);
-		if (tmpTrackPainter == null)
+		// Bail if aActor is not associated with a relevant painter
+		VtkLidarPainter<LidarTrack> tmpPainter = vActorToPainterM.get(aActor);
+		if (tmpPainter == null)
 			return null;
 
-		return tmpTrackPainter.getLidarPointFromCellId(aCellId);
-	}
-
-	/**
-	 * Returns the color associated with the Track.
-	 */
-	public Color getColor(LidarTrack aTrack)
-	{
-		TrackProp tmpProp = propM.get(aTrack);
-		if (tmpProp == null)
-			return null;
-
-		return tmpProp.color;
-	}
-
-	/**
-	 * Returns true if the track is visible.
-	 */
-	public boolean getIsVisible(LidarTrack aTrack)
-	{
-		TrackProp tmpProp = propM.get(aTrack);
-		if (tmpProp == null)
-			return false;
-
-		return tmpProp.isVisible;
-	}
-
-	/**
-	 * Return the Track at the specified index.
-	 *
-	 * @param aIdx
-	 * @return
-	 */
-	public LidarTrack getTrack(int aIdx)
-	{
-		return getAllItems().get(aIdx);
+		return tmpPainter.getLidarPointForCell(aCellId);
 	}
 
 	/**
@@ -156,7 +132,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 	public double getTrackError(LidarTrack aTrack)
 	{
 		// Utilize the cached value
-		TrackProp tmpProp = propM.get(aTrack);
+		RenderProp tmpProp = propM.get(aTrack);
 		double tmpErr = tmpProp.errAmt;
 		if (Double.isNaN(tmpErr) == false)
 			return tmpErr;
@@ -166,11 +142,11 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		Vector3D tmpVect = getTranslation(aTrack);
 		for (LidarPoint aLP : aTrack.getPointList())
 		{
-			double[] ptLidar = aLP.getTargetPosition().toArray();
+			Vector3D targetV = aLP.getTargetPosition();
 
-			ptLidar = transformLidarPoint(tmpVect, ptLidar);
-			double[] ptClosest = refSmallBodyModel.findClosestPoint(ptLidar);
-			tmpErr += MathUtil.distance2Between(ptLidar, ptClosest);
+			double[] ptLidarArr = LidarGeoUtil.transformTarget(tmpVect, radialOffset, targetV).toArray();
+			double[] ptClosest = refSmallBodyModel.findClosestPoint(ptLidarArr);
+			tmpErr += MathUtil.distance2Between(ptLidarArr, ptClosest);
 		}
 
 		// Update the cache and return the error
@@ -179,115 +155,17 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 	}
 
 	/**
-	 * Returns the translation associated with the specified Track.
-	 *
-	 * @param aTrack The Track of interest.
-	 */
-	public Vector3D getTranslation(LidarTrack aTrack)
-	{
-		TrackProp tmpProp = propM.get(aTrack);
-		if (tmpProp == null)
-			return null;
-
-		return tmpProp.translation;
-	}
-
-	/**
-	 * Method that will set the list of Tracks to visible and set all other
-	 * Tracks to invisible.
-	 *
-	 * @param aTrackL
-	 */
-	public void hideOtherTracksExcept(List<LidarTrack> aTrackL)
-	{
-		Set<LidarTrack> tmpSet = new HashSet<>(aTrackL);
-
-		// Update the visibility flag on each Track
-		for (LidarTrack aTrack : getAllItems())
-		{
-			TrackProp tmpProp = propM.get(aTrack);
-			if (tmpProp == null)
-				continue;
-
-			boolean isVisible = tmpSet.contains(aTrack);
-			tmpProp.isVisible = isVisible;
-		}
-
-		notifyListeners(this, ItemEventType.ItemsMutated);
-		updateVtkVars();
-	}
-
-	/**
-	 * Sets the color associated with the specified Track.
-	 */
-	public void setColor(LidarTrack aTrack, Color aColor)
-	{
-		// Delegate
-		List<LidarTrack> tmpL = ImmutableList.of(aTrack);
-		setColor(tmpL, aColor);
-	}
-
-	/**
-	 * Sets the color associated with the specified list of Tracks.
-	 */
-	public void setColor(List<LidarTrack> aTrackL, Color aColor)
-	{
-		for (LidarTrack aTrack : aTrackL)
-		{
-			TrackProp tmpProp = propM.get(aTrack);
-			if (tmpProp == null)
-				continue;
-
-			tmpProp.color = aColor;
-		}
-
-		notifyListeners(this, ItemEventType.ItemsMutated);
-		updateVtkVars();
-	}
-
-	/**
-	 * Sets the specified Track to be visible.
-	 *
-	 * @param aTrack
-	 * @param aBool True if the Track should be visible
-	 */
-	public void setIsVisible(LidarTrack aTrack, boolean aBool)
-	{
-		// Delegate
-		List<LidarTrack> tmpL = ImmutableList.of(aTrack);
-		setIsVisible(tmpL, aBool);
-	}
-
-	/**
-	 * Sets the specified lists of Tracks to be visible.
-	 *
-	 * @param aTrackL
-	 * @param aBool True if the Tracks should be visible
-	 */
-	public void setIsVisible(List<LidarTrack> aTrackL, boolean aBool)
-	{
-		for (LidarTrack aTrack : aTrackL)
-		{
-			TrackProp tmpProp = propM.get(aTrack);
-			if (tmpProp == null)
-				continue;
-
-			tmpProp.isVisible = aBool;
-		}
-
-		notifyListeners(this, ItemEventType.ItemsMutated);
-		updateVtkVars();
-	}
-
-	/**
-	 * Sets in the baseline point size for all of the tracks
+	 * Sets in the baseline point size for all of the lidar points.
 	 *
 	 * @param aSize
 	 */
-	public void setPointSize(int aSize)
+	public void setPointSize(double aPointSize)
 	{
-		vTrackPainter.setPointSize(aSize);
-		vPointPainter.setPointSize(aSize * 3.5);
+		pointSize = aPointSize;
+
+		for (VtkLidarPainter<?> aPainter : vPainterM.values())
+			aPainter.setPointSize(pointSize);
+		vPointPainter.setPointSize(pointSize * 3.5);
 
 		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
@@ -303,20 +181,230 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		vPointPainter.setData(aLidarPoint, aLidarTrack);
 		notifyListeners(this, ItemEventType.ItemsSelected);
 
-		updateVtkVars();
+		List<LidarTrack> tmpL = ImmutableList.of();
+		if (aLidarTrack != null)
+			tmpL = ImmutableList.of(aLidarTrack);
+		updateVtkVars(tmpL);
 	}
 
-	/**
-	 * Set in the translation amount for each of the specified Tracks.
-	 *
-	 * @param aTrackL The list of Tracks of interest.
-	 * @param aVect The vector that defines the translation amount.
-	 */
-	public void setTranslation(List<LidarTrack> aTrackL, Vector3D aVect)
+	@Override
+	public void clearCustomColorProvider(List<LidarTrack> aItemL)
 	{
-		for (LidarTrack aTrack : aTrackL)
+		Set<LidarTrack> tmpSet = new HashSet<>(aItemL);
+
+		int tmpIdx = -1;
+		int numItems = getNumItems();
+		for (LidarTrack aItem : getAllItems())
 		{
-			TrackProp tmpProp = propM.get(aTrack);
+			tmpIdx++;
+
+			// Skip to next if not in aItemL
+			if (tmpSet.contains(aItem) == false)
+				continue;
+
+			// Skip to next if no RenderProp
+			RenderProp tmpProp = propM.get(aItem);
+			if (tmpProp == null)
+				continue;
+
+			// Skip to next if not custom ColorProvider
+			if (tmpProp.isCustomCP == false)
+				continue;
+
+			tmpProp.isCustomCP = false;
+			tmpProp.srcCP = sourceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			tmpProp.tgtCP = targetGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+		}
+
+		notifyListeners(this, ItemEventType.ItemsMutated);
+		updateVtkVars(aItemL);
+	}
+
+	@Override
+	public ColorProvider getColorProviderSource(LidarTrack aItem)
+	{
+		RenderProp tmpProp = propM.get(aItem);
+		if (tmpProp == null)
+			return null;
+
+		return tmpProp.srcCP;
+	}
+
+	@Override
+	public ColorProvider getColorProviderTarget(LidarTrack aItem)
+	{
+		RenderProp tmpProp = propM.get(aItem);
+		if (tmpProp == null)
+			return null;
+
+		return tmpProp.tgtCP;
+	}
+
+	@Override
+	public FeatureAttr getFeatureAttrFor(LidarTrack aItem, FeatureType aFeatureType)
+	{
+		VtkLidarPainter<?> tmpPainter = vPainterM.get(aItem);
+		if (tmpPainter == null)
+			return null;
+
+		return tmpPainter.getFeatureAttrFor(aFeatureType);
+	}
+
+	@Override
+	public boolean getIsVisible(LidarTrack aItem)
+	{
+		RenderProp tmpProp = propM.get(aItem);
+		if (tmpProp == null)
+			return false;
+
+		return tmpProp.isVisible;
+	}
+
+	@Override
+	public LidarPoint getLidarPointAt(LidarTrack aItem, int aIdx)
+	{
+		return aItem.getPointList().get(aIdx);
+	}
+
+	@Override
+	public Vector3D getTargetPosition(LidarTrack aItem, int aIdx)
+	{
+		return getLidarPointAt(aItem, aIdx).getTargetPosition();
+	}
+
+	@Override
+	public double getRadialOffset()
+	{
+		return radialOffset;
+	}
+
+	@Override
+	public Vector3D getTranslation(LidarTrack aItem)
+	{
+		RenderProp tmpProp = propM.get(aItem);
+		if (tmpProp == null)
+			return null;
+
+		return tmpProp.translation;
+	}
+
+	@Override
+	public boolean hasCustomColorProvider(LidarTrack aItem)
+	{
+		RenderProp tmpProp = propM.get(aItem);
+		if (tmpProp == null)
+			return false;
+
+		return tmpProp.isCustomCP;
+	}
+
+	@Override
+	public void installCustomColorProviders(Collection<LidarTrack> aItemC, ColorProvider aSrcCP, ColorProvider aTgtCP)
+	{
+		for (LidarTrack aItem : aItemC)
+		{
+			// Skip to next if no RenderProp
+			RenderProp tmpProp = propM.get(aItem);
+			if (tmpProp == null)
+				continue;
+
+			tmpProp.isCustomCP = true;
+			tmpProp.srcCP = aSrcCP;
+			tmpProp.tgtCP = aTgtCP;
+		}
+
+		notifyListeners(this, ItemEventType.ItemsMutated);
+		updateVtkVars(aItemC);
+	}
+
+	@Override
+	public void installGroupColorProviders(GroupColorProvider aSrcGCP, GroupColorProvider aTgtGCP)
+	{
+		sourceGCP = aSrcGCP;
+		targetGCP = aTgtGCP;
+
+		int tmpIdx = -1;
+		int numItems = getNumItems();
+		for (LidarTrack aItem : getAllItems())
+		{
+			tmpIdx++;
+
+			// Skip to next if no RenderProp
+			RenderProp tmpProp = propM.get(aItem);
+			if (tmpProp == null)
+				continue;
+
+			// Skip to next if custom
+			if (tmpProp.isCustomCP == true)
+				continue;
+
+			tmpProp.srcCP = sourceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			tmpProp.tgtCP = targetGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+		}
+
+		notifyListeners(this, ItemEventType.ItemsMutated);
+		updateVtkVars(getAllItems());
+	}
+
+	@Override
+	public void setIsVisible(List<LidarTrack> aItemL, boolean aBool)
+	{
+		for (LidarTrack aItem : aItemL)
+		{
+			RenderProp tmpProp = propM.get(aItem);
+			if (tmpProp == null)
+				continue;
+
+			tmpProp.isVisible = aBool;
+		}
+
+		notifyListeners(this, ItemEventType.ItemsMutated);
+		updateVtkVars(aItemL);
+	}
+
+	@Override
+	public void setOthersHiddenExcept(List<LidarTrack> aItemL)
+	{
+		Set<LidarTrack> tmpSet = new HashSet<>(aItemL);
+
+		// Update the visibility flag on each Track
+		for (LidarTrack aItem : getAllItems())
+		{
+			RenderProp tmpProp = propM.get(aItem);
+			if (tmpProp == null)
+				continue;
+
+			boolean isVisible = tmpSet.contains(aItem);
+			tmpProp.isVisible = isVisible;
+		}
+
+		notifyListeners(this, ItemEventType.ItemsMutated);
+		updateVtkVars(aItemL);
+	}
+
+	@Override
+	public void setRadialOffset(double aRadialOffset)
+	{
+		// Update the radialOffset
+		if (radialOffset == aRadialOffset)
+			return;
+		radialOffset = aRadialOffset;
+
+		// Invalidate the cache vars
+		for (RenderProp aProp : propM.values())
+			aProp.errAmt = Double.NaN;
+
+		// Send out the appropriate notifications
+		notifyListeners(this, ItemEventType.ItemsMutated);
+		updateVtkVars(getAllItems());
+	}
+
+	@Override
+	public void setTranslation(Collection<LidarTrack> aItemC, Vector3D aVect)
+	{
+		for (LidarTrack aItem : aItemC)
+		{
+			RenderProp tmpProp = propM.get(aItem);
 			if (tmpProp == null)
 				continue;
 
@@ -326,180 +414,138 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 
 		// Send out the appropriate notifications
 		notifyListeners(this, ItemEventType.ItemsMutated);
-		updateVtkVars();
+		updateVtkVars(aItemC);
 	}
 
 	@Override
-	public void removeItems(List<LidarTrack> aTrackL)
+	public void removeItems(List<LidarTrack> aItemL)
 	{
-		for (LidarTrack aTrack : aTrackL)
+		// Remove relevant state and VTK mappings
+		for (LidarTrack aTrack : aItemL)
+		{
 			propM.remove(aTrack);
 
-		// Delegate
-		super.removeItems(aTrackL);
+			// Remove and release the resources associated with the track
+			VtkLidarPainter<LidarTrack> tmpPainter = vPainterM.remove(aTrack);
 
-		updateVtkVars();
-	}
+			for (vtkProp aProp : tmpPainter.getProps())
+				vActorToPainterM.remove(aProp);
 
-	@Override
-	public void setAllItems(List<LidarTrack> aTrackL)
-	{
-		// Clear state vars
-		propM = new HashMap<>();
-		radialOffset = 0.0;
-
-		// Setup the initial props for all the Tracks
-		int tmpIdx = 0;
-		Color[] colorArr = ColorUtil.generateColors(aTrackL.size());
-		for (LidarTrack aTrack : aTrackL)
-		{
-			TrackProp tmpProp = new TrackProp();
-			tmpProp.color = colorArr[tmpIdx];
-			tmpIdx++;
-
-			propM.put(aTrack, tmpProp);
+			tmpPainter.vtkDispose();
 		}
 
 		// Delegate
-		super.setAllItems(aTrackL);
+		super.removeItems(aItemL);
 
-		updateVtkVars();
+		List<LidarTrack> tmpL = ImmutableList.of();
+		updateVtkVars(tmpL);
+	}
+
+	@Override
+	public void setAllItems(List<LidarTrack> aItemL)
+	{
+		// Clear relevant state vars
+		propM = new HashMap<>();
+		radialOffset = 0.0;
+
+		// Setup the initial props for all the items
+		int tmpIdx = 0;
+		int numItems = aItemL.size();
+		for (LidarTrack aItem : aItemL)
+		{
+			ColorProvider tmpSrcCP = sourceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			ColorProvider tmpTgtCP = targetGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+
+			RenderProp tmpProp = new RenderProp();
+			tmpProp.srcCP = tmpSrcCP;
+			tmpProp.tgtCP = tmpTgtCP;
+			tmpIdx++;
+
+			propM.put(aItem, tmpProp);
+		}
+
+		// Update vPainterM and vActorToPainterM to reflect the installed Tracks
+		Map<LidarTrack, VtkLidarPainter<LidarTrack>> oldDrawM = vPainterM;
+
+		vPainterM = new HashMap<>();
+		vActorToPainterM = new HashMap<>();
+		for (LidarTrack aItem : aItemL)
+		{
+			VtkLidarPainter<LidarTrack> tmpPainter = oldDrawM.remove(aItem);
+			if (tmpPainter == null)
+			{
+				VtkLidarStruct tmpVLS = VtkUtil.formVtkLidarStruct(aItem.getPointList().iterator());
+				tmpPainter = new VtkLidarUniPainter<>(this, aItem, tmpVLS);
+			}
+			tmpPainter.setHighlightSelection(true);
+
+			vPainterM.put(aItem, tmpPainter);
+			for (vtkProp aProp : tmpPainter.getProps())
+				vActorToPainterM.put(aProp, tmpPainter);
+
+			// Set in the hard coded configuration state
+			tmpPainter.setShowSourcePoints(false);
+			tmpPainter.setPercentageShown(0.0, 1.0);
+		}
+
+		// Manually dispose of the (remaining) old VtkPainters
+		for (VtkLidarPainter<?> aPainter : oldDrawM.values())
+			aPainter.vtkDispose();
+
+		// Delegate
+		super.setAllItems(aItemL);
+
+		updateVtkVars(aItemL);
+	}
+
+	@Override
+	public void setSelectedItems(List<LidarTrack> aItemL)
+	{
+		super.setSelectedItems(aItemL);
+
+		// Selected items will be rendered with a different point size.
+		// Force the painters to "update" their point size
+		setPointSize(pointSize);
 	}
 
 	@Override
 	public String getClickStatusBarText(vtkProp aProp, int aCellId, double[] aPickPosition)
 	{
-		// Bail if there is no VtkTrackPainter associated with the actor (aProp)
-		VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(aProp);
-		if (tmpTrackPainter == null)
+		// Bail if there is no painter associated with the actor (aProp)
+		VtkLidarPainter<LidarTrack> tmpPainter = vActorToPainterM.get(aProp);
+		if (tmpPainter == null)
 			return "";
 
-		try
-		{
-			// TODO: This is badly designed hack to prevent the program from
-			// crashing by just sticking bad index checks in a silent try-catch
-			// block. This is indicative of defective logic.
-			LidarPoint tmpLP = tmpTrackPainter.getLidarPointFromCellId(aCellId);
+		// Custom title
+		LidarTrack tmpItem = tmpPainter.getLidarItemForCell(aCellId);
+		String tmpTitle = "(Trk " + tmpItem.getId() + ")";
 
-			double et = tmpLP.getTime();
-			double range = tmpLP.getSourcePosition().subtract(tmpLP.getTargetPosition()).getNorm() * 1000; // m
-			return String.format("Lidar point acquired at " + TimeUtil.et2str(et) + ", ET = %f, unmodified range = %f m",
-					et, range);
-		}
-		catch (Exception aExp)
-		{
-		}
-
-		return "";
-	}
-
-	/**
-	 * Returns the current radial offset (of all Tracks).
-	 */
-	@Override
-	public double getOffset()
-	{
-		return radialOffset;
+		return tmpPainter.getDisplayInfoStr(aCellId, tmpTitle);
 	}
 
 	@Override
 	public List<vtkProp> getProps()
 	{
-		return vActorL;
-	}
+		List<vtkProp> retL = new ArrayList<>();
 
-	/**
-	 * Sets in the radial offset (of all Tracks).
-	 */
-	@Override
-	public void setOffset(double aOffset)
-	{
-		// Update the radialOffset
-		if (radialOffset == aOffset)
-			return;
-		radialOffset = aOffset;
-
-		// Invalidate the cache vars
-		for (TrackProp aProp : propM.values())
-			aProp.errAmt = Double.NaN;
-
-		// Send out the appropriate notifications
-		notifyListeners(this, ItemEventType.ItemsMutated);
-		updateVtkVars();
-	}
-
-	/**
-	 * Helper method that takes the given lidar point and returns a corresponding
-	 * point that takes into account the radial offset and the specified
-	 * translation vector.
-	 *
-	 * @param aVect The translation vector of interest.
-	 * @param aPt The lidar point of interest.
-	 */
-	protected double[] transformLidarPoint(Vector3D aVect, double[] aPt)
-	{
-		if (radialOffset != 0.0)
+		for (LidarTrack aItem : getAllItems())
 		{
-			LatLon lla = MathUtil.reclat(aPt);
-			lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
-			aPt = MathUtil.latrec(lla);
+			// Skip to next if the item is not rendered
+			RenderProp tmpProp = propM.get(aItem);
+			if (tmpProp == null || tmpProp.isVisible == false)
+				continue;
+
+			// Skip to next if no corresponding painter
+			VtkLidarPainter<?> tmpPainter = vPainterM.get(aItem);
+			if (tmpPainter == null)
+				continue;
+
+			retL.addAll(tmpPainter.getProps());
 		}
 
-		return new double[] { aPt[0] + aVect.getX(), aPt[1] + aVect.getY(), aPt[2] + aVect.getZ() };
-	}
+		retL.add(vPointPainter.getActor());
 
-	/**
-	 * Similar to previous function but specific to spacecraft position. The
-	 * difference is that we calculate the radial offset we applied to the lidar
-	 * and apply that offset to the spacecraft (rather than computing the radial
-	 * offset directly for the spacecraft).
-	 *
-	 * @param aVect The translation vector of interest.
-	 * @param scpos
-	 * @param lidarPoint
-	 * @return
-	 */
-	protected double[] transformScpos(Vector3D aVect, double[] scpos, double[] lidarPoint)
-	{
-		if (radialOffset != 0.0)
-		{
-			LatLon lla = MathUtil.reclat(lidarPoint);
-			lla = new LatLon(lla.lat, lla.lon, lla.rad + radialOffset);
-			double[] offsetLidarPoint = MathUtil.latrec(lla);
-
-			scpos[0] += (offsetLidarPoint[0] - lidarPoint[0]);
-			scpos[1] += (offsetLidarPoint[1] - lidarPoint[1]);
-			scpos[2] += (offsetLidarPoint[2] - lidarPoint[2]);
-		}
-
-		return new double[] { scpos[0] + aVect.getX(), scpos[1] + aVect.getY(), scpos[2] + aVect.getZ() };
-	}
-
-	/**
-	 * Helper method that returns the VtkTrackPainter corresponding to the
-	 * specified actor.
-	 */
-	private VtkTrackPainter getVtkTrackPainterForActor(vtkProp aActor)
-	{
-		if (aActor == vTrackPainter.getActor())
-			return vTrackPainter;
-
-		return null;
-	}
-
-	/**
-	 * Helper method that will update all relevant VTK vars.
-	 * <P>
-	 * A notification will be sent out to PropertyChange listeners of the
-	 * {@link Properties#MODEL_CHANGED} event.
-	 */
-	private void updateVtkVars()
-	{
-		vPointPainter.updateVtkVars();
-		vTrackPainter.updateVtkVars();
-
-		// Notify our PropertyChangeListeners
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		return retL;
 	}
 
 	/**
@@ -541,7 +587,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		if (aPickEvent.getMouseEvent().getButton() != 1)
 			return;
 
-		// Retrieve the selected lidar Point and corresponding Track
+		// Retrieve the selected lidar Point and corresponding track
 		LidarTrack tmpTrack = null;
 		LidarPoint tmpPoint = null;
 		vtkProp tmpActor = aPickEvent.getPickedProp();
@@ -552,21 +598,18 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		}
 		else
 		{
-			// Bail if tmpActor is not associated with a relevant VtkTrackPainter
-			VtkTrackPainter tmpTrackPainter = getVtkTrackPainterForActor(tmpActor);
-			if (tmpTrackPainter == null)
+			// Bail if tmpActor is not associated with a relevant painter
+			VtkLidarPainter<LidarTrack> tmpPainter = vActorToPainterM.get(tmpActor);
+			if (tmpPainter == null)
 				return;
 
-			// Update the selected LidarPoint
+			// Determine the Track / Point that was selected
 			int tmpCellId = aPickEvent.getPickedCellId();
-			tmpPoint = tmpTrackPainter.getLidarPointFromCellId(tmpCellId);
 
-			// Determine the Track that was selected
-			tmpTrack = tmpTrackPainter.getTrackFromCellId(tmpCellId);
-			if (tmpTrack == null)
-				return;
+			tmpTrack = tmpPainter.getLidarItemForCell(tmpCellId);
+			tmpPoint = tmpPainter.getLidarPointForCell(tmpCellId);
 
-			// Update the VtkLidaPoint to reflect the selected point
+			// Update the VtkPointPainter to reflect the selected point
 			vPointPainter.setData(tmpPoint, tmpTrack);
 		}
 
@@ -574,7 +617,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		boolean isModifyKey = PickUtil.isModifyKey(aPickEvent.getMouseEvent());
 
 		// Determine the Tracks that will be marked as selected
-		List<LidarTrack> tmpL = getSelectedItems();
+		List<LidarTrack> tmpL = getSelectedItems().asList();
 		tmpL = new ArrayList<>(tmpL);
 
 		if (isModifyKey == false)
@@ -588,7 +631,30 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack>
 		Object source = aPickEvent.getMouseEvent().getSource();
 		notifyListeners(source, ItemEventType.ItemsSelected);
 
-		updateVtkVars();
+		updateVtkVars(tmpL);
+	}
+
+	/**
+	 * Helper method that will update all relevant VTK vars.
+	 * <P>
+	 * A notification will be sent out to PropertyChange listeners of the
+	 * {@link Properties#MODEL_CHANGED} event.
+	 */
+	private void updateVtkVars(Collection<LidarTrack> aUpdateC)
+	{
+		vPointPainter.vtkUpdateState();
+		for (LidarTrack aItem : aUpdateC)
+		{
+			// Skip to next if no installed painter
+			VtkLidarPainter<?> tmpPainter = vPainterM.get(aItem);
+			if (tmpPainter == null)
+				continue;
+
+			tmpPainter.vtkUpdateState();
+		}
+
+		// Notify our PropertyChangeListeners
+		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 	}
 
 }

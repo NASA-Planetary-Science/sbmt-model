@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -245,24 +246,25 @@ public class LidarFileUtil
 		aFile = new File(aFile.getAbsolutePath() + ".bin");
 		DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(aFile)));
 
-		Vector3D tmpVect = aManager.getTranslation(aTrack);
+		double radialOffset = aManager.getRadialOffset();
+		Vector3D transVect = aManager.getTranslation(aTrack);
 		for (LidarPoint aLP : aTrack.getPointList())
 		{
-			double[] target = aLP.getTargetPosition().toArray();
-			double[] scpos = aLP.getSourcePosition().toArray();
+			Vector3D target = aLP.getTargetPosition();
+			Vector3D source = aLP.getSourcePosition();
 			if (transformPoint)
 			{
-				target = aManager.transformLidarPoint(tmpVect, target);
-				scpos = aManager.transformScpos(tmpVect, scpos, target);
+				target = LidarGeoUtil.transformTarget(transVect, radialOffset, target);
+				source = LidarGeoUtil.transformScpos(transVect, radialOffset, target, source);
 			}
 
 			FileUtil.writeDoubleAndSwap(out, aLP.getTime());
-			FileUtil.writeDoubleAndSwap(out, target[0]);
-			FileUtil.writeDoubleAndSwap(out, target[1]);
-			FileUtil.writeDoubleAndSwap(out, target[2]);
-			FileUtil.writeDoubleAndSwap(out, scpos[0]);
-			FileUtil.writeDoubleAndSwap(out, scpos[1]);
-			FileUtil.writeDoubleAndSwap(out, scpos[2]);
+			FileUtil.writeDoubleAndSwap(out, target.getX());
+			FileUtil.writeDoubleAndSwap(out, target.getY());
+			FileUtil.writeDoubleAndSwap(out, target.getZ());
+			FileUtil.writeDoubleAndSwap(out, source.getX());
+			FileUtil.writeDoubleAndSwap(out, source.getY());
+			FileUtil.writeDoubleAndSwap(out, source.getZ());
 		}
 
 		out.close();
@@ -272,16 +274,17 @@ public class LidarFileUtil
 	 * Saves the list of Tracks to the specified folder. Each file will be saved
 	 * to a separate file.
 	 */
-	public static void saveTracksToFolder(LidarTrackManager aManager, File aFolder, List<LidarTrack> aTrackL,
+	public static void saveTracksToFolder(LidarTrackManager aManager, File aFolder, Collection<LidarTrack> aTrackC,
 			String aBaseName, boolean transformPoint) throws IOException
 	{
-		for (int aIdx = 0; aIdx < aTrackL.size(); aIdx++)
+		int tmpIdx = 0;
+		for (LidarTrack tmpTrack : aTrackC)
 		{
-			File tmpFile = getFileForIndex(aFolder, aBaseName, aIdx);
+			File tmpFile = getFileForIndex(aFolder, aBaseName, tmpIdx);
 
-			LidarTrack tmpTrack = aTrackL.get(aIdx);
 			List<LidarTrack> tmpTrackL = ImmutableList.of(tmpTrack);
 			saveTracksToTextFile(aManager, tmpFile, tmpTrackL, transformPoint);
+			tmpIdx++;
 		}
 	}
 
@@ -294,12 +297,12 @@ public class LidarFileUtil
 	 *
 	 * @param aManager
 	 * @param aFile
-	 * @param aTrackL
+	 * @param aTrackC
 	 * @param transformPoint
 	 *
 	 * @throws IOException
 	 */
-	public static void saveTracksToTextFile(LidarTrackManager aManager, File aFile, List<LidarTrack> aTrackL,
+	public static void saveTracksToTextFile(LidarTrackManager aManager, File aFile, Collection<LidarTrack> aTrackC,
 			boolean transformPoint) throws IOException
 	{
 		FileWriter fstream = new FileWriter(aFile);
@@ -307,24 +310,25 @@ public class LidarFileUtil
 
 		String newline = System.getProperty("line.separator");
 
-		for (LidarTrack aTrack : aTrackL)
+		for (LidarTrack aTrack : aTrackC)
 		{
 			// Save each individual lidar point
-			Vector3D tmpVect = aManager.getTranslation(aTrack);
+			double radialOffset = aManager.getRadialOffset();
+			Vector3D transVect = aManager.getTranslation(aTrack);
 			for (LidarPoint aLP : aTrack.getPointList())
 			{
-				double[] target = aLP.getTargetPosition().toArray();
-				double[] scpos = aLP.getSourcePosition().toArray();
+				Vector3D target = aLP.getTargetPosition();
+				Vector3D source = aLP.getSourcePosition();
 				if (transformPoint)
 				{
-					target = aManager.transformLidarPoint(tmpVect, target);
-					scpos = aManager.transformScpos(tmpVect, scpos, target);
+					target = LidarGeoUtil.transformTarget(transVect, radialOffset, target);
+					source = LidarGeoUtil.transformScpos(transVect, radialOffset, target, source);
 				}
 
 				String timeString = TimeUtil.et2str(aLP.getTime());
 
-				out.write(timeString + " " + target[0] + " " + target[1] + " " + target[2] + " " + scpos[0] + " " + scpos[1]
-						+ " " + scpos[2] + " "
+				out.write(timeString + " " + target.getX() + " " + target.getY() + " " + target.getZ() + " " + source.getX()
+						+ " " + source.getY() + " " + source.getZ() + " "
 						+ MathUtil.distanceBetween(aLP.getSourcePosition().toArray(), aLP.getTargetPosition().toArray())
 						+ newline);
 			}
