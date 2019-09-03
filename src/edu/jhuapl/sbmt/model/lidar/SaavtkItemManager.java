@@ -2,7 +2,6 @@ package edu.jhuapl.sbmt.model.lidar;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collection;
 
 import vtk.vtkProp;
 
@@ -11,9 +10,7 @@ import edu.jhuapl.saavtk.model.CommonData;
 import edu.jhuapl.saavtk.model.Model;
 import edu.jhuapl.saavtk.util.Properties;
 
-import glum.gui.panel.itemList.ItemProcessor;
 import glum.item.BaseItemManager;
-import glum.item.ItemEventListener;
 import glum.item.ItemManager;
 
 /**
@@ -26,36 +23,12 @@ import glum.item.ItemManager;
  *
  * @author lopeznr1
  */
-public abstract class SaavtkItemManager<G1> extends BaseItemManager<G1> implements ItemProcessor<G1>, Model
+public abstract class SaavtkItemManager<G1> extends BaseItemManager<G1> implements Model
 {
 	// State vars
 	protected final PropertyChangeSupport pcs;
 	private boolean visible = true;
 	private CommonData commonData;
-
-	@Override
-	public void addItemEventListener(ItemEventListener aListener)
-	{
-		addListener(aListener);
-	}
-
-	@Override
-	public void delItemEventListener(ItemEventListener aListener)
-	{
-		delListener(aListener);
-	}
-
-	@Override
-	public int getNumItems()
-	{
-		return getAllItems().size();
-	}
-
-	@Override
-	public Collection<? extends G1> getItems()
-	{
-		return getAllItems();
-	}
 
 	/**
 	 * Standard Constructor

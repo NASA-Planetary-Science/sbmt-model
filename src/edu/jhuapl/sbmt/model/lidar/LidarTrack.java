@@ -10,8 +10,11 @@ import edu.jhuapl.sbmt.lidar.LidarPoint;
  * Immutable object that defines a "track" of LidarPoints.
  * <P>
  * Each created Track should have unique id which is used to differentiate
- * between other Tracks. No attempt is made to evaluate the LidarPoints when
- * determining if 2 Tracks are equal - only the uniqueId is utilized.
+ * between other Tracks.
+ * <P>
+ * No attempt is made to evaluate the LidarPoints when determining if 2 Tracks
+ * are equal. Equality is true only if the two objects refer to the exact same
+ * reference.
  *
  * @author lopeznr1
  */
@@ -86,30 +89,6 @@ public class LidarTrack
 	public ImmutableList<String> getSourceList()
 	{
 		return sourceL;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + uniqueId;
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		LidarTrack other = (LidarTrack) obj;
-		if (uniqueId != other.uniqueId)
-			return false;
-		return true;
 	}
 
 }
