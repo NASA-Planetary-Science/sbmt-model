@@ -223,6 +223,8 @@ public class AmicaImage extends PerspectiveImage
         }
 
         doFlatFieldCorrection(rawImage);
+
+        super.processRawImage(rawImage);
     }
 
     @Override

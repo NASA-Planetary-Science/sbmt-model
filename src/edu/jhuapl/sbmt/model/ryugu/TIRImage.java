@@ -75,5 +75,7 @@ public class TIRImage extends PerspectiveImage
 //        ImageDataUtil.rotateImage(rawImage, 90.0);
 //        ImageDataUtil.flipImageXAxis(rawImage);
         ImageDataUtil.flipImageYAxis(rawImage);
+
+        super.processRawImage(rawImage);
     }
 }
