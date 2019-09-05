@@ -7,6 +7,7 @@ import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.bennu.otes.OTES;
 import edu.jhuapl.sbmt.model.bennu.ovirs.OVIRS;
 import edu.jhuapl.sbmt.model.eros.NIS;
+import edu.jhuapl.sbmt.model.phobos.MEGANE;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
 
@@ -19,6 +20,7 @@ public class SpectrumInstrumentFactory
         registerType("OVIRS", new OVIRS());
         registerType("NIS", new NIS());
         registerType("NIRS3", new NIRS3());
+        registerType("MEGANE", new MEGANE());
     }
 
     static public void registerType(String name, BasicSpectrumInstrument spectralInstrument)
