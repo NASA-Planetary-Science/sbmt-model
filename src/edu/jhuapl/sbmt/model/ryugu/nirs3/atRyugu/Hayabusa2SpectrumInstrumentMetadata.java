@@ -5,8 +5,15 @@ import java.util.List;
 
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadata;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
+import edu.jhuapl.sbmt.model.bennu.SpectrumSearchSpec;
 
-public class Hayabusa2SpectrumInstrumentMetadata<S extends SearchSpec> implements InstrumentMetadata<S>
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.MetadataManager;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.SettableMetadata;
+
+public class Hayabusa2SpectrumInstrumentMetadata<S extends SearchSpec> implements InstrumentMetadata<S>, MetadataManager
 {
     String instrumentName;
     String queryType;
@@ -108,5 +115,50 @@ public class Hayabusa2SpectrumInstrumentMetadata<S extends SearchSpec> implement
     {
         return "Hayabusa2SpectrumInstrumentMetadata [instrumentName="
                 + instrumentName + ", specs=" + searchMetadata + "]";
+    }
+
+    Key<Metadata[]> searchMetadataKey = Key.of("searchMetadata");
+
+    private <T> void writeMetadataArray(Key<Metadata[]> key, MetadataManager[] values, SettableMetadata configMetadata)
+    {
+        if (values != null)
+        {
+            Metadata[] data = new Metadata[values.length];
+            int i=0;
+            for (MetadataManager val : values) data[i++] = val.store();
+            configMetadata.put(key, data);
+        }
+    }
+
+    private Metadata[] readMetadataArray(Key<Metadata[]> key, Metadata configMetadata)
+    {
+        Metadata[] values = configMetadata.get(key);
+        if (values != null)
+        {
+            return values;
+        }
+        return null;
+    }
+
+    @Override
+    public Metadata store()
+    {
+        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
+        SearchSpec[] specs = new SearchSpec[searchMetadata.size()];
+        searchMetadata.toArray(specs);
+        writeMetadataArray(searchMetadataKey, specs, configMetadata);
+        return configMetadata;
+    }
+
+    @Override
+    public void retrieve(Metadata source)
+    {
+        Metadata[] metadata = readMetadataArray(searchMetadataKey, source);
+        for (Metadata meta : metadata)
+        {
+            SpectrumSearchSpec spec = new SpectrumSearchSpec();
+            spec.retrieve(meta);
+            addSearchSpec((S)spec);
+        }
     }
 }
