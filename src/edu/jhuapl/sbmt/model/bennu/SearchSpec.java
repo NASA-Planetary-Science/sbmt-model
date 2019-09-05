@@ -5,8 +5,10 @@ import java.io.IOException;
 
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
+import crucible.crust.metadata.api.MetadataManager;
 
-public interface SearchSpec
+
+public interface SearchSpec extends MetadataManager
 {
 
     String getDataName();
