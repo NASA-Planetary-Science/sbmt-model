@@ -80,6 +80,8 @@ public class MSIImage extends PerspectiveImage
         rawImage.DeepCopy(resliceOutput);
         rawImage.SetSpacing(1, 1, 1);
 
+        super.processRawImage(rawImage);
+
     }
 
     @Override

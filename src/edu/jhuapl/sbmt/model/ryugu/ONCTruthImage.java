@@ -27,6 +27,16 @@ public class ONCTruthImage extends ONCImage
     {
         // There is a -90 degree rotation in the data.
         ImageDataUtil.rotateImage(rawImage, -90);
+        if (getFlip().equals("X"))
+        {
+            ImageDataUtil.flipImageXAxis(rawImage);
+        }
+        else if (getFlip().equals("Y"))
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+        }
+        if (getRotation() != 0.0)
+            ImageDataUtil.rotateImage(rawImage, 360.0 - getRotation());
     }
 
     @Override

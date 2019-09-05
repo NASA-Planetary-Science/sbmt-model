@@ -3,6 +3,8 @@ package edu.jhuapl.sbmt.model.saturnmoon;
 import java.io.File;
 import java.io.IOException;
 
+import vtk.vtkImageData;
+
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
@@ -56,5 +58,12 @@ public class SaturnMoonImage extends PerspectiveImage
         String sumFilename = keyFile.getParentFile().getParent() + "/sumfiles/"
         + keyFile.getName() + ".SUM";
         return FileCache.getFileFromServer(sumFilename).getAbsolutePath();
+    }
+
+    @Override
+    protected void processRawImage(vtkImageData rawImage)
+    {
+    	// TODO Auto-generated method stub
+    	super.processRawImage(rawImage);
     }
 }

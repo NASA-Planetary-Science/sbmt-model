@@ -25,5 +25,6 @@ public class MapCamV4Image extends MapCamImage
         // Flip image along y axis. For some reason we need to do
         // this so the image is displayed properly.
         ImageDataUtil.flipImageYAxis(rawImage);
+        super.processRawImage(rawImage);
     }
 }
