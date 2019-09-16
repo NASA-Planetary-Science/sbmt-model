@@ -4,7 +4,6 @@ import edu.jhuapl.sbmt.query.IQueryBase;
 import edu.jhuapl.sbmt.query.QueryBase;
 import edu.jhuapl.sbmt.query.database.GenericPhpQuery;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectralMode;
 
 import crucible.crust.metadata.api.Key;
 import crucible.crust.metadata.api.Metadata;
@@ -14,7 +13,7 @@ import crucible.crust.metadata.impl.SettableMetadata;
 
 public class ImagingInstrument implements MetadataManager, IImagingInstrument
 {
-    public SpectralMode spectralMode;
+    public SpectralImageMode spectralMode;
     public QueryBase searchQuery;
     public ImageSource[] searchImageSources;
     public ImageType type;
@@ -24,11 +23,11 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 
     public ImagingInstrument()
     {
-        this(SpectralMode.MONO, null, null, null, null, 0.0, "None");
+        this(SpectralImageMode.MONO, null, null, null, null, 0.0, "None");
     }
     public ImagingInstrument(double rotation, String flip)
     {
-        this(SpectralMode.MONO, null, ImageType.GENERIC_IMAGE, null, null, rotation, flip);
+        this(SpectralImageMode.MONO, null, ImageType.GENERIC_IMAGE, null, null, rotation, flip);
     }
 
 //    public ImagingInstrument(ImageType type, Instrument instrumentName)
@@ -41,12 +40,12 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 //        this(spectralMode, null, null, null, null, 0.0, "None");
 //    }
 
-    public ImagingInstrument(SpectralMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName)
+    public ImagingInstrument(SpectralImageMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName)
     {
         this(spectralMode, searchQuery, type, searchImageSources, instrumentName, 0.0, "None");
     }
 
-    public ImagingInstrument(SpectralMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName, double rotation, String flip)
+    public ImagingInstrument(SpectralImageMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName, double rotation, String flip)
     {
         this.spectralMode = spectralMode;
         this.searchQuery = searchQuery;
@@ -82,7 +81,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 		return searchImageSources;
 	}
 
-	public SpectralMode getSpectralMode()
+	public SpectralImageMode getSpectralMode()
 	{
 		return spectralMode;
 	}
@@ -100,7 +99,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
     @Override
     public void retrieve(Metadata source)
     {
-        spectralMode = SpectralMode.valueOf(read(spectralModeKey, source));
+        spectralMode = SpectralImageMode.valueOf(read(spectralModeKey, source));
         String searchType = read(queryType, source);
         Metadata queryMetadata = read(queryKey, source);
         if (searchType.equals(FixedListQuery.class.getSimpleName()))
