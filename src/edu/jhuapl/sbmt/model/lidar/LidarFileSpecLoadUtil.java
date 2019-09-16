@@ -216,6 +216,7 @@ public class LidarFileSpecLoadUtil
 	private static VtkLidarStruct loadAsciiLidarData(File aFile, BodyViewConfig aBodyViewConfig) throws IOException
 	{
 		FeatureAttrBuilder intensityFAB = new FeatureAttrBuilder();
+		vtkDoubleArray vRadiusDA = new vtkDoubleArray();
 		vtkDoubleArray vRangeDA = new vtkDoubleArray();
 		vtkDoubleArray vTimeDA = new vtkDoubleArray();
 		vtkPoints vSrcP = new vtkPoints();
@@ -333,13 +334,19 @@ public class LidarFileSpecLoadUtil
 				// and sc positions
 				range = Math.sqrt((x - scx) * (x - scx) + (y - scy) * (y - scy) + (z - scz) * (z - scz));
 			}
+
+			// Keep track of features of interest
+			// Radius data
+			double radius = Math.sqrt((x * x) + (y * y) + (z * z));
+			vRadiusDA.InsertNextValue(radius);
+
+			// Range data
 			vRangeDA.InsertNextValue(range);
 
-			// Received intensity data
+			// Intensity data
 			double irec = 0.0;
 			if (intensityEnabled)
 				irec = Double.parseDouble(vals[receivedIntensityIndex]);
-
 			intensityFAB.addValue(irec);
 
 			// Time data
@@ -360,10 +367,11 @@ public class LidarFileSpecLoadUtil
 
 		// Instantiate the VtkLidarStruct
 		FeatureAttr timeFA = new VtkFeatureAttr(vTimeDA);
+		FeatureAttr radiusFA = new VtkFeatureAttr(vRadiusDA);
 		FeatureAttr rangeFA = new VtkFeatureAttr(vRangeDA);
 		FeatureAttr intensityFA = intensityFAB.build();
 
-		return new VtkLidarStruct(timeFA, rangeFA, intensityFA, vSrcP, vSrcCA, vTgtP, vTgtCA);
+		return new VtkLidarStruct(timeFA, radiusFA, rangeFA, intensityFA, vSrcP, vSrcCA, vTgtP, vTgtCA);
 	}
 
 	/**
@@ -375,6 +383,7 @@ public class LidarFileSpecLoadUtil
 	protected static VtkLidarStruct loadBinaryLidarData(BinaryDataTask aTask, File aFile, BodyViewConfig aBodyViewConfig)
 			throws IOException
 	{
+		vtkDoubleArray vRadiusDA = new vtkDoubleArray();
 		vtkDoubleArray vRangeDA = new vtkDoubleArray();
 		vtkDoubleArray vTimeDA = new vtkDoubleArray();
 		vtkPoints vSrcP = new vtkPoints();
@@ -449,10 +458,14 @@ public class LidarFileSpecLoadUtil
 			vTgtCA.InsertNextCell(idList);
 
 			// Keep track of features of interest
+			// Radius data
+			double radius = Math.sqrt((x * x) + (y * y) + (z * z));
+			vRadiusDA.InsertNextValue(radius);
+
 			// Range data
 			vRangeDA.InsertNextValue(Math.sqrt((x - scx) * (x - scx) + (y - scy) * (y - scy) + (z - scz) * (z - scz)));
 
-			// Received intensity
+			// Intensity data
 			double irec = 0.0;
 			if (intensityEnabled)
 			{
@@ -482,12 +495,13 @@ public class LidarFileSpecLoadUtil
 
 		// Instantiate the VtkLidarStruct
 		FeatureAttr timeFA = new VtkFeatureAttr(vTimeDA);
+		FeatureAttr radiusFA = new VtkFeatureAttr(vRadiusDA);
 		FeatureAttr rangeFA = new VtkFeatureAttr(vRangeDA);
 		FeatureAttr intensityFA = intensityFAB.build();
 
 		aTask.setProgressVal(100);
 
-		return new VtkLidarStruct(timeFA, rangeFA, intensityFA, vSrcP, vSrcCA, vTgtP, vTgtCA);
+		return new VtkLidarStruct(timeFA, radiusFA, rangeFA, intensityFA, vSrcP, vSrcCA, vTgtP, vTgtCA);
 	}
 
 }

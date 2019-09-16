@@ -328,7 +328,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.loadPointingOnly = loadPointingOnly;
       	this.flip = key.getFlip();
       	this.rotation = key.getRotation();
-
         this.transposeFITSData = transposeData;
 
         initialize();
@@ -351,7 +350,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.loadPointingOnly = loadPointingOnly;
       	this.flip = key.getFlip();
     	this.rotation = key.getRotation();
-
 
         initialize();
     }
@@ -1842,7 +1840,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     protected void processRawImage(vtkImageData rawImage)
     {
-        // By default do nothing
+    	if (getFlip().equals("X"))
+        {
+            ImageDataUtil.flipImageXAxis(rawImage);
+        }
+        else if (getFlip().equals("Y"))
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+        }
+        if (getRotation() != 0.0)
+            ImageDataUtil.rotateImage(rawImage, 360.0 - getRotation());
     }
 
     protected vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)

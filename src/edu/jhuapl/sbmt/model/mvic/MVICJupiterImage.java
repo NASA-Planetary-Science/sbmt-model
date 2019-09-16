@@ -29,6 +29,8 @@ public class MVICJupiterImage extends PerspectiveImage
         // this so the image is displayed properly.
         ImageDataUtil.flipImageYAxis(rawImage);
         ImageDataUtil.flipImageXAxis(rawImage);
+
+        super.processRawImage(rawImage);
     }
 
     @Override

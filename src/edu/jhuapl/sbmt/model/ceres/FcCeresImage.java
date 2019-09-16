@@ -28,6 +28,8 @@ public class FcCeresImage extends PerspectiveImage
         // Flip image along y axis. For some reason we need to do
         // this so the image is displayed properly.
         ImageDataUtil.flipImageYAxis(rawImage);
+
+        super.processRawImage(rawImage);
     }
 
     public int getCamera()

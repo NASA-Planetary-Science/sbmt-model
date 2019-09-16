@@ -9,6 +9,8 @@ public enum FeatureType
 {
 	Time,
 
+	Radius,
+
 	Range,
 
 	Intensity,
