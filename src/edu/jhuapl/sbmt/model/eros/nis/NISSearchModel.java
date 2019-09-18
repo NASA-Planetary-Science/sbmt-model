@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.eros.nis;
 
 import java.io.File;
 import java.io.IOException;

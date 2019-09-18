@@ -34,8 +34,6 @@ public class OREXSpectrumSearchController
             SbmtInfoWindowManager infoPanelManager,
             PickManager pickManager, Renderer renderer, BasicSpectrumInstrument instrument, BaseSpectrumSearchModel model)
     {
-//        model.loadSearchSpecMetadata();
-
         SpectraCollection spectrumCollection = (SpectraCollection)modelManager.getModel(model.getSpectrumCollectionModelName());
         SpectrumBoundaryCollection boundaryCollection = (SpectrumBoundaryCollection)modelManager.getModel(model.getSpectrumBoundaryCollectionModelName());
 

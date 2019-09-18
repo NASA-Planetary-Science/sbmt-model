@@ -9,21 +9,19 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.core.InstrumentMetadata;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.io.OTESSpectrumReader;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.io.OTESSpectrumWriter;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectrumColoringStyle;
 
 import crucible.crust.metadata.api.Key;
 import crucible.crust.metadata.api.ProvidesGenericObjectFromMetadata;
@@ -38,7 +36,6 @@ public class OTESSpectrum extends BasicSpectrum
     double time;
     String extension = "";
     private SpectrumInstrumentMetadataIO specIO;
-//    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
     private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
     double boundingBoxDiagonalLength;
     boolean headless;
@@ -164,6 +161,7 @@ public class OTESSpectrum extends BasicSpectrum
         }
     }
 
+    @Override
     public void readPointingFromInfoFile()
     {
         InfoFileReader reader = null;
@@ -201,18 +199,9 @@ public class OTESSpectrum extends BasicSpectrum
         frustum3 = frustum.lr;
         frustum4 = frustum.ll;
         spacecraftPosition = frustum.origin;
-
-        this.dateTime=new DateTime(reader.getStartTime());
-
-        // 1 double[] ul, // ordering is from
-        // smallBodyModel.computeFrustumIntersection(spacecraftPosition,
-        // frustum1, frustum2, frustum3, frustum4);
-        // 2 double[] ur,
-        // 3 double[] lr,
-        // 4 double[] ll)
-
     }
 
+    @Override
     public void readSpectrumFromFile()
     {
     	OTESSpectrumReader reader = null;
@@ -259,53 +248,53 @@ public class OTESSpectrum extends BasicSpectrum
     	return spec.getDataName();
     }
 
-    @Override
-    public double[] getChannelColor()
-    {
-        if (coloringStyle == SpectrumColoringStyle.EMISSION_ANGLE)
-        {
-            //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
-            //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
+//    @Override
+//    public double[] getChannelColor()
+//    {
+//        if (coloringStyle == SpectrumColoringStyle.EMISSION_ANGLE)
+//        {
+//            //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
+//            //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
 //        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
 //            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
 //            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
 //            colormap.setRangeMin(0.0);  //was 5.4
 //            colormap.setRangeMax(90.00); //was 81.7
-
+//
 //            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
-            double[] color = new double[3];
+//            double[] color = new double[3];
 //            color[0] = color2.getRed()/255.0;
 //            color[1] = color2.getGreen()/255.0;
 //            color[2] = color2.getBlue()/255.0;
-            return color;
-        }
-        else
-        {
-            //TODO: What do we do for L3 data here?  It has less XAxis points than the L2 data, so is the coloring scheme different?
-            double[] color = new double[3];
-            for (int i=0; i<3; ++i)
-            {
-                double val = 0.0;
-                if (channelsToColorBy[i] < instrument.getBandCenters().length)
-                {
-                    val = spectrum[channelsToColorBy[i]];
-                }
-                else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-                    val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-                else
-                    val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
-
-                if (val < 0.0)
-                    val = 0.0;
-                else if (val > 1.0)
-                    val = 1.0;
-
-                double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-                color[i] = slope * (val - channelsColoringMinValue[i]);
-            }
-            return color;
-        }
-    }
+//            return color;
+//        }
+//        else
+//        {
+//            //TODO: What do we do for L3 data here?  It has less XAxis points than the L2 data, so is the coloring scheme different?
+//            double[] color = new double[3];
+//            for (int i=0; i<3; ++i)
+//            {
+//                double val = 0.0;
+//                if (channelsToColorBy[i] < instrument.getBandCenters().length)
+//                {
+//                    val = spectrum[channelsToColorBy[i]];
+//                }
+//                else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
+//                    val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
+//                else
+//                    val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
+//
+//                if (val < 0.0)
+//                    val = 0.0;
+//                else if (val > 1.0)
+//                    val = 1.0;
+//
+//                double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
+//                color[i] = slope * (val - channelsColoringMinValue[i]);
+//            }
+//            return color;
+//        }
+//    }
 
     public double getTime()
     {

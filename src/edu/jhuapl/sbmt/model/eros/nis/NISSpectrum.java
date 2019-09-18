@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.eros.nis;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -214,33 +214,33 @@ public class NISSpectrum extends BasicSpectrum
     }
 
 
-    @Override
-    public double[] getChannelColor()
-    {
-        double[] color = new double[3];
-        for (int i=0; i<3; ++i)
-        {
-            double val = 0.0;
-            if (channelsToColorBy[i] < instrument.getBandCenters().length)
-            {
-                val = spectrum[channelsToColorBy[i]];
-            }
-            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-            else
-                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
-
-            if (val < 0.0)
-                val = 0.0;
-            else if (val > 1.0)
-                val = 1.0;
-
-            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-            color[i] = slope * (val - channelsColoringMinValue[i]);
-        }
-
-        return color;
-    }
+//    @Override
+//    public double[] getChannelColor()
+//    {
+//        double[] color = new double[3];
+//        for (int i=0; i<3; ++i)
+//        {
+//            double val = 0.0;
+//            if (channelsToColorBy[i] < instrument.getBandCenters().length)
+//            {
+//                val = spectrum[channelsToColorBy[i]];
+//            }
+//            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
+//                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
+//            else
+//                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
+//
+//            if (val < 0.0)
+//                val = 0.0;
+//            else if (val > 1.0)
+//                val = 1.0;
+//
+//            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
+//            color[i] = slope * (val - channelsColoringMinValue[i]);
+//        }
+//
+//        return color;
+//    }
 
     @Override
     public double evaluateDerivedParameters(int channel)

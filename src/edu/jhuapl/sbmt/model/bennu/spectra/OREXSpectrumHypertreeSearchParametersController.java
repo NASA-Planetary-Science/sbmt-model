@@ -32,6 +32,7 @@ import edu.jhuapl.sbmt.lidar.hyperoctree.HyperBox;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperException.HyperDimensionMismatchException;
 import edu.jhuapl.sbmt.model.boundedobject.hyperoctree.BoundedObjectHyperTreeSkeleton;
 import edu.jhuapl.sbmt.model.boundedobject.hyperoctree.HyperBoundedObject;
+import edu.jhuapl.sbmt.spectrum.controllers.standard.SearchProgressListener;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchParametersModel;
@@ -61,6 +62,8 @@ public class OREXSpectrumHypertreeSearchParametersController
     {
         this.model = model;
         searchParameters = new SpectrumSearchParametersModel();
+        System.out.println(
+				"OREXSpectrumHypertreeSearchParametersController: OREXSpectrumHypertreeSearchParametersController: spec " + spectraSpec);
         this.spectraSpec = spectraSpec;
         this.panel = new SpectrumHypertreeSearchParametersPanel(hasHierarchicalSpectraSearch);
         this.pickManager = pickManager;
@@ -547,7 +550,33 @@ public class OREXSpectrumHypertreeSearchParametersController
 							spectraLims[7] });
 					model.performHypertreeSearch(searchParameters, cubeList, skeleton, hbb,
 							dataSpecName, true,
-							hasHierarchicalSpectraSearch, spectraSpec);
+							hasHierarchicalSpectraSearch, spectraSpec, new SearchProgressListener()
+							{
+
+								@Override
+								public void searchStarted()
+								{
+									// TODO Auto-generated method stub
+
+								}
+
+								@Override
+								public void searchProgressChanged(int percentComplete)
+								{
+									// TODO Auto-generated method stub
+
+								}
+
+								@Override
+								public void searchEnded()
+								{
+									// TODO Auto-generated method stub
+
+								}
+
+								@Override
+								public void searchIndeterminate() {};
+							});
 
 				} catch (HyperDimensionMismatchException e)
 				{

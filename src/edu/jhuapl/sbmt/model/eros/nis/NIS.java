@@ -1,11 +1,20 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.eros.nis;
 
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.query.QueryBase;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectraType;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.Spectrum;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
+
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.InstanceGetter;
+import crucible.crust.metadata.impl.SettableMetadata;
 
 public class NIS extends BasicSpectrumInstrument
 {
@@ -187,6 +196,49 @@ public class NIS extends BasicSpectrumInstrument
 		return new String[] {};
 	}
 
+	 //metadata interface
+    private static final Key<NIS> NIS_KEY = Key.of("nis");
+    private static final Key<String> spectraNameKey = Key.of("displayName");
+    private static final Key<QueryBase> queryBaseKey = Key.of("queryBase");
+    private static final Key<SpectrumMath> spectrumMathKey = Key.of("spectrumMath");
+    private static final Key<Double[]> bandCentersKey = Key.of("bandCenters");
+    private static final Key<String> bandCenterUnitKey = Key.of("bandCenterUnit");
 
+    public static void initializeSerializationProxy()
+	{
+		InstanceGetter.defaultInstanceGetter().register(NIS_KEY, (metadata) -> {
+
+			NIS inst = null;
+			String displayName = metadata.get(spectraNameKey);
+			SpectraType spectraType = SpectraTypeFactory.findSpectraTypeForDisplayName(displayName);
+			QueryBase queryBase = spectraType.getQueryBase();
+			SpectrumMath spectrumMath = spectraType.getSpectrumMath();
+			Double[] bandCenters = spectraType.getBandCenters();
+			String bandCenterUnit = spectraType.getBandCenterUnit();
+
+//		        QueryBase queryBase = metadata.get(queryBaseKey);
+//		        SpectrumMath spectrumMath = metadata.get(spectrumMathKey);
+//		        Double[] bandCenters = metadata.get(bandCentersKey);
+//		        String bandCenterUnit = metadata.get(bandCenterUnitKey);
+			inst = new NIS();
+			inst.bandCenterUnit = bandCenterUnit;
+			inst.displayName = displayName;
+			inst.queryBase = queryBase;
+			inst.spectrumMath = spectrumMath;
+//	        inst = new OTES(bandCenterUnit, displayName, queryBase, spectrumMath);
+			inst.bandCenters = bandCenters;
+
+			return inst;
+		},
+	    NIS.class,
+	    key -> {
+			 SettableMetadata metadata = SettableMetadata.of(Version.of(1, 0));
+			 metadata.put(spectraNameKey, key.getDisplayName());
+//			 metadata.put(queryBaseKey, key.getQueryBase());
+//			 metadata.put(spectrumMathKey, key.getSpectrumMath());
+//			 metadata.put(bandCenterUnitKey, key.getBandCenterUnit());
+			 return metadata;
+		});
+	}
 
 }

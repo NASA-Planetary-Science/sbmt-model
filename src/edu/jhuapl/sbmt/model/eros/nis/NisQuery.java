@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.eros;
+package edu.jhuapl.sbmt.model.eros.nis;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -105,7 +105,6 @@ public final class NisQuery extends DatabaseQueryBase
     @Override
     public ISearchResultsMetadata<BasicSpectrum> runQuery(SearchMetadata queryMetadata)
     {
-    	System.out.println("NisQuery: runQuery: running NIS query");
         FixedMetadata metadata = queryMetadata.getMetadata();
         double fromIncidence = metadata.get(DatabaseSearchMetadata.FROM_INCIDENCE);
         double toIncidence = metadata.get(DatabaseSearchMetadata.TO_INCIDENCE);
@@ -166,7 +165,6 @@ public final class NisQuery extends DatabaseQueryBase
                 }
                 args.put("cubes", cubesStr);
             }
-            System.out.println("NisQuery: runQuery: DB query");
             results = doQuery("searchnis.php", constructUrlArguments(args));
 
 
@@ -174,7 +172,6 @@ public final class NisQuery extends DatabaseQueryBase
         catch (Exception e)
         {
             e.printStackTrace();
-            System.out.println("NisQuery: runQuery: file list");
             results = getResultsFromFileListOnServer(getDataPath() + "/nisTimes.txt", getDataPath(), getGalleryPath(), "");
 
         }
@@ -183,7 +180,6 @@ public final class NisQuery extends DatabaseQueryBase
         NISSearchResult tempResults = new NISSearchResult();
         try
         {
-        	System.out.println("NisQuery: runQuery: number of results " + results.size());
         	for (List<String> res : results)
         	{
         		String path = NisQuery.getNisPath(res);
@@ -206,7 +202,6 @@ public final class NisQuery extends DatabaseQueryBase
         {
        	 	System.out.println("SpectrumStandardSearch: search: " + e.getLocalizedMessage());
         }
-        System.out.println("NisQuery: runQuery: number of basic spectra " + tempResults.getResultlist().size());
         return tempResults;
     }
 
