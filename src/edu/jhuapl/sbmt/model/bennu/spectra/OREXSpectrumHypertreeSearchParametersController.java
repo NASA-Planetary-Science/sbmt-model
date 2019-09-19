@@ -62,8 +62,6 @@ public class OREXSpectrumHypertreeSearchParametersController
     {
         this.model = model;
         searchParameters = new SpectrumSearchParametersModel();
-        System.out.println(
-				"OREXSpectrumHypertreeSearchParametersController: OREXSpectrumHypertreeSearchParametersController: spec " + spectraSpec);
         this.spectraSpec = spectraSpec;
         this.panel = new SpectrumHypertreeSearchParametersPanel(hasHierarchicalSpectraSearch);
         this.pickManager = pickManager;
