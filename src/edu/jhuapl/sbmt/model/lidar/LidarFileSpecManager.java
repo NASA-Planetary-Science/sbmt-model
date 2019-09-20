@@ -15,6 +15,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import vtk.vtkProp;
 
+import edu.jhuapl.saavtk.model.SaavtkItemManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SmallBodyModel;

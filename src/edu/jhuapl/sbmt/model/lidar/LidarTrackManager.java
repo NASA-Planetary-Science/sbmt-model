@@ -19,6 +19,7 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
+import edu.jhuapl.saavtk.model.SaavtkItemManager;
 import edu.jhuapl.saavtk.pick.DefaultPicker;
 import edu.jhuapl.saavtk.pick.PickEvent;
 import edu.jhuapl.saavtk.pick.PickUtil;
