@@ -564,6 +564,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 				if (Properties.MODEL_PICKED.equals(aEvent.getPropertyName()) == false)
 					return;
 
+				// Bail if the picked item is not associated with our ItemManager
 				PickEvent pickEvent = (PickEvent) aEvent.getNewValue();
 				boolean isPass = aModelManager.getModel(pickEvent.getPickedProp()) == LidarTrackManager.this;
 				if (isPass == false)
@@ -618,13 +619,13 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 		boolean isModifyKey = PickUtil.isModifyKey(aPickEvent.getMouseEvent());
 
 		// Determine the Tracks that will be marked as selected
-		List<LidarTrack> tmpL = getSelectedItems().asList();
-		tmpL = new ArrayList<>(tmpL);
-
+		List<LidarTrack> tmpL = new ArrayList<>(getSelectedItems());
 		if (isModifyKey == false)
 			tmpL = ImmutableList.of(tmpTrack);
-		else if (tmpL.contains(tmpTrack) == false)
+		else if (getSelectedItems().contains(tmpTrack) == false)
 			tmpL.add(tmpTrack);
+		else
+			tmpL.remove(tmpTrack);
 
 		// Update the selected Tracks
 		setSelectedItems(tmpL);
