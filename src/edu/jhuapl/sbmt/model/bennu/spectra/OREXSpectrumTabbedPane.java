@@ -42,7 +42,7 @@ public class OREXSpectrumTabbedPane extends JTabbedPane
 				@Override
 				public void spectrumFootprintVisbilityChanged(BasicSpectrum spectrum, boolean isVisible)
 				{
-					SpectrumColoringStyle style = SpectrumColoringStyle.getStyleForName(model.getColoringModel().getSpectrumColoringStyleName());
+					SpectrumColoringStyle style = model.getColoringModel().getSpectrumColoringStyle();
 //					try
 //					{
 						spectrumCollection.addSpectrum(spectrum, style);
@@ -92,7 +92,7 @@ public class OREXSpectrumTabbedPane extends JTabbedPane
 				@Override
 				public void spectrumFootprintVisbilityChanged(BasicSpectrum spectrum, boolean isVisible)
 				{
-					SpectrumColoringStyle style = SpectrumColoringStyle.getStyleForName(model.getColoringModel().getSpectrumColoringStyleName());
+					SpectrumColoringStyle style = model.getColoringModel().getSpectrumColoringStyle();
 //					try
 //					{
 						spectrumCollection.addSpectrum(spectrum, style);

@@ -41,6 +41,7 @@ public class OREXSpectrumSearchController
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 
         this.searchParametersController = new SpectrumSearchParametersController(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
+
         this.searchParametersController.setupSearchParametersPanel();
 
         this.coloringController = new SpectrumColoringController(model, spectrumCollection);
