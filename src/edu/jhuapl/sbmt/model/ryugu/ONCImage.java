@@ -121,6 +121,8 @@ public class ONCImage extends PerspectiveImage
         ImageKeyInterface key = getKey();
         if (key.getSource().equals(ImageSource.SPICE))
             ImageDataUtil.rotateImage(rawImage, -90);
+
+        super.processRawImage(rawImage);
     }
 
     @Override

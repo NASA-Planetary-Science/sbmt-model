@@ -6,6 +6,11 @@ import java.util.Hashtable;
 
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.SettableMetadata;
+
 public class SpectrumSearchSpec extends Hashtable<String, String> implements SearchSpec
 {
     String dataName;
@@ -129,4 +134,42 @@ public class SpectrumSearchSpec extends Hashtable<String, String> implements Sea
     {
         return get("dataDescription");
     }
+
+    final static Key<String> dataNameKey = Key.of("dataName");
+    final static Key<String> dataRootLocationKey = Key.of("dataRootLocation");
+    final static Key<String> dataPathKey = Key.of("dataPath");
+    final static Key<String> dataListFilenameKey = Key.of("dataListFilenameKey");
+    final static Key<String> sourceKey = Key.of("source");
+    final static Key<String> xAxisUnitsKey = Key.of("xAxisUnits");
+    final static Key<String> yAxisUnitsKey = Key.of("yAxisUnits");
+    final static Key<String> dataDescriptionKey = Key.of("dataDescription");
+
+	@Override
+	public Metadata store()
+	{
+		SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
+		configMetadata.put(dataNameKey, getDataName());
+		configMetadata.put(dataRootLocationKey, getDataRootLocation());
+		configMetadata.put(dataPathKey, getDataPath());
+		configMetadata.put(dataListFilenameKey, getDataListFilename());
+		configMetadata.put(sourceKey, getSource().toString());
+		configMetadata.put(xAxisUnitsKey, getxAxisUnits());
+		configMetadata.put(yAxisUnitsKey, getyAxisUnits());
+		configMetadata.put(dataDescriptionKey, getDataDescription());
+        return configMetadata;
+	}
+
+	@Override
+	public void retrieve(Metadata sourceMetadata)
+	{
+		put("dataName", sourceMetadata.get(dataNameKey));
+		put("dataRootLocation", sourceMetadata.get(dataRootLocationKey));
+		put("dataPath", sourceMetadata.get(dataPathKey));
+		put("dataListFilename", sourceMetadata.get(dataListFilenameKey));
+		put("source", sourceMetadata.get(sourceKey));
+		put("xAxisUnits", sourceMetadata.get(xAxisUnitsKey));
+		put("yAxisUnits", sourceMetadata.get(yAxisUnitsKey));
+		put("dataDescription", sourceMetadata.get(dataDescriptionKey));
+
+	}
 }

@@ -35,6 +35,8 @@ public class LorriImage extends BasicPerspectiveImage
             ImageDataUtil.flipImageYAxis(rawImage);
             ImageDataUtil.rotateImage(rawImage, 180.0);
         }
+
+        super.processRawImage(rawImage);
     }
 
     @Override
