@@ -117,13 +117,14 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getLocalInfoFilePathOnServer()
     {
-    	String normalpath = SafeURLPaths.instance().getString(serverpath).substring(7);
+    	String normalpath = SafeURLPaths.instance().getString(serverpath); //.substring(7);
     	return FilenameUtils.removeExtension(normalpath) + ".INFO";
     }
 
     protected String getLocalSpectrumFilePathOnServer()
     {
-        return SafeURLPaths.instance().getString(serverpath).substring(7);
+    	System.out.println("OTESSpectrum: getLocalSpectrumFilePathOnServer: server path is " + serverpath);
+        return SafeURLPaths.instance().getString(serverpath); //.substring(7);
     }
 
     protected String getInfoFilePathOnServer()

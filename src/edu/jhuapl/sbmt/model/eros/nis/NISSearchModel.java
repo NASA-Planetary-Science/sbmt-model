@@ -12,11 +12,10 @@ import com.google.common.collect.Maps;
 
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.FileCache;
-import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
 
-public class NISSearchModel extends BaseSpectrumSearchModel
+public class NISSearchModel extends BaseSpectrumSearchModel<NISSpectrum>
 {
     public static Map<String,String> nisFileToObservationTimeMap=Maps.newHashMap();
     static Map<String,Vector3D> nisFileToSunPositionMap=Maps.newHashMap();
@@ -89,7 +88,7 @@ public class NISSearchModel extends BaseSpectrumSearchModel
     }
 
     @Override
-    public void setSpectrumRawResults(List<BasicSpectrum> spectrumRawResults)
+    public void setSpectrumRawResults(List<NISSpectrum> spectrumRawResults)
     {
 //        List<BasicSpectrum> matchedImages=Lists.newArrayList();
 //        if (matchedImages.size() > 0)
