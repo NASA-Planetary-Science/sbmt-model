@@ -52,7 +52,6 @@ public class LidarTrackUtil
 		String[] timeRangeArr = new String[] { TimeUtil.et2str(begPt.getTime()), TimeUtil.et2str(endPt.getTime()) };
 		if (timeRangeArr[0].length() == 0 || timeRangeArr[1].length() == 0)
 			return null;
-
 		// Form the list of the relevant points
 		LidarTrack retTrack = new LidarTrack(aIdGenerator.getNextId(), aPointL, ImmutableList.copyOf(aSourceS));
 		return retTrack;
@@ -78,6 +77,7 @@ public class LidarTrackUtil
 		for (int i = 0; i < size; i++)
 		{
 			LidarPoint currPt = aPointL.get(i);
+
 			if (prevPt != null && currPt.getTime() - prevPt.getTime() >= aTimeSeparationBetweenTracks)
 			{
 				// Synthesize a new Track
@@ -118,38 +118,39 @@ public class LidarTrackUtil
 			return retTrackL;
 
 		Map<Integer, String> tmpFileM = new HashMap<>(aSkeleton.getFileMap());
-
 		// List that holds the LidarPoints which form a Track
 		List<LidarPoint> workPtL = new ArrayList<>();
 
 		Set<String> tmpSourceS = new LinkedHashSet<>();
+		LidarPoint prevPt = null;
 		for (Integer aFileNum : aFilesWithPointM.keySet())
 		{
 			// Keep track of sources associated with the track
 			String source = tmpFileM.get(aFileNum);
-			if (tmpSourceS.contains(source) == false)
-				tmpSourceS.add(source);
+//			if (tmpSourceS.contains(source) == false)
+//				tmpSourceS.add(source);
 
 			// Get all current points and sort by time
 			List<LidarPoint> pntsFromCurrFile = new ArrayList<>(aFilesWithPointM.get(aFileNum));
 			Collections.sort(pntsFromCurrFile);
 
-			LidarPoint prevPt = null;
 			for (LidarPoint aLP : pntsFromCurrFile)
 			{
-				if (prevPt != null && aLP.getTime() - prevPt.getTime() >= aTimeSeparationBetweenTracks)
+				if ((prevPt != null && Math.abs(aLP.getTime() - prevPt.getTime()) >= aTimeSeparationBetweenTracks))
 				{
 					// Synthesize a new Track
 					LidarTrack tmpTrack = LidarTrackUtil.formTrack(aItGenerator, workPtL, tmpSourceS, aMinTrackLen);
 					if (tmpTrack != null)
 						retTrackL.add(tmpTrack);
 
-					// Keep track of sources associated with the track
+
+					// Keep track of sources associated with the track - this is a new file, so restart the source list for it
 					workPtL.clear();
 					tmpSourceS = new LinkedHashSet<>();
 					tmpSourceS.add(source);
 				}
-
+				if (tmpSourceS.contains(source) == false)
+					tmpSourceS.add(source);
 				workPtL.add(aLP);
 				prevPt = aLP;
 			}
