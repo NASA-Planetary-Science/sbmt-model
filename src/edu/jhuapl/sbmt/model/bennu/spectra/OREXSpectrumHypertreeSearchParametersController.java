@@ -495,11 +495,12 @@ public class OREXSpectrumHypertreeSearchParametersController
 					SmallBodyModel smallBodyModel = (SmallBodyModel) modelManager.getModel(ModelNames.SMALL_BODY);
 					EllipsePolygon region = null;
 					vtkPolyData interiorPoly = new vtkPolyData();
-					if (selectionModel.getNumberOfStructures() > 0)
+
+					if (selectionModel.getAllItems().size() > 0)
 					{
 						region = (EllipsePolygon) selectionModel.getStructure(0);
 						selectionRegionCenter = region.getCenter();
-						selectionRegionRadius = region.radius;
+						selectionRegionRadius = region.getRadius();
 
 						// Always use the lowest resolution model for getting
 						// the
@@ -511,14 +512,15 @@ public class OREXSpectrumHypertreeSearchParametersController
 						// low
 						// res model.
 						if (smallBodyModel.getModelResolution() > 0)
-							smallBodyModel.drawRegularPolygonLowRes(selectionRegionCenter, region.radius,
-									region.numberOfSides, interiorPoly, null); // this
+							smallBodyModel.drawRegularPolygonLowRes(selectionRegionCenter, region.getRadius(),
+									region.getNumberOfSides(), interiorPoly, null); // this
 																				// sets
 																				// interiorPoly
 						else
-							interiorPoly = region.interiorPolyData;
+							interiorPoly = region.getVtkInteriorPolyData();
 
-					} else
+					}
+					else
 					{
 						vtkCubeSource box = new vtkCubeSource();
 						double[] bboxBounds = smallBodyModel.getBoundingBox().getBounds();
