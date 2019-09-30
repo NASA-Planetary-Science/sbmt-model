@@ -123,7 +123,6 @@ public class OTESSpectrum extends BasicSpectrum
 
     protected String getLocalSpectrumFilePathOnServer()
     {
-    	System.out.println("OTESSpectrum: getLocalSpectrumFilePathOnServer: server path is " + serverpath);
         return SafeURLPaths.instance().getString(serverpath); //.substring(7);
     }
 
