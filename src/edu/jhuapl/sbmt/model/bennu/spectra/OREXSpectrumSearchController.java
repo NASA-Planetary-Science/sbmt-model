@@ -13,6 +13,7 @@ import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumColoringController;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumResultsTableController;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumSearchParametersController;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
@@ -20,31 +21,31 @@ import edu.jhuapl.sbmt.spectrum.rendering.SpectraCollection;
 import edu.jhuapl.sbmt.spectrum.rendering.SpectrumBoundaryCollection;
 import edu.jhuapl.sbmt.spectrum.ui.search.SpectrumSearchPanel;
 
-public class OREXSpectrumSearchController
+public class OREXSpectrumSearchController<S extends BasicSpectrum>
 {
     private SpectrumSearchPanel panel;
-    protected SpectrumResultsTableController spectrumResultsTableController;
+    protected SpectrumResultsTableController<S> spectrumResultsTableController;
     private SpectrumSearchParametersController searchParametersController;
-    private SpectrumColoringController coloringController;
+    private SpectrumColoringController<S> coloringController;
 
     public OREXSpectrumSearchController(Date imageSearchDefaultStartDate, Date imageSearchDefaultEndDate,
     		boolean hasHierarchicalSpectraSearch, double imageSearchDefaultMaxSpacecraftDistance,
     		SpectraHierarchicalSearchSpecification spectraSpec,
     		ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager,
-            PickManager pickManager, Renderer renderer, BasicSpectrumInstrument instrument, BaseSpectrumSearchModel model)
+            PickManager pickManager, Renderer renderer, BasicSpectrumInstrument instrument, BaseSpectrumSearchModel<S> model)
     {
-        SpectraCollection spectrumCollection = (SpectraCollection)modelManager.getModel(model.getSpectrumCollectionModelName());
-        SpectrumBoundaryCollection boundaryCollection = (SpectrumBoundaryCollection)modelManager.getModel(model.getSpectrumBoundaryCollectionModelName());
+        SpectraCollection<S> spectrumCollection = (SpectraCollection<S>)modelManager.getModel(model.getSpectrumCollectionModelName());
+        SpectrumBoundaryCollection<S> boundaryCollection = (SpectrumBoundaryCollection<S>)modelManager.getModel(model.getSpectrumBoundaryCollectionModelName());
 
-        this.spectrumResultsTableController = new SpectrumResultsTableController(instrument, spectrumCollection, modelManager, boundaryCollection, model, renderer, infoPanelManager);
+        this.spectrumResultsTableController = new SpectrumResultsTableController<S>(instrument, spectrumCollection, modelManager, boundaryCollection, model, renderer, infoPanelManager);
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 
         this.searchParametersController = new SpectrumSearchParametersController(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
 
         this.searchParametersController.setupSearchParametersPanel();
 
-        this.coloringController = new SpectrumColoringController(model, spectrumCollection);
+        this.coloringController = new SpectrumColoringController<S>(model, spectrumCollection, instrument.getRGBMaxVals(), instrument.getRGBDefaultIndices());
 
         init();
     }

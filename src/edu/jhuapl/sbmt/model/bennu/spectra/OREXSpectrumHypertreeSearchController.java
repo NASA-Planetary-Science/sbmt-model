@@ -38,7 +38,8 @@ public class OREXSpectrumHypertreeSearchController
     		boolean hasHierarchicalSpectraSearch, double imageSearchDefaultMaxSpacecraftDistance, SpectraHierarchicalSearchSpecification spectraSpec,
 
     		ModelManager modelManager, SbmtInfoWindowManager infoPanelManager,
-            PickManager pickManager, Renderer renderer, BasicSpectrumInstrument instrument, BaseSpectrumSearchModel model)
+            PickManager pickManager, Renderer renderer, BasicSpectrumInstrument instrument, BaseSpectrumSearchModel model,
+            double[] rgbMaxVals, int[] rgbIndices)
     {
     	this.modelManager = modelManager;
         this.renderer = renderer;
@@ -53,7 +54,7 @@ public class OREXSpectrumHypertreeSearchController
         this.searchParametersController = new OREXSpectrumHypertreeSearchParametersController(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, spectrumSearchModel, pickManager, modelManager);
         this.searchParametersController.setupSearchParametersPanel();
 
-        this.coloringController = new SpectrumColoringController(model, spectrumCollection);
+        this.coloringController = new SpectrumColoringController(model, spectrumCollection, rgbMaxVals, rgbIndices);
 
         init();
     }

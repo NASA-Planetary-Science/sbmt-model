@@ -10,13 +10,13 @@ public class NIRS3SearchModel extends BaseSpectrumSearchModel<NIRS3Spectrum>
     public NIRS3SearchModel(ModelManager modelManager, BasicSpectrumInstrument instrument)
     {
         super(modelManager, instrument);
-
-        getColoringModel().setRedMaxVal(0.00005);
-        getColoringModel().setGreenMaxVal(0.0001);
-        getColoringModel().setBlueMaxVal(0.002);
-
-        getColoringModel().setRedIndex(100);
-        getColoringModel().setGreenIndex(70);
-        getColoringModel().setBlueIndex(40);
+//
+//        getColoringModel().setRedMaxVal(0.00005);
+//        getColoringModel().setGreenMaxVal(0.0001);
+//        getColoringModel().setBlueMaxVal(0.002);
+//
+//        getColoringModel().setRedIndex(100);
+//        getColoringModel().setGreenIndex(70);
+//        getColoringModel().setBlueIndex(40);
     }
 }

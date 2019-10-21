@@ -10,12 +10,13 @@ import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSearchModel;
+import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSearchModel;
+import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.SpectrumAppearanceListener;
-import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.SpectrumColoringStyle;
 import edu.jhuapl.sbmt.spectrum.rendering.SpectraCollection;
 
 /**
@@ -23,50 +24,37 @@ import edu.jhuapl.sbmt.spectrum.rendering.SpectraCollection;
  * @author osheacm1
  *
  */
-public class OREXSpectrumTabbedPane extends JTabbedPane
+public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
 {
     public OREXSpectrumTabbedPane(
             BodyViewConfig smallBodyConfig,
             ModelManager modelManager,
             SbmtInfoWindowManager sbmtInfoWindowManager, PickManager pickManager,
-            Renderer renderer, BasicSpectrumInstrument instrument, SpectraCollection spectrumCollection)
+            Renderer renderer, BasicSpectrumInstrument instrument, SpectraCollection<S> spectrumCollection)
     {
         setBorder(BorderFactory.createEmptyBorder());
         if (instrument.getDisplayName().equals(SpectraTypeFactory.findSpectraTypeForDisplayName("OTES").getDisplayName())) {
 
 
             OTESSearchModel model = new OTESSearchModel(modelManager, instrument);
-            model.addAppearanceChangedListener(new SpectrumAppearanceListener()
+            model.addAppearanceChangedListener(new SpectrumAppearanceListener<OTESSpectrum>()
 			{
 
 				@Override
-				public void spectrumFootprintVisbilityChanged(BasicSpectrum spectrum, boolean isVisible)
+				public void spectrumFootprintVisibilityChanged(OTESSpectrum spectrum, boolean isVisible)
 				{
-					SpectrumColoringStyle style = model.getColoringModel().getSpectrumColoringStyle();
-//					try
-//					{
-						spectrumCollection.addSpectrum(spectrum, style);
-//					}
-//					catch (IOException e)
-//					{
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
+					spectrumCollection.addSpectrum((S)spectrum, false);
 				}
 
 				@Override
-				public void spectrumBoundaryVisibilityChanged(BasicSpectrum spectrum, boolean isVisible)
+				public void spectrumBoundaryVisibilityChanged(OTESSpectrum spectrum, boolean isVisible)
 				{
 					// TODO Auto-generated method stub
 
 				}
 			});
 
-
-
-
-
-            JComponent component = new OREXSpectrumSearchController(
+            JComponent component = new OREXSpectrumSearchController<OTESSpectrum>(
                     smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
                     smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification,
                     modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
@@ -74,58 +62,47 @@ public class OREXSpectrumTabbedPane extends JTabbedPane
 
 
             addTab("Browse", component);
-            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
-            {
-            	OREXSpectrumHypertreeSearchController controller =
-                		new OREXSpectrumHypertreeSearchController(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-                													smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification, modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model);
-
-            	addTab("Search", controller.getPanel());
-            }
+//            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
+//            {
+//            	OREXSpectrumHypertreeSearchController controller =
+//                		new OREXSpectrumHypertreeSearchController(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
+//                													smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification, modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model);
+//
+//            	addTab("Search", controller.getPanel());
+//            }
         }
         else if (instrument.getDisplayName().equals(SpectraTypeFactory.findSpectraTypeForDisplayName("OVIRS").getDisplayName())) {
 
         	OVIRSSearchModel model = new OVIRSSearchModel(modelManager, instrument);
-            model.addAppearanceChangedListener(new SpectrumAppearanceListener()
+            model.addAppearanceChangedListener(new SpectrumAppearanceListener<OVIRSSpectrum>()
 			{
 
 				@Override
-				public void spectrumFootprintVisbilityChanged(BasicSpectrum spectrum, boolean isVisible)
+				public void spectrumFootprintVisibilityChanged(OVIRSSpectrum spectrum, boolean isVisible)
 				{
-					SpectrumColoringStyle style = model.getColoringModel().getSpectrumColoringStyle();
-//					try
-//					{
-						spectrumCollection.addSpectrum(spectrum, style);
-//					}
-//					catch (IOException e)
-//					{
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-
+					spectrumCollection.addSpectrum((S)spectrum, false);
+//					spectrumCollection.setVisibility(spectrum, isVisible);
 				}
 
 				@Override
-				public void spectrumBoundaryVisibilityChanged(BasicSpectrum spectrum, boolean isVisible)
+				public void spectrumBoundaryVisibilityChanged(OVIRSSpectrum spectrum, boolean isVisible)
 				{
-					// TODO Auto-generated method stub
 
 				}
 			});
 
-
-            JComponent component = new OREXSpectrumSearchController(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
+            JComponent component = new OREXSpectrumSearchController<OVIRSSpectrum>(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
                     smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification,
                     modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
             addTab("Browse", component);
-            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
-            {
-            	OREXSpectrumHypertreeSearchController controller
-             		= new OREXSpectrumHypertreeSearchController(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
- 						smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification, modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model);
-
-            	addTab("Search", controller.getPanel());
-            }
+//            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
+//            {
+//            	OREXSpectrumHypertreeSearchController controller
+//             		= new OREXSpectrumHypertreeSearchController(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
+// 						smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification, modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model);
+//
+//            	addTab("Search", controller.getPanel());
+//            }
         }
 
 

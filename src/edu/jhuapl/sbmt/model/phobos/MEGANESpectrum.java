@@ -30,12 +30,10 @@ import crucible.crust.metadata.impl.SettableMetadata;
 
 public class MEGANESpectrum extends BasicSpectrum
 {
-//    boolean footprintGenerated = false;
     File infoFile, spectrumFile;
     double time;
     String extension = "";
     private SpectrumInstrumentMetadataIO specIO;
-//    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
     private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
     double boundingBoxDiagonalLength;
     boolean headless;

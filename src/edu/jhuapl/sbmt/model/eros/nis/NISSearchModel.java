@@ -77,14 +77,14 @@ public class NISSearchModel extends BaseSpectrumSearchModel<NISSpectrum>
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        getColoringModel().setRedMaxVal(0.05);
-        getColoringModel().setGreenMaxVal(0.05);
-        getColoringModel().setBlueMaxVal(0.05);
-
-        getColoringModel().setRedIndex(1);
-        getColoringModel().setGreenIndex(25);
-        getColoringModel().setBlueIndex(50);
+//
+//        getColoringModel().setRedMaxVal(0.05);
+//        getColoringModel().setGreenMaxVal(0.05);
+//        getColoringModel().setBlueMaxVal(0.05);
+//
+//        getColoringModel().setRedIndex(1);
+//        getColoringModel().setGreenIndex(25);
+//        getColoringModel().setBlueIndex(50);
     }
 
     @Override
