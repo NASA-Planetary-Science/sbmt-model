@@ -17,9 +17,7 @@ import nom.tam.fits.FitsException;
 
 public class PhobosImage extends PerspectiveImage
 {
-    public PhobosImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
-            boolean loadPointingOnly) throws FitsException, IOException
+    public PhobosImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
 
@@ -30,6 +28,7 @@ public class PhobosImage extends PerspectiveImage
 
     /**
      * Return whether or not this is a HiRISE image
+     *
      * @param key
      * @return
      */
@@ -40,6 +39,7 @@ public class PhobosImage extends PerspectiveImage
 
     /**
      * Return whether or not this is an HRSC image
+     *
      * @param key
      * @return
      */
@@ -50,6 +50,7 @@ public class PhobosImage extends PerspectiveImage
 
     /**
      * Return whether or not this is a Viking image
+     *
      * @param key
      * @return
      */
@@ -60,6 +61,7 @@ public class PhobosImage extends PerspectiveImage
 
     /**
      * Is this a Phobos2 image taken with filter 2
+     *
      * @param key
      * @return
      */
@@ -70,6 +72,7 @@ public class PhobosImage extends PerspectiveImage
 
     /**
      * Is this a Phobos2 image taken with filters 1 or 3
+     *
      * @param key
      * @return
      */
@@ -80,6 +83,7 @@ public class PhobosImage extends PerspectiveImage
 
     /**
      * Return whether or not this is a MOC image
+     *
      * @param key
      * @return
      */
@@ -91,7 +95,7 @@ public class PhobosImage extends PerspectiveImage
     @Override
     protected int[] getMaskSizes()
     {
-        return new int[]{0, 0, 0, 0};
+        return new int[] { 0, 0, 0, 0 };
     }
 
     @Override
@@ -108,7 +112,8 @@ public class PhobosImage extends PerspectiveImage
         File keyFile = new File(key.getName());
         String filename = keyFile.getName();
 
-        // Note Viking images begin either with an upper case V or a lower case f.
+        // Note Viking images begin either with an upper case V or a lower case
+        // f.
 
         if (!isViking(filename))
             return null;
@@ -116,7 +121,7 @@ public class PhobosImage extends PerspectiveImage
         String labelFilename = null;
         if (keyFile.getName().startsWith("V"))
             labelFilename = keyFile.getParent() + "/f" + keyFile.getName().substring(2, 8).toLowerCase() + ".lbl";
-        else //if (keyFile.getName().startsWith("f"))
+        else // if (keyFile.getName().startsWith("f"))
             labelFilename = key.getName() + ".lbl";
 
         return FileCache.instance().isAccessible(labelFilename) ? FileCache.getFileFromServer(labelFilename).getAbsolutePath() : null;
@@ -129,7 +134,7 @@ public class PhobosImage extends PerspectiveImage
 
         File keyFile = new File(key.getName());
         String fileName = keyFile.getParentFile().getParent() + "/infofiles/"
-        + keyFile.getName() + ".INFO";
+                + keyFile.getName() + ".INFO";
 
         return FileCache.getFileFromServer(fileName).getAbsolutePath();
     }
@@ -143,7 +148,7 @@ public class PhobosImage extends PerspectiveImage
             sumfilesdir += "-corrected";
         File keyFile = new File(key.getName());
         String fileName = keyFile.getParentFile().getParent() + "/" + sumfilesdir + "/"
-        + keyFile.getName() + ".SUM";
+                + keyFile.getName() + ".SUM";
 
         return FileCache.getFileFromServer(fileName).getAbsolutePath();
     }
@@ -151,7 +156,8 @@ public class PhobosImage extends PerspectiveImage
     @Override
     public int getFilter()
     {
-        // For Phobos 2 image, return 1, 2, or 3 which we can get by looking at the last number in the filename.
+        // For Phobos 2 image, return 1, 2, or 3 which we can get by looking at
+        // the last number in the filename.
         // For Viking images, we need to parse the label file to get the filter.
         // for MEX, HiRISE, or MOC images, return -1
         ImageKeyInterface key = getKey();
@@ -168,7 +174,7 @@ public class PhobosImage extends PerspectiveImage
         else // is Viking
         {
             String labelFileFullPath = getLabelFileFullPath();
-            if(labelFileFullPath != null)
+            if (labelFileFullPath != null)
             {
                 try
                 {
@@ -300,7 +306,7 @@ public class PhobosImage extends PerspectiveImage
         else // is Viking
         {
             String labelFileFullPath = getLabelFileFullPath();
-            if(labelFileFullPath != null)
+            if (labelFileFullPath != null)
             {
                 try
                 {
