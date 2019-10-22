@@ -49,6 +49,7 @@ public class NISSpectrum extends BasicSpectrum
         this(filename, smallBodyModel, instrument, false);
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
+//        fullpath = filename;
     }
 
     public NISSpectrum(String filename, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean isCustom) throws IOException
