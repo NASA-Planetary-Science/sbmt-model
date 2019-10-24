@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.spectrum.math;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -165,5 +166,25 @@ public abstract class SpectrumMath
 
         return success;
     }
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(bandsPerUserDefinedDerivedParameters, userDefinedDerivedParameters);
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SpectrumMath other = (SpectrumMath) obj;
+		return Objects.equals(bandsPerUserDefinedDerivedParameters, other.bandsPerUserDefinedDerivedParameters)
+				&& Objects.equals(userDefinedDerivedParameters, other.userDefinedDerivedParameters);
+	}
 
 }
