@@ -201,6 +201,7 @@ public final class NisQuery extends DatabaseQueryBase
         catch (Exception e)
         {
        	 	System.out.println("SpectrumStandardSearch: search: " + e.getLocalizedMessage());
+       	 	e.printStackTrace();
         }
         return tempResults;
     }

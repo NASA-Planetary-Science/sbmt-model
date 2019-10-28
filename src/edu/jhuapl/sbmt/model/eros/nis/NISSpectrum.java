@@ -4,20 +4,30 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
+import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
+import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
+import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 
 public class NISSpectrum extends BasicSpectrum
 {
@@ -38,30 +48,75 @@ public class NISSpectrum extends BasicSpectrum
     static public final int POLYGON_TYPE_FLAG_OFFSET = 258+2;
     static public final int NUMBER_OF_VERTICES_OFFSET = 259+2;
     static public final int POLYGON_START_COORDINATES_OFFSET = 260+2;
+    String extension = "";
+    private SpectrumInstrumentMetadataIO specIO;
+    private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
+    private File infoFile, spectrumFile;
 
     double[] spectrumErrors=new double[NIS.bandCentersLength];
 
     ISmallBodyModel smallBodyModel;
 
-    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel,
+    public NISSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, ISmallBodyModel smallBodyModel,
     		BasicSpectrumInstrument instrument) throws IOException
     {
-        this(filename, smallBodyModel, instrument, false);
+        this(filename, specIO, smallBodyModel, instrument, false);
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
-//        fullpath = filename;
     }
 
-    public NISSpectrum(String filename, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean isCustom) throws IOException
+    public NISSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean isCustom) throws IOException
     {
-        super(filename, instrument);
+        super(filename, instrument, isCustom);
         this.smallBodyModel = smallBodyModel;
         xData = getBandCenters();
+        extension = FilenameUtils.getExtension(serverpath.toString());
+//        this.specIO = specIO;
+//        instrumentMetadata = specIO.getInstrumentMetadata("NIS");
+    }
 
-//        spectrum=new double[getNumberOfBands()];
-//        spectrumEros=new double[getNumberOfBands()];
+    protected String getLocalInfoFilePathOnServer()
+    {
+    	String normalpath = SafeURLPaths.instance().getString(serverpath); //.substring(7);
+    	return FilenameUtils.removeExtension(normalpath) + ".INFO";
+    }
+
+    protected String getLocalSpectrumFilePathOnServer()
+    {
+        return SafeURLPaths.instance().getString(serverpath); //.substring(7);
+    }
+
+    protected String getInfoFilePathOnServer()
+    {
+        if (isCustomSpectra)
+        {
+            return getLocalInfoFilePathOnServer();
+        }
+        else
+        {
+            String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
+            return Paths.get(spectrumPath).getParent()
+                    .resolveSibling("infofiles-corrected")
+                    .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
+                    .toString();
+        }
+    }
+
+    public String getSpectrumPathOnServer()
+    {
+//  		spec = instrumentMetadata.getSpecs().get(0);
 
 
+        if (isCustomSpectra)
+        {
+            return serverpath;
+        }
+        else
+        {
+            return Paths.get(serverpath).getParent()
+                    .resolve(FilenameUtils.getBaseName(serverpath) + "." + extension)
+                    .toString();
+        }
     }
 
     public double getRange()
@@ -288,14 +343,55 @@ public class NISSpectrum extends BasicSpectrum
 	@Override
 	public void readPointingFromInfoFile()
 	{
-		// TODO IMPLEMENT THIS FOR NIS - CURRENTLY DOESN'T USE INFO FILES
+		InfoFileReader reader = null;
+        if (!isCustomSpectra)
+        {
+            infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+            reader = new InfoFileReader(infoFile.getAbsolutePath());
+        }
+        else
+        {
+            infoFile = new File(getInfoFilePathOnServer());
+            reader = new InfoFileReader(infoFile.toString());
+        }
+        reader.read();
 
+        Vector3D origin = new Vector3D(reader.getSpacecraftPosition());
+        Vector3D fovUnit = new Vector3D(reader.getFrustum2()).normalize(); // for whatever
+                                                               // reason,
+                                                               // frustum2
+                                                               // contains the
+                                                               // vector along
+                                                               // the field of
+                                                               // view cone
+        Vector3D boresightUnit = new Vector3D(reader.getBoresightDirection()).normalize();
+        Vector3D lookTarget = origin
+                .add(boresightUnit.scalarMultiply(origin.getNorm()));
+
+        double fovDeg = Math
+                .toDegrees(Vector3D.angle(fovUnit, boresightUnit) * 2.);
+        toSunUnitVector = new Vector3D(reader.getSunPosition()).normalize();
+        Frustum frustum = new Frustum(origin.toArray(), lookTarget.toArray(),
+                boresightUnit.orthogonal().toArray(), fovDeg, fovDeg);
+        frustum1 = frustum.ul;
+        frustum2 = frustum.ur;
+        frustum3 = frustum.lr;
+        frustum4 = frustum.ll;
+        spacecraftPosition = frustum.origin;
 	}
 
 	@Override
 	public void readSpectrumFromFile()
 	{
-		if (fullpath == null) getFullPath();
+		if (!isCustomSpectra)
+        {
+			if (fullpath == null) getFullPath();
+        }
+        else
+        {
+            fullpath = getLocalSpectrumFilePathOnServer();
+        }
+//		if (fullpath == null) getFullPath();
 		List<String> values = null;
 		try
 		{
