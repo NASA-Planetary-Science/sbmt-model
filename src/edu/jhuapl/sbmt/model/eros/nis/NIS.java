@@ -9,7 +9,6 @@ import edu.jhuapl.sbmt.spectrum.model.core.SpectraType;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
-import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.Spectrum;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
 
@@ -218,16 +217,11 @@ public class NIS extends BasicSpectrumInstrument
 			Double[] bandCenters = spectraType.getBandCenters();
 			String bandCenterUnit = spectraType.getBandCenterUnit();
 
-//		        QueryBase queryBase = metadata.get(queryBaseKey);
-//		        SpectrumMath spectrumMath = metadata.get(spectrumMathKey);
-//		        Double[] bandCenters = metadata.get(bandCentersKey);
-//		        String bandCenterUnit = metadata.get(bandCenterUnitKey);
 			inst = new NIS();
 			inst.bandCenterUnit = bandCenterUnit;
 			inst.displayName = displayName;
 			inst.queryBase = queryBase;
 			inst.spectrumMath = spectrumMath;
-//	        inst = new OTES(bandCenterUnit, displayName, queryBase, spectrumMath);
 			inst.bandCenters = bandCenters;
 
 			return inst;
