@@ -1,7 +1,10 @@
 package edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
@@ -28,6 +31,10 @@ public class NIRS3Spectrum extends BasicSpectrum
     private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
     private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
     ISmallBodyModel smallBodyModel;
+    private double utcStart;
+	private double utcMid;
+	private double utcEnd;
+	private double[] geoFields;
 
     public NIRS3Spectrum(String filename, ISmallBodyModel smallBodyModel,
     		BasicSpectrumInstrument instrument) throws IOException
@@ -48,7 +55,18 @@ public class NIRS3Spectrum extends BasicSpectrum
     @Override
     public void saveSpectrum(File file) throws IOException
     {
-        throw new IOException("Not implemented.");
+    	new NIRS3SpectrumWriter(file.getAbsolutePath(), this).write();
+    	File infoFile;
+    	if (isCustomSpectra)
+    		infoFile = new File(getInfoFilePathOnServer());
+    	else
+    		infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        FileChannel src = new FileInputStream(infoFile).getChannel();
+        File infoFileDestination = new File(file.getParentFile() + File.separator + file.getName() + ".INFO");
+        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
+        dest.transferFrom(src, 0, src.size());
+        src.close();
+        dest.close();
     }
 
     protected String getLocalInfoFilePathOnServer()
@@ -152,8 +170,42 @@ public class NIRS3Spectrum extends BasicSpectrum
         spectrum=reader.spectra.get(0).getSpectrum();
         xData = new NIRS3().getBandCenters();
         time = reader.spectra.get(0).getEt();
+        geoFields = reader.spectra.get(0).geoFields;
+        utcStart = reader.spectra.get(0).getUtcStart();
+        utcMid = reader.spectra.get(0).getUtcMid();
+        utcEnd = reader.spectra.get(0).getUtcEnd();
     }
 
+    @Override
+    public String getFullPath()
+    {
+    	File spectrumFile;
+    	if (!isCustomSpectra)
+            spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+        else
+            spectrumFile = new File(getSpectrumPathOnServer());
+    	this.fullpath = spectrumFile.getAbsolutePath();
+        return fullpath;
+    }
+
+    @Override
+    public String getxAxisUnits()
+    {
+        return spec.getxAxisUnits();
+    }
+
+    @Override
+    public String getyAxisUnits()
+    {
+        return spec.getyAxisUnits();
+    }
+
+    @Override
+    public String getDataName()
+    {
+    	System.out.println("NISSpectrum: getDataName: getting data name " + spec.getDataName());
+    	return spec.getDataName();
+    }
 
 
     @Override
@@ -161,6 +213,31 @@ public class NIRS3Spectrum extends BasicSpectrum
     {
         return NIRS3.bandCentersLength;
     }
+
+	public double getTime()
+	{
+		return time;
+	}
+
+	public double getUtcStart()
+	{
+		return utcStart;
+	}
+
+	public double getUtcMid()
+	{
+		return utcMid;
+	}
+
+	public double getUtcEnd()
+	{
+		return utcEnd;
+	}
+
+	public double[] getGeoFields()
+	{
+		return geoFields;
+	}
 
 //    @Override
 //    public double[] getChannelColor()

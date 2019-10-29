@@ -10,7 +10,6 @@ import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.SpectrumBuilder;
 import edu.jhuapl.sbmt.spectrum.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.rendering.BasicSpectrumRenderer;
 import edu.jhuapl.sbmt.spectrum.rendering.IBasicSpectrumRenderer;
 
 public class H2SpectraFactory
@@ -40,12 +39,14 @@ public class H2SpectraFactory
 			@Override
 			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
 			{
-				return new BasicSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
 			}
 
 			@Override
 			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
 			{
+				System.out.println(
+						"H2SpectraFactory.initializeModels(...).new SpectrumBuilder() {...}: buildSpectrumRenderer: building");
 				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, smallBodyModel, instrument);
 				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
 			}

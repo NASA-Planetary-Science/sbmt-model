@@ -71,8 +71,10 @@ public class NISSpectrum extends BasicSpectrum
         this.smallBodyModel = smallBodyModel;
         xData = getBandCenters();
         extension = FilenameUtils.getExtension(serverpath.toString());
-//        this.specIO = specIO;
-//        instrumentMetadata = specIO.getInstrumentMetadata("NIS");
+        this.specIO = specIO;
+        instrumentMetadata = specIO.getInstrumentMetadata("NIS");
+//        spec = instrumentMetadata.getSpecs().get(0);
+//        System.out.println("NISSpectrum: NISSpectrum: spec is " + spec);
     }
 
     protected String getLocalInfoFilePathOnServer()
@@ -104,7 +106,7 @@ public class NISSpectrum extends BasicSpectrum
 
     public String getSpectrumPathOnServer()
     {
-//  		spec = instrumentMetadata.getSpecs().get(0);
+  		spec = instrumentMetadata.getSpecs().get(0);
 
 
         if (isCustomSpectra)
@@ -325,19 +327,19 @@ public class NISSpectrum extends BasicSpectrum
     @Override
     public String getxAxisUnits()
     {
-        return "";
+        return spec.getxAxisUnits();
     }
 
     @Override
     public String getyAxisUnits()
     {
-        return "";
+        return spec.getyAxisUnits();
     }
 
     @Override
     public String getDataName()
     {
-        return serverpath;
+    	return spec.getDataName();
     }
 
 	@Override
