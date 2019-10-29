@@ -73,7 +73,7 @@ public class NISSpectrum extends BasicSpectrum
         extension = FilenameUtils.getExtension(serverpath.toString());
         this.specIO = specIO;
         instrumentMetadata = specIO.getInstrumentMetadata("NIS");
-//        spec = instrumentMetadata.getSpecs().get(0);
+        spec = instrumentMetadata.getSpecs().get(0);
 //        System.out.println("NISSpectrum: NISSpectrum: spec is " + spec);
     }
 
@@ -107,8 +107,7 @@ public class NISSpectrum extends BasicSpectrum
     public String getSpectrumPathOnServer()
     {
   		spec = instrumentMetadata.getSpecs().get(0);
-
-
+  		System.out.println("NISSpectrum: getSpectrumPathOnServer: spec is " + spec);
         if (isCustomSpectra)
         {
             return serverpath;
