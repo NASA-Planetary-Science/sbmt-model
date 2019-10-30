@@ -21,7 +21,6 @@ import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.gui.eros.NISSearchPanel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
@@ -61,8 +60,7 @@ public class NISSpectrum extends BasicSpectrum
     		BasicSpectrumInstrument instrument) throws IOException
     {
         this(filename, specIO, smallBodyModel, instrument, false);
-        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
-        toSunVectorLength=dx;
+
     }
 
     public NISSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean isCustom) throws IOException
@@ -74,6 +72,8 @@ public class NISSpectrum extends BasicSpectrum
         this.specIO = specIO;
         instrumentMetadata = specIO.getInstrumentMetadata("NIS");
         spec = instrumentMetadata.getSpecs().get(0);
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
 //        System.out.println("NISSpectrum: NISSpectrum: spec is " + spec);
     }
 
@@ -98,7 +98,7 @@ public class NISSpectrum extends BasicSpectrum
         {
             String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
             return Paths.get(spectrumPath).getParent()
-                    .resolveSibling("infofiles-corrected")
+                    .resolveSibling("infofiles")
                     .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
                     .toString();
         }
@@ -372,12 +372,14 @@ public class NISSpectrum extends BasicSpectrum
         double fovDeg = Math
                 .toDegrees(Vector3D.angle(fovUnit, boresightUnit) * 2.);
         toSunUnitVector = new Vector3D(reader.getSunPosition()).normalize();
-        Frustum frustum = new Frustum(origin.toArray(), lookTarget.toArray(),
-                boresightUnit.orthogonal().toArray(), fovDeg, fovDeg);
+//        Frustum frustum = new Frustum(origin.toArray(), lookTarget.toArray(),
+//                boresightUnit.orthogonal().toArray(), fovDeg, fovDeg);
+        Frustum frustum = new Frustum(origin.toArray(), reader.getFrustum1(), reader.getFrustum2(), reader.getFrustum3(), reader.getFrustum4());
         frustum1 = frustum.ul;
         frustum2 = frustum.ur;
-        frustum3 = frustum.lr;
-        frustum4 = frustum.ll;
+        frustum3 = frustum.ll;
+        frustum4 = frustum.lr;
+        System.out.println("NISSpectrum: readPointingFromInfoFile: frustum " + frustum);
         spacecraftPosition = frustum.origin;
 	}
 
@@ -437,29 +439,29 @@ public class NISSpectrum extends BasicSpectrum
             spectrumErrors[i] = Double.parseDouble(values.get(CALIBRATED_GE_NOISE_OFFSET + i));
         }
 
-        for (int i=0; i<3; ++i)
-            spacecraftPosition[i] = Double.parseDouble(values.get(SPACECRAFT_POSITION_OFFSET + i));
-        for (int i=0; i<3; ++i)
-            frustum1[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + i));
-        for (int i=0; i<3; ++i)
-            frustum2[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 3 + i));
-        for (int i=0; i<3; ++i)
-            frustum3[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 6 + i));
-        for (int i=0; i<3; ++i)
-            frustum4[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 9 + i));
-        MathUtil.vhat(frustum1, frustum1);
-        MathUtil.vhat(frustum2, frustum2);
-        MathUtil.vhat(frustum3, frustum3);
-        MathUtil.vhat(frustum4, frustum4);
-
-        frustumCenter=new double[3];
-        for (int i=0; i<3; i++)
-            frustumCenter[i]=frustum1[i]+frustum2[i]+frustum3[i]+frustum4[i];
-
-
-        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
-        toSunVectorLength=dx;
-        toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
+//        for (int i=0; i<3; ++i)
+//            spacecraftPosition[i] = Double.parseDouble(values.get(SPACECRAFT_POSITION_OFFSET + i));
+//        for (int i=0; i<3; ++i)
+//            frustum1[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + i));
+//        for (int i=0; i<3; ++i)
+//            frustum2[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 3 + i));
+//        for (int i=0; i<3; ++i)
+//            frustum3[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 6 + i));
+//        for (int i=0; i<3; ++i)
+//            frustum4[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 9 + i));
+//        MathUtil.vhat(frustum1, frustum1);
+//        MathUtil.vhat(frustum2, frustum2);
+//        MathUtil.vhat(frustum3, frustum3);
+//        MathUtil.vhat(frustum4, frustum4);
+//
+//        frustumCenter=new double[3];
+//        for (int i=0; i<3; i++)
+//            frustumCenter[i]=frustum1[i]+frustum2[i]+frustum3[i]+frustum4[i];
+//
+//
+//        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+//        toSunVectorLength=dx;
+//        toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
 	}
 
 }

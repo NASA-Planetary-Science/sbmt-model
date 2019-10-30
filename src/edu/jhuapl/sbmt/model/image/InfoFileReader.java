@@ -158,8 +158,9 @@ public class InfoFileReader extends BasicFileReader
                             || token.endsWith(BORESIGHT_DIRECTION)
                             || token.endsWith(UP_DIRECTION))
                     {
-                        st.nextToken();
-                        st.nextToken();
+                    	System.out.println("InfoFileReader: read: token " + token);
+                        System.out.println("InfoFileReader: read: " + st.nextToken());
+                        System.out.println("InfoFileReader: read: " + st.nextToken());
                         double x = Double.parseDouble(st.nextToken());
                         st.nextToken();
                         double y = Double.parseDouble(st.nextToken());
