@@ -87,7 +87,6 @@ class NIRS3SpectrumData
 	public void readLine(String filename, String line)
 	{
 		String baseName = FilenameUtils.getBaseName(filename);
-		System.out.println("NIRS3SpectrumData: readLine: line is " + line);
 		Scanner scanner = new Scanner(line).useDelimiter(",");
 
 		String startTime = scanner.next(); // get the UTC start time

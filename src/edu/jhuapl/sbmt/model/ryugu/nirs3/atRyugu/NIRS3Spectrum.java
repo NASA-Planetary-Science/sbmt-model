@@ -13,6 +13,7 @@ import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
+import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
@@ -50,6 +51,8 @@ public class NIRS3Spectrum extends BasicSpectrum
         this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
         instrumentMetadata = specIO.getInstrumentMetadata("NIRS3");
         this.smallBodyModel = smallBodyModel;
+        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        toSunVectorLength=dx;
     }
 
     @Override

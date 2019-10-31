@@ -40,7 +40,7 @@ public class OTESSpectrum extends BasicSpectrum
     double boundingBoxDiagonalLength;
     boolean headless;
 
-    private static final Key<OTESSpectrum> OTESSPECTRUM_KEY = Key.of("OREXSpectrum");
+    private static final Key<OTESSpectrum> OTESSPECTRUM_KEY = Key.of("OTESSpectrum");
 	private static final Key<String> FILENAME_KEY = Key.of("fileName");
 	private static final Key<SpectrumInstrumentMetadataIO> SPECIO_KEY = Key.of("spectrumIO");
 	private static final Key<Double> BOUNDINGBOX_KEY = Key.of("boundingBoxDiagonalLength");
@@ -204,6 +204,7 @@ public class OTESSpectrum extends BasicSpectrum
     @Override
     public void readSpectrumFromFile()
     {
+    	super.readSpectrumFromFile();
     	OTESSpectrumReader reader = null;
         if (!isCustomSpectra)
         {
@@ -247,54 +248,6 @@ public class OTESSpectrum extends BasicSpectrum
     {
     	return spec.getDataName();
     }
-
-//    @Override
-//    public double[] getChannelColor()
-//    {
-//        if (coloringStyle == SpectrumColoringStyle.EMISSION_ANGLE)
-//        {
-//            //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
-//            //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
-//        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
-//            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
-//            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
-//            colormap.setRangeMin(0.0);  //was 5.4
-//            colormap.setRangeMax(90.00); //was 81.7
-//
-//            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
-//            double[] color = new double[3];
-//            color[0] = color2.getRed()/255.0;
-//            color[1] = color2.getGreen()/255.0;
-//            color[2] = color2.getBlue()/255.0;
-//            return color;
-//        }
-//        else
-//        {
-//            //TODO: What do we do for L3 data here?  It has less XAxis points than the L2 data, so is the coloring scheme different?
-//            double[] color = new double[3];
-//            for (int i=0; i<3; ++i)
-//            {
-//                double val = 0.0;
-//                if (channelsToColorBy[i] < instrument.getBandCenters().length)
-//                {
-//                    val = spectrum[channelsToColorBy[i]];
-//                }
-//                else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-//                    val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-//                else
-//                    val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
-//
-//                if (val < 0.0)
-//                    val = 0.0;
-//                else if (val > 1.0)
-//                    val = 1.0;
-//
-//                double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-//                color[i] = slope * (val - channelsColoringMinValue[i]);
-//            }
-//            return color;
-//        }
-//    }
 
     public double getTime()
     {

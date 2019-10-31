@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
@@ -21,28 +20,81 @@ import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
-import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
+
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.ProvidesGenericObjectFromMetadata;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.InstanceGetter;
+import crucible.crust.metadata.impl.SettableMetadata;
 
 
 public class OVIRSSpectrum extends BasicSpectrum
 {
     File infoFile, spectrumFile;
-    String time;
+    double time;
     String extension = "";
-    double boresightLatDeg, boresightLonDeg;
-    double[] calibratedRadianceUncertainty;
-    Vector3D boresightIntercept;
-    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
+//    double boresightLatDeg, boresightLonDeg;
+//    double[] calibratedRadianceUncertainty;
+//    Vector3D boresightIntercept;
+    private SpectrumInstrumentMetadataIO specIO;
     private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
+    double boundingBoxDiagonalLength;
+    boolean headless;
 
-    public OVIRSSpectrum(String filename, SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO, double boundingBoxDiagonalLength,
+
+    private static final Key<OVIRSSpectrum> OVIRSSPECTRUM_KEY = Key.of("OVIRSSpectrum");
+	private static final Key<String> FILENAME_KEY = Key.of("fileName");
+	private static final Key<SpectrumInstrumentMetadataIO> SPECIO_KEY = Key.of("spectrumIO");
+	private static final Key<Double> BOUNDINGBOX_KEY = Key.of("boundingBoxDiagonalLength");
+	private static final Key<BasicSpectrumInstrument> SPECTRALINSTRUMENT_KEY = Key.of("spectralInstrument");
+	private static final Key<Boolean> HEADLESS_KEY = Key.of("headless");
+	private static final Key<Boolean> ISCUSTOM_KEY = Key.of("isCustom");
+
+
+    public static void initializeSerializationProxy()
+	{
+    	InstanceGetter.defaultInstanceGetter().register(OVIRSSPECTRUM_KEY, (source) -> {
+
+    		String filename = source.get(FILENAME_KEY);
+    		ProvidesGenericObjectFromMetadata<SpectrumInstrumentMetadataIO> specIOMetadata = InstanceGetter.defaultInstanceGetter().providesGenericObjectFromMetadata(SPECIO_KEY);
+    		SpectrumInstrumentMetadataIO specIO = specIOMetadata.provide(source);
+    		double boundingBoxDiagonalLength = source.get(BOUNDINGBOX_KEY);
+    		Boolean headless = source.get(HEADLESS_KEY);
+    		Boolean isCustom = source.get(ISCUSTOM_KEY);
+
+    		OVIRSSpectrum spec = null;
+			try
+			{
+				spec = new OVIRSSpectrum(filename, specIO, boundingBoxDiagonalLength, new OVIRS(), headless, isCustom);
+			} catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		return spec;
+
+    	}, OVIRSSpectrum.class, spec -> {
+
+    		SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+    		result.put(FILENAME_KEY, spec.serverpath);
+    		result.put(SPECIO_KEY, spec.specIO);
+    		result.put(BOUNDINGBOX_KEY, spec.boundingBoxDiagonalLength);
+    		result.put(HEADLESS_KEY, spec.headless);
+    		result.put(ISCUSTOM_KEY, spec.isCustomSpectra);
+    		return result;
+    	});
+
+	}
+
+    public OVIRSSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
     		BasicSpectrumInstrument instrument) throws IOException
     {
     	this(filename, specIO, boundingBoxDiagonalLength, instrument, false, false);
     }
 
-    public OVIRSSpectrum(String filename, SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO, double boundingBoxDiagonalLength,
+    public OVIRSSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
     		BasicSpectrumInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, instrument, isCustom);
@@ -158,19 +210,12 @@ public class OVIRSSpectrum extends BasicSpectrum
         frustum4 = frustum.ll;
         spacecraftPosition = frustum.origin;
 
-        this.dateTime=new DateTime(reader.getStartTime());
-
-        // 1 double[] ul, // ordering is from
-        // smallBodyModel.computeFrustumIntersection(spacecraftPosition,
-        // frustum1, frustum2, frustum3, frustum4);
-        // 2 double[] ur,
-        // 3 double[] lr,
-        // 4 double[] ll)
-
+//        this.dateTime=new DateTime(reader.getStartTime());
     }
 
     public void readSpectrumFromFile()
     {
+    	super.readSpectrumFromFile();
         OVIRSSpectrumReader reader = null;
         if (!isCustomSpectra)
         {
@@ -186,7 +231,7 @@ public class OVIRSSpectrum extends BasicSpectrum
         xData = reader.getXAxis();
         spectrum=reader.getData();
         time = reader.getSclk();
-        boresightIntercept = reader.getBoresightIntercept();
+//        boresightIntercept = reader.getBoresightIntercept();
     }
 
     @Override
@@ -213,59 +258,14 @@ public class OVIRSSpectrum extends BasicSpectrum
         return spec.getDataName();
     }
 
-//    @Override
-//    public double[] getChannelColor()
-//    {
-//        if (coloringStyle == SpectrumColoringStyle.EMISSION_ANGLE)
-//        {
-//            //This calculation is using the average emission angle over the spectrum, which doesn't exacty match the emission angle of the
-//            //boresight - no good way to calculate this data at the moment.  Olivier said this is fine.  Need to present a way to either have this option or the old one via RGB for coloring
-////        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
-////            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
-////            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
-////            colormap.setRangeMin(0.0);  //was 5.4
-////            colormap.setRangeMax(90.00); //was 81.7
-////
-////            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
-//            double[] color = new double[3];
-////            color[0] = color2.getRed()/255.0;
-////            color[1] = color2.getGreen()/255.0;
-////            color[2] = color2.getBlue()/255.0;
-//            return color;
-//        }
-//        else
-//        {
-//            double[] color = new double[3];
-//            for (int i=0; i<3; ++i)
-//            {
-//                double val = 0.0;
-//                if (channelsToColorBy[i] < instrument.getBandCenters().length)
-//                    val = spectrum[channelsToColorBy[i]];
-//                else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-//                    val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-//                else
-//                    val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
-//
-//                if (val < 0.0)
-//                    val = 0.0;
-//                else if (val > 1.0)
-//                    val = 1.0;
-//
-//                double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-//                color[i] = slope * (val - channelsColoringMinValue[i]);
-//            }
-//            return color;
-//        }
-//    }
-
-    public String getTime()
+    public double getTime()
     {
         return time;
     }
 
-    public Vector3D getBoresightIntercept()
-    {
-        return boresightIntercept;
-    }
+//    public Vector3D getBoresightIntercept()
+//    {
+//        return boresightIntercept;
+//    }
 
 }

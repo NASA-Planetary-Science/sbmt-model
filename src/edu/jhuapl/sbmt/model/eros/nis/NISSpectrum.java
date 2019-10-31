@@ -30,7 +30,6 @@ import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 
 public class NISSpectrum extends BasicSpectrum
 {
-
     static public final int DATE_TIME_OFFSET = 0;
     static public final int MET_OFFSET = 1;
     static public final int CURRENT_SEQUENCE_NUM_OFFSET = 1;
@@ -74,7 +73,6 @@ public class NISSpectrum extends BasicSpectrum
         spec = instrumentMetadata.getSpecs().get(0);
         double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
-//        System.out.println("NISSpectrum: NISSpectrum: spec is " + spec);
     }
 
     protected String getLocalInfoFilePathOnServer()
@@ -97,17 +95,13 @@ public class NISSpectrum extends BasicSpectrum
         else
         {
             String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
-            return Paths.get(spectrumPath).getParent()
-                    .resolveSibling("infofiles")
-                    .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
-                    .toString();
+            return "/NIS/infofiles" + spectrumPath + "/" + FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO";
         }
     }
 
     public String getSpectrumPathOnServer()
     {
   		spec = instrumentMetadata.getSpecs().get(0);
-  		System.out.println("NISSpectrum: getSpectrumPathOnServer: spec is " + spec);
         if (isCustomSpectra)
         {
             return serverpath;
@@ -270,35 +264,6 @@ public class NISSpectrum extends BasicSpectrum
         out.close();
     }
 
-
-//    @Override
-//    public double[] getChannelColor()
-//    {
-//        double[] color = new double[3];
-//        for (int i=0; i<3; ++i)
-//        {
-//            double val = 0.0;
-//            if (channelsToColorBy[i] < instrument.getBandCenters().length)
-//            {
-//                val = spectrum[channelsToColorBy[i]];
-//            }
-//            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-//                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-//            else
-//                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
-//
-//            if (val < 0.0)
-//                val = 0.0;
-//            else if (val > 1.0)
-//                val = 1.0;
-//
-//            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-//            color[i] = slope * (val - channelsColoringMinValue[i]);
-//        }
-//
-//        return color;
-//    }
-
     @Override
     public double evaluateDerivedParameters(int channel)
     {
@@ -314,8 +279,6 @@ public class NISSpectrum extends BasicSpectrum
             return 0.0;
         }
     }
-
-
 
     @Override
     public int getNumberOfBands()
@@ -366,20 +329,12 @@ public class NISSpectrum extends BasicSpectrum
                                                                // the field of
                                                                // view cone
         Vector3D boresightUnit = new Vector3D(reader.getBoresightDirection()).normalize();
-        Vector3D lookTarget = origin
-                .add(boresightUnit.scalarMultiply(origin.getNorm()));
-
-        double fovDeg = Math
-                .toDegrees(Vector3D.angle(fovUnit, boresightUnit) * 2.);
         toSunUnitVector = new Vector3D(reader.getSunPosition()).normalize();
-//        Frustum frustum = new Frustum(origin.toArray(), lookTarget.toArray(),
-//                boresightUnit.orthogonal().toArray(), fovDeg, fovDeg);
         Frustum frustum = new Frustum(origin.toArray(), reader.getFrustum1(), reader.getFrustum2(), reader.getFrustum3(), reader.getFrustum4());
         frustum1 = frustum.ul;
         frustum2 = frustum.ur;
         frustum3 = frustum.ll;
         frustum4 = frustum.lr;
-        System.out.println("NISSpectrum: readPointingFromInfoFile: frustum " + frustum);
         spacecraftPosition = frustum.origin;
 	}
 
@@ -394,7 +349,6 @@ public class NISSpectrum extends BasicSpectrum
         {
             fullpath = getLocalSpectrumFilePathOnServer();
         }
-//		if (fullpath == null) getFullPath();
 		List<String> values = null;
 		try
 		{
@@ -438,30 +392,5 @@ public class NISSpectrum extends BasicSpectrum
             spectrum[i] = Math.min(1.0, Math.max(0.0, Double.parseDouble(values.get(CALIBRATED_GE_DATA_OFFSET + i))));
             spectrumErrors[i] = Double.parseDouble(values.get(CALIBRATED_GE_NOISE_OFFSET + i));
         }
-
-//        for (int i=0; i<3; ++i)
-//            spacecraftPosition[i] = Double.parseDouble(values.get(SPACECRAFT_POSITION_OFFSET + i));
-//        for (int i=0; i<3; ++i)
-//            frustum1[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + i));
-//        for (int i=0; i<3; ++i)
-//            frustum2[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 3 + i));
-//        for (int i=0; i<3; ++i)
-//            frustum3[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 6 + i));
-//        for (int i=0; i<3; ++i)
-//            frustum4[i] = Double.parseDouble(values.get(FRUSTUM_OFFSET + 9 + i));
-//        MathUtil.vhat(frustum1, frustum1);
-//        MathUtil.vhat(frustum2, frustum2);
-//        MathUtil.vhat(frustum3, frustum3);
-//        MathUtil.vhat(frustum4, frustum4);
-//
-//        frustumCenter=new double[3];
-//        for (int i=0; i<3; i++)
-//            frustumCenter[i]=frustum1[i]+frustum2[i]+frustum3[i]+frustum4[i];
-//
-//
-//        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
-//        toSunVectorLength=dx;
-//        toSunUnitVector=NISSearchPanel.getToSunUnitVector(serverpath.replace("/NIS/2000/", ""));
 	}
-
 }
