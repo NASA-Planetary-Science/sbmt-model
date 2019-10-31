@@ -575,7 +575,14 @@ public class OREXSpectrumHypertreeSearchParametersController
 								}
 
 								@Override
-								public void searchIndeterminate() {};
+								public void searchIndeterminate() {}
+
+								@Override
+								public void searchNoteUpdated(String note)
+								{
+									// TODO Auto-generated method stub
+
+								};
 							});
 
 				} catch (HyperDimensionMismatchException e)
