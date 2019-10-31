@@ -33,8 +33,8 @@ public class OVIRSSpectrumWriter extends BasicFileWriter
             writer.newLine();
             writer.write("# Boresight Latitude (deg), Boresight Longitude (deg)");
             writer.newLine();
-            writer.write("" + ovirs.getBoresightIntercept());
-            writer.newLine();
+//            writer.write("" + ovirs.getBoresightIntercept());
+//            writer.newLine();
             writer.write("## Wavelength (Band Center), Spectrum Value");
             writer.newLine();
             OVIRS ovirs = new OVIRS();

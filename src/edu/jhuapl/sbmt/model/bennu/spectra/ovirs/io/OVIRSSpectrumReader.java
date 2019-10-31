@@ -15,6 +15,7 @@ public class OVIRSSpectrumReader extends BasicFileReader
     double boresightY;
     double boresightZ;
     double et;
+    double sclk;
     String etString;
     double[] yValues;
     Double[] xValues;
@@ -74,10 +75,15 @@ public class OVIRSSpectrumReader extends BasicFileReader
         return xValues;
     }
 
-    public String getSclk()
+    public double getSclk()
     {
-        return etString;
+        return sclk;
     }
+
+//    public String getSclk()
+//    {
+//        return etString;
+//    }
 
     public Vector3D getBoresightIntercept()
     {
