@@ -70,7 +70,7 @@ public class OREXSpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument) throws IOException
 			{
-				OVIRSSpectrum spectrum = new OVIRSSpectrum(path, smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+				OVIRSSpectrum spectrum = new OVIRSSpectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return spectrum;
 			}
 
@@ -78,7 +78,7 @@ public class OREXSpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument, String timeString) throws IOException
 			{
-				OVIRSSpectrum spectrum = new OVIRSSpectrum(path, smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+				OVIRSSpectrum spectrum = new OVIRSSpectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				spectrum.setDateTime(new DateTime(Long.parseLong(timeString)));
 				return spectrum;
 			}
@@ -92,7 +92,7 @@ public class OREXSpectraFactory
 			@Override
 			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
 			{
-				OVIRSSpectrum spectrum = new OVIRSSpectrum(path, smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+				OVIRSSpectrum spectrum = new OVIRSSpectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
 			}
 		};
