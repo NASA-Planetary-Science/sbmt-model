@@ -27,6 +27,8 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
     protected SpectrumResultsTableController<S> spectrumResultsTableController;
     private SpectrumSearchParametersController searchParametersController;
     private SpectrumColoringController<S> coloringController;
+    private SpectraCollection<S> spectrumCollection;
+    private BasicSpectrumInstrument instrument;
 
     public OREXSpectrumSearchController(Date imageSearchDefaultStartDate, Date imageSearchDefaultEndDate,
     		boolean hasHierarchicalSpectraSearch, double imageSearchDefaultMaxSpacecraftDistance,
@@ -35,7 +37,8 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
             SbmtInfoWindowManager infoPanelManager,
             PickManager pickManager, Renderer renderer, BasicSpectrumInstrument instrument, BaseSpectrumSearchModel<S> model)
     {
-        SpectraCollection<S> spectrumCollection = (SpectraCollection<S>)modelManager.getModel(model.getSpectrumCollectionModelName());
+    	this.instrument = instrument;
+        this.spectrumCollection = (SpectraCollection<S>)modelManager.getModel(model.getSpectrumCollectionModelName());
         SpectrumBoundaryCollection<S> boundaryCollection = (SpectrumBoundaryCollection<S>)modelManager.getModel(model.getSpectrumBoundaryCollectionModelName());
 
         this.spectrumResultsTableController = new SpectrumResultsTableController<S>(instrument, spectrumCollection, modelManager, boundaryCollection, model, renderer, infoPanelManager);
@@ -78,6 +81,7 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
 			public void ancestorAdded(AncestorEvent event)
 			{
 				spectrumResultsTableController.addResultListener();
+				spectrumCollection.setActiveInstrument(instrument);
 			}
 		});
 
