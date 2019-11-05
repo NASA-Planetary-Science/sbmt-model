@@ -6,6 +6,11 @@ import java.io.IOException;
 
 import edu.jhuapl.sbmt.model.image.BasicFileWriter;
 
+/**
+ * Writes the NIRS3 spectrum out to a human readable form for sharing.
+ * @author steelrj1
+ *
+ */
 public class NIRS3SpectrumWriter extends BasicFileWriter
 {
 	private NIRS3Spectrum nirs3;

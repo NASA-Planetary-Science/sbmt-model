@@ -8,6 +8,11 @@ import java.util.Scanner;
 
 import edu.jhuapl.sbmt.model.image.BasicFileReader;
 
+/**
+ * Reads in NIRS3 files from Hayabusa2, so those values can be stored in a NIRS3Spectrum object
+ * @author steelrj1
+ *
+ */
 public class NIRS3SpectrumReader extends BasicFileReader
 {
 	List<NIRS3SpectrumData> spectra;

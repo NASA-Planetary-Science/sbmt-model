@@ -5,8 +5,13 @@ import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 
-//This must be final because it is a singleton with a clone method.
-public final class OVIRSQuery extends FixedListQuery
+/**
+ * Query definition class for OVIRS
+ * @author steelrj1
+ *
+ * This must be final because it is a singleton with a clone() method.
+ *
+ */public final class OVIRSQuery extends FixedListQuery
 {
     private static OVIRSQuery instance=new OVIRSQuery();
 

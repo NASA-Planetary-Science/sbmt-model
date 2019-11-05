@@ -5,7 +5,13 @@ import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 
-// This must be final because it is a singleton with a clone method.
+/**
+ * Query definition class for NIRS3
+ * @author steelrj1
+ *
+ * This must be final because it is a singleton with a clone() method.
+ *
+ */
 public final class NIRS3Query extends FixedListQuery
 {
     private static NIRS3Query instance=new NIRS3Query();

@@ -5,8 +5,15 @@ import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 
-// This must be final because it is a singleton with a clone() method.
-public final class OTESQuery extends FixedListQuery
+
+/**
+ * Query definition class for OTES
+ * @author steelrj1
+ *
+ * This must be final because it is a singleton with a clone() method.
+ *
+ */
+public final class OTESQuery extends FixedListQuery<BasicSpectrum>
 {
     private static OTESQuery instance=new OTESQuery();
 
@@ -38,5 +45,4 @@ public final class OTESQuery extends FixedListQuery
         // TODO Auto-generated method stub
         return super.runQuery(queryMetadata);
     }
-
 }

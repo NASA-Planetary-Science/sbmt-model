@@ -30,6 +30,12 @@ import crucible.crust.metadata.impl.InstanceGetter;
 import crucible.crust.metadata.impl.SettableMetadata;
 
 
+/**
+ * Represents the data that makes up an OTES Spectrum.  Includes ability to read spectrum and pointing information, as
+ * well as saving the spectrum to disk.
+ * @author steelrj1
+ *
+ */
 public class OTESSpectrum extends BasicSpectrum
 {
     File infoFile, spectrumFile;
@@ -40,6 +46,7 @@ public class OTESSpectrum extends BasicSpectrum
     double boundingBoxDiagonalLength;
     boolean headless;
 
+    //Metadata Information
     private static final Key<OTESSpectrum> OTESSPECTRUM_KEY = Key.of("OTESSpectrum");
 	private static final Key<String> FILENAME_KEY = Key.of("fileName");
 	private static final Key<SpectrumInstrumentMetadataIO> SPECIO_KEY = Key.of("spectrumIO");
@@ -84,12 +91,28 @@ public class OTESSpectrum extends BasicSpectrum
 
 	}
 
+    /**
+     * @param filename 						Filename of the spectrum on the server
+     * @param specIO						The spectrum metadata object
+     * @param boundingBoxDiagonalLength		The diagonal length of the bounding box
+     * @param instrument					The spectral instrument
+     * @throws IOException
+     */
     public OTESSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
     		BasicSpectrumInstrument instrument) throws IOException
     {
         this(filename, specIO, boundingBoxDiagonalLength, instrument, false, false);
     }
 
+    /**
+     * @param filename						Filename of the spectrum on the server
+     * @param specIO						The spectrum metadata object
+     * @param boundingBoxDiagonalLength		The diagonal length of the bounding box
+     * @param instrument					The spectral instrument
+     * @param headless						Boolean describing whether this is loaded on the server or not
+     * @param isCustom						Boolean descibing whether this is a custom spectra
+     * @throws IOException
+     */
     public OTESSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
     		BasicSpectrumInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
@@ -102,6 +125,9 @@ public class OTESSpectrum extends BasicSpectrum
         toSunVectorLength=dx;
     }
 
+    /**
+     * Saves the spectrum and associated pointing information to 2 distinct files
+     */
     @Override
     public void saveSpectrum(File file) throws IOException
     {
@@ -115,18 +141,18 @@ public class OTESSpectrum extends BasicSpectrum
         dest.close();
     }
 
-    protected String getLocalInfoFilePathOnServer()
+    private String getLocalInfoFilePathOnServer()
     {
-    	String normalpath = SafeURLPaths.instance().getString(serverpath); //.substring(7);
+    	String normalpath = SafeURLPaths.instance().getString(serverpath);
     	return FilenameUtils.removeExtension(normalpath) + ".INFO";
     }
 
-    protected String getLocalSpectrumFilePathOnServer()
+    private String getLocalSpectrumFilePathOnServer()
     {
-        return SafeURLPaths.instance().getString(serverpath); //.substring(7);
+        return SafeURLPaths.instance().getString(serverpath);
     }
 
-    protected String getInfoFilePathOnServer()
+    private String getInfoFilePathOnServer()
     {
         if (isCustomSpectra)
         {
@@ -142,6 +168,9 @@ public class OTESSpectrum extends BasicSpectrum
         }
     }
 
+    /**
+     *	Returns the path of the spectrum
+     */
     public String getSpectrumPathOnServer()
     {
     	if (serverpath.contains("ote_calrd"))
@@ -161,6 +190,9 @@ public class OTESSpectrum extends BasicSpectrum
         }
     }
 
+    /**
+     * Reads the pointing information for this spectra
+     */
     @Override
     public void readPointingFromInfoFile()
     {
@@ -201,6 +233,9 @@ public class OTESSpectrum extends BasicSpectrum
         spacecraftPosition = frustum.origin;
     }
 
+    /**
+     * Reads the spectrum data from the file
+     */
     @Override
     public void readSpectrumFromFile()
     {
@@ -222,6 +257,9 @@ public class OTESSpectrum extends BasicSpectrum
         time = reader.getSclk();
     }
 
+    /**
+     *	Returns the number of bands for this spectrum
+     */
     @Override
     public int getNumberOfBands()
     {
@@ -231,24 +269,10 @@ public class OTESSpectrum extends BasicSpectrum
             return 208;
     }
 
-    @Override
-    public String getxAxisUnits()
-    {
-        return spec.getxAxisUnits();
-    }
-
-    @Override
-    public String getyAxisUnits()
-    {
-        return spec.getyAxisUnits();
-    }
-
-    @Override
-    public String getDataName()
-    {
-    	return spec.getDataName();
-    }
-
+    /**
+     * Returns the doulbe
+     * @return
+     */
     public double getTime()
     {
         return time;

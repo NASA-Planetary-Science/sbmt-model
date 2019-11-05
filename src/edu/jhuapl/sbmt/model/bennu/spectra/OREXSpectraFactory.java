@@ -18,11 +18,16 @@ import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSpectrumMath;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
+import edu.jhuapl.sbmt.spectrum.model.core.interfaces.IBasicSpectrumRenderer;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.SpectrumBuilder;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 import edu.jhuapl.sbmt.spectrum.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.rendering.IBasicSpectrumRenderer;
 
+/**
+ * Registers spectrum builders with the core system, as well as spectra types
+ * @author steelrj1
+ *
+ */
 public class OREXSpectraFactory
 {
 

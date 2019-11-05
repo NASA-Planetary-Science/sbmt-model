@@ -17,6 +17,11 @@ import crucible.crust.metadata.api.Version;
 import crucible.crust.metadata.impl.InstanceGetter;
 import crucible.crust.metadata.impl.SettableMetadata;
 
+/**
+ * Representing information about an OTES spectra, including the default coloring max values and indices, units, query and spectrum math types
+ * @author steelrj1
+ *
+ */
 public class OTES extends BasicSpectrumInstrument
 {
     public static int bandCentersLength = 348;
@@ -410,10 +415,6 @@ public class OTES extends BasicSpectrumInstrument
     //metadata interface
     private static final Key<OTES> OTES_KEY = Key.of("otes");
     private static final Key<String> spectraNameKey = Key.of("displayName");
-    private static final Key<QueryBase> queryBaseKey = Key.of("queryBase");
-    private static final Key<SpectrumMath> spectrumMathKey = Key.of("spectrumMath");
-    private static final Key<Double[]> bandCentersKey = Key.of("bandCenters");
-    private static final Key<String> bandCenterUnitKey = Key.of("bandCenterUnit");
 
     public static void initializeSerializationProxy()
 	{
@@ -428,16 +429,11 @@ public class OTES extends BasicSpectrumInstrument
 			Double[] bandCenters = spectraType.getBandCenters();
 			String bandCenterUnit = spectraType.getBandCenterUnit();
 
-//		        QueryBase queryBase = metadata.get(queryBaseKey);
-//		        SpectrumMath spectrumMath = metadata.get(spectrumMathKey);
-//		        Double[] bandCenters = metadata.get(bandCentersKey);
-//		        String bandCenterUnit = metadata.get(bandCenterUnitKey);
 			inst = new OTES();
 			inst.bandCenterUnit = bandCenterUnit;
 			inst.displayName = displayName;
 			inst.queryBase = queryBase;
 			inst.spectrumMath = spectrumMath;
-//	        inst = new OTES(bandCenterUnit, displayName, queryBase, spectrumMath);
 			inst.bandCenters = bandCenters;
 
 			return inst;
@@ -446,13 +442,7 @@ public class OTES extends BasicSpectrumInstrument
 	    key -> {
 			 SettableMetadata metadata = SettableMetadata.of(Version.of(1, 0));
 			 metadata.put(spectraNameKey, key.getDisplayName());
-//			 metadata.put(queryBaseKey, key.getQueryBase());
-//			 metadata.put(spectrumMathKey, key.getSpectrumMath());
-//			 metadata.put(bandCenterUnitKey, key.getBandCenterUnit());
 			 return metadata;
 		});
 	}
-
-
-
 }

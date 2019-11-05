@@ -28,6 +28,12 @@ import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 
+/**
+ * Represents the data that makes up an NIS Spectrum.  Includes ability to read spectrum and pointing information, as
+ * well as saving the spectrum to disk.
+ * @author steelrj1
+ *
+ */
 public class NISSpectrum extends BasicSpectrum
 {
     static public final int DATE_TIME_OFFSET = 0;
@@ -284,24 +290,6 @@ public class NISSpectrum extends BasicSpectrum
     public int getNumberOfBands()
     {
         return NIS.bandCentersLength;
-    }
-
-    @Override
-    public String getxAxisUnits()
-    {
-        return spec.getxAxisUnits();
-    }
-
-    @Override
-    public String getyAxisUnits()
-    {
-        return spec.getyAxisUnits();
-    }
-
-    @Override
-    public String getDataName()
-    {
-    	return spec.getDataName();
     }
 
 	@Override

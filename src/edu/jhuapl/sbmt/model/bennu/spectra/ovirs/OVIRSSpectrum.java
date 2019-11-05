@@ -44,6 +44,7 @@ public class OVIRSSpectrum extends BasicSpectrum
     boolean headless;
 
 
+    //Metadata Information
     private static final Key<OVIRSSpectrum> OVIRSSPECTRUM_KEY = Key.of("OVIRSSpectrum");
 	private static final Key<String> FILENAME_KEY = Key.of("fileName");
 	private static final Key<SpectrumInstrumentMetadataIO> SPECIO_KEY = Key.of("spectrumIO");
@@ -88,12 +89,28 @@ public class OVIRSSpectrum extends BasicSpectrum
 
 	}
 
+    /**
+     * @param filename 						Filename of the spectrum on the server
+     * @param specIO						The spectrum metadata object
+     * @param boundingBoxDiagonalLength		The diagonal length of the bounding box
+     * @param instrument					The spectral instrument
+     * @throws IOException
+     */
     public OVIRSSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
     		BasicSpectrumInstrument instrument) throws IOException
     {
     	this(filename, specIO, boundingBoxDiagonalLength, instrument, false, false);
     }
 
+    /**
+     * @param filename						Filename of the spectrum on the server
+     * @param specIO						The spectrum metadata object
+     * @param boundingBoxDiagonalLength		The diagonal length of the bounding box
+     * @param instrument					The spectral instrument
+     * @param headless						Boolean describing whether this is loaded on the server or not
+     * @param isCustom						Boolean descibing whether this is a custom spectra
+     * @throws IOException
+     */
     public OVIRSSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
     		BasicSpectrumInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
@@ -111,6 +128,9 @@ public class OVIRSSpectrum extends BasicSpectrum
         toSunVectorLength=dx;
     }
 
+    /**
+     * Saves the spectrum and associated pointing information to 2 distinct files
+     */
     @Override
     public void saveSpectrum(File file) throws IOException
     {
@@ -238,24 +258,6 @@ public class OVIRSSpectrum extends BasicSpectrum
     public int getNumberOfBands()
     {
         return OVIRS.bandCentersLength;
-    }
-
-    @Override
-    public String getxAxisUnits()
-    {
-        return spec.getxAxisUnits();
-    }
-
-    @Override
-    public String getyAxisUnits()
-    {
-        return spec.getyAxisUnits();
-    }
-
-    @Override
-    public String getDataName()
-    {
-        return spec.getDataName();
     }
 
     public double getTime()

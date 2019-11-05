@@ -33,9 +33,12 @@ import crucible.crust.metadata.impl.SettableMetadata;
 
 
 /**
- * This class provides functions for querying the database.
+ * This class provides functions for querying the database for NIS
+ * @author steelrj1
+ *
+ * This must be final because it is a singleton with a clone() method.
+ *
  */
-//This must be final because it is a singleton with a clone method.
 public final class NisQuery extends DatabaseQueryBase
 {
 	private static NisQuery ref = null;
@@ -57,8 +60,6 @@ public final class NisQuery extends DatabaseQueryBase
             int dayOfYear = Integer.parseInt(components[3]);
             return getNisPath(id, year, dayOfYear);
         }
-
-
     }
 
     public static String getNisPath(int name, int year, int dayOfYear)

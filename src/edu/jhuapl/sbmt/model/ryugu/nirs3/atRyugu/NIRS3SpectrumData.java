@@ -9,6 +9,11 @@ import org.apache.commons.io.FilenameUtils;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
+/**
+ * Helper class to hold a spectra for NIRS3
+ * @author steelrj1
+ *
+ */
 class NIRS3SpectrumData
 {
 	String filename;

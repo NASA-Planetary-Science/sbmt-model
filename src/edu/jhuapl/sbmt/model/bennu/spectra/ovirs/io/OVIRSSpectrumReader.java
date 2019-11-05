@@ -9,6 +9,11 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import edu.jhuapl.sbmt.model.image.BasicFileReader;
 
+/**
+ * Reads in OVIRS files from O-REx, so those values can be stored in a OVIRSSpectrum object
+ * @author steelrj1
+ *
+ */
 public class OVIRSSpectrumReader extends BasicFileReader
 {
     double boresightX;

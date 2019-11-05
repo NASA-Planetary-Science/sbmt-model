@@ -7,6 +7,11 @@ import java.io.IOException;
 
 import edu.jhuapl.sbmt.model.image.BasicFileReader;
 
+/**
+ * Reads in OTES files from O-REx, so those values can be stored in a OTESSpectrum object
+ * @author steelrj1
+ *
+ */
 public class OTESSpectrumReader extends BasicFileReader
 {
     double sclk;

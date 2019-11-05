@@ -17,10 +17,11 @@ import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.util.IdPair;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.spectrum.deprecated.AbstractSpectrumSearchPanel;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
-import edu.jhuapl.sbmt.spectrum.ui.oldWay.AbstractSpectrumSearchPanel;
 
+@Deprecated
 public class NIRS3SearchPanel extends AbstractSpectrumSearchPanel
 {
 

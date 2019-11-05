@@ -2,6 +2,11 @@ package edu.jhuapl.sbmt.model.eros.nis;
 
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
 
+/**
+ * Contains pre-canned derived parameters for NIS that are used when choosing bands to color
+ * @author steelrj1
+ *
+ */
 public class NISSpectrumMath extends SpectrumMath
 {
 
@@ -17,6 +22,9 @@ public class NISSpectrumMath extends SpectrumMath
 
     }
 
+    /**
+     * Precanned band math formulas
+     */
     static final public String[] derivedParameters = {
         "B36 - B05",
         "B01 - B05",

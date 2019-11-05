@@ -9,6 +9,7 @@ import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraType;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.Spectrum;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
 
@@ -17,6 +18,11 @@ import crucible.crust.metadata.api.Version;
 import crucible.crust.metadata.impl.InstanceGetter;
 import crucible.crust.metadata.impl.SettableMetadata;
 
+/**
+ * Representing information about an NIRS3 spectra, including the default coloring max values and indices, units, query and spectrum math types
+ * @author steelrj1
+ *
+ */
 public class NIRS3 extends BasicSpectrumInstrument
 {
 	public static int bandCentersLength = 128;
@@ -32,7 +38,7 @@ public class NIRS3 extends BasicSpectrumInstrument
             ISmallBodyModel smallBodyModel)
             throws IOException
     {
-        return new NIRS3Spectrum(filename, smallBodyModel, this);
+        return new NIRS3Spectrum(filename, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), this);
     }
 
 
@@ -195,10 +201,6 @@ public class NIRS3 extends BasicSpectrumInstrument
   //metadata interface
     private static final Key<NIRS3> NIRS3_KEY = Key.of("nirs3");
     private static final Key<String> spectraNameKey = Key.of("displayName");
-    private static final Key<QueryBase> queryBaseKey = Key.of("queryBase");
-    private static final Key<SpectrumMath> spectrumMathKey = Key.of("spectrumMath");
-    private static final Key<Double[]> bandCentersKey = Key.of("bandCenters");
-    private static final Key<String> bandCenterUnitKey = Key.of("bandCenterUnit");
 
     public static void initializeSerializationProxy()
 	{

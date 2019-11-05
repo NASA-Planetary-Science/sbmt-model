@@ -9,6 +9,11 @@ import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRS;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.model.image.BasicFileWriter;
 
+/**
+ * Writes the OVIRS spectrum out to a human readable form for sharing.
+ * @author steelrj1
+ *
+ */
 public class OVIRSSpectrumWriter extends BasicFileWriter
 {
     OVIRSSpectrum ovirs;

@@ -14,44 +14,100 @@ import org.joda.time.DateTime;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
-import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.ProvidesGenericObjectFromMetadata;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.InstanceGetter;
+import crucible.crust.metadata.impl.SettableMetadata;
 
+/**
+ * Represents the data that makes up an NIRS3 Spectrum.  Includes ability to read spectrum and pointing information, as
+ * well as saving the spectrum to disk.
+ * @author steelrj1
+ *
+ */
 public class NIRS3Spectrum extends BasicSpectrum
 {
     File infoFile, spectrumFile;
     double time;
     String extension = "";
-    private SpectraHierarchicalSearchSpecification<SpectrumSearchSpec> specIO;
+    private SpectrumInstrumentMetadataIO specIO;
     private InstrumentMetadata<SpectrumSearchSpec> instrumentMetadata;
-    ISmallBodyModel smallBodyModel;
     private double utcStart;
 	private double utcMid;
 	private double utcEnd;
 	private double[] geoFields;
+    double boundingBoxDiagonalLength;
+    boolean headless;
 
-    public NIRS3Spectrum(String filename, ISmallBodyModel smallBodyModel,
+    //Metadata Information
+    private static final Key<NIRS3Spectrum> NIRS3SPECTRUM_KEY = Key.of("NIRS3Spectrum");
+	private static final Key<String> FILENAME_KEY = Key.of("fileName");
+	private static final Key<SpectrumInstrumentMetadataIO> SPECIO_KEY = Key.of("spectrumIO");
+	private static final Key<Double> BOUNDINGBOX_KEY = Key.of("boundingBoxDiagonalLength");
+	private static final Key<BasicSpectrumInstrument> SPECTRALINSTRUMENT_KEY = Key.of("spectralInstrument");
+	private static final Key<Boolean> HEADLESS_KEY = Key.of("headless");
+	private static final Key<Boolean> ISCUSTOM_KEY = Key.of("isCustom");
+
+
+    public static void initializeSerializationProxy()
+	{
+    	InstanceGetter.defaultInstanceGetter().register(NIRS3SPECTRUM_KEY, (source) -> {
+
+    		String filename = source.get(FILENAME_KEY);
+    		ProvidesGenericObjectFromMetadata<SpectrumInstrumentMetadataIO> specIOMetadata = InstanceGetter.defaultInstanceGetter().providesGenericObjectFromMetadata(SPECIO_KEY);
+    		SpectrumInstrumentMetadataIO specIO = specIOMetadata.provide(source);
+    		double boundingBoxDiagonalLength = source.get(BOUNDINGBOX_KEY);
+    		Boolean headless = source.get(HEADLESS_KEY);
+    		Boolean isCustom = source.get(ISCUSTOM_KEY);
+
+    		NIRS3Spectrum spec = null;
+			try
+			{
+				spec = new NIRS3Spectrum(filename, specIO, boundingBoxDiagonalLength, new NIRS3(), headless, isCustom);
+			} catch (IOException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		return spec;
+
+    	}, NIRS3Spectrum.class, spec -> {
+
+    		SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+    		result.put(FILENAME_KEY, spec.serverpath);
+    		result.put(SPECIO_KEY, spec.specIO);
+    		result.put(BOUNDINGBOX_KEY, spec.boundingBoxDiagonalLength);
+    		result.put(HEADLESS_KEY, spec.headless);
+    		result.put(ISCUSTOM_KEY, spec.isCustomSpectra);
+    		return result;
+    	});
+
+	}
+
+    public NIRS3Spectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
     		BasicSpectrumInstrument instrument) throws IOException
     {
-    	this(filename, smallBodyModel, instrument, false, false);
+    	this(filename, specIO, boundingBoxDiagonalLength, instrument, false, false);
     }
 
-    public NIRS3Spectrum(String filename, ISmallBodyModel smallBodyModel,
+    public NIRS3Spectrum(String filename, SpectrumInstrumentMetadataIO specIO, double boundingBoxDiagonalLength,
             BasicSpectrumInstrument instrument, boolean headless, boolean isCustom) throws IOException
     {
         super(filename, instrument, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());
-        this.specIO = smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification();
+        this.specIO = specIO;
         instrumentMetadata = specIO.getInstrumentMetadata("NIRS3");
-        this.smallBodyModel = smallBodyModel;
-        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        this.boundingBoxDiagonalLength = boundingBoxDiagonalLength;
+        double dx = MathUtil.vnorm(spacecraftPosition) + boundingBoxDiagonalLength;
         toSunVectorLength=dx;
     }
 
@@ -150,14 +206,6 @@ public class NIRS3Spectrum extends BasicSpectrum
         spacecraftPosition = frustum.origin;
 
         this.dateTime=new DateTime(reader.getStartTime());
-
-        // 1 double[] ul, // ordering is from
-        // smallBodyModel.computeFrustumIntersection(spacecraftPosition,
-        // frustum1, frustum2, frustum3, frustum4);
-        // 2 double[] ur,
-        // 3 double[] lr,
-        // 4 double[] ll)
-
     }
 
     public void readSpectrumFromFile()
@@ -192,26 +240,6 @@ public class NIRS3Spectrum extends BasicSpectrum
     }
 
     @Override
-    public String getxAxisUnits()
-    {
-        return spec.getxAxisUnits();
-    }
-
-    @Override
-    public String getyAxisUnits()
-    {
-        return spec.getyAxisUnits();
-    }
-
-    @Override
-    public String getDataName()
-    {
-    	System.out.println("NISSpectrum: getDataName: getting data name " + spec.getDataName());
-    	return spec.getDataName();
-    }
-
-
-    @Override
     public int getNumberOfBands()
     {
         return NIRS3.bandCentersLength;
@@ -241,52 +269,4 @@ public class NIRS3Spectrum extends BasicSpectrum
 	{
 		return geoFields;
 	}
-
-//    @Override
-//    public double[] getChannelColor()
-//    {
-//        if (coloringStyle == SpectrumColoringStyle.EMISSION_ANGLE)
-//        {
-//        	AdvancedSpectrumRenderer renderer = new AdvancedSpectrumRenderer(this, smallBodyModel, false);
-//            List<Sample> sampleEmergenceAngle = SpectrumStatistics.sampleEmergenceAngle(renderer, new Vector3D(spacecraftPosition));
-//            Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap("OREX Scalar Ramp");
-//            colormap.setRangeMin(0.0);  //was 5.4
-//            colormap.setRangeMax(90.00); //was 81.7
-//
-//            Color color2 = colormap.getColor(SpectrumStatistics.getWeightedMean(sampleEmergenceAngle));
-//                    double[] color = new double[3];
-//            color[0] = color2.getRed()/255.0;
-//            color[1] = color2.getGreen()/255.0;
-//            color[2] = color2.getBlue()/255.0;
-//            return color;
-//        }
-//        else
-//        {
-//	        double[] color = new double[3];
-//	        for (int i=0; i<3; ++i)
-//	        {
-//	            double val = 0.0;
-//	            if (channelsToColorBy[i] < instrument.getBandCenters().length)
-//	            {
-//	                val = spectrum[channelsToColorBy[i]];
-//	            }
-//	            else if (channelsToColorBy[i] < instrument.getBandCenters().length + instrument.getSpectrumMath().getDerivedParameters().length)
-//	            {
-//	                val = evaluateDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length);
-//	            }
-//	            else
-//	            {
-//	                val = instrument.getSpectrumMath().evaluateUserDefinedDerivedParameters(channelsToColorBy[i]-instrument.getBandCenters().length-instrument.getSpectrumMath().getDerivedParameters().length, spectrum);
-//	            }
-//	            if (val < 0.0)
-//	                val = 0.0;
-//	            else if (val > 1.0)
-//	                val = 1.0;
-//
-//	            double slope = 1.0 / (channelsColoringMaxValue[i] - channelsColoringMinValue[i]);
-//	            color[i] = slope * (val - channelsColoringMinValue[i]);
-//	        }
-//	        return color;
-//        }
-//    }
 }

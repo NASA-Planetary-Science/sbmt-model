@@ -21,11 +21,17 @@ import edu.jhuapl.sbmt.spectrum.rendering.SpectraCollection;
 import edu.jhuapl.sbmt.spectrum.rendering.SpectrumBoundaryCollection;
 import edu.jhuapl.sbmt.spectrum.ui.search.SpectrumSearchPanel;
 
+/**
+ * Spectrum search controller for OREx.  Contains elements such as the search panel, results table and coloring panel
+ * @author steelrj1
+ *
+ * @param <S>
+ */
 public class OREXSpectrumSearchController<S extends BasicSpectrum>
 {
     private SpectrumSearchPanel panel;
     protected SpectrumResultsTableController<S> spectrumResultsTableController;
-    private SpectrumSearchParametersController searchParametersController;
+    private SpectrumSearchParametersController<S> searchParametersController;
     private SpectrumColoringController<S> coloringController;
     private SpectraCollection<S> spectrumCollection;
     private BasicSpectrumInstrument instrument;
@@ -44,7 +50,7 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
         this.spectrumResultsTableController = new SpectrumResultsTableController<S>(instrument, spectrumCollection, modelManager, boundaryCollection, model, renderer, infoPanelManager);
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 
-        this.searchParametersController = new SpectrumSearchParametersController(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
+        this.searchParametersController = new SpectrumSearchParametersController<S>(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
 
         this.searchParametersController.setupSearchParametersPanel();
 

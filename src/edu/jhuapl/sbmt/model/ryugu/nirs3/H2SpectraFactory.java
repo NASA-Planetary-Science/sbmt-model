@@ -8,10 +8,16 @@ import edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu.NIRS3Spectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
+import edu.jhuapl.sbmt.spectrum.model.core.interfaces.IBasicSpectrumRenderer;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.SpectrumBuilder;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 import edu.jhuapl.sbmt.spectrum.rendering.AdvancedSpectrumRenderer;
-import edu.jhuapl.sbmt.spectrum.rendering.IBasicSpectrumRenderer;
 
+/**
+ * Registers spectrum builder with the core system, as well as spectrum type
+ * @author steelrj1
+ *
+ */
 public class H2SpectraFactory
 {
 
@@ -24,7 +30,7 @@ public class H2SpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument) throws IOException
 			{
-				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, smallBodyModel, instrument);
+				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return spectrum;
 			}
 
@@ -32,22 +38,20 @@ public class H2SpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument, String timeString) throws IOException
 			{
-				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, smallBodyModel, instrument);
+				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return spectrum;
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
+			public IBasicSpectrumRenderer<NIRS3Spectrum> buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
 			{
 				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
+			public IBasicSpectrumRenderer<NIRS3Spectrum> buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
 			{
-				System.out.println(
-						"H2SpectraFactory.initializeModels(...).new SpectrumBuilder() {...}: buildSpectrumRenderer: building");
-				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, smallBodyModel, instrument);
+				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
 			}
 		};
