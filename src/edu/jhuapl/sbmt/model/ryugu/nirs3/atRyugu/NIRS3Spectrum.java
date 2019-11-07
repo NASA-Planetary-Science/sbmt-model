@@ -210,6 +210,7 @@ public class NIRS3Spectrum extends BasicSpectrum
 
     public void readSpectrumFromFile()
     {
+    	super.readSpectrumFromFile();
     	if (!isCustomSpectra)
             spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
         else

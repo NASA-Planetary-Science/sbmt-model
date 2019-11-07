@@ -329,6 +329,7 @@ public class NISSpectrum extends BasicSpectrum
 	@Override
 	public void readSpectrumFromFile()
 	{
+		super.readSpectrumFromFile();
 		if (!isCustomSpectra)
         {
 			if (fullpath == null) getFullPath();
