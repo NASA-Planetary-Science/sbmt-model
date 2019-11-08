@@ -2,8 +2,11 @@ package edu.jhuapl.sbmt.model.eros.nis;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -268,6 +271,14 @@ public class NISSpectrum extends BasicSpectrum
         }
 
         out.close();
+
+        File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        FileChannel src = new FileInputStream(infoFile).getChannel();
+        File infoFileDestination = new File(file.getParentFile() + File.separator + file.getName() + ".INFO");
+        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
+        dest.transferFrom(src, 0, src.size());
+        src.close();
+        dest.close();
     }
 
     @Override

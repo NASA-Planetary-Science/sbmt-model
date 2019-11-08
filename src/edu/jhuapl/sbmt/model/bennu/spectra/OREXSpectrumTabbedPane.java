@@ -37,7 +37,7 @@ public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
             BaseSpectrumSearchModel<S> model = new BaseSpectrumSearchModel<S>(modelManager, instrument);
             JComponent component = new OREXSpectrumSearchController<S>(
                     smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-                    smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification,
+                    smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification.clone(),
                     modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
 
 
@@ -56,7 +56,7 @@ public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
 
         	BaseSpectrumSearchModel<S> model = new BaseSpectrumSearchModel<S>(modelManager, instrument);
             JComponent component = new OREXSpectrumSearchController<S>(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-                    smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification,
+                    smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification.clone(),
                     modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
             addTab("Browse", component);
 //            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)

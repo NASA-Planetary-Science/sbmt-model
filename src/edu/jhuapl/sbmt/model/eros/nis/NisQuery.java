@@ -111,6 +111,7 @@ public final class NisQuery extends DatabaseQueryBase
         double toIncidence = metadata.get(DatabaseSearchMetadata.TO_INCIDENCE);
         double fromEmission = metadata.get(DatabaseSearchMetadata.FROM_EMISSION);
         double toEmission = metadata.get(DatabaseSearchMetadata.TO_EMISSION);
+        String searchString = metadata.get(DatabaseSearchMetadata.SEARCH_STRING);
         double fromPhase = metadata.get(DatabaseSearchMetadata.FROM_PHASE);
         double toPhase = metadata.get(DatabaseSearchMetadata.TO_PHASE);
         double startDistance = metadata.get(DatabaseSearchMetadata.FROM_DISTANCE);
@@ -131,43 +132,52 @@ public final class NisQuery extends DatabaseQueryBase
 
         try
         {
-            double minScDistance = Math.min(startDistance, stopDistance);
-            double maxScDistance = Math.max(startDistance, stopDistance);
-
-            HashMap<String, String> args = new HashMap<>();
-            args.put("startDate", String.valueOf(startDate.getMillis()));
-            args.put("stopDate", String.valueOf(stopDate.getMillis()));
-            args.put("minScDistance", String.valueOf(minScDistance));
-            args.put("maxScDistance", String.valueOf(maxScDistance));
-            args.put("minIncidence", String.valueOf(minIncidence));
-            args.put("maxIncidence", String.valueOf(maxIncidence));
-            args.put("minEmission", String.valueOf(minEmission));
-            args.put("maxEmission", String.valueOf(maxEmission));
-            args.put("minPhase", String.valueOf(minPhase));
-            args.put("maxPhase", String.valueOf(maxPhase));
-            for (int i=0; i<4; ++i)
+        	if (searchString != null)
             {
-                if (polygonTypes.contains(i))
-                    args.put("polygonType"+i, "1");
-                else
-                    args.put("polygonType"+i, "0");
+                HashMap<String, String> args = new HashMap<>();
+                args.put("searchString", searchString);
+                results = doQuery("searchnis.php", constructUrlArguments(args));
             }
-            if (cubeList != null && cubeList.size() > 0)
-            {
-                String cubesStr = "";
-                int size = cubeList.size();
-                int count = 0;
-                for (Integer i : cubeList)
-                {
-                    cubesStr += "" + i;
-                    if (count < size-1)
-                        cubesStr += ",";
-                    ++count;
-                }
-                args.put("cubes", cubesStr);
-            }
-            results = doQuery("searchnis.php", constructUrlArguments(args));
+        	else
+        	{
 
+	            double minScDistance = Math.min(startDistance, stopDistance);
+	            double maxScDistance = Math.max(startDistance, stopDistance);
+
+	            HashMap<String, String> args = new HashMap<>();
+	            args.put("startDate", String.valueOf(startDate.getMillis()));
+	            args.put("stopDate", String.valueOf(stopDate.getMillis()));
+	            args.put("minScDistance", String.valueOf(minScDistance));
+	            args.put("maxScDistance", String.valueOf(maxScDistance));
+	            args.put("minIncidence", String.valueOf(minIncidence));
+	            args.put("maxIncidence", String.valueOf(maxIncidence));
+	            args.put("minEmission", String.valueOf(minEmission));
+	            args.put("maxEmission", String.valueOf(maxEmission));
+	            args.put("minPhase", String.valueOf(minPhase));
+	            args.put("maxPhase", String.valueOf(maxPhase));
+	            for (int i=0; i<4; ++i)
+	            {
+	                if (polygonTypes.contains(i))
+	                    args.put("polygonType"+i, "1");
+	                else
+	                    args.put("polygonType"+i, "0");
+	            }
+	            if (cubeList != null && cubeList.size() > 0)
+	            {
+	                String cubesStr = "";
+	                int size = cubeList.size();
+	                int count = 0;
+	                for (Integer i : cubeList)
+	                {
+	                    cubesStr += "" + i;
+	                    if (count < size-1)
+	                        cubesStr += ",";
+	                    ++count;
+	                }
+	                args.put("cubes", cubesStr);
+	            }
+	            results = doQuery("searchnis.php", constructUrlArguments(args));
+        	}
 
         }
         catch (Exception e)
