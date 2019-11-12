@@ -70,6 +70,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	private GroupColorProvider targetGCP;
 	private double radialOffset;
 	private double pointSize;
+	private boolean showSourcePoints;
 
 	// VTK vars
 	private Map<LidarTrack, VtkLidarPainter<LidarTrack>> vPainterM;
@@ -90,6 +91,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 		targetGCP = ColorWheelGroupColorProvider.Instance;
 		radialOffset = 0.0;
 		pointSize = 2.0;
+		showSourcePoints = false;
 
 		vPainterM = new HashMap<>();
 		vActorToPainterM = new HashMap<>();
@@ -401,6 +403,17 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	}
 
 	@Override
+	public void setShowSourcePoints(boolean aShowSourcePoints)
+	{
+		showSourcePoints = aShowSourcePoints;
+
+		for (VtkLidarPainter<?> aPainter : vPainterM.values())
+			aPainter.setShowSourcePoints(aShowSourcePoints);
+
+		updateVtkVars(getAllItems());
+	}
+
+	@Override
 	public void setTranslation(Collection<LidarTrack> aItemC, Vector3D aVect)
 	{
 		for (LidarTrack aItem : aItemC)
@@ -479,13 +492,13 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 				tmpPainter = new VtkLidarUniPainter<>(this, aItem, tmpVLS);
 			}
 			tmpPainter.setHighlightSelection(true);
+			tmpPainter.setShowSourcePoints(showSourcePoints);
 
 			vPainterM.put(aItem, tmpPainter);
 			for (vtkProp aProp : tmpPainter.getProps())
 				vActorToPainterM.put(aProp, tmpPainter);
 
 			// Set in the hard coded configuration state
-			tmpPainter.setShowSourcePoints(false);
 			tmpPainter.setPercentageShown(0.0, 1.0);
 		}
 
