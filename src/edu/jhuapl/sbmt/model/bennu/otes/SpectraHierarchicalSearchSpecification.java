@@ -12,6 +12,8 @@ import javax.swing.tree.TreePath;
 import edu.jhuapl.sbmt.model.bennu.InstrumentMetadataIO;
 import edu.jhuapl.sbmt.model.bennu.SearchSpec;
 
+import crucible.crust.metadata.api.MetadataManager;
+
 public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpec> implements InstrumentMetadataIO<S>
 {
     private TreeModel treeModel;
@@ -158,4 +160,7 @@ public abstract class SpectraHierarchicalSearchSpecification<S extends SearchSpe
 //    {
 //        return specs;
 //    }
+
+    public abstract MetadataManager getMetadataManager();
+
 }

@@ -310,7 +310,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public PerspectiveImage( //
             ImageKeyInterface key, //
             SmallBodyModel smallBodyModel, //
-            boolean loadPointingOnly, int currentSlice) throws FitsException, IOException //
+            boolean loadPointingOnly, //
+            int currentSlice) throws FitsException, IOException //
     {
         this(key, smallBodyModel, null, loadPointingOnly, currentSlice, true);
     }
@@ -330,6 +331,21 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     }
 
     /**
+     * If loadPointingOnly is true then only pointing information about this
+     * image will be downloaded/loaded. The image itself will not be loaded.
+     * Used by ImageBoundary to get pointing info.
+     */
+    public PerspectiveImage( //
+            ImageKeyInterface key, //
+            SmallBodyModel smallBodyModel, //
+            ModelManager modelManager, //
+            boolean loadPointingOnly, //
+            int currentSlice) throws FitsException, IOException //
+    {
+        this(key, smallBodyModel, modelManager, loadPointingOnly, currentSlice, true);
+    }
+
+  /**
      * If loadPointingOnly is true then only pointing information about this image
      * will be downloaded/loaded. The image itself will not be loaded. Used by
      * ImageBoundary to get pointing info.
@@ -1936,7 +1952,16 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     protected void processRawImage(vtkImageData rawImage)
     {
-        // By default do nothing
+    	if (getFlip().equals("X"))
+        {
+            ImageDataUtil.flipImageXAxis(rawImage);
+        }
+        else if (getFlip().equals("Y"))
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+        }
+        if (getRotation() != 0.0)
+            ImageDataUtil.rotateImage(rawImage, 360.0 - getRotation());
     }
 
     protected vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)

@@ -74,6 +74,7 @@ public class LidarQueryUtil
 			JComponent aParentComp, DataType aDataType, FSHyperTreeSkeleton aSkeleton,
 			PointInRegionChecker aPointInRegionChecker) throws IOException
 	{
+		System.out.println("LidarQueryUtil: executeQueryHyperTree: ");
 		// In the old LidarSearchDataCollection class the cubeList came from a
 		// predetermined set of cubes all of equal size.
 		// Here it corresponds to the list of leaves of a hypertree that intersect
@@ -178,7 +179,7 @@ public class LidarQueryUtil
 			}
 			in.close();
 		}
-
+		System.out.println("LidarQueryUtil: runQueryClassic: forming tracks");
 		List<LidarTrack> retTrackL = LidarTrackUtil.formTracks(aIdGenerator, tmpPointL, tmpPointSourceM,
 				timeSeparationBetweenTracks, minTrackLen);
 		return retTrackL;
@@ -196,6 +197,7 @@ public class LidarQueryUtil
 			DataType aDataType, FSHyperTreeSkeleton aSkeleton, Component aParentComp,
 			PointInRegionChecker aPointInRegionChecker) throws IOException
 	{
+		System.out.println("LidarQueryUtil: runQueryHyperTree: query hyper tree");
 		Set<Integer> cubeSet = aSearchParms.getCubeSet();
 		double begTime = aSearchParms.getBegTime();
 		double endTime = aSearchParms.getEndTime();

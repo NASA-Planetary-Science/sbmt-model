@@ -40,4 +40,13 @@ public enum Instrument
     {
         return str;
     }
+
+    public static Instrument valueFor(String str)
+    {
+    	for (Instrument inst : values())
+    	{
+    		if (str.equals(inst.toString())) return inst;
+    	}
+    	return null;
+    }
 }

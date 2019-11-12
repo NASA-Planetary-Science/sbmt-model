@@ -80,6 +80,7 @@ public class LEISAJupiterImage extends PerspectiveImage
         // this so the image is displayed properly.
 //        ImageDataUtil.flipImageYAxis(rawImage);
         ImageDataUtil.flipImageXAxis(rawImage);
+        super.processRawImage(rawImage);
     }
 
     public int getDefaultSlice() { return INITIAL_BAND; }
