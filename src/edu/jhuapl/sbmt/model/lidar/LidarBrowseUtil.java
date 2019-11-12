@@ -9,23 +9,29 @@ import java.io.InputStreamReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileCache.UnauthorizedAccessException;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
+import glum.gui.GuiUtil;
+
 /**
- * Utility class that provides various methods for working with lidar browse
- * data.
+ * Utility class that provides various methods for working with lidar catalog
+ * data products.
  * <P>
- * The methods in this class originated from the class
- * edu.jhuapl.sbmt.model.lidar.LidarDataPerUnit and the class
- * edu.jhuapl.smbt.model.lidar.LidarBrowseDataCollection (prior to 2019May24).
- * The naming of those classes are not intuitive. Those classes also violated
- * the separation of principles. That class has since been refactored - part of
- * which is here.
+ * A lidar catalog data product provides a listing of lidar (browse) files
+ * available for a specific shape model.
+ * <P>
+ * Each entry in the lidar data catalog consists of the following fields:
+ * <UL>
+ * <LI>Product name
+ * <LI>Start Time
+ * <LI>Stop Time
+ * <LI>Number of lidar data points
+ * </UL>
  *
  * @author lopeznr1
  */
@@ -41,13 +47,15 @@ public class LidarBrowseUtil
 		InputStream is = null;
 		if (aBodyViewConfig.lidarBrowseFileListResourcePath.startsWith("/edu"))
 		{
-			is = LidarBrowseUtil.class.getResourceAsStream(aBodyViewConfig.lidarBrowseFileListResourcePath);
+			String tmpName = aBodyViewConfig.lidarBrowseFileListResourcePath;
+			is = LidarBrowseUtil.class.getResourceAsStream(tmpName);
 		}
 		else if (FileCache.isFileGettable(aBodyViewConfig.lidarBrowseFileListResourcePath))
 		{
 			try
 			{
-				is = new FileInputStream(FileCache.getFileFromServer(aBodyViewConfig.lidarBrowseFileListResourcePath));
+				File tmpFile = FileCache.getFileFromServer(aBodyViewConfig.lidarBrowseFileListResourcePath);
+				is = new FileInputStream(tmpFile);
 			}
 			catch (UnauthorizedAccessException aExp)
 			{
@@ -62,23 +70,34 @@ public class LidarBrowseUtil
 
 		try (BufferedReader aBR = new BufferedReader(new InputStreamReader(is)))
 		{
-			String aLine;
-			while ((aLine = aBR.readLine()) != null)
+			while (true)
 			{
-				String path = aLine;
+				// Bail at EOF
+				String tmpLine = aBR.readLine();
+				if (tmpLine == null)
+					break;
+
+				// Skip over empty lines / line comments
+				String tmpStr = tmpLine.trim();
+				if (tmpStr.isEmpty() == true || tmpStr.startsWith("#") == true)
+					continue;
+
+				String path = tmpLine;
 				double timeBeg = Double.NaN;
 				double timeEnd = Double.NaN;
-				int indexFirstSpace = aLine.indexOf(' ');
+				int numPoints = -1;
+
+				int indexFirstSpace = tmpLine.indexOf(' ');
 				if (indexFirstSpace != -1)
 				{
-					path = aLine.substring(0, indexFirstSpace);
+					path = tmpLine.substring(0, indexFirstSpace);
 
-					String timeRangeStr = aLine.substring(indexFirstSpace + 1);
+					String timeRangeStr = tmpLine.substring(indexFirstSpace + 1);
 					timeRangeStr = timeRangeStr.replace(" - ", " ");
 					String strArr[] = timeRangeStr.split("[ ]+");
 					try
 					{
-						if (strArr.length == 2)
+						if (strArr.length >= 2)
 						{
 							timeBeg = TimeUtil.str2etA(strArr[0].trim());
 							timeEnd = TimeUtil.str2etA(strArr[1].trim());
@@ -88,7 +107,7 @@ public class LidarBrowseUtil
 					{
 						try
 						{
-							if (strArr.length == 2)
+							if (strArr.length >= 2)
 							{
 								timeBeg = Double.parseDouble(strArr[0]);
 								timeEnd = Double.parseDouble(strArr[1]);
@@ -100,13 +119,17 @@ public class LidarBrowseUtil
 							aExp.printStackTrace();
 						}
 					}
+
+					// Read number of points field
+					if (strArr.length >= 3)
+						numPoints = GuiUtil.readInt(strArr[2], -1);
 				}
 				String name = new File(path).getName();
 				if (name.toLowerCase().endsWith(".gz"))
 					name = name.substring(0, name.length() - 3);
 
-				LidarFileSpec lidarSpec = new LidarFileSpec(path, name, timeBeg, timeEnd);
-				retL.add(lidarSpec);
+				LidarFileSpec tmpItem = new LidarFileSpec(path, name, numPoints, timeBeg, timeEnd);
+				retL.add(tmpItem);
 			}
 		}
 
@@ -114,25 +137,44 @@ public class LidarBrowseUtil
 	}
 
 	/**
-	 * Loads the list of LidarFileSpecs from the specified input file.
+	 * Loads the list of LidarFileSpecs from the specified catalog file.
+	 *
+	 * @param aRemotePathStr File path relative to the SBMT server
 	 */
-	public static List<LidarFileSpec> loadLidarFileSpecList(String aBrowseFileStr) throws IOException
+	public static List<LidarFileSpec> loadCatalog(String aRemotePathStr) throws IOException
 	{
 		List<LidarFileSpec> retL = new ArrayList<>();
 
-		File listFile = FileCache.getFileFromServer(aBrowseFileStr);
-		try (Scanner scanner = new Scanner(new FileInputStream(listFile)))
+		File tmpFile = FileCache.getFileFromServer(aRemotePathStr);
+		try (BufferedReader aBR = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile))))
 		{
-			while (scanner.hasNext())
+			Pattern pattern = Pattern.compile("\\s+");
+			while (true)
 			{
-				String filename = scanner.next();
-				double begTime = Double.valueOf(scanner.next());
-				double endTime = Double.valueOf(scanner.next());
-				String path = filename;
-				String name = Paths.get(filename).getFileName().toString();
+				// Bail at EOF
+				String tmpLine = aBR.readLine();
+				if (tmpLine == null)
+					break;
 
-				LidarFileSpec tmpSpec = new LidarFileSpec(path, name, begTime, endTime);
-				retL.add(tmpSpec);
+				// Skip over empty lines / line comments
+				String tmpStr = tmpLine.trim();
+				if (tmpStr.isEmpty() == true || tmpStr.startsWith("#") == true)
+					continue;
+
+				String[] strArr = pattern.split(tmpLine, -1);
+
+				String path = strArr[0];
+				String name = Paths.get(path).getFileName().toString();
+
+				double timeBeg = Double.valueOf(strArr[1]);
+				double timeEnd = Double.valueOf(strArr[2]);
+
+				int numPoints = -1;
+				if (strArr.length >= 4)
+					numPoints = GuiUtil.readInt(strArr[3], -1);
+
+				LidarFileSpec tmpItem = new LidarFileSpec(path, name, numPoints, timeBeg, timeEnd);
+				retL.add(tmpItem);
 			}
 		}
 
