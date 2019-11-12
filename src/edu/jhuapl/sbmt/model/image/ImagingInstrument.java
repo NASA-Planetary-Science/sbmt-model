@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.image;
 
+import java.util.Arrays;
+
 import edu.jhuapl.sbmt.client.SpectralMode;
 import edu.jhuapl.sbmt.query.IQueryBase;
 import edu.jhuapl.sbmt.query.QueryBase;
@@ -96,6 +98,8 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
     Key<String> imageTypeKey = Key.of("imageType");
     Key<String[]> imageSourcesKey = Key.of("imageSources");
     Key<String> instrumentKey = Key.of("instrument");
+    Key<String> flipKey = Key.of("flip");
+    Key<Double> rotationKey = Key.of("rotation");
 
     @Override
     public void retrieve(Metadata source)
@@ -123,6 +127,8 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
             searchImageSources[i++] = ImageSource.valueOf(src);
         }
         instrumentName = Instrument.valueOf(read(instrumentKey, source));
+        flip = read(flipKey, source);
+        rotation = read(rotationKey, source);
     }
 
     @Override
@@ -135,6 +141,8 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
         writeEnum(imageTypeKey, type, configMetadata);
         writeEnums(imageSourcesKey, searchImageSources, configMetadata);
         writeEnum(instrumentKey, instrumentName, configMetadata);
+        write(flipKey, flip, configMetadata);
+        write(rotationKey, rotation, configMetadata);
         return configMetadata;
     }
 
@@ -198,5 +206,97 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 	{
 		return instrumentName;
 	}
+	@Override
+	public int hashCode()
+	{
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((flip == null) ? 0 : flip.hashCode());
+		result = prime * result + ((instrumentName == null) ? 0 : instrumentName.hashCode());
+		result = prime * result + ((queryType == null) ? 0 : queryType.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(rotation);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + Arrays.hashCode(searchImageSources);
+		result = prime * result + ((searchQuery == null) ? 0 : searchQuery.hashCode());
+		result = prime * result + ((spectralMode == null) ? 0 : spectralMode.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (obj == null)
+		{
+			System.err.println("ImagingInstrument: equals: obj is null");
+			return false;
+		}
+		if (getClass() != obj.getClass())
+		{
+			System.err.println("ImagingInstrument: equals: classes don't match " + getClass() + " " + obj.getClass());
+			return false;
+		}
+		ImagingInstrument other = (ImagingInstrument) obj;
+		if (flip == null)
+		{
+			if (other.flip != null)
+			{
+				System.err.println("ImagingInstrument: equals: one flip is null, other not");
+				return false;
+			}
+		} else if (!flip.equals(other.flip))
+		{
+			System.err.println("ImagingInstrument: equals: flips don't equal " + flip + " " + other.flip);
+			return false;
+		}
+		if (instrumentName != other.instrumentName)
+		{
+			System.err.println("ImagingInstrument: equals: instrument names don't equal");
+			return false;
+		}
+		if (queryType == null)
+		{
+			if (other.queryType != null)
+				return false;
+		} else if (!queryType.equals(other.queryType))
+		{
+			System.err.println("ImagingInstrument: equals: query types unequal");
+			return false;
+		}
+		if (Double.doubleToLongBits(rotation) != Double.doubleToLongBits(other.rotation))
+		{
+			System.err.println("ImagingInstrument: equals: rotation unequal");
+			return false;
+		}
+		if (!Arrays.equals(searchImageSources, other.searchImageSources))
+		{
+			System.err.println("ImagingInstrument: equals: search images sources unequal");
+			return false;
+		}
+		if (searchQuery == null)
+		{
+			if (other.searchQuery != null)
+				return false;
+		} else if (!searchQuery.equals(other.searchQuery))
+		{
+			System.err.println("ImagingInstrument: equals: search query unequal");
+			return false;
+		}
+		if (spectralMode != other.spectralMode)
+		{
+			System.err.println("ImagingInstrument: equals: spectral modes unequal");
+			return false;
+		}
+		if (type != other.type)
+		{
+			System.err.println("ImagingInstrument: equals: types unequal");
+			return false;
+		}
+		return true;
+	}
+
+
 }
 
