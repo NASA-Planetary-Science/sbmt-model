@@ -31,6 +31,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+import com.github.davidmoten.guavamini.Preconditions;
 import com.google.common.base.Stopwatch;
 
 import vtk.vtkActor;
@@ -192,7 +193,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private int[] currentMask = new int[4];
 
-    private IntensityRange[] displayedRange = new IntensityRange[1];
+    // Always use accessors to use this field -- even within this class!
+    private IntensityRange[] displayedRange = null;
     private IntensityRange offLimbDisplayedRange = new IntensityRange(0, 255);
     private boolean contrastSynced = false; // by default, the contrast of offlimb is not synced with on limb
     private double imageOpacity = 1.0;
@@ -377,7 +379,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         sw.start();
         footprint[0] = new vtkPolyData();
         shiftedFootprint[0] = new vtkPolyData();
-        displayedRange[0] = new IntensityRange(1, 0);
 
         if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
@@ -2285,33 +2286,20 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         for (int k = 0; k < getImageDepth(); k++)
         {
             footprint[k] = new vtkPolyData();
-            // displayedRange[k] = new IntensityRange(1,0);
-            displayedRange[k] = new IntensityRange(0, 255);
         }
 
         shiftedFootprint[0] = new vtkPolyData();
         textureCoords = new vtkFloatArray();
         normalsFilter = new vtkPolyDataNormals();
 
-        if (getFitFileFullPath() != null)
-        {
-            setDisplayedImageRange(null);
-        }
-        else if (getPngFileFullPath() != null)
+        if (getPngFileFullPath() != null)
         {
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float) scalarRange[0];
             maxValue[0] = (float) scalarRange[1];
-//            setDisplayedImageRange(new IntensityRange(0, 255));
-            setDisplayedImageRange(null);
         }
-        else if (getEnviFileFullPath() != null)
-        {
-            setDisplayedImageRange(null);
-        }
-        else
-            setDisplayedImageRange(null);
-        // setDisplayedImageRange(new IntensityRange(0, 255));
+
+        setDisplayedImageRange(null);
     }
 
     protected int loadNumSlices()
@@ -2651,19 +2639,40 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public IntensityRange getDisplayedRange()
     {
-        return displayedRange[currentSlice];
+        return getDisplayedRange(currentSlice);
     }
 
+    /**
+     * This getter lazily initializes the range field as necessary to
+     * ensure this returns a valid, non-null range as long as the argument
+     * is in range for this image.
+     *
+     * @param slice the number of the slice whose displayed range to return.
+     */
     public IntensityRange getDisplayedRange(int slice)
     {
+        int nslices = getImageDepth();
+
+        Preconditions.checkArgument(slice < nslices);
+
+        if (displayedRange == null)
+        {
+            displayedRange = new IntensityRange[nslices];
+        }
+        if (displayedRange[slice] == null)
+        {
+            displayedRange[slice] = new IntensityRange(0, 255);
+        }
+
         return displayedRange[slice];
     }
 
-    public void setDisplayedImageRange()
-    {
-        setDisplayedImageRange(displayedRange[currentSlice]);
-    }
-
+    /**
+     * Set the displayed image range of the currently selected slice of the image.
+     * As a side-effect, this method also MAYBE CREATES the displayed image.
+     *
+     * @param range the new displayed range of the image. If null is passed,
+     */
     public void setDisplayedImageRange(IntensityRange range)
     {
         if (rawImage != null)
@@ -2676,13 +2685,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         }
 
-        if (range == null || displayedRange[currentSlice].min != range.min || displayedRange[currentSlice].max != range.max)
+        IntensityRange displayedRange = getDisplayedRange(currentSlice);
+        if (range == null || displayedRange.min != range.min || displayedRange.max != range.max)
         {
-            // displayedRange[currentSlice] = range != null ? range : new IntensityRange(0,
-            // 255);
             if (range != null)
             {
-                displayedRange[currentSlice] = range;
+                this.displayedRange[currentSlice] = range;
                 saveImageInfo();
             }
 
@@ -2729,8 +2737,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         float max = maxValue;
         if (!offlimb)
         {
-            min = minValue + displayedRange[currentSlice].min * dx;
-            max = minValue + displayedRange[currentSlice].max * dx;
+            IntensityRange displayedRange = getDisplayedRange(currentSlice);
+            min = minValue + displayedRange.min * dx;
+            max = minValue + displayedRange.max * dx;
         }
         else
         {
@@ -2805,7 +2814,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         frusta = new Frustum[nslices];
         footprint = new vtkPolyData[nslices];
         footprintGenerated = new boolean[nslices];
-        displayedRange = new IntensityRange[nslices];
     }
 
     private void loadImageInfo() throws NumberFormatException, IOException
