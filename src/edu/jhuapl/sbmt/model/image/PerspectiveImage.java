@@ -195,7 +195,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     // Always use accessors to use this field -- even within this class!
     private IntensityRange[] displayedRange = null;
-    private IntensityRange offLimbDisplayedRange = new IntensityRange(0, 255);
+    // Always use accessors to use this field -- even within this class!
+    private IntensityRange offLimbDisplayedRange = null;
     private boolean contrastSynced = false; // by default, the contrast of offlimb is not synced with on limb
     private double imageOpacity = 1.0;
 
@@ -1462,18 +1463,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         OutputStreamWriter osw = new OutputStreamWriter(fs);
         BufferedWriter out = new BufferedWriter(osw);
 
-        out.write(String.format("%-20s= %s\n", START_TIME, startTime));
-        out.write(String.format("%-20s= %s\n", STOP_TIME, stopTime));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", SPACECRAFT_POSITION, spacecraftPosition[slice][0], spacecraftPosition[slice][1], spacecraftPosition[slice][2]));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", BORESIGHT_DIRECTION, boresightDirection[slice][0], boresightDirection[slice][1], boresightDirection[slice][2]));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", UP_DIRECTION, upVector[slice][0], upVector[slice][1], upVector[slice][2]));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM1, frustum1[slice][0], frustum1[slice][1], frustum1[slice][2]));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM2, frustum2[slice][0], frustum2[slice][1], frustum2[slice][2]));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM3, frustum3[slice][0], frustum3[slice][1], frustum3[slice][2]));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM4, frustum4[slice][0], frustum4[slice][1], frustum4[slice][2]));
-        out.write(String.format("%-20s= ( %1.16e , %1.16e , %1.16e )\n", SUN_POSITION_LT, sunPosition[slice][0], sunPosition[slice][1], sunPosition[slice][2]));
-        out.write(String.format("%-20s= ( %16d , %16d )\n", DISPLAY_RANGE, displayRange.min, displayRange.max));
-        out.write(String.format("%-20s= ( %16d , %16d )\n", OFFLIMB_DISPLAY_RANGE, offLimbDisplayRange.min, offLimbDisplayRange.max));
+        out.write(String.format("%-22s= %s\n", START_TIME, startTime));
+        out.write(String.format("%-22s= %s\n", STOP_TIME, stopTime));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", SPACECRAFT_POSITION, spacecraftPosition[slice][0], spacecraftPosition[slice][1], spacecraftPosition[slice][2]));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", BORESIGHT_DIRECTION, boresightDirection[slice][0], boresightDirection[slice][1], boresightDirection[slice][2]));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", UP_DIRECTION, upVector[slice][0], upVector[slice][1], upVector[slice][2]));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM1, frustum1[slice][0], frustum1[slice][1], frustum1[slice][2]));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM2, frustum2[slice][0], frustum2[slice][1], frustum2[slice][2]));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM3, frustum3[slice][0], frustum3[slice][1], frustum3[slice][2]));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", FRUSTUM4, frustum4[slice][0], frustum4[slice][1], frustum4[slice][2]));
+        out.write(String.format("%-22s= ( %1.16e , %1.16e , %1.16e )\n", SUN_POSITION_LT, sunPosition[slice][0], sunPosition[slice][1], sunPosition[slice][2]));
+        out.write(String.format("%-22s= ( %16d , %16d )\n", DISPLAY_RANGE, displayRange.min, displayRange.max));
+        out.write(String.format("%-22s= ( %16d , %16d )\n", OFFLIMB_DISPLAY_RANGE, offLimbDisplayRange.min, offLimbDisplayRange.max));
 
         boolean writeApplyAdustments = false;
 
@@ -1481,25 +1482,25 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             if (targetPixelCoordinates[0] != Double.MAX_VALUE && targetPixelCoordinates[1] != Double.MAX_VALUE)
             {
-                out.write(String.format("%-20s= ( %1.16e , %1.16e )\n", TARGET_PIXEL_COORD, targetPixelCoordinates[0], targetPixelCoordinates[1]));
+                out.write(String.format("%-22s= ( %1.16e , %1.16e )\n", TARGET_PIXEL_COORD, targetPixelCoordinates[0], targetPixelCoordinates[1]));
                 writeApplyAdustments = true;
             }
 
             if (zoomFactor[0] != 1.0)
             {
-                out.write(String.format("%-20s= %1.16e\n", TARGET_ZOOM_FACTOR, zoomFactor[0]));
+                out.write(String.format("%-22s= %1.16e\n", TARGET_ZOOM_FACTOR, zoomFactor[0]));
                 writeApplyAdustments = true;
             }
 
             if (rotationOffset[0] != 0.0)
             {
-                out.write(String.format("%-20s= %1.16e\n", TARGET_ROTATION, rotationOffset[0]));
+                out.write(String.format("%-22s= %1.16e\n", TARGET_ROTATION, rotationOffset[0]));
                 writeApplyAdustments = true;
             }
 
             // only write out user-modified offsets if the image info has been modified
             if (writeApplyAdustments)
-                out.write(String.format("%-20s= %b\n", APPLY_ADJUSTMENTS, applyFrameAdjustments));
+                out.write(String.format("%-22s= %b\n", APPLY_ADJUSTMENTS, applyFrameAdjustments));
         }
 
         out.close();
@@ -2300,6 +2301,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         setDisplayedImageRange(null);
+        setOfflimbImageRange(null);
     }
 
     protected int loadNumSlices()
@@ -2634,6 +2636,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public IntensityRange getOffLimbDisplayedRange()
     {
+        if (offLimbDisplayedRange == null)
+        {
+            offLimbDisplayedRange = new IntensityRange(0, 255);
+        }
+
         return offLimbDisplayedRange;
     }
 
@@ -2710,17 +2717,25 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void setOfflimbImageRange(IntensityRange intensityRange)
     {
 
-        if (intensityRange != null)
+        IntensityRange displayedRange = getOffLimbDisplayedRange();
+        if (intensityRange == null || displayedRange.min != intensityRange.min || displayedRange.max != intensityRange.max)
         {
-            offLimbDisplayedRange = intensityRange;
+            if (intensityRange != null)
+            {
+                offLimbDisplayedRange = intensityRange;
+                saveImageInfo();
+            }
 
-            vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
+            if (rawImage != null)
+            {
+                vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
 
-            offLimbTexture.SetInputData(image);
-            image.Delete();
-            offLimbTexture.Modified();
-
-            saveImageInfo();
+                if (offLimbTexture == null)
+                    offLimbTexture = new vtkTexture();
+                offLimbTexture.SetInputData(image);
+                image.Delete();
+                offLimbTexture.Modified();
+            }
 
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
         }
@@ -2743,6 +2758,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
         else
         {
+            IntensityRange offLimbDisplayedRange = getOffLimbDisplayedRange();
             min = minValue + offLimbDisplayedRange.min * dx;
             max = minValue + offLimbDisplayedRange.max * dx;
         }
@@ -5245,7 +5261,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             offLimbTexture = new vtkTexture();
             offLimbTexture.SetInputData(image);
             offLimbTexture.Modified();
-            return offLimbTexture;
         }
         return offLimbTexture;
     }
