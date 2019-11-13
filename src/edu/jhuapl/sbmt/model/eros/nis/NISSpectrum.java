@@ -274,7 +274,7 @@ public class NISSpectrum extends BasicSpectrum
 
         File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
         FileChannel src = new FileInputStream(infoFile).getChannel();
-        File infoFileDestination = new File(file.getParentFile() + File.separator + file.getName() + ".INFO");
+        File infoFileDestination = new File(file.getParentFile() + File.separator + FilenameUtils.getBaseName(file.getName()) + ".INFO");
         FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
         dest.transferFrom(src, 0, src.size());
         src.close();
