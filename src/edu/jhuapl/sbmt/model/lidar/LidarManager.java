@@ -138,6 +138,11 @@ public interface LidarManager<G1> extends ItemManager<G1>
 	public void setRadialOffset(double aRadialOffset);
 
 	/**
+	 * Sets whether the source points will be shown (of all lidar objects).
+	 */
+	public void setShowSourcePoints(boolean aShowSourcePoints);
+
+	/**
 	 * Sets the translation associated with the specified lidar objects.
 	 *
 	 * @param aItemL The list of objects of interest.

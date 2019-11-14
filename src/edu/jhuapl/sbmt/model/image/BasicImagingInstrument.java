@@ -8,7 +8,7 @@ import edu.jhuapl.sbmt.query.QueryBase;
 
 public class BasicImagingInstrument extends ImagingInstrument
 {
-    public static BasicImagingInstrument of(TypedLookup bodyConfiguration) {
+    public static ImagingInstrument of(TypedLookup bodyConfiguration) {
         ImagingInstrumentConfiguration configuration = bodyConfiguration.get(SessionConfiguration.IMAGING_INSTRUMENT_CONFIG);
 
         SpectralMode spectralMode = configuration.get(ImagingInstrumentConfiguration.SPECTRAL_MODE);
@@ -17,12 +17,12 @@ public class BasicImagingInstrument extends ImagingInstrument
         ImageSource[] searchImageSources = configuration.get(ImagingInstrumentConfiguration.IMAGE_SOURCE);
         Instrument instrument = configuration.get(ImagingInstrumentConfiguration.INSTRUMENT);
 
-        return new BasicImagingInstrument(spectralMode, searchQuery, type, searchImageSources, instrument);
+        return new ImagingInstrument(spectralMode, searchQuery, type, searchImageSources, instrument);
     }
 
-    protected BasicImagingInstrument(SpectralMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrument)
-    {
-        super(spectralMode, searchQuery, type, searchImageSources, instrument);
-    }
+//    protected BasicImagingInstrument(SpectralMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrument)
+//    {
+//        super(spectralMode, searchQuery, type, searchImageSources, instrument);
+//    }
 
 }
