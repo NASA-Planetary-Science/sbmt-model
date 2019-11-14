@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
@@ -149,56 +148,56 @@ public class NISSpectrum extends BasicSpectrum
     }*/
 
 
-    public HashMap<String, String> getProperties() throws IOException
-    {
-        HashMap<String, String> properties = new LinkedHashMap<String, String>();
-
-        String name = new File(this.fullpath).getName();
-        properties.put("Name", name.substring(0, name.length()-4));
-
-        properties.put("Date", dateTime.toString());
-
-        properties.put("Day of Year", (new File(this.fullpath)).getParentFile().getName());
-
-        //properties.put("Year", (new File(this.fullpath)).getParentFile().getParentFile().getName());
-
-        properties.put("MET", (new File(this.fullpath)).getName().substring(2,11));
-
-        properties.put("Duration", Double.toString(duration) + " seconds");
-
-        String polygonTypeStr = "Missing value";
-        switch(this.polygon_type_flag)
-        {
-        case 0:
-            polygonTypeStr = "Full (all vertices on shape)";
-            break;
-        case 1:
-            polygonTypeStr = "Partial (single contiguous set of vertices on shape)";
-            break;
-        case 2:
-            polygonTypeStr = "Degenerate (multiple contiguous sets of vertices on shape)";
-            break;
-        case 3:
-            polygonTypeStr = "Empty (no vertices on shape)";
-            break;
-        }
-        properties.put("Polygon Type", polygonTypeStr);
-
-        // Note \u00B0 is the unicode degree symbol
-        String deg = "\u00B0";
-        properties.put("Minimum Incidence", Double.toString(minIncidence)+deg);
-        properties.put("Maximum Incidence", Double.toString(maxIncidence)+deg);
-        properties.put("Minimum Emission", Double.toString(minEmission)+deg);
-        properties.put("Maximum Emission", Double.toString(maxIncidence)+deg);
-        properties.put("Minimum Phase", Double.toString(minPhase)+deg);
-        properties.put("Maximum Phase", Double.toString(maxPhase)+deg);
-
-        properties.put("Range", this.range + " km");
-        properties.put("Spacecraft Position (km)",
-                spacecraftPosition[0] + " " + spacecraftPosition[1] + " " + spacecraftPosition[2]);
-
-        return properties;
-    }
+//    public HashMap<String, String> getProperties() throws IOException
+//    {
+//        HashMap<String, String> properties = new LinkedHashMap<String, String>();
+//
+//        String name = new File(this.fullpath).getName();
+//        properties.put("Name", name.substring(0, name.length()-4));
+//
+//        properties.put("Date", dateTime.toString());
+//
+//        properties.put("Day of Year", (new File(this.fullpath)).getParentFile().getName());
+//
+//        //properties.put("Year", (new File(this.fullpath)).getParentFile().getParentFile().getName());
+//
+//        properties.put("MET", (new File(this.fullpath)).getName().substring(2,11));
+//
+//        properties.put("Duration", Double.toString(duration) + " seconds");
+//
+//        String polygonTypeStr = "Missing value";
+//        switch(this.polygon_type_flag)
+//        {
+//        case 0:
+//            polygonTypeStr = "Full (all vertices on shape)";
+//            break;
+//        case 1:
+//            polygonTypeStr = "Partial (single contiguous set of vertices on shape)";
+//            break;
+//        case 2:
+//            polygonTypeStr = "Degenerate (multiple contiguous sets of vertices on shape)";
+//            break;
+//        case 3:
+//            polygonTypeStr = "Empty (no vertices on shape)";
+//            break;
+//        }
+//        properties.put("Polygon Type", polygonTypeStr);
+//
+//        // Note \u00B0 is the unicode degree symbol
+//        String deg = "\u00B0";
+//        properties.put("Minimum Incidence", Double.toString(minIncidence)+deg);
+//        properties.put("Maximum Incidence", Double.toString(maxIncidence)+deg);
+//        properties.put("Minimum Emission", Double.toString(minEmission)+deg);
+//        properties.put("Maximum Emission", Double.toString(maxIncidence)+deg);
+//        properties.put("Minimum Phase", Double.toString(minPhase)+deg);
+//        properties.put("Maximum Phase", Double.toString(maxPhase)+deg);
+//
+//        properties.put("Range", this.range + " km");
+//        properties.put("Spacecraft Position (km)",
+//                spacecraftPosition[0] + " " + spacecraftPosition[1] + " " + spacecraftPosition[2]);
+//
+//        return properties;
+//    }
 
 
     public double getMinIncidence()
