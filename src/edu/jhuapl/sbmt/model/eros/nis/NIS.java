@@ -116,7 +116,7 @@ public class NIS extends BasicSpectrumInstrument
 	@Override
 	public double[] getRGBMaxVals()
 	{
-		return new double[] { 0.5, 0.5, 0.5 };
+		return new double[] { 0.05, 0.05, 0.05 };
 	}
 
 	@Override
