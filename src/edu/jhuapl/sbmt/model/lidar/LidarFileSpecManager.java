@@ -98,6 +98,10 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	 */
 	public Integer getNumberOfPoints(LidarFileSpec aFileSpec)
 	{
+		int numPoints = aFileSpec.getNumPoints();
+		if (numPoints > 0)
+			return numPoints;
+
 		VtkLidarPointProvider tmpLPP = vAuxM.get(aFileSpec);
 		if (tmpLPP == null)
 			return 0;
@@ -405,17 +409,6 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 		updateVtkVars(getAllItems());
 	}
 
-	// TODO: Add javadoc
-	public void setShowSourcePoints(boolean aShowSourcePoints)
-	{
-		showSourcePoints = aShowSourcePoints;
-
-		for (VtkLidarPainter<?> aPainter : vPainterM.values())
-			aPainter.setShowSourcePoints(aShowSourcePoints);
-
-		updateVtkVars(getAllItems());
-	}
-
 	@Override
 	public String getClickStatusBarText(vtkProp aProp, int aCellId, double[] aPickPosition)
 	{
@@ -455,6 +448,17 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 		}
 
 		return retL;
+	}
+
+	@Override
+	public void setShowSourcePoints(boolean aShowSourcePoints)
+	{
+		showSourcePoints = aShowSourcePoints;
+
+		for (VtkLidarPainter<?> aPainter : vPainterM.values())
+			aPainter.setShowSourcePoints(aShowSourcePoints);
+
+		updateVtkVars(getAllItems());
 	}
 
 	/**
