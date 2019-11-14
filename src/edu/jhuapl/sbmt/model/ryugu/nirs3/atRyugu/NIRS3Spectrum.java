@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -270,4 +272,31 @@ public class NIRS3Spectrum extends BasicSpectrum
 	{
 		return geoFields;
 	}
+
+	 @Override
+	    public HashMap<String, String> getProperties() throws IOException
+	    {
+	        HashMap<String, String> properties = new LinkedHashMap<String, String>();
+
+	        if (this.fullpath == null) getFullPath();
+	        String name = new File(this.fullpath).getName();
+	        properties.put("Name", name.substring(0, name.length()-4));
+
+	        properties.put("Date", dateTime.toString());
+
+	        // Note \u00B0 is the unicode degree symbol
+	        String deg = "\u00B0";
+//	        properties.put("Minimum Incidence", Double.toString(minIncidence)+deg);
+//	        properties.put("Maximum Incidence", Double.toString(maxIncidence)+deg);
+//	        properties.put("Minimum Emission", Double.toString(minEmission)+deg);
+//	        properties.put("Maximum Emission", Double.toString(maxIncidence)+deg);
+//	        properties.put("Minimum Phase", Double.toString(minPhase)+deg);
+//	        properties.put("Maximum Phase", Double.toString(maxPhase)+deg);
+	//
+//	        properties.put("Range", this.range + " km");
+	        properties.put("Spacecraft Position (km)",
+	                spacecraftPosition[0] + " " + spacecraftPosition[1] + " " + spacecraftPosition[2]);
+
+	        return properties;
+	    }
 }
