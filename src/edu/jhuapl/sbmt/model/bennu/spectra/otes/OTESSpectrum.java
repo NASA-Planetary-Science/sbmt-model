@@ -285,11 +285,11 @@ public class OTESSpectrum extends BasicSpectrum
     {
         HashMap<String, String> properties = new LinkedHashMap<String, String>();
 
-        if (this.fullpath == null) getFullPath();
-        String name = new File(this.fullpath).getName();
+//        if (this.fullpath == null) getFullPath();
+        String name = new File(serverpath).getName();
         properties.put("Name", name.substring(0, name.length()-4));
 
-        properties.put("Date", dateTime.toString());
+//        properties.put("Date", dateTime.toString());
 
 //        properties.put("Day of Year", (new File(this.fullpath)).getParentFile().getName());
 
