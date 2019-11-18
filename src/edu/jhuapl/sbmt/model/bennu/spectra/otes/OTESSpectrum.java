@@ -134,7 +134,12 @@ public class OTESSpectrum extends BasicSpectrum
     public void saveSpectrum(File file) throws IOException
     {
         new OTESSpectrumWriter(file.getAbsolutePath(), this).write();
-        File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+        saveInfofile(file);
+    }
+
+    public void saveInfofile(File file) throws IOException
+    {
+    	File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
         FileChannel src = new FileInputStream(infoFile).getChannel();
         File infoFileDestination = new File(file.getParentFile() + File.separator + FilenameUtils.getBaseName(file.getName()) + ".INFO");
         FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();

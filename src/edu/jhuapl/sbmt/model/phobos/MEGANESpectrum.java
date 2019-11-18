@@ -113,6 +113,11 @@ public class MEGANESpectrum extends BasicSpectrum
 //        dest.close();
     }
 
+    public void saveInfofile(File file) throws IOException
+    {
+
+    }
+
     protected String getLocalInfoFilePathOnServer()
     {
     	String normalpath = SafeURLPaths.instance().getString(serverpath).substring(7);

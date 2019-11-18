@@ -117,6 +117,11 @@ public class NIRS3Spectrum extends BasicSpectrum
     public void saveSpectrum(File file) throws IOException
     {
     	new NIRS3SpectrumWriter(file.getAbsolutePath(), this).write();
+
+    }
+
+    public void saveInfofile(File file) throws IOException
+    {
     	File infoFile;
     	if (isCustomSpectra)
     		infoFile = new File(getInfoFilePathOnServer());
