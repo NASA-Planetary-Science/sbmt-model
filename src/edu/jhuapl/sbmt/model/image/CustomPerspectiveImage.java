@@ -24,12 +24,6 @@ public class CustomPerspectiveImage extends PerspectiveImage
     }
 
     @Override
-    public int getNumberBands()
-    {
-        return imageDepth;
-    }
-
-    @Override
     protected void processRawImage(vtkImageData rawImage)
     {
         ImageKeyInterface key = getKey();
