@@ -35,16 +35,18 @@ public class OcamsFlightImage extends BasicPerspectiveImage
     {
         // For some reason we need to do
         // this so the image is displayed properly.
+    	System.out.println("OcamsFlightImage: processRawImage: source is " + key.getSource() + " key image type " + key.getImageType());
         if (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.LOCAL_PERSPECTIVE)
         {
         	if (key.getImageType() != ImageType.NAVCAM_FLIGHT_IMAGE)
         	{
         		ImageDataUtil.flipImageYAxis(rawImage);
-        		ImageDataUtil.rotateImage(rawImage, 90);
+//        		ImageDataUtil.rotateImage(rawImage, 90);
         	}
         	else
         	{
         		ImageDataUtil.flipImageYAxis(rawImage);
+//        		ImageDataUtil.rotateImage(rawImage, 180);
         	}
         }
         else

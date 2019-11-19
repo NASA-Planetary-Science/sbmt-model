@@ -999,7 +999,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             filePath = getSumfileFullPath();
             if (filePath != null && filePath.endsWith("SUM"))
-                filePath = filePath.substring(0, filePath.length() - 3) + "INFO";
+            	filePath = FilenameUtils.getBaseName(filePath) + ".INFO";
+//                filePath = filePath.substring(0, filePath.length()-3) + "INFO";
             else
                 filePath = "";
         }
@@ -2925,7 +2926,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // INFO file
         String filePath = getSumfileFullPath();
         if (filePath != null && filePath.endsWith("SUM"))
-            filePath = filePath.substring(0, filePath.length() - 3) + "INFO";
+        	filePath = FilenameUtils.getBaseName(filePath) + ".INFO";
+//            filePath = filePath.substring(0, filePath.length()-3) + "INFO";
         else
             filePath = "";
 
@@ -2986,7 +2988,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             {
                 String filename = infoFileNames[fileindex];
                 if (filename == null || filename.endsWith("/null"))
-                    filename = sumFileName.substring(0, sumFileName.length() - 3) + "INFO";
+                	filename = FilenameUtils.getBaseName(sumFileName) + ".INFO";
+//                    filename = sumFileName.substring(0, sumFileName.length()-3) + "INFO";
 
                 int slice = this.getImageDepth() / 2;
 
