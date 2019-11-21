@@ -3,9 +3,19 @@ package edu.jhuapl.sbmt.model.phobos;
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.model.spectrum.Spectrum;
-import edu.jhuapl.sbmt.model.spectrum.SpectrumInstrumentFactory;
-import edu.jhuapl.sbmt.model.spectrum.instruments.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectraType;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
+import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.Spectrum;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
+
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.InstanceGetter;
+import crucible.crust.metadata.impl.SettableMetadata;
 
 public class MEGANE extends BasicSpectrumInstrument
 {
@@ -21,7 +31,7 @@ public class MEGANE extends BasicSpectrumInstrument
     public MEGANE()
     {
          super("cm^-1", "MEGANE", MEGANEQuery.getInstance(), MEGANESpectrumMath.getInstance());
-         bandCenters = new double[]{ 8.660700e+00, // 0
+         bandCenters = new Double[]{ 8.660700e+00, // 0
                  1.732140e+01, // 1
                  2.598210e+01, // 2
                  3.464280e+01, // 3
@@ -378,8 +388,41 @@ public class MEGANE extends BasicSpectrumInstrument
             ISmallBodyModel smallBodyModel)
             throws IOException
     {
-        return new MEGANESpectrum(filename, smallBodyModel, this);
+        return new MEGANESpectrum(filename, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), this);
     }
+
+    //metadata interface
+    private static final Key<MEGANE> MEGANE_KEY = Key.of("megane");
+    private static final Key<String> spectraNameKey = Key.of("displayName");
+
+    public static void initializeSerializationProxy()
+	{
+		InstanceGetter.defaultInstanceGetter().register(MEGANE_KEY, (metadata) -> {
+
+			MEGANE inst = null;
+			String displayName = metadata.get(spectraNameKey);
+			SpectraType spectraType = SpectraTypeFactory.findSpectraTypeForDisplayName(displayName);
+			QueryBase queryBase = spectraType.getQueryBase();
+			SpectrumMath spectrumMath = spectraType.getSpectrumMath();
+			Double[] bandCenters = spectraType.getBandCenters();
+			String bandCenterUnit = spectraType.getBandCenterUnit();
+
+			inst = new MEGANE();
+			inst.bandCenterUnit = bandCenterUnit;
+			inst.displayName = displayName;
+			inst.queryBase = queryBase;
+			inst.spectrumMath = spectrumMath;
+			inst.bandCenters = bandCenters;
+
+			return inst;
+		},
+	    MEGANE.class,
+	    key -> {
+			 SettableMetadata metadata = SettableMetadata.of(Version.of(1, 0));
+			 metadata.put(spectraNameKey, key.getDisplayName());
+			 return metadata;
+		});
+	}
 
 
 }

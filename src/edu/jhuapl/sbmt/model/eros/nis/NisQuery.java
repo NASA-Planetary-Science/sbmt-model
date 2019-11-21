@@ -1,0 +1,422 @@
+package edu.jhuapl.sbmt.model.eros.nis;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TimeZone;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import javax.swing.JOptionPane;
+
+import org.joda.time.DateTime;
+
+import edu.jhuapl.saavtk.util.Configuration;
+import edu.jhuapl.sbmt.client.SbmtSpectrumModelFactory;
+import edu.jhuapl.sbmt.query.ISearchResultsMetadata;
+import edu.jhuapl.sbmt.query.SearchMetadata;
+import edu.jhuapl.sbmt.query.database.DatabaseQueryBase;
+import edu.jhuapl.sbmt.query.database.DatabaseSearchMetadata;
+import edu.jhuapl.sbmt.query.database.SpectraDatabaseSearchMetadata;
+import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
+
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.FixedMetadata;
+import crucible.crust.metadata.impl.SettableMetadata;
+
+
+/**
+ * This class provides functions for querying the database for NIS
+ * @author steelrj1
+ *
+ * This must be final because it is a singleton with a clone() method.
+ *
+ */
+public final class NisQuery extends DatabaseQueryBase
+{
+	private static NisQuery ref = null;
+
+    public static String getNisPath(List<String> result)
+    {
+        if (result.size() > 1)
+        {
+            int id = Integer.parseInt(result.get(0).split("/")[3]);
+            int year = Integer.parseInt(result.get(1));
+            int dayOfYear = Integer.parseInt(result.get(2));
+            return getNisPath(id, year, dayOfYear);
+        }
+        else
+        {
+            String[] components = result.get(0).split("/");
+            int id = Integer.parseInt((components[4].split("N0")[1]).split("\\.")[0]);
+            int year = Integer.parseInt(components[2]);
+            int dayOfYear = Integer.parseInt(components[3]);
+            return getNisPath(id, year, dayOfYear);
+        }
+    }
+
+    public static String getNisPath(int name, int year, int dayOfYear)
+    {
+        String str = "/NIS/";
+        str += year + "/";
+
+        if (dayOfYear < 10)
+            str += "00";
+        else if (dayOfYear < 100)
+            str += "0";
+
+        str += dayOfYear + "/";
+
+        str += "N0" + name + ".NIS";
+
+        return str;
+    }
+
+    public static NisQuery getInstance()
+    {
+        if (ref == null)
+            ref = new NisQuery();
+        return ref;
+    }
+
+    @Override
+    public NisQuery clone()
+    {
+        return getInstance();
+    }
+
+    private NisQuery()
+    {
+        super(null);
+    }
+
+    @Override
+    public String getDataPath()
+    {
+        return "/NIS/2000";
+    }
+
+    @Override
+    public ISearchResultsMetadata<BasicSpectrum> runQuery(SearchMetadata queryMetadata)
+    {
+        FixedMetadata metadata = queryMetadata.getMetadata();
+        double fromIncidence = metadata.get(DatabaseSearchMetadata.FROM_INCIDENCE);
+        double toIncidence = metadata.get(DatabaseSearchMetadata.TO_INCIDENCE);
+        double fromEmission = metadata.get(DatabaseSearchMetadata.FROM_EMISSION);
+        double toEmission = metadata.get(DatabaseSearchMetadata.TO_EMISSION);
+        String searchString = metadata.get(DatabaseSearchMetadata.SEARCH_STRING);
+        double fromPhase = metadata.get(DatabaseSearchMetadata.FROM_PHASE);
+        double toPhase = metadata.get(DatabaseSearchMetadata.TO_PHASE);
+        double startDistance = metadata.get(DatabaseSearchMetadata.FROM_DISTANCE);
+        double stopDistance = metadata.get(DatabaseSearchMetadata.TO_DISTANCE);
+        DateTime startDate = new DateTime(metadata.get(DatabaseSearchMetadata.START_DATE));
+        DateTime stopDate = new DateTime(metadata.get(DatabaseSearchMetadata.STOP_DATE));
+        List<Integer> polygonTypes = metadata.get(DatabaseSearchMetadata.POLYGON_TYPES);
+        TreeSet<Integer> cubeList = metadata.get(SpectraDatabaseSearchMetadata.CUBE_LIST);
+
+        List<List<String>> results = null;
+
+        double minIncidence = Math.min(fromIncidence, toIncidence);
+        double maxIncidence = Math.max(fromIncidence, toIncidence);
+        double minEmission = Math.min(fromEmission, toEmission);
+        double maxEmission = Math.max(fromEmission, toEmission);
+        double minPhase = Math.min(fromPhase, toPhase);
+        double maxPhase = Math.max(fromPhase, toPhase);
+
+        try
+        {
+        	if (searchString != null)
+            {
+                HashMap<String, String> args = new HashMap<>();
+                args.put("searchString", searchString);
+                results = doQuery("searchnis.php", constructUrlArguments(args));
+            }
+        	else
+        	{
+
+	            double minScDistance = Math.min(startDistance, stopDistance);
+	            double maxScDistance = Math.max(startDistance, stopDistance);
+
+	            HashMap<String, String> args = new HashMap<>();
+	            args.put("startDate", String.valueOf(startDate.getMillis()));
+	            args.put("stopDate", String.valueOf(stopDate.getMillis()));
+	            args.put("minScDistance", String.valueOf(minScDistance));
+	            args.put("maxScDistance", String.valueOf(maxScDistance));
+	            args.put("minIncidence", String.valueOf(minIncidence));
+	            args.put("maxIncidence", String.valueOf(maxIncidence));
+	            args.put("minEmission", String.valueOf(minEmission));
+	            args.put("maxEmission", String.valueOf(maxEmission));
+	            args.put("minPhase", String.valueOf(minPhase));
+	            args.put("maxPhase", String.valueOf(maxPhase));
+	            for (int i=0; i<4; ++i)
+	            {
+	                if (polygonTypes.contains(i))
+	                    args.put("polygonType"+i, "1");
+	                else
+	                    args.put("polygonType"+i, "0");
+	            }
+	            if (cubeList != null && cubeList.size() > 0)
+	            {
+	                String cubesStr = "";
+	                int size = cubeList.size();
+	                int count = 0;
+	                for (Integer i : cubeList)
+	                {
+	                    cubesStr += "" + i;
+	                    if (count < size-1)
+	                        cubesStr += ",";
+	                    ++count;
+	                }
+	                args.put("cubes", cubesStr);
+	            }
+	            results = doQuery("searchnis.php", constructUrlArguments(args));
+        	}
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            results = getResultsFromFileListOnServer(getDataPath() + "/nisTimes.txt", getDataPath(), getGalleryPath(), "");
+
+        }
+
+//        List<BasicSpectrum> tempResults = new ArrayList<BasicSpectrum>();
+        NISSearchResult tempResults = new NISSearchResult();
+        try
+        {
+        	for (List<String> res : results)
+        	{
+        		String path = NisQuery.getNisPath(res);
+            	BasicSpectrum spectrum = SbmtSpectrumModelFactory.createSpectrum(path, SpectrumInstrumentFactory.getInstrumentForName("NIS"));
+            	String str = path;
+                String[] tokens = str.split("/");
+                String filename = tokens[4];
+                String strippedFileName=str.replace("/NIS/2000/", "");
+                String detailedTime = NISSearchModel.nisFileToObservationTimeMap.get(strippedFileName);
+                List<String> result = new ArrayList<String>();
+                result.add(str);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+                spectrum.setDateTime(new DateTime(sdf.parse(detailedTime).getTime()));
+//            	spectrum.setMetadata(spec);	//TODO is this needed for NIS?
+            	tempResults.addResult(spectrum);
+        	}
+        }
+        catch (Exception e)
+        {
+       	 	System.out.println("SpectrumStandardSearch: search: " + e.getLocalizedMessage());
+       	 	e.printStackTrace();
+        }
+        return tempResults;
+    }
+
+    class NISSearchResult implements ISearchResultsMetadata<BasicSpectrum>
+    {
+    	List<BasicSpectrum> results = new ArrayList<BasicSpectrum>();
+
+    	public void addResult(BasicSpectrum spectrum)
+    	{
+    		results.add(spectrum);
+    	}
+
+		@Override
+		public FixedMetadata getMetadata()
+		{
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public List<BasicSpectrum> getResultlist()
+		{
+			return results;
+		}
+    }
+
+//    /**
+//     * Run a query which searches for msi images between the specified dates.
+//     * Returns a list of URL's of the fit files that match.
+//     *
+//     * @param startDate
+//     * @param endDate
+//     */
+//    @Override
+//    public List<List<String>> runQuery(
+//            @SuppressWarnings("unused") String type,
+//            DateTime startDate,
+//            DateTime stopDate,
+//            @SuppressWarnings("unused") boolean sumOfProductsSearch,
+//            @SuppressWarnings("unused") List<Integer> camerasSelected,
+//            @SuppressWarnings("unused") List<Integer> filtersSelected,
+//            double startDistance,
+//            double stopDistance,
+//            @SuppressWarnings("unused") double startResolution,
+//            @SuppressWarnings("unused") double stopResolution,
+//            @SuppressWarnings("unused") String searchString,
+//            List<Integer> polygonTypes,
+//            double fromIncidence,
+//            double toIncidence,
+//            double fromEmission,
+//            double toEmission,
+//            double fromPhase,
+//            double toPhase,
+//            TreeSet<Integer> cubeList,
+//            @SuppressWarnings("unused") ImageSource msiSource,
+//            @SuppressWarnings("unused") int limbType)
+//    {
+//        List<List<String>> results = null;
+//
+//        double minIncidence = Math.min(fromIncidence, toIncidence);
+//        double maxIncidence = Math.max(fromIncidence, toIncidence);
+//        double minEmission = Math.min(fromEmission, toEmission);
+//        double maxEmission = Math.max(fromEmission, toEmission);
+//        double minPhase = Math.min(fromPhase, toPhase);
+//        double maxPhase = Math.max(fromPhase, toPhase);
+//
+//        try
+//        {
+//            double minScDistance = Math.min(startDistance, stopDistance);
+//            double maxScDistance = Math.max(startDistance, stopDistance);
+//
+//            HashMap<String, String> args = new HashMap<>();
+//            args.put("startDate", String.valueOf(startDate.getMillis()));
+//            args.put("stopDate", String.valueOf(stopDate.getMillis()));
+//            args.put("minScDistance", String.valueOf(minScDistance));
+//            args.put("maxScDistance", String.valueOf(maxScDistance));
+//            args.put("minIncidence", String.valueOf(minIncidence));
+//            args.put("maxIncidence", String.valueOf(maxIncidence));
+//            args.put("minEmission", String.valueOf(minEmission));
+//            args.put("maxEmission", String.valueOf(maxEmission));
+//            args.put("minPhase", String.valueOf(minPhase));
+//            args.put("maxPhase", String.valueOf(maxPhase));
+//            for (int i=0; i<4; ++i)
+//            {
+//                if (polygonTypes.contains(i))
+//                    args.put("polygonType"+i, "1");
+//                else
+//                    args.put("polygonType"+i, "0");
+//            }
+//            if (cubeList != null && cubeList.size() > 0)
+//            {
+//                String cubesStr = "";
+//                int size = cubeList.size();
+//                int count = 0;
+//                for (Integer i : cubeList)
+//                {
+//                    cubesStr += "" + i;
+//                    if (count < size-1)
+//                        cubesStr += ",";
+//                    ++count;
+//                }
+//                args.put("cubes", cubesStr);
+//            }
+//
+//            results = doQuery("searchnis.php", constructUrlArguments(args));
+//
+///*            for (List<String> res : results)
+//            {
+//                String path = this.getNisPath(res);
+//
+//                matchedImages.add(path);
+//            }*/
+//        }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//
+//        //return matchedImages;
+//        return results;
+//
+//        //System.err.println("Error: Not implemented. Do not call.");
+//        //return null;
+//    }
+
+/*    public List<String> runSpectralQuery(
+            DateTime startDate,
+            DateTime stopDate,
+            List<Integer> filters,
+            boolean iofdbl,
+            boolean cifdbl,
+            double startDistance,
+            double stopDistance,
+            double startResolution,
+            double stopResolution,
+            String searchString,
+            List<Integer> polygonTypes,
+            double fromIncidence,
+            double toIncidence,
+            double fromEmission,
+            double toEmission,
+            double fromPhase,
+            double toPhase,
+            TreeSet<Integer> cubeList,
+            ImageSource msiSource,
+            int limbType)
+    {
+    }*/
+
+    @Override
+    protected List<List<String>> getCachedResults(
+            String pathToImageFolder
+            )
+    {
+        JOptionPane.showMessageDialog(null,
+                "Unable to perform online search for NIS data. Ignoring search parameters and listing all cached spectra.",
+                "Warning",
+                JOptionPane.WARNING_MESSAGE);
+    	// Create a map of actual files, with key the segment of the
+    	// file name that will match the output of getNisPath.
+        final List<File> fileList = getCachedFiles(pathToImageFolder);
+        final Map<String, File> filesFound = new TreeMap<>();
+        for (File file: fileList)
+        {
+        	// Format for NIS path is /NIS/YYYY/..., basically everything after the
+        	// cache directory prefix.
+            String path = file.getPath().substring(Configuration.getCacheDir().length());
+            filesFound.put(path, file);
+        }
+
+        final List<List<String>> result = new ArrayList<>();
+        SortedMap<String, List<String>> inventory = getDataInventory();
+        // Match the current inventory against the cached file map.
+        for (Entry<String, List<String>> each: inventory.entrySet())
+        {
+            List<String> res = each.getValue();
+            if (!res.get(0).contains("NIS")) continue;
+            String path = getNisPath(res);
+            if (filesFound.containsKey(path))
+                result.add(res);
+        }
+        return result;
+    }
+
+    protected void changeImagePathToFullPath(List<String> result)
+    {
+        String fullPath = result.get(1) + "/" + result.get(2) + "/" + result.get(0);
+        if (!fullPath.contains("/"))
+        {
+            result.set(0, getDataPath() + "/" + fullPath);
+        }
+    }
+
+    @Override
+    public Metadata store()
+    {
+        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 0));
+        return configMetadata;
+    }
+
+    @Override
+    public void retrieve(Metadata source)
+    {
+
+    }
+}
