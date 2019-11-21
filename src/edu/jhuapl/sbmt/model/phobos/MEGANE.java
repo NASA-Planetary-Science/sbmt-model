@@ -383,6 +383,25 @@ public class MEGANE extends BasicSpectrumInstrument
          };
     }
 
+	@Override
+	public double[] getRGBMaxVals()
+	{
+		return new double[] {0.000007, 0.000007, 0.000007};
+	}
+
+	@Override
+	public int[] getRGBDefaultIndices()
+	{
+		return new int[] {50, 100, 150};
+	}
+
+	@Override
+	public String[] getDataTypeNames()
+	{
+		// TODO Auto-generated method stub
+		return new String[] { };
+	}
+
     @Override
     public Spectrum getSpectrumInstance(String filename,
             ISmallBodyModel smallBodyModel)
