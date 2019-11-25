@@ -798,14 +798,14 @@ public class CylindricalImage extends Image
         ImageKeyInterface key = getKey();
 
         String imageFile = SafeURLPaths.instance().getString(key.getName());
-        if (key.getSource() == ImageSource.IMAGE_MAP)
-        {
+//        if (key.getSource() == ImageSource.IMAGE_MAP)
+//        {
             imageFile = FileCache.getFileFromServer(imageFile).getAbsolutePath();
-        }
-        else
-        {
-            imageFile = imageFile.replaceFirst("^file:/*", "/");
-        }
+//        }
+//        else
+//        {
+//            imageFile = imageFile.replaceFirst("^file:/*", "/");
+//        }
 
         if (!(new File(imageFile).isFile()))
         {
