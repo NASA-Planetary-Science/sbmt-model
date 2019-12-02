@@ -152,13 +152,13 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected String getLocalInfoFilePathOnServer()
     {
-    	String normalpath = SafeURLPaths.instance().getString(serverpath).substring(7);
+    	String normalpath = SafeURLPaths.instance().getString(serverpath);
     	return FilenameUtils.removeExtension(normalpath) + ".INFO";
     }
 
     protected String getLocalSpectrumFilePathOnServer()
     {
-        return SafeURLPaths.instance().getString(serverpath).substring(7);
+        return SafeURLPaths.instance().getString(serverpath);
     }
 
     protected String getInfoFilePathOnServer()
