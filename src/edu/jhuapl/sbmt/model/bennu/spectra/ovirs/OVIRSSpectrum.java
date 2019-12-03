@@ -137,6 +137,7 @@ public class OVIRSSpectrum extends BasicSpectrum
     public void saveSpectrum(File file) throws IOException
     {
         new OVIRSSpectrumWriter(file.getAbsolutePath(), this).write();
+        saveInfofile(file);
     }
 
     public void saveInfofile(File file) throws IOException
