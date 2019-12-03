@@ -26,6 +26,7 @@ import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
@@ -343,7 +344,7 @@ public class NISSpectrum extends BasicSpectrum
 	}
 
 	@Override
-	public void readSpectrumFromFile()
+	public void readSpectrumFromFile() throws SpectrumIOException
 	{
 		super.readSpectrumFromFile();
 		if (!isCustomSpectra)
