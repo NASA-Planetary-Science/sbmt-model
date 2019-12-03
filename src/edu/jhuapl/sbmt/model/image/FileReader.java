@@ -1,7 +1,9 @@
 package edu.jhuapl.sbmt.model.image;
 
-public interface FileReader
+import java.io.IOException;
+
+public interface FileReader<E extends IOException>
 {
-    public void read();
+    public void read() throws E;
     public String getFileName();
 }

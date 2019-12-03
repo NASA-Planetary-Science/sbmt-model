@@ -1,6 +1,8 @@
 package edu.jhuapl.sbmt.model.image;
 
-public abstract class BasicFileReader implements FileReader
+import java.io.IOException;
+
+public abstract class BasicFileReader<E extends IOException> implements FileReader<E>
 {
     protected final String filename;
 
