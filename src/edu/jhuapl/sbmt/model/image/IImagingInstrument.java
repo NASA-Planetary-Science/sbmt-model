@@ -1,6 +1,5 @@
 package edu.jhuapl.sbmt.model.image;
 
-import edu.jhuapl.sbmt.client.SpectralMode;
 import edu.jhuapl.sbmt.query.IQueryBase;
 
 import crucible.crust.metadata.api.Metadata;
@@ -19,7 +18,7 @@ public interface IImagingInstrument
 
 	public ImageSource[] getSearchImageSources();
 
-	public SpectralMode getSpectralMode();
+	public SpectralImageMode getSpectralMode();
 
 	public Instrument getInstrumentName();
 }

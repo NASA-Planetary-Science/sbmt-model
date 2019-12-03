@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.phobos;
 
-import edu.jhuapl.sbmt.model.spectrum.math.SpectrumMath;
+import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
 
 public class MEGANESpectrumMath extends SpectrumMath
 {
