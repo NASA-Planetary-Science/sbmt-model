@@ -12,16 +12,18 @@ public class LidarFileSpec
 	// Attributes
 	private final String path;
 	private final String name;
+	private final int numPoints;
 	private final double timeBeg;
 	private final double timeEnd;
 
 	/**
 	 * Standard Constructor
 	 */
-	public LidarFileSpec(String aPath, String aName, double aTimeBeg, double aTimeEnd)
+	public LidarFileSpec(String aPath, String aName, int aNumPoints, double aTimeBeg, double aTimeEnd)
 	{
 		path = aPath;
 		name = aName;
+		numPoints = aNumPoints;
 		timeBeg = aTimeBeg;
 		timeEnd = aTimeEnd;
 	}
@@ -29,6 +31,11 @@ public class LidarFileSpec
 	public String getName()
 	{
 		return name;
+	}
+
+	public int getNumPoints()
+	{
+		return numPoints;
 	}
 
 	public String getPath()

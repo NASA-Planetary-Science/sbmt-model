@@ -38,6 +38,7 @@ import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
 import edu.jhuapl.sbmt.gui.image.model.custom.CustomCylindricalImageKey;
+import edu.jhuapl.sbmt.gui.image.model.custom.CustomPerspectiveImageKey;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
 
 import crucible.crust.metadata.api.Key;
@@ -144,6 +145,7 @@ public class CylindricalImage extends Image
                     List<CustomImageKeyInterface> customImages = metadata.get(customImagesKey);
                     for (CustomImageKeyInterface info : customImages)
                     {
+                    	if (info instanceof CustomPerspectiveImageKey) continue;
                         CustomCylindricalImageKey cylInfo = (CustomCylindricalImageKey)info;
                         String filename = new File(imageBaseName).getName();
                         if (filename.equals(cylInfo.getImageFilename()))
@@ -796,14 +798,14 @@ public class CylindricalImage extends Image
         ImageKeyInterface key = getKey();
 
         String imageFile = SafeURLPaths.instance().getString(key.getName());
-        if (key.getSource() == ImageSource.IMAGE_MAP)
-        {
+//        if (key.getSource() == ImageSource.IMAGE_MAP)
+//        {
             imageFile = FileCache.getFileFromServer(imageFile).getAbsolutePath();
-        }
-        else
-        {
-            imageFile = imageFile.replaceFirst("^file:/*", "/");
-        }
+//        }
+//        else
+//        {
+//            imageFile = imageFile.replaceFirst("^file:/*", "/");
+//        }
 
         if (!(new File(imageFile).isFile()))
         {

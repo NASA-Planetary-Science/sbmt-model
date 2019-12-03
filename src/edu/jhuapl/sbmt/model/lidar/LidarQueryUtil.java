@@ -41,6 +41,11 @@ import glum.item.IncrIdGenerator;
 /**
  * Class that provides a collection of utility methods needed to perform query
  * for lidar data.
+ * <P>
+ * A number of the methods in this class are derived from various derivatives of
+ * the class LidarSearchDataCollection (prior to 2019Mar24). The divergent
+ * poorly designed classes and corresponding methods have been refactored to
+ * various utility classes / methods.
  *
  * @author lopeznr1
  */
@@ -49,11 +54,6 @@ public class LidarQueryUtil
 	/**
 	 * Runs the specified (classic) query and installs formed Tracks into the
 	 * specified LidarTrackManager.
-	 * <P>
-	 * A number of the methods in this class are derived from various derivatives
-	 * of the class LidarSearchDataCollection (prior to 2019Mar24). The divergent
-	 * poorly designed classes and corresponding methods have been refactored to
-	 * various utility classes.
 	 */
 	public static void executeQueryClassic(LidarTrackManager aManager, LidarSearchParms aSearchParms,
 			PointInRegionChecker aPointInRegionChecker) throws IOException
@@ -130,7 +130,18 @@ public class LidarQueryUtil
 		for (Integer cubeid : cubeSet)
 		{
 			String filename = dataSource.getPath() + "/" + cubeid + ".lidarcube";
-			File file = FileCache.getFileFromServer(filename);
+
+			File file = null;
+			try
+			{
+				file = FileCache.getFileFromServer(filename);
+			}
+			catch(Exception aExp)
+			{
+				System.err.println("[ERROR] Failed to retrieve file: " + filename);
+				aExp.printStackTrace();
+				continue;
+			}
 			String source = file.toString();
 
 			InputStream fs = new FileInputStream(file.getAbsolutePath());
@@ -167,7 +178,6 @@ public class LidarQueryUtil
 			}
 			in.close();
 		}
-
 		List<LidarTrack> retTrackL = LidarTrackUtil.formTracks(aIdGenerator, tmpPointL, tmpPointSourceM,
 				timeSeparationBetweenTracks, minTrackLen);
 		return retTrackL;

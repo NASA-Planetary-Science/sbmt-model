@@ -58,10 +58,12 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         // this so the image is displayed properly.
         ImageDataUtil.flipImageYAxis(rawImage);
         ImageDataUtil.flipImageXAxis(rawImage);
+
+        super.processRawImage(rawImage);
     }
 
     @Override
-    public int getNumberBands()
+    public int getImageDepth()
     {
         return 4;
     }
@@ -70,7 +72,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     protected int loadNumSlices()
     {
         // TODO Auto-generated method stub
-        return getNumberBands();
+        return getImageDepth();
     }
 
     @Override
@@ -137,7 +139,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
     {
         ImageKeyInterface key = getKey();
         int defaultBand = getDefaultSlice();
-        int nbands = getNumberBands();
+        int nbands = getImageDepth();
         String result = null;
 
         for (int band=0; band<nbands; band++)
@@ -178,7 +180,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
             return null;
 
         int defaultBand = getDefaultSlice();
-        int nbands = getNumberBands();
+        int nbands = getImageDepth();
         String result = null;
 
         for (int band=0; band<nbands; band++)

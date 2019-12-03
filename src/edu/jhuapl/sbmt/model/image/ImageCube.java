@@ -632,6 +632,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
     protected void processRawImage(vtkImageData rawImage)
     {
         ImageDataUtil.flipImageYAxis(rawImage);
+        super.processRawImage(rawImage);
     }
     /**
      * Currently, just call updateImageMask
