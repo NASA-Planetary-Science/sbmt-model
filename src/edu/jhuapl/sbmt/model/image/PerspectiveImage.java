@@ -778,6 +778,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         int nslices = getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
+        	System.out.println("PerspectiveImage: rotateFrameAboutTarget: frustum 1 adjusted before is " + " " + frustum1Adjusted[0] + " " + frustum1Adjusted[1] + " " + frustum1Adjusted[2]);
             MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
             MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
             MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
@@ -829,10 +830,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void moveRotationAngleBy(double rotationDelta)
     {
-        // System.out.println("moveRotationAngleBy(): " + rotationDelta);
-
+         System.out.println("moveRotationAngleBy(): " + rotationDelta);
+         System.out.println("PerspectiveImage: moveRotationAngleBy: rotation offset " + rotationOffset[0]);
         double newRotationOffset = rotationOffset[0] + rotationDelta;
-
+        System.out.println("PerspectiveImage: moveRotationAngleBy: new rotation offset " + newRotationOffset);
         setRotationOffset(newRotationOffset);
     }
 
