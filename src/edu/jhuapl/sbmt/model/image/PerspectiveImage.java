@@ -704,12 +704,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             {
                 int height = getImageHeight();
                 double line = height - 1 - targetPixelCoordinates[0];
-//                line = -line;
-//                line = targetPixelCoordinates[0];
                 double sample = targetPixelCoordinates[1];
 
                 double[] newTargetPixelDirection = getPixelDirection(sample, line);
-                System.out.println("PerspectiveImage: updateFrameAdjustments: line " + line + " sample " + sample);
                 rotateTargetPixelDirectionToLocalOrigin(newTargetPixelDirection);
             }
             // else if (offsetPixelCoordinates[0] != Double.MAX_VALUE &&
@@ -758,7 +755,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // };
 
         double zoomRatio = 1.0 / zoomFactor;
-        System.out.println("PerspectiveImage: zoomFrame: zoomratio " + zoomRatio);
         if (zoomRatio < 1.0)
     	{
         	zoomRatio = 1.0;
@@ -777,7 +773,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //                spacecraftPositionAdjusted[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] * zoomRatio;
 //                boresightDirectionAdjusted[currentSlice][i] = boresightDirectionOriginal[currentSlice][i] * zoomRatio;
             }
-            System.out.println("PerspectiveImage: zoomFrame: sc pos adjusted " + spacecraftPositionAdjusted[currentSlice][0] + " " + spacecraftPositionAdjusted[currentSlice][1] + " " + spacecraftPositionAdjusted[currentSlice][2]);
             frusta[slice] = null;
             footprintGenerated[slice] = false;
         }
@@ -795,7 +790,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         int nslices = getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
-        	System.out.println("PerspectiveImage: rotateFrameAboutTarget: frustum 1 adjusted before is " + " " + frustum1Adjusted[0][0] + " " + frustum1Adjusted[0][1] + " " + frustum1Adjusted[0][2]);
             MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
             MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
             MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
@@ -809,8 +803,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void moveTargetPixelCoordinates(double[] pixelDelta)
     {
-         System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[0] + " " +
-         pixelDelta[1]);
+        // System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
+        // pixelDelta[0]);
 
         double height = (double) getImageHeight();
         if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
@@ -821,7 +815,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         double line = this.targetPixelCoordinates[0] + pixelDelta[0];
         double sample = targetPixelCoordinates[1] + pixelDelta[1];
         double[] newFrustumCenterPixel = { line, sample };
-        System.out.println("PerspectiveImage: moveTargetPixelCoordinates: line " + line + " sample " + sample);
+
         setTargetPixelCoordinates(newFrustumCenterPixel);
     }
 
@@ -847,10 +841,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public void moveRotationAngleBy(double rotationDelta)
     {
-         System.out.println("moveRotationAngleBy(): " + rotationDelta);
-         System.out.println("PerspectiveImage: moveRotationAngleBy: rotation offset " + rotationOffset[0]);
+        // System.out.println("moveRotationAngleBy(): " + rotationDelta);
+
         double newRotationOffset = rotationOffset[0] + rotationDelta;
-        System.out.println("PerspectiveImage: moveRotationAngleBy: new rotation offset " + newRotationOffset);
+
         setRotationOffset(newRotationOffset);
     }
 
@@ -892,16 +886,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private void rotateTargetPixelDirectionToLocalOrigin(double[] direction)
     {
         Vector3D directionVector = new Vector3D(direction);
-        System.out.println("PerspectiveImage: rotateTargetPixelDirectionToLocalOrigin: direction vector " + directionVector);
         Vector3D spacecraftPositionVector = new Vector3D(spacecraftPositionOriginal[currentSlice]);
         Vector3D spacecraftToOriginVector = spacecraftPositionVector.scalarMultiply(-1.0);
         Vector3D originPointingVector = spacecraftToOriginVector.normalize();
-        System.out.println("PerspectiveImage: rotateTargetPixelDirectionToLocalOrigin: boresight " + new Vector3D(boresightDirectionOriginal[currentSlice]));
-//        Vector3D boresightDirection = new Vector3D(boresightDirectionOriginal[currentSlice]);
-//        Vector3D updatedBoresightDirection = boresightDirection.add(directionVector);
+
         Rotation rotation = new Rotation(directionVector, originPointingVector);
-//        rotation = new Rotation(boresightDirection, updatedBoresightDirection);
-        System.out.println("PerspectiveImage: rotateTargetPixelDirectionToLocalOrigin: rotation is " + rotation.getAngle() + " and axis " + rotation.getAxis());
+
         // int slice = getCurrentSlice();
         int nslices = getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
