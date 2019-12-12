@@ -2,6 +2,8 @@ package edu.jhuapl.sbmt.model.lidar.vtk;
 
 import vtk.vtkPoints;
 
+import edu.jhuapl.saavtk.vtk.VtkResource;
+
 /**
  * Object that provides access to lidar points backed via VTK data structures.
  *

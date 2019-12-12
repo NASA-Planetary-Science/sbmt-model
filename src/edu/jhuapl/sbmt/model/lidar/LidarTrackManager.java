@@ -19,10 +19,10 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
 import edu.jhuapl.saavtk.model.SaavtkItemManager;
 import edu.jhuapl.saavtk.pick.DefaultPicker;
+import edu.jhuapl.saavtk.pick.HookUtil;
 import edu.jhuapl.saavtk.pick.PickListener;
 import edu.jhuapl.saavtk.pick.PickMode;
 import edu.jhuapl.saavtk.pick.PickTarget;
-import edu.jhuapl.saavtk.pick.PickUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.gui.lidar.color.ColorProvider;
@@ -609,25 +609,14 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 			vPointPainter.setData(tmpPoint, tmpTrack);
 		}
 
-		// Determine if this is a modified action
-		boolean isModifyKey = PickUtil.isModifyKey(aEvent);
-
-		// Determine the Tracks that will be marked as selected
-		List<LidarTrack> tmpL = new ArrayList<>(getSelectedItems());
-		if (isModifyKey == false)
-			tmpL = ImmutableList.of(tmpTrack);
-		else if (getSelectedItems().contains(tmpTrack) == false)
-			tmpL.add(tmpTrack);
-		else
-			tmpL.remove(tmpTrack);
-
-		// Update the selected Tracks
-		setSelectedItems(tmpL);
+		// Update the selection
+		HookUtil.updateSelection(this, aEvent, tmpTrack);
 
 		Object source = aEvent.getSource();
 		notifyListeners(source, ItemEventType.ItemsSelected);
 
-		updateVtkVars(tmpL);
+		Set<LidarTrack> tmpS = getSelectedItems();
+		updateVtkVars(tmpS);
 	}
 
 	/**

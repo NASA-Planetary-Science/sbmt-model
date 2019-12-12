@@ -112,23 +112,23 @@ public class VtkUtil
 
 	/**
 	 * Utility helper method that forms a vtkPolyData that is useful for
-	 * resetting other vtkPolyDatas.
+	 * resetting other vtkPolyData.
 	 */
 	private static vtkPolyData formEmptyPolyData()
 	{
-		vtkPolyData retPolyData;
+		vtkPolyData retPD = new vtkPolyData();
+		vtkPoints vTmpP = new vtkPoints();
+		vtkCellArray vTmpCA = new vtkCellArray();
 
-		// Initialize an empty polydata for resetting
-		retPolyData = new vtkPolyData();
-		vtkPoints points = new vtkPoints();
-		vtkCellArray vert = new vtkCellArray();
-		retPolyData.SetPoints(points);
-		retPolyData.SetVerts(vert);
-		vtkUnsignedCharArray colors = new vtkUnsignedCharArray();
-		colors.SetNumberOfComponents(4);
-		retPolyData.GetCellData().SetScalars(colors);
+		// Initialize an empty vtkPolyData for resetting
+		retPD.SetPoints(vTmpP);
+		retPD.SetVerts(vTmpCA);
 
-		return retPolyData;
+		vtkUnsignedCharArray colorUCA = new vtkUnsignedCharArray();
+		colorUCA.SetNumberOfComponents(4);
+		retPD.GetCellData().SetScalars(colorUCA);
+
+		return retPD;
 	}
 
 }
