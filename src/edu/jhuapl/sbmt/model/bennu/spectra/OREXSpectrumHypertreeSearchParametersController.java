@@ -23,9 +23,9 @@ import vtk.vtkPolyData;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.model.structure.AbstractEllipsePolygonModel;
-import edu.jhuapl.saavtk.model.structure.EllipsePolygon;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.pick.PickManager.PickMode;
+import edu.jhuapl.saavtk.structure.Ellipse;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.core.listeners.SearchProgressListener;
@@ -493,13 +493,14 @@ public class OREXSpectrumHypertreeSearchParametersController
 					AbstractEllipsePolygonModel selectionModel = (AbstractEllipsePolygonModel) modelManager
 							.getModel(ModelNames.CIRCLE_SELECTION);
 					SmallBodyModel smallBodyModel = (SmallBodyModel) modelManager.getModel(ModelNames.SMALL_BODY);
-					EllipsePolygon region = null;
+					Ellipse region = null;
 					vtkPolyData interiorPoly = new vtkPolyData();
 
 					if (selectionModel.getAllItems().size() > 0)
 					{
-						region = (EllipsePolygon) selectionModel.getStructure(0);
-						selectionRegionCenter = region.getCenter();
+						int numberOfSides = selectionModel.getNumberOfSides();
+						region = selectionModel.getItem(0);
+						selectionRegionCenter = region.getCenter().toArray();
 						selectionRegionRadius = region.getRadius();
 
 						// Always use the lowest resolution model for getting
@@ -513,11 +514,11 @@ public class OREXSpectrumHypertreeSearchParametersController
 						// res model.
 						if (smallBodyModel.getModelResolution() > 0)
 							smallBodyModel.drawRegularPolygonLowRes(selectionRegionCenter, region.getRadius(),
-									region.getNumberOfSides(), interiorPoly, null); // this
+									numberOfSides, interiorPoly, null); // this
 																				// sets
 																				// interiorPoly
 						else
-							interiorPoly = region.getVtkInteriorPolyData();
+							interiorPoly = selectionModel.getVtkInteriorPolyDataFor(region);
 
 					}
 					else
