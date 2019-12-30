@@ -203,7 +203,7 @@ public class BoundedObjectHyperTreeGenerator
          * Get body model
          */
         System.setProperty("java.awt.headless", "true");
-        NativeLibraryLoader.loadVtkLibrariesHeadless();
+        NativeLibraryLoader.loadHeadlessVtkLibraries();
 
         SmallBodyViewConfig config;
         if (bodyName.equalsIgnoreCase("EARTH")) {
