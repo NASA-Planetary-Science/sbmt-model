@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
@@ -59,15 +60,7 @@ public class MarsMissionImage extends BasicPerspectiveImage
         }
         else if (isViking(filename))
         {
-            String labelFilename;
-            if (filename.startsWith("V"))
-            {
-                labelFilename = new File(key.getImageFilename()).getParent() + "/f" + filename.substring(2, 8).toLowerCase() + ".lbl";
-            }
-            else // if (keyFile.getName().startsWith("f"))
-            {
-                labelFilename = key.getName() + ".lbl";
-            }
+            String labelFilename = SafeURLPaths.instance().getString(new File(key.getName()).getParent(), filename.replaceFirst("^V", "f").replaceFirst("\\.[^\\.]*$", ".lbl"));
 
             result = new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
                 String filterName = null;
