@@ -17,8 +17,7 @@ public class MarsMissionImage extends BasicPerspectiveImage
 {
     public static PerspectiveImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
-        File keyFile = new File(key.getName());
-        String filename = keyFile.getName();
+        String filename = new File(key.getOriginalName()).getName();
 
         PerspectiveImage result;
         if (isPhobos2(filename))
@@ -61,9 +60,9 @@ public class MarsMissionImage extends BasicPerspectiveImage
         else if (isViking(filename))
         {
             String labelFilename;
-            if (keyFile.getName().startsWith("V"))
+            if (filename.startsWith("V"))
             {
-                labelFilename = keyFile.getParent() + "/f" + keyFile.getName().substring(2, 8).toLowerCase() + ".lbl";
+                labelFilename = new File(key.getImageFilename()).getParent() + "/f" + filename.substring(2, 8).toLowerCase() + ".lbl";
             }
             else // if (keyFile.getName().startsWith("f"))
             {
