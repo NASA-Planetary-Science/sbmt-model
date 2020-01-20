@@ -66,6 +66,7 @@ import vtk.vtksbCellLocator;
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
+import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.DateTimeUtil;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
@@ -2742,11 +2743,14 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             {
                 vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
 
-                if (offLimbTexture == null)
+                if (offLimbTexture == null && !Configuration.isHeadless())
                     offLimbTexture = new vtkTexture();
-                offLimbTexture.SetInputData(image);
-                image.Delete();
-                offLimbTexture.Modified();
+                if (offLimbTexture != null)
+                {
+                    offLimbTexture.SetInputData(image);
+                    image.Delete();
+                    offLimbTexture.Modified();
+                }
             }
 
             this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
