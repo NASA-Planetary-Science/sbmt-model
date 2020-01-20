@@ -1528,7 +1528,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected String initializePngFileFullPath()
     {
-        return initializeLabelFileFullPath();
+        return initLocalPngFileFullPath();
     }
 
     protected String initLocalPngFileFullPath()
@@ -2294,7 +2294,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         textureCoords = new vtkFloatArray();
         normalsFilter = new vtkPolyDataNormals();
 
-        if (getPngFileFullPath() != null)
+        // See notes on redmine issue #2046. Changing this check to require
+        // explicitly that the FITS file name be null AND the PNG file name
+        // not null.
+        if (getFitFileFullPath() == null && getPngFileFullPath() != null)
         {
             double[] scalarRange = rawImage.GetScalarRange();
             minValue[0] = (float) scalarRange[0];
