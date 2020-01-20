@@ -56,7 +56,7 @@ public class AmicaImage extends PerspectiveImage
         String imagesDir = keyFile.getParentFile().getPath();
         String flatFileName = "flat_" + getFilterName() + ".fit";
         String flatfile = FileCache.getFileFromServer(imagesDir + File.separator + flatFileName).getAbsolutePath();
-        System.out.println("AmicaImage: doFlatFieldCorrection: flatfile is " + flatfile);
+
         try
         {
             // Load the flat field file into a vtkImageData
@@ -114,12 +114,10 @@ public class AmicaImage extends PerspectiveImage
         int[] dims = rawImage.GetDimensions();
         if (dims[0] == 1024 && dims[1] == 1024)
         {
-        	System.out.println("AmicaImage: processRawImage: square");
-            super.processRawImage(rawImage);
             doFlatFieldCorrection(rawImage);
             return;
         }
-        System.out.println("AmicaImage: processRawImage: not square");
+
         // Some of the AMICA images were cropped from their original size
         // of 1024x1024. Therefore, the following pads the images with zero back to
         // original size. The vtkImageTranslateExtent first translates the cropped image
