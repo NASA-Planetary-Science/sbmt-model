@@ -23,9 +23,25 @@ public class MarsMissionImage extends BasicPerspectiveImage
         PerspectiveImage result;
         if (isPhobos2(filename))
         {
-            int filter = Integer.parseInt(filename.substring(filename.length() - 1));
+            int dotIndex = filename.lastIndexOf(".");
+            if (dotIndex == -1)
+            {
+                dotIndex = filename.length();
+            }
 
-            String filterName = "Channel " + filter;
+            int filterFromFileName;
+            try
+            {
+                filterFromFileName = Integer.parseInt(filename.substring(dotIndex - 1, dotIndex));
+            }
+            catch (Exception e)
+            {
+                System.err.println("Unable to determine Phobos2 filter from original file name (last character is not an integer). Setting filter to 1");
+                filterFromFileName = 1;
+            }
+
+            int filter = filterFromFileName;
+            String filterName = "Channel " + filterFromFileName;
 
             result = new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
                 @Override
