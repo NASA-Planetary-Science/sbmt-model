@@ -137,7 +137,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
         writeEnum(spectralModeKey, spectralMode, configMetadata);
         write(queryType, searchQuery.getClass().getSimpleName(), configMetadata);
         write(queryKey, searchQuery.store(), configMetadata);
-        writeEnum(imageTypeKey, type, configMetadata);
+        write(imageTypeKey, type.name(), configMetadata);
         writeEnums(imageSourcesKey, searchImageSources, configMetadata);
         writeEnum(instrumentKey, instrumentName, configMetadata);
         write(flipKey, flip, configMetadata);
