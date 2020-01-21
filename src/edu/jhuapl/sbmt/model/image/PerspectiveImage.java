@@ -229,6 +229,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double[] zoomFactor = { 1.0 };
 
     private double[] rotationOffset = { 0.0 };
+    private double[] pitchOffset = { 0.0 };
+    private double[] yawOffset = { 0.0 };
+    private double sampleOffset = 0.0;
+    private double lineOffset = 0.0;
 
     // apply all frame adjustments if true
     private boolean[] applyFrameAdjustments = { true };
@@ -467,7 +471,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         targetPixelCoordinates[1] = Double.MAX_VALUE;
         rotationOffset[0] = 0.0;
         zoomFactor[0] = 1.0;
-
+        lineOffset = 0.0;
+        sampleOffset = 0.0;
+        pitchOffset[0] = 0.0;
+        yawOffset[0] = 0.0;
         updateFrameAdjustments();
 
         loadFootprint();
@@ -620,12 +627,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         this.targetPixelCoordinates[0] = frustumCenterPixel[0];
         this.targetPixelCoordinates[1] = frustumCenterPixel[1];
-
-        updateFrameAdjustments();
-
-        loadFootprint();
-        calculateFrustum();
-        saveImageInfo();
+        setApplyFrameAdjustments(true);
     }
 
     // public void setPixelOffset(double[] pixelOffset)
@@ -643,6 +645,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     // saveImageInfo();
     // }
 
+    public void setLineOffset(double offset)
+    {
+        lineOffset = offset;
+        setApplyFrameAdjustments(true);
+    }
+
+    public void setSampleOffset(double offset)
+    {
+        sampleOffset = offset;
+        setApplyFrameAdjustments(true);
+    }
+
     public void setRotationOffset(double offset)
     {
         // System.out.println("setRotationOffset(): " + offset);
@@ -651,12 +665,29 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             rotationOffset = new double[1];
 
         rotationOffset[0] = offset;
+        setApplyFrameAdjustments(true);
+    }
 
-        updateFrameAdjustments();
+    public void setYawOffset(double offset)
+    {
+        // System.out.println("setRotationOffset(): " + offset);
 
-        loadFootprint();
-        calculateFrustum();
-        saveImageInfo();
+        if (yawOffset == null)
+            yawOffset = new double[1];
+
+        yawOffset[0] = offset;
+        setApplyFrameAdjustments(true);
+    }
+
+    public void setPitchOffset(double offset)
+    {
+        // System.out.println("setRotationOffset(): " + offset);
+
+        if (pitchOffset == null)
+            pitchOffset = new double[1];
+
+        pitchOffset[0] = offset;
+        setApplyFrameAdjustments(true);
     }
 
     public void setZoomFactor(double offset)
@@ -670,12 +701,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
 
         zoomFactor[0] = offset;
-
-        updateFrameAdjustments();
-
-        loadFootprint();
-        calculateFrustum();
-        saveImageInfo();
+        setApplyFrameAdjustments(true);
     }
 
     public void setApplyFrameAdjustments(boolean state)
@@ -721,6 +747,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             // double[] newOffsetPixelDirection = getPixelDirection(sample, line);
             // rotateBoresightTo(newOffsetPixelDirection);
             // }
+
+            if (sampleOffset != 0 || lineOffset != 0)
+            	translateSpacecraftInImagePlane(sampleOffset, lineOffset);
+            else
+            	translateSpacecraftInImagePlane(0, 0);
+
+//            if (yawOffset[0] != 0.0)
+//            {
+//            	rotateFrameAboutYawAxis(yawOffset[0]);
+//            }
+//
+//            if (pitchOffset[0] != 0.0)
+//            {
+//            	rotateFrameAboutPitchAxis(pitchOffset[0]);
+//
+//            }
 
             if (rotationOffset[0] != 0.0)
             {
@@ -779,6 +821,42 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
     }
 
+    private void rotateFrameAboutPitchAxis(double angleDegrees)
+    {
+    	int nslices = getImageDepth();
+        for (int slice = 0; slice < nslices; slice++)
+        {
+        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
+        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], vout);
+        	MathUtil.unorm(vout, vout);
+        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+        }
+
+    }
+
+
+    private void rotateFrameAboutYawAxis(double angleDegrees)
+    {
+    	int nslices = getImageDepth();
+        for (int slice = 0; slice < nslices; slice++)
+        {
+        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
+        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], vout);
+        	MathUtil.unorm(vout, vout);
+        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+        }
+    }
+
     private void rotateFrameAboutTarget(double angleDegrees)
     {
          Vector3D axis = new Vector3D(boresightDirectionOriginal[currentSlice]);
@@ -802,21 +880,42 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
     }
 
+    private void translateSpacecraftInImagePlane(double sampleDelta, double lineDelta)
+    {
+    	int nslices = getImageDepth();
+
+        for (int slice = 0; slice < nslices; slice++)
+        {
+        	double[] sampleAxis = new double[] { 0.0, 0.0, 0.0 };
+        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], sampleAxis);
+        	MathUtil.unorm(sampleAxis, sampleAxis);
+        	double[] lineAxis = new double[] { 0.0, 0.0, 0.0 };
+        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], lineAxis);
+        	MathUtil.unorm(lineAxis, lineAxis);
+        	MathUtil.vscl(sampleDelta, sampleAxis, sampleAxis);
+        	MathUtil.vadd(spacecraftPositionAdjusted[slice], sampleAxis, spacecraftPositionAdjusted[slice]);
+        	MathUtil.vscl(lineDelta, lineAxis, lineAxis);
+        	MathUtil.vadd(spacecraftPositionAdjusted[slice], lineAxis, spacecraftPositionAdjusted[slice]);
+        }
+    }
+
     public void moveTargetPixelCoordinates(double[] pixelDelta)
     {
-        // System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
-        // pixelDelta[0]);
-
+         System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
+         pixelDelta[0]);
+         System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
         double height = (double) getImageHeight();
         if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
         {
             targetPixelCoordinates = getPixelFromPoint(bodyOrigin);
             targetPixelCoordinates[0] = height - 1 - targetPixelCoordinates[0];
         }
+        System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords 2 " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
+
         double line = this.targetPixelCoordinates[0] + pixelDelta[0];
         double sample = targetPixelCoordinates[1] + pixelDelta[1];
         double[] newFrustumCenterPixel = { line, sample };
-
+        System.out.println("moveTargetPixelCoordinates(): " + newFrustumCenterPixel[1] + " " + newFrustumCenterPixel[0]);
         setTargetPixelCoordinates(newFrustumCenterPixel);
     }
 
@@ -840,6 +939,33 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     // setPixelOffset(newPixelOffset);
     // }
 
+    public void movePitchAngleBy(double rotationDelta)
+    {
+    	double newPitchOffset = pitchOffset[0] + rotationDelta;
+    	setPitchOffset(newPitchOffset);
+    }
+
+    public void moveYawAngleBy(double rotationDelta)
+    {
+    	double newYawOffset = yawOffset[0] + rotationDelta;
+    	setYawOffset(newYawOffset);
+    }
+
+    public void moveLineOffsetBy(double offset)
+    {
+    	setLineOffset(lineOffset + offset);
+    }
+
+    public void moveSampleOffsetBy(double offset)
+    {
+    	setSampleOffset(sampleOffset + offset);
+    }
+
+
+    /**
+     * This adjusts the roll angle about the boresight direction
+     * @param rotationDelta
+     */
     public void moveRotationAngleBy(double rotationDelta)
     {
         // System.out.println("moveRotationAngleBy(): " + rotationDelta);
@@ -3690,6 +3816,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         vtkPolyData existingFootprint = checkForExistingFootprint();
         if (existingFootprint != null)
         {
+        	System.out.println("PerspectiveImage: loadFootprint: existing footprint");
             footprint[0] = existingFootprint;
 
             vtkPointData pointData = footprint[currentSlice].GetPointData();
@@ -3706,12 +3833,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (generateFootprint)
         {
+        	System.out.println("PerspectiveImage: loadFootprint: generate footprint true");
             vtkPolyData tmp = null;
 
             if (!footprintGenerated[currentSlice])
             {
+            	System.out.println("PerspectiveImage: loadFootprint: footprint not generated");
                 if (useDefaultFootprint())
                 {
+                	System.out.println("PerspectiveImage: loadFootprint: using default footprint");
                     int defaultSlice = getDefaultSlice();
                     if (footprintGenerated[defaultSlice] == false)
                     {
@@ -3732,7 +3862,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 }
                 else
                 {
-
+                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
                     tmp = smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice], frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
                     if (tmp == null)
                         return;
@@ -3753,7 +3883,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
                 footprintGenerated[currentSlice] = true;
             }
-
+            System.out.println("PerspectiveImage: loadFootprint: footprint generated");
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
             PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
@@ -3761,6 +3891,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         }
         else
         {
+        	System.out.println("PerspectiveImage: loadFootprint: fetching from server, generate footprint false");
             int resolutionLevel = smallBodyModel.getModelResolution();
 
             String footprintFilename = null;
