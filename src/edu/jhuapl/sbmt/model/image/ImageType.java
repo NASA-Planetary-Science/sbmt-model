@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.image;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 import com.google.common.base.Preconditions;
 
@@ -45,8 +46,7 @@ public final class ImageType implements Comparable<ImageType>
     public static final ImageType AMICA_IMAGE = ImageType.valueOf("AMICA_IMAGE");
     public static final ImageType FC_IMAGE = ImageType.valueOf("FC_IMAGE");
     public static final ImageType FCCERES_IMAGE = ImageType.valueOf("FCCERES_IMAGE");
-    public static final ImageType PHOBOS_IMAGE = ImageType.valueOf("PHOBOS_IMAGE");
-    public static final ImageType DEIMOS_IMAGE = ImageType.valueOf("DEIMOS_IMAGE");
+    public static final ImageType MARS_MOON_IMAGE = ImageType.valueOf("MARS_MOON_IMAGE");
     public static final ImageType OSIRIS_IMAGE = ImageType.valueOf("OSIRIS_IMAGE");
     public static final ImageType SATURN_MOON_IMAGE = ImageType.valueOf("SATURN_MOON_IMAGE");
     public static final ImageType SSI_GASPRA_IMAGE = ImageType.valueOf("SSI_GASPRA_IMAGE");
@@ -84,7 +84,10 @@ public final class ImageType implements Comparable<ImageType>
     private ImageType(String name)
     {
         this.name = name;
-        this.ordinal = ImageType.values.length;
+        synchronized (ImageType.imageTypes)
+        {
+            this.ordinal = imageTypes.size();
+        }
     }
 
     /**
@@ -108,7 +111,17 @@ public final class ImageType implements Comparable<ImageType>
             {
                 result = new ImageType(name);
                 ImageType.imageTypes.put(name, result);
-                ImageType.values = imageTypes.values().toArray(ImageType.values);
+
+                LinkedHashSet<ImageType> values = new LinkedHashSet<>(imageTypes.values());
+                // For redmine-2018: this is a hack to prevent these image types from
+                // appearing in lists of all image types while still allowing the types
+                // to work if they are encountered explicitly.
+                if (name.equals("PHOBOS_IMAGE") || name.equals("DEIMOS_IMAGE"))
+                {
+                    values.remove(result);
+                }
+
+                ImageType.values = values.toArray(ImageType.values);
             }
             return result;
         }
@@ -118,6 +131,9 @@ public final class ImageType implements Comparable<ImageType>
      * Return an array holding all current {@link ImageType} instances in the order
      * in which they were created. Note this method is not guaranteed to return the
      * same array, or even an array of the same size if it is called again.
+     * <p>
+     * Note that PHOBOS_IMAGE and DEIMOS_IMAGE still function as valid image types
+     * but they will not appear in the array returned by this method.
      *
      * @return array of all current {@link ImageType} instances
      */
