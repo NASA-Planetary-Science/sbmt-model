@@ -43,8 +43,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     {
         for (Image image : imageToActorsMap.keySet())
         {
-            if (image.getKey().getOriginalName().equals(key.getOriginalName()))
-//        	if (image.getKey().equals(key))
+            if (image.getKey().equals(key))
                 return true;
         }
 

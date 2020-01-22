@@ -20,7 +20,7 @@ public class CustomPerspectiveImage extends PerspectiveImage
 
         super.initialize();
 
-        setUseDefaultFootprint(false);
+        setUseDefaultFootprint(true);
     }
 
     @Override
