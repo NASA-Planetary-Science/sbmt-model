@@ -358,7 +358,7 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	}
 
 	@Override
-	public void setAllItems(List<LidarFileSpec> aItemL)
+	public void setAllItems(Collection<LidarFileSpec> aItemC)
 	{
 		// Clear relevant state vars
 		propM = new HashMap<>();
@@ -366,8 +366,8 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 
 		// Setup the initial props for all the items
 		int tmpIdx = 0;
-		int numItems = aItemL.size();
-		for (LidarFileSpec aItem : aItemL)
+		int numItems = aItemC.size();
+		for (LidarFileSpec aItem : aItemC)
 		{
 			ColorProvider tmpSrcCP = souceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
 			ColorProvider tmpTgtCP = targeGCP.getColorProviderFor(aItem, tmpIdx, numItems);
@@ -382,15 +382,15 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 		}
 
 		// Delegate
-		super.setAllItems(aItemL);
+		super.setAllItems(aItemC);
 
-		updateVtkVars(aItemL);
+		updateVtkVars(aItemC);
 	}
 
 	@Override
-	public void setSelectedItems(List<LidarFileSpec> aItemL)
+	public void setSelectedItems(Collection<LidarFileSpec> aItemC)
 	{
-		super.setSelectedItems(aItemL);
+		super.setSelectedItems(aItemC);
 
 		// Selected items will be rendered with a different point size.
 		// Force the painters to "update" their point size

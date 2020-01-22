@@ -55,7 +55,7 @@ public class BennuFileSystemOctreeGenerator
 		System.out.println();
 
 		//
-		NativeLibraryLoader.loadVtkLibrariesHeadless();
+		NativeLibraryLoader.loadHeadlessVtkLibraries();
 		int dataFileByteLimit = dataFileMBLimit * 1024 * 1024;
 		int maxPointsPerLeaf = dataFileByteLimit / (8 * 4); // three doubles for
 																				// scpos, three

@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
@@ -17,15 +18,30 @@ public class MarsMissionImage extends BasicPerspectiveImage
 {
     public static PerspectiveImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
-        File keyFile = new File(key.getName());
-        String filename = keyFile.getName();
+        String filename = new File(key.getOriginalName()).getName();
 
         PerspectiveImage result;
         if (isPhobos2(filename))
         {
-            int filter = Integer.parseInt(filename.substring(filename.length() - 1));
+            int dotIndex = filename.lastIndexOf(".");
+            if (dotIndex == -1)
+            {
+                dotIndex = filename.length();
+            }
 
-            String filterName = "Channel " + filter;
+            int filterFromFileName;
+            try
+            {
+                filterFromFileName = Integer.parseInt(filename.substring(dotIndex - 1, dotIndex));
+            }
+            catch (Exception e)
+            {
+                System.err.println("Unable to determine Phobos2 filter from original file name (last character is not an integer). Setting filter to 1");
+                filterFromFileName = 1;
+            }
+
+            int filter = filterFromFileName;
+            String filterName = "Channel " + filterFromFileName;
 
             result = new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
                 @Override
@@ -60,15 +76,7 @@ public class MarsMissionImage extends BasicPerspectiveImage
         }
         else if (isViking(filename))
         {
-            String labelFilename;
-            if (keyFile.getName().startsWith("V"))
-            {
-                labelFilename = keyFile.getParent() + "/f" + keyFile.getName().substring(2, 8).toLowerCase() + ".lbl";
-            }
-            else // if (keyFile.getName().startsWith("f"))
-            {
-                labelFilename = key.getName() + ".lbl";
-            }
+            String labelFilename = SafeURLPaths.instance().getString(new File(key.getName()).getParent(), filename.replaceFirst("^V", "f").replaceFirst("\\.[^\\.]*$", ".lbl"));
 
             result = new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
                 String filterName = null;
