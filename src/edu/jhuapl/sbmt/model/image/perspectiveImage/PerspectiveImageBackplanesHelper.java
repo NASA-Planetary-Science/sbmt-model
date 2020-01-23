@@ -14,7 +14,6 @@ import vtk.vtksbCellLocator;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
-import edu.jhuapl.sbmt.model.image.PerspectiveImage;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
@@ -288,7 +287,7 @@ class PerspectiveImageBackplanesHelper
                         lon += 360.0;
 
                     double[] normal = normals.GetTuple3(closestCell);
-                    double[] illumAngles = image.getRendererHelper().computeIlluminationAnglesAtPoint(closestPoint, normal);
+                    double[] illumAngles = image.computeIlluminationAnglesAtPoint(closestPoint, normal);
 
                     double horizPixelScale = closestDist * horizScaleFactor;
                     double vertPixelScale = closestDist * vertScaleFactor;

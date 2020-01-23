@@ -1,4 +1,4 @@
-package edu.jhuapl.sbmt.model.image;
+package edu.jhuapl.sbmt.model.image.perspectiveImage;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
@@ -11,7 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -19,16 +18,13 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import com.github.davidmoten.guavamini.Preconditions;
@@ -41,7 +37,6 @@ import vtk.vtkCellData;
 import vtk.vtkDataArray;
 import vtk.vtkFeatureEdges;
 import vtk.vtkFloatArray;
-import vtk.vtkGenericCell;
 import vtk.vtkIdList;
 import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageData;
@@ -61,18 +56,15 @@ import vtk.vtkProp;
 import vtk.vtkProperty;
 import vtk.vtkTexture;
 import vtk.vtkXMLPolyDataReader;
-import vtk.vtksbCellLocator;
 
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
-import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.DateTimeUtil;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
-import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.ObjUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
@@ -80,6 +72,10 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
+import edu.jhuapl.sbmt.model.image.IImagingInstrument;
+import edu.jhuapl.sbmt.model.image.Image;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
+import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.util.BackPlanesPDS4XML;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
@@ -161,7 +157,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private boolean useDefaultFootprint = true;
     private vtkPolyData[] footprint = new vtkPolyData[1];
-    private boolean[] footprintGenerated = new boolean[1];
+    boolean[] footprintGenerated = new boolean[1];
     private final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
 
     private vtkActor footprintActor;
@@ -197,8 +193,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     // Always use accessors to use this field -- even within this class!
     private IntensityRange[] displayedRange = null;
     // Always use accessors to use this field -- even within this class!
-    private IntensityRange offLimbDisplayedRange = null;
-    private boolean contrastSynced = false; // by default, the contrast of offlimb is not synced with on limb
+//    private IntensityRange offLimbDisplayedRange = null;
+//    private boolean contrastSynced = false; // by default, the contrast of offlimb is not synced with on limb
     private double imageOpacity = 1.0;
 
     private double[][] spacecraftPositionOriginal = new double[1][3];
@@ -210,34 +206,34 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double[][] upVectorOriginal = new double[1][3];
     private double[][] sunPositionOriginal = new double[1][3];
 
-    protected double[][] spacecraftPositionAdjusted = new double[1][3];
-    protected double[][] frustum1Adjusted = new double[1][3];
-    protected double[][] frustum2Adjusted = new double[1][3];
-    protected double[][] frustum3Adjusted = new double[1][3];
-    protected double[][] frustum4Adjusted = new double[1][3];
-    private double[][] boresightDirectionAdjusted = new double[1][3];
-    private double[][] upVectorAdjusted = new double[1][3];
-    private double[][] sunPositionAdjusted = new double[1][3];
+//    protected double[][] spacecraftPositionAdjusted = new double[1][3];
+//    protected double[][] frustum1Adjusted = new double[1][3];
+//    protected double[][] frustum2Adjusted = new double[1][3];
+//    protected double[][] frustum3Adjusted = new double[1][3];
+//    protected double[][] frustum4Adjusted = new double[1][3];
+//    private double[][] boresightDirectionAdjusted = new double[1][3];
+//    private double[][] upVectorAdjusted = new double[1][3];
+//    private double[][] sunPositionAdjusted = new double[1][3];
+//
+//    // location in pixel coordinates of the target origin for the adjusted frustum
+//    private double[] targetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
 
-    // location in pixel coordinates of the target origin for the adjusted frustum
-    private double[] targetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
+//    // offset in world coordinates of the adjusted frustum from the loaded frustum
+//    // private double[] offsetPixelCoordinates = { Double.MAX_VALUE,
+//    // Double.MAX_VALUE };
+//
+//    private double[] zoomFactor = { 1.0 };
+//
+//    private double[] rotationOffset = { 0.0 };
+//    private double[] pitchOffset = { 0.0 };
+//    private double[] yawOffset = { 0.0 };
+//    private double sampleOffset = 0.0;
+//    private double lineOffset = 0.0;
+//
+//    // apply all frame adjustments if true
+//    private boolean[] applyFrameAdjustments = { true };
 
-    // offset in world coordinates of the adjusted frustum from the loaded frustum
-    // private double[] offsetPixelCoordinates = { Double.MAX_VALUE,
-    // Double.MAX_VALUE };
-
-    private double[] zoomFactor = { 1.0 };
-
-    private double[] rotationOffset = { 0.0 };
-    private double[] pitchOffset = { 0.0 };
-    private double[] yawOffset = { 0.0 };
-    private double sampleOffset = 0.0;
-    private double lineOffset = 0.0;
-
-    // apply all frame adjustments if true
-    private boolean[] applyFrameAdjustments = { true };
-
-    private Frustum[] frusta = new Frustum[1];
+    Frustum[] frusta = new Frustum[1];
 
     private boolean showFrustum = false;
     private boolean simulateLighting = false;
@@ -250,7 +246,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected int imageWidth;
     protected int imageHeight;
     private int imageDepth = 1;
-    private int numBackplanes = BackplaneInfo.values().length;
+    int numBackplanes = BackplaneInfo.values().length;
 
     public int getNumBackplanes()
     {
@@ -284,18 +280,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     private final boolean transposeFITSData;
 
-    /*
-     * For off-limb images
-     */
-    vtkPolyData offLimbPlane = null;
-    private vtkActor offLimbActor;
-    private vtkTexture offLimbTexture;
-    vtkPolyData offLimbBoundary = null;
-    private vtkActor offLimbBoundaryActor;
-    double offLimbFootprintDepth;
-    private boolean offLimbVisibility;
-    private boolean offLimbBoundaryVisibility;
-    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
+    PerspectiveImageBackplanesHelper backplanesHelper;
+    PerspectiveImageOffsetCalculator imageOffsetCalculator;
+    PerspectiveImageOfflimbPlaneHelper offlimbPlaneHelper;
+    PerspectiveImageRendererHelper rendererHelper;
+//    /*
+//     * For off-limb images
+//     */
+//    vtkPolyData offLimbPlane = null;
+//    private vtkActor offLimbActor;
+//    private vtkTexture offLimbTexture;
+//    vtkPolyData offLimbBoundary = null;
+//    private vtkActor offLimbBoundaryActor;
+//    double offLimbFootprintDepth;
+//    private boolean offLimbVisibility;
+//    private boolean offLimbBoundaryVisibility;
+//    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
     Stopwatch sw;
 
     public PerspectiveImage( //
@@ -376,6 +376,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         this.transposeFITSData = transposeData;
 
+        this.backplanesHelper = new PerspectiveImageBackplanesHelper(this);
+        this.imageOffsetCalculator = new PerspectiveImageOffsetCalculator(this);
+        this.offlimbPlaneHelper = new PerspectiveImageOfflimbPlaneHelper(this);
+        this.rendererHelper = new PerspectiveImageRendererHelper(this);
+
         initialize();
     }
 
@@ -432,28 +437,28 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (!loadPointingOnly)
         {
             loadImage();
-            updateFrameAdjustments();
+            imageOffsetCalculator.updateFrameAdjustments();
         }
 
         maxFrustumDepth = new double[imageDepth];
         minFrustumDepth = new double[imageDepth];
     }
 
-    private void copySpacecraftState()
-    {
-        int nslices = getImageDepth();
-        for (int i = 0; i < nslices; i++)
-        {
-            spacecraftPositionAdjusted = MathUtil.copy(spacecraftPositionOriginal);
-            frustum1Adjusted = MathUtil.copy(frustum1Original);
-            frustum2Adjusted = MathUtil.copy(frustum2Original);
-            frustum3Adjusted = MathUtil.copy(frustum3Original);
-            frustum4Adjusted = MathUtil.copy(frustum4Original);
-            boresightDirectionAdjusted = MathUtil.copy(boresightDirectionOriginal);
-            upVectorAdjusted = MathUtil.copy(upVectorOriginal);
-            sunPositionAdjusted = MathUtil.copy(sunPositionOriginal);
-        }
-    }
+//    private void copySpacecraftState()
+//    {
+//        int nslices = getImageDepth();
+//        for (int i = 0; i < nslices; i++)
+//        {
+//            spacecraftPositionAdjusted = MathUtil.copy(spacecraftPositionOriginal);
+//            frustum1Adjusted = MathUtil.copy(frustum1Original);
+//            frustum2Adjusted = MathUtil.copy(frustum2Original);
+//            frustum3Adjusted = MathUtil.copy(frustum3Original);
+//            frustum4Adjusted = MathUtil.copy(frustum4Original);
+//            boresightDirectionAdjusted = MathUtil.copy(boresightDirectionOriginal);
+//            upVectorAdjusted = MathUtil.copy(upVectorOriginal);
+//            sunPositionAdjusted = MathUtil.copy(sunPositionOriginal);
+//        }
+//    }
 
     public void resetSpacecraftState()
     {
@@ -467,15 +472,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         // offsetPixelCoordinates[0] = Double.MAX_VALUE;
         // offsetPixelCoordinates[1] = Double.MAX_VALUE;
-        targetPixelCoordinates[0] = Double.MAX_VALUE;
-        targetPixelCoordinates[1] = Double.MAX_VALUE;
-        rotationOffset[0] = 0.0;
-        zoomFactor[0] = 1.0;
-        lineOffset = 0.0;
-        sampleOffset = 0.0;
-        pitchOffset[0] = 0.0;
-        yawOffset[0] = 0.0;
-        updateFrameAdjustments();
+        imageOffsetCalculator.resetInternalState();
+        imageOffsetCalculator.updateFrameAdjustments();
 
         loadFootprint();
         calculateFrustum();
@@ -620,15 +618,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void setSpectrumRegion(double[][] vertices)
     {}
 
-    public void setTargetPixelCoordinates(double[] frustumCenterPixel)
-    {
-        // System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
-        // frustumCenterPixel[0]);
-
-        this.targetPixelCoordinates[0] = frustumCenterPixel[0];
-        this.targetPixelCoordinates[1] = frustumCenterPixel[1];
-        setApplyFrameAdjustments(true);
-    }
+//    public void setTargetPixelCoordinates(double[] frustumCenterPixel)
+//    {
+//        // System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
+//        // frustumCenterPixel[0]);
+//
+//        this.targetPixelCoordinates[0] = frustumCenterPixel[0];
+//        this.targetPixelCoordinates[1] = frustumCenterPixel[1];
+//        setApplyFrameAdjustments(true);
+//    }
 
     // public void setPixelOffset(double[] pixelOffset)
     // {
@@ -645,344 +643,344 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     // saveImageInfo();
     // }
 
-    public void setLineOffset(double offset)
-    {
-        lineOffset = offset;
-        setApplyFrameAdjustments(true);
-    }
-
-    public void setSampleOffset(double offset)
-    {
-        sampleOffset = offset;
-        setApplyFrameAdjustments(true);
-    }
-
-    public void setRotationOffset(double offset)
-    {
-        // System.out.println("setRotationOffset(): " + offset);
-
-        if (rotationOffset == null)
-            rotationOffset = new double[1];
-
-        rotationOffset[0] = offset;
-        setApplyFrameAdjustments(true);
-    }
-
-    public void setYawOffset(double offset)
-    {
-        // System.out.println("setRotationOffset(): " + offset);
-
-        if (yawOffset == null)
-            yawOffset = new double[1];
-
-        yawOffset[0] = offset;
-        setApplyFrameAdjustments(true);
-    }
-
-    public void setPitchOffset(double offset)
-    {
-        // System.out.println("setRotationOffset(): " + offset);
-
-        if (pitchOffset == null)
-            pitchOffset = new double[1];
-
-        pitchOffset[0] = offset;
-        setApplyFrameAdjustments(true);
-    }
-
-    public void setZoomFactor(double offset)
-    {
-        // System.out.println("setZoomFactor(): " + offset);
-
-        if (zoomFactor == null)
-        {
-            zoomFactor = new double[1];
-            zoomFactor[0] = 1.0;
-        }
-
-        zoomFactor[0] = offset;
-        setApplyFrameAdjustments(true);
-    }
-
-    public void setApplyFrameAdjustments(boolean state)
-    {
-        // System.out.println("setApplyFrameAdjustments(): " + state);
-        applyFrameAdjustments[0] = state;
-        updateFrameAdjustments();
-        loadFootprint();
-        calculateFrustum();
-        saveImageInfo();
-    }
-
-    public boolean getApplyFramedAdjustments()
-    {
-        return applyFrameAdjustments[0];
-    }
-
-    private void updateFrameAdjustments()
-    {
-        // adjust wrt the original spacecraft pointing direction, not the previous
-        // adjusted one
-        copySpacecraftState();
-
-        if (applyFrameAdjustments[0])
-        {
-            if (targetPixelCoordinates[0] != Double.MAX_VALUE && targetPixelCoordinates[1] != Double.MAX_VALUE)
-            {
-                int height = getImageHeight();
-                double line = height - 1 - targetPixelCoordinates[0];
-                double sample = targetPixelCoordinates[1];
-
-                double[] newTargetPixelDirection = getPixelDirection(sample, line);
-                rotateTargetPixelDirectionToLocalOrigin(newTargetPixelDirection);
-            }
-            // else if (offsetPixelCoordinates[0] != Double.MAX_VALUE &&
-            // offsetPixelCoordinates[1] != Double.MAX_VALUE)
-            // {
-            // int height = getImageHeight();
-            // int width = getImageWidth();
-            // double line = height - 1 - offsetPixelCoordinates[0];
-            // double sample = offsetPixelCoordinates[1];
-            //
-            // double[] newOffsetPixelDirection = getPixelDirection(sample, line);
-            // rotateBoresightTo(newOffsetPixelDirection);
-            // }
-
-            if (sampleOffset != 0 || lineOffset != 0)
-            	translateSpacecraftInImagePlane(sampleOffset, lineOffset);
-            else
-            	translateSpacecraftInImagePlane(0, 0);
-
-//            if (yawOffset[0] != 0.0)
-//            {
-//            	rotateFrameAboutYawAxis(yawOffset[0]);
-//            }
+//    public void setLineOffset(double offset)
+//    {
+//        lineOffset = offset;
+//        setApplyFrameAdjustments(true);
+//    }
 //
-//            if (pitchOffset[0] != 0.0)
-//            {
-//            	rotateFrameAboutPitchAxis(pitchOffset[0]);
+//    public void setSampleOffset(double offset)
+//    {
+//        sampleOffset = offset;
+//        setApplyFrameAdjustments(true);
+//    }
 //
+//    public void setRotationOffset(double offset)
+//    {
+//        // System.out.println("setRotationOffset(): " + offset);
+//
+//        if (rotationOffset == null)
+//            rotationOffset = new double[1];
+//
+//        rotationOffset[0] = offset;
+//        setApplyFrameAdjustments(true);
+//    }
+//
+//    public void setYawOffset(double offset)
+//    {
+//        // System.out.println("setRotationOffset(): " + offset);
+//
+//        if (yawOffset == null)
+//            yawOffset = new double[1];
+//
+//        yawOffset[0] = offset;
+//        setApplyFrameAdjustments(true);
+//    }
+//
+//    public void setPitchOffset(double offset)
+//    {
+//        // System.out.println("setRotationOffset(): " + offset);
+//
+//        if (pitchOffset == null)
+//            pitchOffset = new double[1];
+//
+//        pitchOffset[0] = offset;
+//        setApplyFrameAdjustments(true);
+//    }
+//
+//    public void setZoomFactor(double offset)
+//    {
+//        // System.out.println("setZoomFactor(): " + offset);
+//
+//        if (zoomFactor == null)
+//        {
+//            zoomFactor = new double[1];
+//            zoomFactor[0] = 1.0;
+//        }
+//
+//        zoomFactor[0] = offset;
+//        setApplyFrameAdjustments(true);
+//    }
+
+//    public void setApplyFrameAdjustments(boolean state)
+//    {
+//        // System.out.println("setApplyFrameAdjustments(): " + state);
+//        applyFrameAdjustments[0] = state;
+//        updateFrameAdjustments();
+//        loadFootprint();
+//        calculateFrustum();
+//        saveImageInfo();
+//    }
+//
+//    public boolean getApplyFramedAdjustments()
+//    {
+//        return applyFrameAdjustments[0];
+//    }
+
+//    private void updateFrameAdjustments()
+//    {
+//        // adjust wrt the original spacecraft pointing direction, not the previous
+//        // adjusted one
+//        copySpacecraftState();
+//
+//        if (applyFrameAdjustments[0])
+//        {
+//            if (targetPixelCoordinates[0] != Double.MAX_VALUE && targetPixelCoordinates[1] != Double.MAX_VALUE)
+//            {
+//                int height = getImageHeight();
+//                double line = height - 1 - targetPixelCoordinates[0];
+//                double sample = targetPixelCoordinates[1];
+//
+//                double[] newTargetPixelDirection = getPixelDirection(sample, line);
+//                rotateTargetPixelDirectionToLocalOrigin(newTargetPixelDirection);
 //            }
+//            // else if (offsetPixelCoordinates[0] != Double.MAX_VALUE &&
+//            // offsetPixelCoordinates[1] != Double.MAX_VALUE)
+//            // {
+//            // int height = getImageHeight();
+//            // int width = getImageWidth();
+//            // double line = height - 1 - offsetPixelCoordinates[0];
+//            // double sample = offsetPixelCoordinates[1];
+//            //
+//            // double[] newOffsetPixelDirection = getPixelDirection(sample, line);
+//            // rotateBoresightTo(newOffsetPixelDirection);
+//            // }
+//
+//            if (sampleOffset != 0 || lineOffset != 0)
+//            	translateSpacecraftInImagePlane(sampleOffset, lineOffset);
+//            else
+//            	translateSpacecraftInImagePlane(0, 0);
+//
+////            if (yawOffset[0] != 0.0)
+////            {
+////            	rotateFrameAboutYawAxis(yawOffset[0]);
+////            }
+////
+////            if (pitchOffset[0] != 0.0)
+////            {
+////            	rotateFrameAboutPitchAxis(pitchOffset[0]);
+////
+////            }
+//
+//            if (rotationOffset[0] != 0.0)
+//            {
+//                rotateFrameAboutTarget(rotationOffset[0]);
+//            }
+//            if (zoomFactor[0] != 1.0)
+//            {
+//                zoomFrame(zoomFactor[0]);
+//            }
+//        }
+//
+//        // int slice = getCurrentSlice();
+//        int nslices = getImageDepth();
+//        for (int slice = 0; slice < nslices; slice++)
+//        {
+//            frusta[slice] = null;
+//            footprintGenerated[slice] = false;
+//        }
+//    }
+//
+//    private void zoomFrame(double zoomFactor)
+//    {
+//        // System.out.println("zoomFrame(" + zoomFactor + ")");
+//        // Vector3D spacecraftPositionVector = new
+//        // Vector3D(spacecraftPositionOriginal[currentSlice]);
+//        // Vector3D spacecraftToOriginVector =
+//        // spacecraftPositionVector.scalarMultiply(-1.0);
+//        // Vector3D originPointingVector = spacecraftToOriginVector.normalize();
+//        // double distance = spacecraftToOriginVector.getNorm();
+//        // Vector3D deltaVector = originPointingVector.scalarMultiply(distance *
+//        // (zoomFactor - 1.0));
+//        // double[] delta = { deltaVector.getX(), deltaVector.getY(), deltaVector.getZ()
+//        // };
+//
+//        double zoomRatio = 1.0 / zoomFactor;
+//        if (zoomRatio < 1.0)
+//    	{
+//        	zoomRatio = 1.0;
+//        	return;
+//    	}
+//        int nslices = getImageDepth();
+//        for (int slice = 0; slice < nslices; slice++)
+//        {
+//            double[][] surfacePoint = new double[nslices][3];
+//
+//            for (int i = 0; i < 3; i++)
+//            {
+//            	surfacePoint[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] + boresightDirectionOriginal[currentSlice][i];
+//            	spacecraftPositionAdjusted[currentSlice][i] = surfacePoint[currentSlice][i] - boresightDirectionOriginal[currentSlice][i] * zoomRatio;
+//
+////                spacecraftPositionAdjusted[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] * zoomRatio;
+////                boresightDirectionAdjusted[currentSlice][i] = boresightDirectionOriginal[currentSlice][i] * zoomRatio;
+//            }
+//            frusta[slice] = null;
+//            footprintGenerated[slice] = false;
+//        }
+//    }
+//
+//    private void rotateFrameAboutPitchAxis(double angleDegrees)
+//    {
+//    	int nslices = getImageDepth();
+//        for (int slice = 0; slice < nslices; slice++)
+//        {
+//        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
+//        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], vout);
+//        	MathUtil.unorm(vout, vout);
+//        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+//        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//        }
+//
+//    }
+//
+//
+//    private void rotateFrameAboutYawAxis(double angleDegrees)
+//    {
+//    	int nslices = getImageDepth();
+//        for (int slice = 0; slice < nslices; slice++)
+//        {
+//        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
+//        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], vout);
+//        	MathUtil.unorm(vout, vout);
+//        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+//        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//        }
+//    }
+//
+//    private void rotateFrameAboutTarget(double angleDegrees)
+//    {
+//         Vector3D axis = new Vector3D(boresightDirectionOriginal[currentSlice]);
+////        Vector3D axis = new Vector3D(spacecraftPositionAdjusted[currentSlice]);
+////        axis.normalize();
+////        axis.negate();
+//        Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+//
+//        // int slice = getCurrentSlice();
+//        int nslices = getImageDepth();
+//        for (int slice = 0; slice < nslices; slice++)
+//        {
+//            MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//
+//            frusta[slice] = null;
+//            footprintGenerated[slice] = false;
+//        }
+//    }
+//
+//    private void translateSpacecraftInImagePlane(double sampleDelta, double lineDelta)
+//    {
+//    	int nslices = getImageDepth();
+//
+//        for (int slice = 0; slice < nslices; slice++)
+//        {
+//        	double[] sampleAxis = new double[] { 0.0, 0.0, 0.0 };
+//        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], sampleAxis);
+//        	MathUtil.unorm(sampleAxis, sampleAxis);
+//        	double[] lineAxis = new double[] { 0.0, 0.0, 0.0 };
+//        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], lineAxis);
+//        	MathUtil.unorm(lineAxis, lineAxis);
+//        	MathUtil.vscl(sampleDelta, sampleAxis, sampleAxis);
+//        	MathUtil.vadd(spacecraftPositionAdjusted[slice], sampleAxis, spacecraftPositionAdjusted[slice]);
+//        	MathUtil.vscl(lineDelta, lineAxis, lineAxis);
+//        	MathUtil.vadd(spacecraftPositionAdjusted[slice], lineAxis, spacecraftPositionAdjusted[slice]);
+//        }
+//    }
+//
+//    public void moveTargetPixelCoordinates(double[] pixelDelta)
+//    {
+//         System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
+//         pixelDelta[0]);
+//         System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
+//        double height = (double) getImageHeight();
+//        if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
+//        {
+//            targetPixelCoordinates = getPixelFromPoint(bodyOrigin);
+//            targetPixelCoordinates[0] = height - 1 - targetPixelCoordinates[0];
+//        }
+//        System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords 2 " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
+//
+//        double line = this.targetPixelCoordinates[0] + pixelDelta[0];
+//        double sample = targetPixelCoordinates[1] + pixelDelta[1];
+//        double[] newFrustumCenterPixel = { line, sample };
+//        System.out.println("moveTargetPixelCoordinates(): " + newFrustumCenterPixel[1] + " " + newFrustumCenterPixel[0]);
+//        setTargetPixelCoordinates(newFrustumCenterPixel);
+//    }
+//
+//    // public void moveOffsetPixelCoordinates(double[] pixelDelta)
+//    // {
+//    //// System.out.println("moveOffsetPixelCoordinates(): " + pixelDelta[1] + " " +
+//    // pixelDelta[0]);
+//    //
+//    // double height = (double)getImageHeight();
+//    // double width = (double)getImageWidth();
+//    // if (offsetPixelCoordinates[0] == Double.MAX_VALUE ||
+//    // offsetPixelCoordinates[1] == Double.MAX_VALUE)
+//    // {
+//    // offsetPixelCoordinates[0] = 0.0;
+//    // offsetPixelCoordinates[1] = 0.0;
+//    // }
+//    // double line = offsetPixelCoordinates[0] + pixelDelta[0];
+//    // double sample = offsetPixelCoordinates[1] + pixelDelta[1];
+//    // double[] newPixelOffset = { line, sample };
+//    //
+//    // setPixelOffset(newPixelOffset);
+//    // }
+//
+//    public void movePitchAngleBy(double rotationDelta)
+//    {
+//    	double newPitchOffset = pitchOffset[0] + rotationDelta;
+//    	setPitchOffset(newPitchOffset);
+//    }
+//
+//    public void moveYawAngleBy(double rotationDelta)
+//    {
+//    	double newYawOffset = yawOffset[0] + rotationDelta;
+//    	setYawOffset(newYawOffset);
+//    }
 
-            if (rotationOffset[0] != 0.0)
-            {
-                rotateFrameAboutTarget(rotationOffset[0]);
-            }
-            if (zoomFactor[0] != 1.0)
-            {
-                zoomFrame(zoomFactor[0]);
-            }
-        }
-
-        // int slice = getCurrentSlice();
-        int nslices = getImageDepth();
-        for (int slice = 0; slice < nslices; slice++)
-        {
-            frusta[slice] = null;
-            footprintGenerated[slice] = false;
-        }
-    }
-
-    private void zoomFrame(double zoomFactor)
-    {
-        // System.out.println("zoomFrame(" + zoomFactor + ")");
-        // Vector3D spacecraftPositionVector = new
-        // Vector3D(spacecraftPositionOriginal[currentSlice]);
-        // Vector3D spacecraftToOriginVector =
-        // spacecraftPositionVector.scalarMultiply(-1.0);
-        // Vector3D originPointingVector = spacecraftToOriginVector.normalize();
-        // double distance = spacecraftToOriginVector.getNorm();
-        // Vector3D deltaVector = originPointingVector.scalarMultiply(distance *
-        // (zoomFactor - 1.0));
-        // double[] delta = { deltaVector.getX(), deltaVector.getY(), deltaVector.getZ()
-        // };
-
-        double zoomRatio = 1.0 / zoomFactor;
-        if (zoomRatio < 1.0)
-    	{
-        	zoomRatio = 1.0;
-        	return;
-    	}
-        int nslices = getImageDepth();
-        for (int slice = 0; slice < nslices; slice++)
-        {
-            double[][] surfacePoint = new double[nslices][3];
-
-            for (int i = 0; i < 3; i++)
-            {
-            	surfacePoint[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] + boresightDirectionOriginal[currentSlice][i];
-            	spacecraftPositionAdjusted[currentSlice][i] = surfacePoint[currentSlice][i] - boresightDirectionOriginal[currentSlice][i] * zoomRatio;
-
-//                spacecraftPositionAdjusted[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] * zoomRatio;
-//                boresightDirectionAdjusted[currentSlice][i] = boresightDirectionOriginal[currentSlice][i] * zoomRatio;
-            }
-            frusta[slice] = null;
-            footprintGenerated[slice] = false;
-        }
-    }
-
-    private void rotateFrameAboutPitchAxis(double angleDegrees)
-    {
-    	int nslices = getImageDepth();
-        for (int slice = 0; slice < nslices; slice++)
-        {
-        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
-        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], vout);
-        	MathUtil.unorm(vout, vout);
-        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
-        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-        }
-
-    }
-
-
-    private void rotateFrameAboutYawAxis(double angleDegrees)
-    {
-    	int nslices = getImageDepth();
-        for (int slice = 0; slice < nslices; slice++)
-        {
-        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
-        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], vout);
-        	MathUtil.unorm(vout, vout);
-        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
-        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-        }
-    }
-
-    private void rotateFrameAboutTarget(double angleDegrees)
-    {
-         Vector3D axis = new Vector3D(boresightDirectionOriginal[currentSlice]);
-//        Vector3D axis = new Vector3D(spacecraftPositionAdjusted[currentSlice]);
-//        axis.normalize();
-//        axis.negate();
-        Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
-
-        // int slice = getCurrentSlice();
-        int nslices = getImageDepth();
-        for (int slice = 0; slice < nslices; slice++)
-        {
-            MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-
-            frusta[slice] = null;
-            footprintGenerated[slice] = false;
-        }
-    }
-
-    private void translateSpacecraftInImagePlane(double sampleDelta, double lineDelta)
-    {
-    	int nslices = getImageDepth();
-
-        for (int slice = 0; slice < nslices; slice++)
-        {
-        	double[] sampleAxis = new double[] { 0.0, 0.0, 0.0 };
-        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], sampleAxis);
-        	MathUtil.unorm(sampleAxis, sampleAxis);
-        	double[] lineAxis = new double[] { 0.0, 0.0, 0.0 };
-        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], lineAxis);
-        	MathUtil.unorm(lineAxis, lineAxis);
-        	MathUtil.vscl(sampleDelta, sampleAxis, sampleAxis);
-        	MathUtil.vadd(spacecraftPositionAdjusted[slice], sampleAxis, spacecraftPositionAdjusted[slice]);
-        	MathUtil.vscl(lineDelta, lineAxis, lineAxis);
-        	MathUtil.vadd(spacecraftPositionAdjusted[slice], lineAxis, spacecraftPositionAdjusted[slice]);
-        }
-    }
-
-    public void moveTargetPixelCoordinates(double[] pixelDelta)
-    {
-         System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
-         pixelDelta[0]);
-         System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
-        double height = (double) getImageHeight();
-        if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
-        {
-            targetPixelCoordinates = getPixelFromPoint(bodyOrigin);
-            targetPixelCoordinates[0] = height - 1 - targetPixelCoordinates[0];
-        }
-        System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords 2 " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
-
-        double line = this.targetPixelCoordinates[0] + pixelDelta[0];
-        double sample = targetPixelCoordinates[1] + pixelDelta[1];
-        double[] newFrustumCenterPixel = { line, sample };
-        System.out.println("moveTargetPixelCoordinates(): " + newFrustumCenterPixel[1] + " " + newFrustumCenterPixel[0]);
-        setTargetPixelCoordinates(newFrustumCenterPixel);
-    }
-
-    // public void moveOffsetPixelCoordinates(double[] pixelDelta)
-    // {
-    //// System.out.println("moveOffsetPixelCoordinates(): " + pixelDelta[1] + " " +
-    // pixelDelta[0]);
-    //
-    // double height = (double)getImageHeight();
-    // double width = (double)getImageWidth();
-    // if (offsetPixelCoordinates[0] == Double.MAX_VALUE ||
-    // offsetPixelCoordinates[1] == Double.MAX_VALUE)
-    // {
-    // offsetPixelCoordinates[0] = 0.0;
-    // offsetPixelCoordinates[1] = 0.0;
-    // }
-    // double line = offsetPixelCoordinates[0] + pixelDelta[0];
-    // double sample = offsetPixelCoordinates[1] + pixelDelta[1];
-    // double[] newPixelOffset = { line, sample };
-    //
-    // setPixelOffset(newPixelOffset);
-    // }
-
-    public void movePitchAngleBy(double rotationDelta)
-    {
-    	double newPitchOffset = pitchOffset[0] + rotationDelta;
-    	setPitchOffset(newPitchOffset);
-    }
-
-    public void moveYawAngleBy(double rotationDelta)
-    {
-    	double newYawOffset = yawOffset[0] + rotationDelta;
-    	setYawOffset(newYawOffset);
-    }
-
-    public void moveLineOffsetBy(double offset)
-    {
-    	setLineOffset(lineOffset + offset);
-    }
-
-    public void moveSampleOffsetBy(double offset)
-    {
-    	setSampleOffset(sampleOffset + offset);
-    }
-
-
-    /**
-     * This adjusts the roll angle about the boresight direction
-     * @param rotationDelta
-     */
-    public void moveRotationAngleBy(double rotationDelta)
-    {
-        // System.out.println("moveRotationAngleBy(): " + rotationDelta);
-
-        double newRotationOffset = rotationOffset[0] + rotationDelta;
-
-        setRotationOffset(newRotationOffset);
-    }
-
-    public void moveZoomFactorBy(double zoomDelta)
-    {
-        // System.out.println("moveZoomDeltaBy(): " + zoomDelta);
-
-        double newZoomFactor = zoomFactor[0] * zoomDelta;
-
-        setZoomFactor(newZoomFactor);
-    }
+//    public void moveLineOffsetBy(double offset)
+//    {
+//    	setLineOffset(lineOffset + offset);
+//    }
+//
+//    public void moveSampleOffsetBy(double offset)
+//    {
+//    	setSampleOffset(sampleOffset + offset);
+//    }
+//
+//
+//    /**
+//     * This adjusts the roll angle about the boresight direction
+//     * @param rotationDelta
+//     */
+//    public void moveRotationAngleBy(double rotationDelta)
+//    {
+//        // System.out.println("moveRotationAngleBy(): " + rotationDelta);
+//
+//        double newRotationOffset = rotationOffset[0] + rotationDelta;
+//
+//        setRotationOffset(newRotationOffset);
+//    }
+//
+//    public void moveZoomFactorBy(double zoomDelta)
+//    {
+//        // System.out.println("moveZoomDeltaBy(): " + zoomDelta);
+//
+//        double newZoomFactor = zoomFactor[0] * zoomDelta;
+//
+//        setZoomFactor(newZoomFactor);
+//    }
 
     // private void rotateBoresightDirectionTo(double[] newDirection)
     // {
@@ -1010,29 +1008,29 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     //// calculateFrustum();
     // }
 
-    private void rotateTargetPixelDirectionToLocalOrigin(double[] direction)
-    {
-        Vector3D directionVector = new Vector3D(direction);
-        Vector3D spacecraftPositionVector = new Vector3D(spacecraftPositionOriginal[currentSlice]);
-        Vector3D spacecraftToOriginVector = spacecraftPositionVector.scalarMultiply(-1.0);
-        Vector3D originPointingVector = spacecraftToOriginVector.normalize();
-
-        Rotation rotation = new Rotation(directionVector, originPointingVector);
-
-        // int slice = getCurrentSlice();
-        int nslices = getImageDepth();
-        for (int slice = 0; slice < nslices; slice++)
-        {
-            MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-
-            frusta[slice] = null;
-            footprintGenerated[slice] = false;
-        }
-    }
+//    private void rotateTargetPixelDirectionToLocalOrigin(double[] direction)
+//    {
+//        Vector3D directionVector = new Vector3D(direction);
+//        Vector3D spacecraftPositionVector = new Vector3D(spacecraftPositionOriginal[currentSlice]);
+//        Vector3D spacecraftToOriginVector = spacecraftPositionVector.scalarMultiply(-1.0);
+//        Vector3D originPointingVector = spacecraftToOriginVector.normalize();
+//
+//        Rotation rotation = new Rotation(directionVector, originPointingVector);
+//
+//        // int slice = getCurrentSlice();
+//        int nslices = getImageDepth();
+//        for (int slice = 0; slice < nslices; slice++)
+//        {
+//            MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//
+//            frusta[slice] = null;
+//            footprintGenerated[slice] = false;
+//        }
+//    }
 
     public void calculateFrustum()
     {
@@ -1047,6 +1045,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         vtkIdList idList = new vtkIdList();
         idList.SetNumberOfIds(2);
 
+        double[][] frustum1Adjusted = getFrustum1Adjusted();
+        double[][] frustum2Adjusted = getFrustum2Adjusted();
+        double[][] frustum3Adjusted = getFrustum3Adjusted();
+        double[][] frustum4Adjusted = getFrustum4Adjusted();
+        double[][] spacecraftPositionAdjusted = getSpacecraftPositionAdjusted();
         double maxFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) + smallBodyModel.getBoundingBoxDiagonalLength();
         double[] origin = spacecraftPositionAdjusted[currentSlice];
         double[] UL = { origin[0] + frustum1Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum1Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum1Adjusted[currentSlice][2] * maxFrustumRayLength };
@@ -1268,13 +1271,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 {
                     st.nextToken();
                     double x = Double.parseDouble(st.nextToken());
-                    rotationOffset[0] = x;
+                    getRotationOffset()[0] = x;
                 }
                 if (token.equals(TARGET_ZOOM_FACTOR))
                 {
                     st.nextToken();
                     double x = Double.parseDouble(st.nextToken());
-                    zoomFactor[0] = x;
+                    getZoomFactor()[0] = x;
                 }
                 if (token.equals(APPLY_ADJUSTMENTS))
                 {
@@ -1853,102 +1856,102 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             return super.getImageName();
     }
 
-    protected void appendWithPadding(StringBuffer strbuf, String str)
-    {
-        strbuf.append(str);
+//    protected void appendWithPadding(StringBuffer strbuf, String str)
+//    {
+//        strbuf.append(str);
+//
+//        int length = str.length();
+//        while (length < 78)
+//        {
+//            strbuf.append(' ');
+//            ++length;
+//        }
+//
+//        strbuf.append("\r\n");
+//    }
 
-        int length = str.length();
-        while (length < 78)
-        {
-            strbuf.append(' ');
-            ++length;
-        }
-
-        strbuf.append("\r\n");
-    }
-
-    /**
-     * Generate PDS 3 format backplanes label file. This is the default
-     * implementation for classes extending PerspectiveImage.
-     *
-     * @param imgName - pointer to the data File for which this label is being
-     *            created
-     * @param lblFileName - pointer to the output label file to be written, without
-     *            file name extension. The extension is dependent on image type
-     *            (e.g. MSI images are written as PDS 4 XML labels), and is assigned
-     *            in the class implementing this function.
-     * @throws IOException
-     */
-    public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
-    {
-        StringBuffer strbuf = new StringBuffer("");
-
-        int numBands = 16;
-
-        appendWithPadding(strbuf, "PDS_VERSION_ID               = PDS3");
-        appendWithPadding(strbuf, "");
-
-        appendWithPadding(strbuf, "PRODUCT_TYPE                 = DDR");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-        String dateStr = sdf.format(date).replace(' ', 'T');
-        appendWithPadding(strbuf, "PRODUCT_CREATION_TIME        = " + dateStr);
-        appendWithPadding(strbuf, "PRODUCER_INSTITUTION_NAME    = \"APPLIED PHYSICS LABORATORY\"");
-        appendWithPadding(strbuf, "SOFTWARE_NAME                = \"Small Body Mapping Tool\"");
-        appendWithPadding(strbuf, "SHAPE_MODEL                  = \"" + smallBodyModel.getModelName() + "\"");
-
-        appendWithPadding(strbuf, "");
-        appendWithPadding(strbuf, "/* This DDR label describes one data file:                               */");
-        appendWithPadding(strbuf, "/* 1. A multiple-band backplane image file with wavelength-independent,  */");
-        appendWithPadding(strbuf, "/* spatial pixel-dependent geometric and timing information.             */");
-        appendWithPadding(strbuf, "");
-        appendWithPadding(strbuf, "OBJECT                       = FILE");
-
-        appendWithPadding(strbuf, "  ^IMAGE                     = \"" + imgName.getName() + "\"");
-
-        appendWithPadding(strbuf, "  RECORD_TYPE                = FIXED_LENGTH");
-        appendWithPadding(strbuf, "  RECORD_BYTES               = " + (imageHeight * 4));
-        appendWithPadding(strbuf, "  FILE_RECORDS               = " + (imageWidth * numBands));
-        appendWithPadding(strbuf, "");
-
-        appendWithPadding(strbuf, "  OBJECT                     = IMAGE");
-        appendWithPadding(strbuf, "    LINES                    = " + imageHeight);
-        appendWithPadding(strbuf, "    LINE_SAMPLES             = " + imageWidth);
-        appendWithPadding(strbuf, "    SAMPLE_TYPE              = IEEE_REAL");
-        appendWithPadding(strbuf, "    SAMPLE_BITS              = 32");
-        appendWithPadding(strbuf, "    CORE_NULL                = 16#F49DC5AE#"); // bit pattern of -1.0e32 in hex
-
-        appendWithPadding(strbuf, "    BANDS                    = " + numBands);
-        appendWithPadding(strbuf, "    BAND_STORAGE_TYPE        = BAND_SEQUENTIAL");
-        appendWithPadding(strbuf, "    BAND_NAME                = (\"Pixel value\",");
-        appendWithPadding(strbuf, "                                \"x coordinate of center of pixel, km\",");
-        appendWithPadding(strbuf, "                                \"y coordinate of center of pixel, km\",");
-        appendWithPadding(strbuf, "                                \"z coordinate of center of pixel, km\",");
-        appendWithPadding(strbuf, "                                \"Latitude, deg\",");
-        appendWithPadding(strbuf, "                                \"Longitude, deg\",");
-        appendWithPadding(strbuf, "                                \"Distance from center of body, km\",");
-        appendWithPadding(strbuf, "                                \"Incidence angle, deg\",");
-        appendWithPadding(strbuf, "                                \"Emission angle, deg\",");
-        appendWithPadding(strbuf, "                                \"Phase angle, deg\",");
-        appendWithPadding(strbuf, "                                \"Horizontal pixel scale, km per pixel\",");
-        appendWithPadding(strbuf, "                                \"Vertical pixel scale, km per pixel\",");
-        appendWithPadding(strbuf, "                                \"Slope, deg\",");
-        appendWithPadding(strbuf, "                                \"Elevation, m\",");
-        appendWithPadding(strbuf, "                                \"Gravitational acceleration, m/s^2\",");
-        appendWithPadding(strbuf, "                                \"Gravitational potential, J/kg\")");
-        appendWithPadding(strbuf, "");
-        appendWithPadding(strbuf, "  END_OBJECT                 = IMAGE");
-        appendWithPadding(strbuf, "END_OBJECT                   = FILE");
-
-        appendWithPadding(strbuf, "");
-        appendWithPadding(strbuf, "END");
-
-        // return strbuf.toString();
-        byte[] bytes = strbuf.toString().getBytes();
-        OutputStream out = new FileOutputStream(lblFileName.getAbsolutePath() + ".lbl");
-        out.write(bytes, 0, bytes.length);
-        out.close();
-    }
+//    /**
+//     * Generate PDS 3 format backplanes label file. This is the default
+//     * implementation for classes extending PerspectiveImage.
+//     *
+//     * @param imgName - pointer to the data File for which this label is being
+//     *            created
+//     * @param lblFileName - pointer to the output label file to be written, without
+//     *            file name extension. The extension is dependent on image type
+//     *            (e.g. MSI images are written as PDS 4 XML labels), and is assigned
+//     *            in the class implementing this function.
+//     * @throws IOException
+//     */
+//    public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
+//    {
+//        StringBuffer strbuf = new StringBuffer("");
+//
+//        int numBands = 16;
+//
+//        appendWithPadding(strbuf, "PDS_VERSION_ID               = PDS3");
+//        appendWithPadding(strbuf, "");
+//
+//        appendWithPadding(strbuf, "PRODUCT_TYPE                 = DDR");
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        Date date = new Date();
+//        String dateStr = sdf.format(date).replace(' ', 'T');
+//        appendWithPadding(strbuf, "PRODUCT_CREATION_TIME        = " + dateStr);
+//        appendWithPadding(strbuf, "PRODUCER_INSTITUTION_NAME    = \"APPLIED PHYSICS LABORATORY\"");
+//        appendWithPadding(strbuf, "SOFTWARE_NAME                = \"Small Body Mapping Tool\"");
+//        appendWithPadding(strbuf, "SHAPE_MODEL                  = \"" + smallBodyModel.getModelName() + "\"");
+//
+//        appendWithPadding(strbuf, "");
+//        appendWithPadding(strbuf, "/* This DDR label describes one data file:                               */");
+//        appendWithPadding(strbuf, "/* 1. A multiple-band backplane image file with wavelength-independent,  */");
+//        appendWithPadding(strbuf, "/* spatial pixel-dependent geometric and timing information.             */");
+//        appendWithPadding(strbuf, "");
+//        appendWithPadding(strbuf, "OBJECT                       = FILE");
+//
+//        appendWithPadding(strbuf, "  ^IMAGE                     = \"" + imgName.getName() + "\"");
+//
+//        appendWithPadding(strbuf, "  RECORD_TYPE                = FIXED_LENGTH");
+//        appendWithPadding(strbuf, "  RECORD_BYTES               = " + (imageHeight * 4));
+//        appendWithPadding(strbuf, "  FILE_RECORDS               = " + (imageWidth * numBands));
+//        appendWithPadding(strbuf, "");
+//
+//        appendWithPadding(strbuf, "  OBJECT                     = IMAGE");
+//        appendWithPadding(strbuf, "    LINES                    = " + imageHeight);
+//        appendWithPadding(strbuf, "    LINE_SAMPLES             = " + imageWidth);
+//        appendWithPadding(strbuf, "    SAMPLE_TYPE              = IEEE_REAL");
+//        appendWithPadding(strbuf, "    SAMPLE_BITS              = 32");
+//        appendWithPadding(strbuf, "    CORE_NULL                = 16#F49DC5AE#"); // bit pattern of -1.0e32 in hex
+//
+//        appendWithPadding(strbuf, "    BANDS                    = " + numBands);
+//        appendWithPadding(strbuf, "    BAND_STORAGE_TYPE        = BAND_SEQUENTIAL");
+//        appendWithPadding(strbuf, "    BAND_NAME                = (\"Pixel value\",");
+//        appendWithPadding(strbuf, "                                \"x coordinate of center of pixel, km\",");
+//        appendWithPadding(strbuf, "                                \"y coordinate of center of pixel, km\",");
+//        appendWithPadding(strbuf, "                                \"z coordinate of center of pixel, km\",");
+//        appendWithPadding(strbuf, "                                \"Latitude, deg\",");
+//        appendWithPadding(strbuf, "                                \"Longitude, deg\",");
+//        appendWithPadding(strbuf, "                                \"Distance from center of body, km\",");
+//        appendWithPadding(strbuf, "                                \"Incidence angle, deg\",");
+//        appendWithPadding(strbuf, "                                \"Emission angle, deg\",");
+//        appendWithPadding(strbuf, "                                \"Phase angle, deg\",");
+//        appendWithPadding(strbuf, "                                \"Horizontal pixel scale, km per pixel\",");
+//        appendWithPadding(strbuf, "                                \"Vertical pixel scale, km per pixel\",");
+//        appendWithPadding(strbuf, "                                \"Slope, deg\",");
+//        appendWithPadding(strbuf, "                                \"Elevation, m\",");
+//        appendWithPadding(strbuf, "                                \"Gravitational acceleration, m/s^2\",");
+//        appendWithPadding(strbuf, "                                \"Gravitational potential, J/kg\")");
+//        appendWithPadding(strbuf, "");
+//        appendWithPadding(strbuf, "  END_OBJECT                 = IMAGE");
+//        appendWithPadding(strbuf, "END_OBJECT                   = FILE");
+//
+//        appendWithPadding(strbuf, "");
+//        appendWithPadding(strbuf, "END");
+//
+//        // return strbuf.toString();
+//        byte[] bytes = strbuf.toString().getBytes();
+//        OutputStream out = new FileOutputStream(lblFileName.getAbsolutePath() + ".lbl");
+//        out.write(bytes, 0, bytes.length);
+//        out.close();
+//    }
 
     /**
      * Get filter as an integer id. Return -1 if no filter is available.
@@ -2673,16 +2676,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         // for offlimb
         getOffLimbTexture();
-        if (offLimbActor == null && offLimbTexture != null)
-        {
-            loadOffLimbPlane();
-            if (footprintActors.contains(offLimbActor))
-                footprintActors.remove(offLimbActor);
-            footprintActors.add(offLimbActor);
-            if (footprintActors.contains(offLimbBoundaryActor))
-                footprintActors.remove(offLimbBoundaryActor);
-            footprintActors.add(offLimbBoundaryActor);
-        }
+        footprintActors.addAll(offlimbPlaneHelper.getProps());
+//        if (offLimbActor == null && offLimbTexture != null)
+//        {
+//            loadOffLimbPlane();
+//            if (footprintActors.contains(offLimbActor))
+//                footprintActors.remove(offLimbActor);
+//            footprintActors.add(offLimbActor);
+//            if (footprintActors.contains(offLimbBoundaryActor))
+//                footprintActors.remove(offLimbBoundaryActor);
+//            footprintActors.add(offLimbBoundaryActor);
+//        }
 
         return footprintActors;
     }
@@ -2773,15 +2777,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return maxPhase;
     }
 
-    public IntensityRange getOffLimbDisplayedRange()
-    {
-        if (offLimbDisplayedRange == null)
-        {
-            offLimbDisplayedRange = new IntensityRange(0, 255);
-        }
-
-        return offLimbDisplayedRange;
-    }
+//    public IntensityRange getOffLimbDisplayedRange()
+//    {
+//        if (offLimbDisplayedRange == null)
+//        {
+//            offLimbDisplayedRange = new IntensityRange(0, 255);
+//        }
+//
+//        return offLimbDisplayedRange;
+//    }
 
     public IntensityRange getDisplayedRange()
     {
@@ -2853,38 +2857,38 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
-    public void setOfflimbImageRange(IntensityRange intensityRange)
-    {
+//    public void setOfflimbImageRange(IntensityRange intensityRange)
+//    {
+//
+//        IntensityRange displayedRange = getOffLimbDisplayedRange();
+//        if (intensityRange == null || displayedRange.min != intensityRange.min || displayedRange.max != intensityRange.max)
+//        {
+//            if (intensityRange != null)
+//            {
+//                offLimbDisplayedRange = intensityRange;
+//                saveImageInfo();
+//            }
+//
+//            if (rawImage != null)
+//            {
+//                vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
+//
+//                if (offLimbTexture == null && !Configuration.isHeadless())
+//                    offLimbTexture = new vtkTexture();
+//                if (offLimbTexture != null)
+//                {
+//                    offLimbTexture.SetInputData(image);
+//                    image.Delete();
+//                    offLimbTexture.Modified();
+//                }
+//            }
+//
+//            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
+//        }
+//
+//    }
 
-        IntensityRange displayedRange = getOffLimbDisplayedRange();
-        if (intensityRange == null || displayedRange.min != intensityRange.min || displayedRange.max != intensityRange.max)
-        {
-            if (intensityRange != null)
-            {
-                offLimbDisplayedRange = intensityRange;
-                saveImageInfo();
-            }
-
-            if (rawImage != null)
-            {
-                vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
-
-                if (offLimbTexture == null && !Configuration.isHeadless())
-                    offLimbTexture = new vtkTexture();
-                if (offLimbTexture != null)
-                {
-                    offLimbTexture.SetInputData(image);
-                    image.Delete();
-                    offLimbTexture.Modified();
-                }
-            }
-
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-        }
-
-    }
-
-    private vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
+    vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
     {
         float minValue = getMinValue();
         float maxValue = getMaxValue();
@@ -3015,7 +3019,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     frustum4Original, //
                     boresightDirectionOriginal, //
                     upVectorOriginal, //
-                    targetPixelCoordinates, //
+                    getTargetPixelCoordinates(), //
                     ato, //
                     displayRange, //
                     offLimbDisplayRange);
@@ -3023,7 +3027,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             // should startTime and stopTime be an array? -turnerj1
             startTime = start[0];
             stopTime = stop[0];
-            applyFrameAdjustments[0] = ato[0];
+            imageOffsetCalculator.applyFrameAdjustments[0] = ato[0];
 
             if (displayRange[0] != null)
             {
@@ -3093,7 +3097,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 frustum4Original, //
                 boresightDirectionOriginal, //
                 upVectorOriginal, //
-                targetPixelCoordinates, //
+                getTargetPixelCoordinates(), //
                 ato, //
                 displayRange, //
                 offLimbDisplayRange);
@@ -3101,7 +3105,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // should startTime and stopTime be an array? -turnerj1
         startTime = start[0];
         stopTime = stop[0];
-        applyFrameAdjustments[0] = ato[0];
+        imageOffsetCalculator.applyFrameAdjustments[0] = ato[0];
 
         if (displayRange[0] != null)
         {
@@ -3114,7 +3118,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     }
 
-    private void saveImageInfo()
+    void saveImageInfo()
     {
         String[] infoFileNames = getInfoFilesFullPath();
         String sumFileName = this.getSumfileFullPath();
@@ -3145,10 +3149,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                         frustum4Original, //
                         boresightDirectionOriginal, //
                         upVectorOriginal, //
-                        targetPixelCoordinates, //
-                        zoomFactor, //
-                        rotationOffset, //
-                        applyFrameAdjustments[0], //
+                        getTargetPixelCoordinates(), //
+                        getZoomFactor(), //
+                        getRotationOffset(), //
+                        imageOffsetCalculator.applyFrameAdjustments[0], //
                         false, //
                         getDisplayedRange(), //
                         getOffLimbDisplayedRange());
@@ -3180,18 +3184,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     slice, //
                     startTime, //
                     stopTime, //
-                    spacecraftPositionAdjusted, //
-                    sunPositionAdjusted, //
-                    frustum1Adjusted, //
-                    frustum2Adjusted, //
-                    frustum3Adjusted, //
-                    frustum4Adjusted, //
-                    boresightDirectionAdjusted, //
-                    upVectorAdjusted, //
-                    targetPixelCoordinates, //
-                    zoomFactor, //
-                    rotationOffset, //
-                    applyFrameAdjustments[0], //
+                    getSpacecraftPositionAdjusted(), //
+                    getSunPositionAdjusted(), //
+                    getFrustum1Adjusted(), //
+                    getFrustum2Adjusted(), //
+                    getFrustum3Adjusted(), //
+                    getFrustum4Adjusted(), //
+                    getBoresightDirectionAdjusted(), //
+                    getUpVectorAdjusted(), //
+                    getTargetPixelCoordinates(), //
+                    getZoomFactor(), //
+                    getRotationOffset(), //
+                    imageOffsetCalculator.applyFrameAdjustments[0], //
                     true, //
                     getDisplayedRange(), //
                     getOffLimbDisplayedRange());
@@ -3390,7 +3394,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double nln = 32.0;
     private double kmatrix00 = 1.0;
     private double kmatrix11 = 1.0;
-    private Color offLimbBoundaryColor = Color.RED; // default
+//    private Color offLimbBoundaryColor = Color.RED; // default
 
     private void parseLabelKeyValuePair( //
             String key, //
@@ -3752,7 +3756,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // TODO Speed this up: Determine if there is a limb without computing the entire
         // backplane.
 
-        float[] bp = generateBackplanes(true);
+        float[] bp = backplanesHelper.generateBackplanes(true);
         if (bp == null)
             return true;
         else
@@ -3769,7 +3773,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             return existingFootprint;
         else
         {
-            vtkPolyData footprint = smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[defaultSlice], frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
+            vtkPolyData footprint = smallBodyModel.computeFrustumIntersection(getSpacecraftPositionAdjusted()[defaultSlice],
+            																	getFrustum1Adjusted()[defaultSlice],
+            																	getFrustum3Adjusted()[defaultSlice],
+            																	getFrustum4Adjusted()[defaultSlice],
+            																	getFrustum2Adjusted()[defaultSlice]);
 //            System.out.println("PerspectiveImage: getFootprint: footprint creation " + sw.elapsedMillis());
             return footprint;
         }
@@ -3863,7 +3871,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 else
                 {
                 	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
-                    tmp = smallBodyModel.computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice], frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
+                    tmp = smallBodyModel.computeFrustumIntersection(getSpacecraftPositionAdjusted()[currentSlice],
+                    												getFrustum1Adjusted()[currentSlice],
+                    												getFrustum3Adjusted()[currentSlice],
+                    												getFrustum4Adjusted()[currentSlice],
+                    												getFrustum2Adjusted()[currentSlice]);
                     if (tmp == null)
                         return;
 
@@ -3995,7 +4007,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public double getSpacecraftDistance()
     {
-        return MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]);
+        return MathUtil.vnorm(getSpacecraftPositionAdjusted()[currentSlice]);
     }
 
     private void computeCellNormals()
@@ -4027,6 +4039,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     // the phase.
     public double[] computeIlluminationAnglesAtPoint(double[] pt, double[] normal)
     {
+    	double[][] spacecraftPositionAdjusted = getSpacecraftPositionAdjusted();
         double[] scvec = {
                 spacecraftPositionAdjusted[currentSlice][0] - pt[0],
                 spacecraftPositionAdjusted[currentSlice][1] - pt[1],
@@ -4103,6 +4116,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void computePixelScale()
     {
+    	double[][] spacecraftPositionAdjusted = getSunPositionAdjusted();
+    	double[][] frustum1Adjusted = getFrustum1Adjusted();
+    	double[][] frustum2Adjusted = getFrustum2Adjusted();
+    	double[][] frustum3Adjusted = getFrustum3Adjusted();
         if (footprintGenerated[currentSlice] == false)
             loadFootprint();
 
@@ -4153,212 +4170,212 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         points.Delete();
     }
 
-    public float[] generateBackplanes()
-    {
-        return generateBackplanes(false);
-    }
+//    public float[] generateBackplanes()
+//    {
+//        return generateBackplanes(false);
+//    }
 
-    /**
-     * If <code>returnNullIfContainsLimb</code> then return null if any ray in the
-     * direction of a pixel in the image does not intersect the asteroid. By setting
-     * this boolean to true, you can (usually) determine whether or not the image
-     * contains a limb without having to compute the entire backplane. Note that
-     * this is a bit of a hack and a better way is needed to quickly determine if
-     * there is a limb.
-     *
-     * @param returnNullIfContainsLimb
-     * @return
-     */
-    private float[] generateBackplanes(boolean returnNullIfContainsLimb)
-    {
-        // We need to use cell normals not point normals for the calculations
-        vtkDataArray normals = null;
-        if (!returnNullIfContainsLimb)
-            normals = smallBodyModel.getCellNormals();
+//    /**
+//     * If <code>returnNullIfContainsLimb</code> then return null if any ray in the
+//     * direction of a pixel in the image does not intersect the asteroid. By setting
+//     * this boolean to true, you can (usually) determine whether or not the image
+//     * contains a limb without having to compute the entire backplane. Note that
+//     * this is a bit of a hack and a better way is needed to quickly determine if
+//     * there is a limb.
+//     *
+//     * @param returnNullIfContainsLimb
+//     * @return
+//     */
+//    private float[] generateBackplanes(boolean returnNullIfContainsLimb)
+//    {
+//        // We need to use cell normals not point normals for the calculations
+//        vtkDataArray normals = null;
+//        if (!returnNullIfContainsLimb)
+//            normals = smallBodyModel.getCellNormals();
+//
+//        float[] data = new float[numBackplanes * imageHeight * imageWidth];
+//
+//        vtksbCellLocator cellLocator = smallBodyModel.getCellLocator();
+//
+//        // vtkPoints intersectPoints = new vtkPoints();
+//        // vtkIdList intersectCells = new vtkIdList();
+//        vtkGenericCell cell = new vtkGenericCell();
+//
+//        // For each pixel in the image we need to compute the vector
+//        // from the spacecraft pointing in the direction of that pixel.
+//        // To do this, for each row in the image compute the left and
+//        // right vectors of the entire row. Then for each pixel in
+//        // the row use the two vectors from either side to compute
+//        // the vector of that pixel.
+//        double[] corner1 = {
+//                spacecraftPositionAdjusted[currentSlice][0] + frustum1Adjusted[currentSlice][0],
+//                spacecraftPositionAdjusted[currentSlice][1] + frustum1Adjusted[currentSlice][1],
+//                spacecraftPositionAdjusted[currentSlice][2] + frustum1Adjusted[currentSlice][2]
+//        };
+//        double[] corner2 = {
+//                spacecraftPositionAdjusted[currentSlice][0] + frustum2Adjusted[currentSlice][0],
+//                spacecraftPositionAdjusted[currentSlice][1] + frustum2Adjusted[currentSlice][1],
+//                spacecraftPositionAdjusted[currentSlice][2] + frustum2Adjusted[currentSlice][2]
+//        };
+//        double[] corner3 = {
+//                spacecraftPositionAdjusted[currentSlice][0] + frustum3Adjusted[currentSlice][0],
+//                spacecraftPositionAdjusted[currentSlice][1] + frustum3Adjusted[currentSlice][1],
+//                spacecraftPositionAdjusted[currentSlice][2] + frustum3Adjusted[currentSlice][2]
+//        };
+//        double[] vec12 = {
+//                corner2[0] - corner1[0],
+//                corner2[1] - corner1[1],
+//                corner2[2] - corner1[2]
+//        };
+//        double[] vec13 = {
+//                corner3[0] - corner1[0],
+//                corner3[1] - corner1[1],
+//                corner3[2] - corner1[2]
+//        };
+//
+//        double horizScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice]) / 2.0) / imageHeight;
+//        double vertScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum2Adjusted[currentSlice]) / 2.0) / imageWidth;
+//
+//        double scdist = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]);
+//
+//        for (int i = 0; i < imageHeight; ++i)
+//        {
+//            // Compute the vector on the left of the row.
+//            double fracHeight = ((double) i / (double) (imageHeight - 1));
+//            double[] left = {
+//                    corner1[0] + fracHeight * vec13[0],
+//                    corner1[1] + fracHeight * vec13[1],
+//                    corner1[2] + fracHeight * vec13[2]
+//            };
+//
+//            for (int j = 0; j < imageWidth; ++j)
+//            {
+//                // If we're just trying to know if there is a limb, we
+//                // only need to do intersections around the boundary of
+//                // the backplane, not the interior pixels.
+//                if (returnNullIfContainsLimb)
+//                {
+//                    if (j == 1 && i > 0 && i < imageHeight - 1)
+//                    {
+//                        j = imageWidth - 2;
+//                        continue;
+//                    }
+//                }
+//
+//                double fracWidth = ((double) j / (double) (imageWidth - 1));
+//                double[] vec = {
+//                        left[0] + fracWidth * vec12[0],
+//                        left[1] + fracWidth * vec12[1],
+//                        left[2] + fracWidth * vec12[2]
+//                };
+//                vec[0] -= spacecraftPositionAdjusted[currentSlice][0];
+//                vec[1] -= spacecraftPositionAdjusted[currentSlice][1];
+//                vec[2] -= spacecraftPositionAdjusted[currentSlice][2];
+//                MathUtil.unorm(vec, vec);
+//
+//                double[] lookPt = {
+//                        spacecraftPositionAdjusted[currentSlice][0] + 2.0 * scdist * vec[0],
+//                        spacecraftPositionAdjusted[currentSlice][1] + 2.0 * scdist * vec[1],
+//                        spacecraftPositionAdjusted[currentSlice][2] + 2.0 * scdist * vec[2]
+//                };
+//
+//                // cellLocator.IntersectWithLine(spacecraftPosition, lookPt, intersectPoints,
+//                // intersectCells);
+//                double tol = 1e-6;
+//                double[] t = new double[1];
+//                double[] x = new double[3];
+//                double[] pcoords = new double[3];
+//                int[] subId = new int[1];
+//                int[] cellId = new int[1];
+//                int result = cellLocator.IntersectWithLine(spacecraftPositionAdjusted[currentSlice], lookPt, tol, t, x, pcoords, subId, cellId, cell);
+//
+//                // if (intersectPoints.GetNumberOfPoints() == 0)
+//                // System.out.println(i + " " + j + " " + intersectPoints.GetNumberOfPoints());
+//
+//                // int numberOfPoints = intersectPoints.GetNumberOfPoints();
+//
+//                if (result > 0)
+//                {
+//                    // If we're just trying to know if there is a limb, do not
+//                    // compute the values of the backplane (It will crash since
+//                    // we don't have normals of the asteroid itself)
+//                    if (returnNullIfContainsLimb)
+//                        continue;
+//
+//                    // double[] closestPoint = intersectPoints.GetPoint(0);
+//                    // int closestCell = intersectCells.GetId(0);
+//                    double[] closestPoint = x;
+//                    int closestCell = cellId[0];
+//                    double closestDist = MathUtil.distanceBetween(closestPoint, getSpacecraftPositionAdjusted()[currentSlice]);
+//
+//                    /*
+//                     * // compute the closest point to the spacecraft of all the intersecting
+//                     * points. if (numberOfPoints > 1) { for (int k=1; k<numberOfPoints; ++k) {
+//                     * double[] pt = intersectPoints.GetPoint(k); double dist =
+//                     * GeometryUtil.distanceBetween(pt, spacecraftPosition); if (dist < closestDist)
+//                     * { closestDist = dist; closestCell = intersectCells.GetId(k); closestPoint =
+//                     * pt; } } }
+//                     */
+//
+//                    LatLon llr = MathUtil.reclat(closestPoint);
+//                    double lat = llr.lat * 180.0 / Math.PI;
+//                    double lon = llr.lon * 180.0 / Math.PI;
+//                    if (lon < 0.0)
+//                        lon += 360.0;
+//
+//                    double[] normal = normals.GetTuple3(closestCell);
+//                    double[] illumAngles = computeIlluminationAnglesAtPoint(closestPoint, normal);
+//
+//                    double horizPixelScale = closestDist * horizScaleFactor;
+//                    double vertPixelScale = closestDist * vertScaleFactor;
+//
+//                    double[] coloringValues;
+//                    try
+//                    {
+//                        coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
+//                    }
+//                    catch (@SuppressWarnings("unused") IOException e)
+//                    {
+//                        coloringValues = new double[] {};
+//                    }
+//                    int colorValueSize = coloringValues.length;
+//
+//                    data[index(j, i, BackplaneInfo.PIXEL.ordinal())] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
+//                    data[index(j, i, BackplaneInfo.X.ordinal())] = (float) closestPoint[0];
+//                    data[index(j, i, BackplaneInfo.Y.ordinal())] = (float) closestPoint[1];
+//                    data[index(j, i, BackplaneInfo.Z.ordinal())] = (float) closestPoint[2];
+//                    data[index(j, i, BackplaneInfo.LAT.ordinal())] = (float) lat;
+//                    data[index(j, i, BackplaneInfo.LON.ordinal())] = (float) lon;
+//                    data[index(j, i, BackplaneInfo.DIST.ordinal())] = (float) llr.rad;
+//                    data[index(j, i, BackplaneInfo.INC.ordinal())] = (float) illumAngles[0];
+//                    data[index(j, i, BackplaneInfo.EMI.ordinal())] = (float) illumAngles[1];
+//                    data[index(j, i, BackplaneInfo.PHASE.ordinal())] = (float) illumAngles[2];
+//                    data[index(j, i, BackplaneInfo.HSCALE.ordinal())] = (float) horizPixelScale;
+//                    data[index(j, i, BackplaneInfo.VSCALE.ordinal())] = (float) vertPixelScale;
+//                    data[index(j, i, BackplaneInfo.SLOPE.ordinal())] = colorValueSize > 0 ? (float) coloringValues[0] : 0.0F; // slope
+//                    data[index(j, i, BackplaneInfo.EL.ordinal())] = colorValueSize > 1 ? (float) coloringValues[1] : 0.0F; // elevation
+//                    data[index(j, i, BackplaneInfo.GRAVACC.ordinal())] = colorValueSize > 2 ? (float) coloringValues[2] : 0.0F; // grav acc;
+//                    data[index(j, i, BackplaneInfo.GRAVPOT.ordinal())] = colorValueSize > 3 ? (float) coloringValues[3] : 0.0F; // grav pot
+//                }
+//                else
+//                {
+//                    if (returnNullIfContainsLimb)
+//                        return null;
+//
+//                    data[index(j, i, 0)] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
+//                    for (int k = 1; k < numBackplanes; ++k)
+//                        data[index(j, i, k)] = PDS_NA;
+//                }
+//            }
+//        }
+//
+//        return data;
+//    }
 
-        float[] data = new float[numBackplanes * imageHeight * imageWidth];
-
-        vtksbCellLocator cellLocator = smallBodyModel.getCellLocator();
-
-        // vtkPoints intersectPoints = new vtkPoints();
-        // vtkIdList intersectCells = new vtkIdList();
-        vtkGenericCell cell = new vtkGenericCell();
-
-        // For each pixel in the image we need to compute the vector
-        // from the spacecraft pointing in the direction of that pixel.
-        // To do this, for each row in the image compute the left and
-        // right vectors of the entire row. Then for each pixel in
-        // the row use the two vectors from either side to compute
-        // the vector of that pixel.
-        double[] corner1 = {
-                spacecraftPositionAdjusted[currentSlice][0] + frustum1Adjusted[currentSlice][0],
-                spacecraftPositionAdjusted[currentSlice][1] + frustum1Adjusted[currentSlice][1],
-                spacecraftPositionAdjusted[currentSlice][2] + frustum1Adjusted[currentSlice][2]
-        };
-        double[] corner2 = {
-                spacecraftPositionAdjusted[currentSlice][0] + frustum2Adjusted[currentSlice][0],
-                spacecraftPositionAdjusted[currentSlice][1] + frustum2Adjusted[currentSlice][1],
-                spacecraftPositionAdjusted[currentSlice][2] + frustum2Adjusted[currentSlice][2]
-        };
-        double[] corner3 = {
-                spacecraftPositionAdjusted[currentSlice][0] + frustum3Adjusted[currentSlice][0],
-                spacecraftPositionAdjusted[currentSlice][1] + frustum3Adjusted[currentSlice][1],
-                spacecraftPositionAdjusted[currentSlice][2] + frustum3Adjusted[currentSlice][2]
-        };
-        double[] vec12 = {
-                corner2[0] - corner1[0],
-                corner2[1] - corner1[1],
-                corner2[2] - corner1[2]
-        };
-        double[] vec13 = {
-                corner3[0] - corner1[0],
-                corner3[1] - corner1[1],
-                corner3[2] - corner1[2]
-        };
-
-        double horizScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice]) / 2.0) / imageHeight;
-        double vertScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum2Adjusted[currentSlice]) / 2.0) / imageWidth;
-
-        double scdist = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]);
-
-        for (int i = 0; i < imageHeight; ++i)
-        {
-            // Compute the vector on the left of the row.
-            double fracHeight = ((double) i / (double) (imageHeight - 1));
-            double[] left = {
-                    corner1[0] + fracHeight * vec13[0],
-                    corner1[1] + fracHeight * vec13[1],
-                    corner1[2] + fracHeight * vec13[2]
-            };
-
-            for (int j = 0; j < imageWidth; ++j)
-            {
-                // If we're just trying to know if there is a limb, we
-                // only need to do intersections around the boundary of
-                // the backplane, not the interior pixels.
-                if (returnNullIfContainsLimb)
-                {
-                    if (j == 1 && i > 0 && i < imageHeight - 1)
-                    {
-                        j = imageWidth - 2;
-                        continue;
-                    }
-                }
-
-                double fracWidth = ((double) j / (double) (imageWidth - 1));
-                double[] vec = {
-                        left[0] + fracWidth * vec12[0],
-                        left[1] + fracWidth * vec12[1],
-                        left[2] + fracWidth * vec12[2]
-                };
-                vec[0] -= spacecraftPositionAdjusted[currentSlice][0];
-                vec[1] -= spacecraftPositionAdjusted[currentSlice][1];
-                vec[2] -= spacecraftPositionAdjusted[currentSlice][2];
-                MathUtil.unorm(vec, vec);
-
-                double[] lookPt = {
-                        spacecraftPositionAdjusted[currentSlice][0] + 2.0 * scdist * vec[0],
-                        spacecraftPositionAdjusted[currentSlice][1] + 2.0 * scdist * vec[1],
-                        spacecraftPositionAdjusted[currentSlice][2] + 2.0 * scdist * vec[2]
-                };
-
-                // cellLocator.IntersectWithLine(spacecraftPosition, lookPt, intersectPoints,
-                // intersectCells);
-                double tol = 1e-6;
-                double[] t = new double[1];
-                double[] x = new double[3];
-                double[] pcoords = new double[3];
-                int[] subId = new int[1];
-                int[] cellId = new int[1];
-                int result = cellLocator.IntersectWithLine(spacecraftPositionAdjusted[currentSlice], lookPt, tol, t, x, pcoords, subId, cellId, cell);
-
-                // if (intersectPoints.GetNumberOfPoints() == 0)
-                // System.out.println(i + " " + j + " " + intersectPoints.GetNumberOfPoints());
-
-                // int numberOfPoints = intersectPoints.GetNumberOfPoints();
-
-                if (result > 0)
-                {
-                    // If we're just trying to know if there is a limb, do not
-                    // compute the values of the backplane (It will crash since
-                    // we don't have normals of the asteroid itself)
-                    if (returnNullIfContainsLimb)
-                        continue;
-
-                    // double[] closestPoint = intersectPoints.GetPoint(0);
-                    // int closestCell = intersectCells.GetId(0);
-                    double[] closestPoint = x;
-                    int closestCell = cellId[0];
-                    double closestDist = MathUtil.distanceBetween(closestPoint, spacecraftPositionAdjusted[currentSlice]);
-
-                    /*
-                     * // compute the closest point to the spacecraft of all the intersecting
-                     * points. if (numberOfPoints > 1) { for (int k=1; k<numberOfPoints; ++k) {
-                     * double[] pt = intersectPoints.GetPoint(k); double dist =
-                     * GeometryUtil.distanceBetween(pt, spacecraftPosition); if (dist < closestDist)
-                     * { closestDist = dist; closestCell = intersectCells.GetId(k); closestPoint =
-                     * pt; } } }
-                     */
-
-                    LatLon llr = MathUtil.reclat(closestPoint);
-                    double lat = llr.lat * 180.0 / Math.PI;
-                    double lon = llr.lon * 180.0 / Math.PI;
-                    if (lon < 0.0)
-                        lon += 360.0;
-
-                    double[] normal = normals.GetTuple3(closestCell);
-                    double[] illumAngles = computeIlluminationAnglesAtPoint(closestPoint, normal);
-
-                    double horizPixelScale = closestDist * horizScaleFactor;
-                    double vertPixelScale = closestDist * vertScaleFactor;
-
-                    double[] coloringValues;
-                    try
-                    {
-                        coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
-                    }
-                    catch (@SuppressWarnings("unused") IOException e)
-                    {
-                        coloringValues = new double[] {};
-                    }
-                    int colorValueSize = coloringValues.length;
-
-                    data[index(j, i, BackplaneInfo.PIXEL.ordinal())] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
-                    data[index(j, i, BackplaneInfo.X.ordinal())] = (float) closestPoint[0];
-                    data[index(j, i, BackplaneInfo.Y.ordinal())] = (float) closestPoint[1];
-                    data[index(j, i, BackplaneInfo.Z.ordinal())] = (float) closestPoint[2];
-                    data[index(j, i, BackplaneInfo.LAT.ordinal())] = (float) lat;
-                    data[index(j, i, BackplaneInfo.LON.ordinal())] = (float) lon;
-                    data[index(j, i, BackplaneInfo.DIST.ordinal())] = (float) llr.rad;
-                    data[index(j, i, BackplaneInfo.INC.ordinal())] = (float) illumAngles[0];
-                    data[index(j, i, BackplaneInfo.EMI.ordinal())] = (float) illumAngles[1];
-                    data[index(j, i, BackplaneInfo.PHASE.ordinal())] = (float) illumAngles[2];
-                    data[index(j, i, BackplaneInfo.HSCALE.ordinal())] = (float) horizPixelScale;
-                    data[index(j, i, BackplaneInfo.VSCALE.ordinal())] = (float) vertPixelScale;
-                    data[index(j, i, BackplaneInfo.SLOPE.ordinal())] = colorValueSize > 0 ? (float) coloringValues[0] : 0.0F; // slope
-                    data[index(j, i, BackplaneInfo.EL.ordinal())] = colorValueSize > 1 ? (float) coloringValues[1] : 0.0F; // elevation
-                    data[index(j, i, BackplaneInfo.GRAVACC.ordinal())] = colorValueSize > 2 ? (float) coloringValues[2] : 0.0F; // grav acc;
-                    data[index(j, i, BackplaneInfo.GRAVPOT.ordinal())] = colorValueSize > 3 ? (float) coloringValues[3] : 0.0F; // grav pot
-                }
-                else
-                {
-                    if (returnNullIfContainsLimb)
-                        return null;
-
-                    data[index(j, i, 0)] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
-                    for (int k = 1; k < numBackplanes; ++k)
-                        data[index(j, i, k)] = PDS_NA;
-                }
-            }
-        }
-
-        return data;
-    }
-
-    public int index(int i, int j, int k)
-    {
-        return ((k * imageHeight + j) * imageWidth + i);
-    }
+//    public int index(int i, int j, int k)
+//    {
+//        return ((k * imageHeight + j) * imageWidth + i);
+//    }
 
     public void propertyChange(PropertyChangeEvent evt)
     {
@@ -4441,13 +4458,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         for (int i = 0; i < 3; ++i)
         {
-            spacecraftPosition[i] = this.spacecraftPositionAdjusted[currentSlice][i];
-            upVector[i] = this.upVectorAdjusted[currentSlice][i];
+            spacecraftPosition[i] = getSpacecraftPositionAdjusted()[currentSlice][i];
+            upVector[i] = getUpVectorAdjusted()[currentSlice][i];
         }
 
         // Normalize the direction vector
         double[] direction = new double[3];
-        MathUtil.unorm(boresightDirectionAdjusted[currentSlice], direction);
+        MathUtil.unorm(getBoresightDirectionAdjusted()[currentSlice], direction);
 
         int cellId = smallBodyModel.computeRayIntersection(spacecraftPosition, direction, focalPoint);
 
@@ -4475,9 +4492,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     public Rotation getCameraOrientation(double[] spacecraftPosition, double[] quaternion)
     {
-        double[] cx = upVectorAdjusted[currentSlice];
+        double[] cx = getUpVectorAdjusted()[currentSlice];
         double[] cz = new double[3];
-        MathUtil.unorm(boresightDirectionAdjusted[currentSlice], cz);
+        MathUtil.unorm(getBoresightDirectionAdjusted()[currentSlice], cz);
 
         double[] cy = new double[3];
         MathUtil.vcrss(cz, cx, cy);
@@ -4491,7 +4508,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         Rotation rotation = new Rotation(m, 1.0e-6);
 
         for (int i = 0; i < 3; ++i)
-            spacecraftPosition[i] = this.spacecraftPositionAdjusted[currentSlice][i];
+            spacecraftPosition[i] = getSpacecraftPositionAdjusted()[currentSlice][i];
 
         quaternion[0] = rotation.getQ0();
         quaternion[1] = rotation.getQ1();
@@ -4507,12 +4524,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             int defaultSlice = getDefaultSlice();
             if (frusta[defaultSlice] == null)
-                frusta[defaultSlice] = new Frustum(spacecraftPositionAdjusted[defaultSlice], frustum1Adjusted[defaultSlice], frustum3Adjusted[defaultSlice], frustum4Adjusted[defaultSlice], frustum2Adjusted[defaultSlice]);
+                frusta[defaultSlice] = new Frustum(getSpacecraftPositionAdjusted()[defaultSlice], getFrustum1Adjusted()[defaultSlice], getFrustum3Adjusted()[defaultSlice], getFrustum4Adjusted()[defaultSlice], getFrustum2Adjusted()[defaultSlice]);
             return frusta[defaultSlice];
         }
 
         if (frusta[slice] == null)
-            frusta[slice] = new Frustum(spacecraftPositionAdjusted[slice], frustum1Adjusted[slice], frustum3Adjusted[slice], frustum4Adjusted[slice], frustum2Adjusted[slice]);
+            frusta[slice] = new Frustum(getSpacecraftPositionAdjusted()[slice], getFrustum1Adjusted()[slice], getFrustum3Adjusted()[slice], getFrustum4Adjusted()[slice], getFrustum2Adjusted()[slice]);
         return frusta[slice];
     }
 
@@ -4536,41 +4553,41 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public double getHorizontalFovAngle()
     {
-        double fovHoriz = MathUtil.vsep(frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice]) * 180.0 / Math.PI;
+        double fovHoriz = MathUtil.vsep(getFrustum1Adjusted()[currentSlice], getFrustum3Adjusted()[currentSlice]) * 180.0 / Math.PI;
         return fovHoriz;
     }
 
     public double getVerticalFovAngle()
     {
-        double fovVert = MathUtil.vsep(frustum1Adjusted[currentSlice], frustum2Adjusted[currentSlice]) * 180.0 / Math.PI;
+        double fovVert = MathUtil.vsep(getFrustum1Adjusted()[currentSlice], getFrustum2Adjusted()[currentSlice]) * 180.0 / Math.PI;
         return fovVert;
     }
 
     public double[] getSpacecraftPosition()
     {
-        return spacecraftPositionAdjusted[currentSlice];
+        return getSpacecraftPositionAdjusted()[currentSlice];
     }
 
     public double[] getSunPosition()
     {
-        return sunPositionAdjusted[currentSlice];
+        return getSunPositionAdjusted()[currentSlice];
     }
 
     public double[] getSunVector()
     {
         double[] result = new double[3];
-        MathUtil.vhat(sunPositionAdjusted[currentSlice], result);
+        MathUtil.vhat(getSunPositionAdjusted()[currentSlice], result);
         return result;
     }
 
     public double[] getBoresightDirection()
     {
-        return boresightDirectionAdjusted[currentSlice];
+        return getBoresightDirectionAdjusted()[currentSlice];
     }
 
     public double[] getUpVector()
     {
-        return upVectorAdjusted[currentSlice];
+        return getUpVectorAdjusted()[currentSlice];
     }
 
     public double[] getPixelDirection(int sample, int line)
@@ -4589,6 +4606,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     public double[] getPixelDirection(double sample, double line, int slice)
     {
+    	double[][] spacecraftPositionAdjusted = getSpacecraftPositionAdjusted();
+    	double[][] frustum1Adjusted = getFrustum1Adjusted();
+    	double[][] frustum2Adjusted = getFrustum2Adjusted();
+    	double[][] frustum3Adjusted = getFrustum3Adjusted();
+
         double[] corner1 = {
                 spacecraftPositionAdjusted[slice][0] + frustum1Adjusted[slice][0],
                 spacecraftPositionAdjusted[slice][1] + frustum1Adjusted[slice][1],
@@ -4649,7 +4671,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         double[] intersectPoint = new double[3];
 
-        int result = smallBodyModel.computeRayIntersection(spacecraftPositionAdjusted[currentSlice], dir, intersectPoint);
+        int result = smallBodyModel.computeRayIntersection(getSpacecraftPositionAdjusted()[currentSlice], dir, intersectPoint);
 
         if (result >= 0)
             return intersectPoint;
@@ -4730,7 +4752,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         properties.put("Start Time", getStartTime());
         properties.put("Stop Time", getStopTime());
         properties.put("Spacecraft Distance", df.format(getSpacecraftDistance()) + " km");
-        properties.put("Spacecraft Position", df.format(spacecraftPositionAdjusted[currentSlice][0]) + ", " + df.format(spacecraftPositionAdjusted[currentSlice][1]) + ", " + df.format(spacecraftPositionAdjusted[currentSlice][2]) + " km");
+        properties.put("Spacecraft Position", df.format(getSpacecraftPositionAdjusted()[currentSlice][0]) + ", " + df.format(getSpacecraftPositionAdjusted()[currentSlice][1]) + ", " + df.format(getSpacecraftPositionAdjusted()[currentSlice][2]) + " km");
         double[] quaternion = new double[4];
         double[] notused = new double[4];
         getCameraOrientation(notused, quaternion);
@@ -4767,7 +4789,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void firePropertyChange()
     {
         // with significant property changes, the offlimb plane needs to be recalculated
-        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
+        offlimbPlaneHelper.calculator.loadOffLimbPlane(this, offlimbPlaneHelper.offLimbFootprintDepth);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
@@ -4802,51 +4824,51 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.labelFileFullPath = labelFileFullPath;
     }
 
-    /**
-     * Generate metadata to be used in PDS4 XML creation by parsing existing PDS3
-     * label. By default creates a bare-bones metadata class that only contains the
-     * output XML filename. Use this method to use an existing PDS3 label as the
-     * source metadata on which to describe a new PDS4 product.
-     */
-    public BPMetaBuilder pds3ToXmlMeta(String pds3Fname, String outXmlFname)
-    {
-        BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
-        return metaDataBuilder;
-    }
-
-    /**
-     * Generate metadata to be used in PDS4 XML creation by parsing existing PDS4
-     * label. By default creates a bare-bones metdata class that only contains the
-     * output XML filename. Use this method to use an existing PDS4 label as the
-     * source metadata on which to describe a new PDS4 product.
-     */
-    public BPMetaBuilder pds4ToXmlMeta(String pds4Fname, String outXmlFname)
-    {
-        BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
-        return metaDataBuilder;
-    }
-
-    /**
-     * Parse additional metadata from the fits file and add to the metaDataBuilder.
-     *
-     * @throws FitsException
-     */
-    public BPMetaBuilder fitsToXmlMeta(File fitsFile, BPMetaBuilder metaDataBuilder) throws FitsException
-    {
-        return metaDataBuilder;
-    }
-
-    /**
-     * Generate XML document from XmlMetadata
-     *
-     * @param metaData - metadata to be used in populating XmlDoc
-     * @param xmlTemplate - path to XML template file
-     */
-    public BackPlanesXml metaToXmlDoc(BackPlanesXmlMeta metaData, String xmlTemplate)
-    {
-        BackPlanesXml xmlLabel = new BackPlanesXml(metaData, xmlTemplate);
-        return xmlLabel;
-    }
+//    /**
+//     * Generate metadata to be used in PDS4 XML creation by parsing existing PDS3
+//     * label. By default creates a bare-bones metadata class that only contains the
+//     * output XML filename. Use this method to use an existing PDS3 label as the
+//     * source metadata on which to describe a new PDS4 product.
+//     */
+//    public BPMetaBuilder pds3ToXmlMeta(String pds3Fname, String outXmlFname)
+//    {
+//        BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
+//        return metaDataBuilder;
+//    }
+//
+//    /**
+//     * Generate metadata to be used in PDS4 XML creation by parsing existing PDS4
+//     * label. By default creates a bare-bones metdata class that only contains the
+//     * output XML filename. Use this method to use an existing PDS4 label as the
+//     * source metadata on which to describe a new PDS4 product.
+//     */
+//    public BPMetaBuilder pds4ToXmlMeta(String pds4Fname, String outXmlFname)
+//    {
+//        BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
+//        return metaDataBuilder;
+//    }
+//
+//    /**
+//     * Parse additional metadata from the fits file and add to the metaDataBuilder.
+//     *
+//     * @throws FitsException
+//     */
+//    public BPMetaBuilder fitsToXmlMeta(File fitsFile, BPMetaBuilder metaDataBuilder) throws FitsException
+//    {
+//        return metaDataBuilder;
+//    }
+//
+//    /**
+//     * Generate XML document from XmlMetadata
+//     *
+//     * @param metaData - metadata to be used in populating XmlDoc
+//     * @param xmlTemplate - path to XML template file
+//     */
+//    public BackPlanesXml metaToXmlDoc(BackPlanesXmlMeta metaData, String xmlTemplate)
+//    {
+//        BackPlanesXml xmlLabel = new BackPlanesXml(metaData, xmlTemplate);
+//        return xmlLabel;
+//    }
 
     @Override
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
@@ -4942,7 +4964,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public double[][] getSpacecraftPositionAdjusted()
     {
-        return spacecraftPositionAdjusted;
+        return imageOffsetCalculator.spacecraftPositionAdjusted;
     }
 
     public double[] getQ()
@@ -5037,22 +5059,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public double[][] getFrustum1Adjusted()
     {
-        return frustum1Adjusted;
+        return imageOffsetCalculator.frustum1Adjusted;
     }
 
     public double[][] getFrustum2Adjusted()
     {
-        return frustum2Adjusted;
+        return imageOffsetCalculator.frustum2Adjusted;
     }
 
     public double[][] getFrustum3Adjusted()
     {
-        return frustum3Adjusted;
+        return imageOffsetCalculator.frustum3Adjusted;
     }
 
     public double[][] getFrustum4Adjusted()
     {
-        return frustum4Adjusted;
+        return imageOffsetCalculator.frustum4Adjusted;
     }
 
     // ******************
@@ -5131,7 +5153,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public double[] getTargetPixelCoordinates()
     {
-        return targetPixelCoordinates;
+        return imageOffsetCalculator.targetPixelCoordinates;
     }
 
     public void setStartTime(String startTime)
@@ -5146,17 +5168,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public double[][] getBoresightDirectionAdjusted()
     {
-        return boresightDirectionAdjusted;
+        return imageOffsetCalculator.boresightDirectionAdjusted;
     }
 
     public double[][] getUpVectorAdjusted()
     {
-        return upVectorAdjusted;
+        return imageOffsetCalculator.upVectorAdjusted;
     }
 
     public double[][] getSunPositionAdjusted()
     {
-        return sunPositionAdjusted;
+        return imageOffsetCalculator.sunPositionAdjusted;
     }
 
     public String getObjectName()
@@ -5171,12 +5193,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public double[] getZoomFactor()
     {
-        return zoomFactor;
+        return imageOffsetCalculator.zoomFactor;
     }
 
     public double[] getRotationOffset()
     {
-        return rotationOffset;
+        return imageOffsetCalculator.rotationOffset;
     }
 
     public void setImageWidth(int imageWidth)
@@ -5299,157 +5321,356 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.normalsGenerated = normalsGenerated;
     }
 
-    /*
-     * FOR OFF-LIMB IMAGES
-     */
+//    /*
+//     * FOR OFF-LIMB IMAGES
+//     */
+//
+//    /**
+//     * No-argument entry point into the off-limb geometry-creation implementation.
+//     * This will create an offlimbPlaneCalculator and create the actors for the
+//     * plane and the boundaries.
+//     */
+//    protected void loadOffLimbPlane()
+//    {
+//        double[] spacecraftPosition = new double[3];
+//        double[] focalPoint = new double[3];
+//        double[] upVector = new double[3];
+//        this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
+//        this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
+//        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
+//        offLimbActor = calculator.getOffLimbActor();
+//        offLimbBoundaryActor = calculator.getOffLimbBoundaryActor();
+//        offLimbTexture = calculator.getOffLimbTexture();
+//        // set initial visibilities
+//        if (offLimbActor != null)
+//        {
+//            offLimbActor.SetVisibility(offLimbVisibility ? 1 : 0);
+//            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility ? 1 : 0);
+//        }
+//    }
+//
+//    /**
+//     * Set the distance of the off-limb plane from the camera position, along its
+//     * look vector. The associated polydata doesn't need to be regenerated every
+//     * time this method is called since the body's shadow in frustum coordinates
+//     * does not change with depth along the look axis. The call to loadOffLimbPlane
+//     * here does actually re-create the polydata, which should be unnecessary, and
+//     * needs to be fixed in a future release.
+//     *
+//     * @param footprintDepth
+//     */
+//    public void setOffLimbPlaneDepth(double footprintDepth)
+//    {
+//        this.offLimbFootprintDepth = footprintDepth;
+//        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
+//    }
+//
+//    public void setOffLimbFootprintAlpha(double alpha) // between 0-1
+//    {
+//        if (offLimbActor == null)
+//            loadOffLimbPlane();
+//        offLimbActor.GetProperty().SetOpacity(alpha);
+//    }
+//
+//    public boolean offLimbFootprintIsVisible()
+//    {
+//        return offLimbVisibility;
+//    }
+//
+//    /**
+//     * Set visibility of the off-limb footprint
+//     *
+//     * Checks if offLimbActor has been instantiated; if not then call
+//     * loadOffLimbPlane() before showing/hiding actors.
+//     *
+//     * @param visible
+//     */
+//    public void setOffLimbFootprintVisibility(boolean visible)
+//    {
+//
+//        offLimbVisibility = visible;
+//        offLimbBoundaryVisibility = visible;
+//        if (offLimbVisibility && offLimbActor == null)
+//            loadOffLimbPlane();
+//
+//        if (offLimbActor != null)
+//        {
+//            offLimbActor.SetVisibility(visible ? 1 : 0);
+//            offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
+//        }
+//
+//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//    }
+//
+//    /**
+//     * Set visibility of the off-limb footprint boundary
+//     *
+//     * Checks if offLimbActor has been instantiated; if not then call
+//     * loadOffLimbPlane() before showing/hiding actors.
+//     *
+//     * @param visible
+//     */
+//    public void setOffLimbBoundaryVisibility(boolean visible)
+//    {
+//
+//        offLimbBoundaryVisibility = visible;
+//        if (offLimbActor == null)
+//            loadOffLimbPlane();
+//        offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
+//
+//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//    }
+//
+//    public vtkTexture getOffLimbTexture()
+//    {
+//        if (offLimbTexture == null)
+//        { // if offlimbtexture is null, initialize it.
+//            vtkImageData image = new vtkImageData();
+//            image.DeepCopy(getDisplayedImage());
+//            offLimbTexture = new vtkTexture();
+//            offLimbTexture.SetInputData(image);
+//            offLimbTexture.Modified();
+//        }
+//        return offLimbTexture;
+//    }
+//
+//    public void setOffLimbTexture(vtkTexture offLimbTexture)
+//    {
+//        this.offLimbTexture = offLimbTexture;
+//    }
+//
+//    public double getOffLimbPlaneDepth()
+//    {
+//        return offLimbFootprintDepth;
+//    }
+//
+//    public void setContrastSynced(boolean selected)
+//    {
+//        this.contrastSynced = selected;
+//        if (contrastSynced)
+//        {
+//            // if we just changed this to true, update the values to match
+//            offLimbDisplayedRange = getDisplayedRange();
+//            setOfflimbImageRange(offLimbDisplayedRange);
+//            pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//        }
+//    }
+//
+//    public boolean isContrastSynced()
+//    {
+//        return contrastSynced;
+//    }
+//
+//    public void setOfflimbBoundaryColor(Color color)
+//    {
+//        this.offLimbBoundaryColor = color;
+//        offLimbBoundaryActor.GetProperty().SetColor(color.getRed() / 255., color.getGreen() / 255., color.getBlue() / 255.);
+//        offLimbBoundaryActor.Modified();
+//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//    }
+//
+//    public Color getOfflimbBoundaryColor()
+//    {
+//        return offLimbBoundaryColor;
+//    }
 
-    /**
-     * No-argument entry point into the off-limb geometry-creation implementation.
-     * This will create an offlimbPlaneCalculator and create the actors for the
-     * plane and the boundaries.
-     */
-    protected void loadOffLimbPlane()
-    {
-        double[] spacecraftPosition = new double[3];
-        double[] focalPoint = new double[3];
-        double[] upVector = new double[3];
-        this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
-        this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
-        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-        offLimbActor = calculator.getOffLimbActor();
-        offLimbBoundaryActor = calculator.getOffLimbBoundaryActor();
-        offLimbTexture = calculator.getOffLimbTexture();
-        // set initial visibilities
-        if (offLimbActor != null)
-        {
-            offLimbActor.SetVisibility(offLimbVisibility ? 1 : 0);
-            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility ? 1 : 0);
-        }
-    }
+	String getModelName()
+	{
+		return smallBodyModel.getModelName();
+	}
 
-    /**
-     * Set the distance of the off-limb plane from the camera position, along its
-     * look vector. The associated polydata doesn't need to be regenerated every
-     * time this method is called since the body's shadow in frustum coordinates
-     * does not change with depth along the look axis. The call to loadOffLimbPlane
-     * here does actually re-create the polydata, which should be unnecessary, and
-     * needs to be fixed in a future release.
-     *
-     * @param footprintDepth
-     */
-    public void setOffLimbPlaneDepth(double footprintDepth)
-    {
-        this.offLimbFootprintDepth = footprintDepth;
-        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-    }
+	void firePropertyChange(String propertyName, Object oldValue, Object newValue)
+	{
+		this.pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
 
-    public void setOffLimbFootprintAlpha(double alpha) // between 0-1
-    {
-        if (offLimbActor == null)
-            loadOffLimbPlane();
-        offLimbActor.GetProperty().SetOpacity(alpha);
-    }
+	public PerspectiveImageOffsetCalculator getImageOffsetCalculator()
+	{
+		return imageOffsetCalculator;
+	}
 
-    public boolean offLimbFootprintIsVisible()
-    {
-        return offLimbVisibility;
-    }
+	public PerspectiveImageOfflimbPlaneHelper getOfflimbPlaneHelper()
+	{
+		return offlimbPlaneHelper;
+	}
 
-    /**
-     * Set visibility of the off-limb footprint
-     *
-     * Checks if offLimbActor has been instantiated; if not then call
-     * loadOffLimbPlane() before showing/hiding actors.
-     *
-     * @param visible
-     */
-    public void setOffLimbFootprintVisibility(boolean visible)
-    {
+	public PerspectiveImageBackplanesHelper getBackplanesHelper()
+	{
+		return backplanesHelper;
+	}
 
-        offLimbVisibility = visible;
-        offLimbBoundaryVisibility = visible;
-        if (offLimbVisibility && offLimbActor == null)
-            loadOffLimbPlane();
+	public PerspectiveImageRendererHelper getRendererHelper()
+	{
+		return rendererHelper;
+	}
 
-        if (offLimbActor != null)
-        {
-            offLimbActor.SetVisibility(visible ? 1 : 0);
-            offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
-        }
+	///////////////////////////////
+	/// Backplane delegate methods
+	///////////////////////////////
+	public BPMetaBuilder pds3ToXmlMeta(String pds3Fname, String outXmlFname)
+	{
+		return backplanesHelper.pds3ToXmlMeta(pds3Fname, outXmlFname);
+	}
 
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
+	public BPMetaBuilder pds4ToXmlMeta(String pds4Fname, String outXmlFname)
+	{
+		return backplanesHelper.pds4ToXmlMeta(pds4Fname, outXmlFname);
+	}
 
-    /**
-     * Set visibility of the off-limb footprint boundary
-     *
-     * Checks if offLimbActor has been instantiated; if not then call
-     * loadOffLimbPlane() before showing/hiding actors.
-     *
-     * @param visible
-     */
-    public void setOffLimbBoundaryVisibility(boolean visible)
-    {
+	public BPMetaBuilder fitsToXmlMeta(File fitsFile, BPMetaBuilder metaDataBuilder) throws FitsException
+	{
+		return backplanesHelper.fitsToXmlMeta(fitsFile, metaDataBuilder);
+	}
 
-        offLimbBoundaryVisibility = visible;
-        if (offLimbActor == null)
-            loadOffLimbPlane();
-        offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
+	public BackPlanesXml metaToXmlDoc(BackPlanesXmlMeta metaData, String xmlTemplate)
+	{
+		return backplanesHelper.metaToXmlDoc(metaData, xmlTemplate);
+	}
 
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
+	public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
+	{
+		backplanesHelper.generateBackplanesLabel(imgName, lblFileName);
+	}
 
-    public vtkTexture getOffLimbTexture()
-    {
-        if (offLimbTexture == null)
-        { // if offlimbtexture is null, initialize it.
-            vtkImageData image = new vtkImageData();
-            image.DeepCopy(getDisplayedImage());
-            offLimbTexture = new vtkTexture();
-            offLimbTexture.SetInputData(image);
-            offLimbTexture.Modified();
-        }
-        return offLimbTexture;
-    }
+	public void appendWithPadding(StringBuffer strbuf, String str)
+	{
+		backplanesHelper.appendWithPadding(strbuf, str);
+	}
 
-    public void setOffLimbTexture(vtkTexture offLimbTexture)
-    {
-        this.offLimbTexture = offLimbTexture;
-    }
+	public float[] generateBackplanes()
+	{
+		return backplanesHelper.generateBackplanes();
+	}
 
-    public double getOffLimbPlaneDepth()
-    {
-        return offLimbFootprintDepth;
-    }
+	public int index(int i, int j, int k)
+	{
+		return backplanesHelper.index(i, j, k);
+	}
 
-    public void setContrastSynced(boolean selected)
-    {
-        this.contrastSynced = selected;
-        if (contrastSynced)
-        {
-            // if we just changed this to true, update the values to match
-            offLimbDisplayedRange = getDisplayedRange();
-            setOfflimbImageRange(offLimbDisplayedRange);
-            pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-        }
-    }
+	///////////////////////////////////////
+	/// Offset calculator delegate methods
+	///////////////////////////////////////
+	public void moveLineOffsetBy(double offset)
+	{
+		imageOffsetCalculator.moveLineOffsetBy(offset);
+	}
 
-    public boolean isContrastSynced()
-    {
-        return contrastSynced;
-    }
+	public void moveSampleOffsetBy(double offset)
+	{
+		imageOffsetCalculator.moveSampleOffsetBy(offset);
+	}
 
-    public void setOfflimbBoundaryColor(Color color)
-    {
-        this.offLimbBoundaryColor = color;
-        offLimbBoundaryActor.GetProperty().SetColor(color.getRed() / 255., color.getGreen() / 255., color.getBlue() / 255.);
-        offLimbBoundaryActor.Modified();
-        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-    }
+	public void moveRotationAngleBy(double offset)
+	{
+		imageOffsetCalculator.moveRotationAngleBy(offset);
+	}
 
-    public Color getOfflimbBoundaryColor()
-    {
-        return offLimbBoundaryColor;
-    }
+	public void moveZoomFactorBy(double offset)
+	{
+		imageOffsetCalculator.moveZoomFactorBy(offset);
+	}
+
+	public void setTargetPixelCoordinates(double[] frustumCenterPixel)
+	{
+		imageOffsetCalculator.setTargetPixelCoordinates(frustumCenterPixel);
+	}
+
+	private void copySpacecraftState()
+	{
+		imageOffsetCalculator.copySpacecraftState();
+	}
+
+	public void setLineOffset(double offset)
+	{
+		imageOffsetCalculator.setLineOffset(offset);
+	}
+
+	public void setSampleOffset(double offset)
+	{
+		imageOffsetCalculator.setSampleOffset(offset);
+	}
+
+	public void setRotationOffset(double offset)
+	{
+		imageOffsetCalculator.setRotationOffset(offset);
+	}
+
+	public void setYawOffset(double offset)
+	{
+		imageOffsetCalculator.setPitchOffset(offset);
+	}
+
+	public void setPitchOffset(double offset)
+	{
+		imageOffsetCalculator.setPitchOffset(offset);
+	}
+
+	public void setZoomFactor(double offset)
+	{
+		imageOffsetCalculator.setZoomFactor(offset);
+	}
+
+	/////////////////////////////
+	/// Offlimb delegate methods
+	/////////////////////////////
+	public void setOffLimbBoundaryVisibility(boolean visible)
+	{
+		offlimbPlaneHelper.setOffLimbBoundaryVisibility(visible);
+	}
+
+	public void setOffLimbFootprintVisibility(boolean visible)
+	{
+		offlimbPlaneHelper.setOffLimbFootprintVisibility(visible);
+	}
+
+	public boolean offLimbFootprintIsVisible()
+	{
+		return offlimbPlaneHelper.offLimbFootprintIsVisible();
+	}
+
+	public void setOffLimbPlaneDepth(double footprintDepth)
+	{
+		offlimbPlaneHelper.setOffLimbPlaneDepth(footprintDepth);
+	}
+
+	public void setOffLimbFootprintAlpha(double alpha)
+	{
+		offlimbPlaneHelper.setOffLimbFootprintAlpha(alpha);
+	}
+
+	public IntensityRange getOffLimbDisplayedRange()
+	{
+		return offlimbPlaneHelper.getOffLimbDisplayedRange();
+	}
+
+	public boolean isContrastSynced()
+	{
+		return offlimbPlaneHelper.isContrastSynced();
+	}
+
+	public Color getOfflimbBoundaryColor()
+	{
+		return offlimbPlaneHelper.getOfflimbBoundaryColor();
+	}
+
+	public void setOfflimbBoundaryColor(Color color)
+	{
+		offlimbPlaneHelper.setOfflimbBoundaryColor(color);
+	}
+
+	public void setOfflimbImageRange(IntensityRange intensityRange)
+	{
+		offlimbPlaneHelper.setOfflimbImageRange(intensityRange);
+	}
+
+	public void setContrastSynced(boolean selected)
+	{
+		offlimbPlaneHelper.setContrastSynced(selected);
+	}
+
+	public vtkTexture getOffLimbTexture()
+	{
+		return offlimbPlaneHelper.getOffLimbTexture();
+	}
 
 }

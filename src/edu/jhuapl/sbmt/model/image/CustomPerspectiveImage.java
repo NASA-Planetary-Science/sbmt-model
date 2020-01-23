@@ -5,6 +5,7 @@ import java.io.IOException;
 import vtk.vtkImageData;
 
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
