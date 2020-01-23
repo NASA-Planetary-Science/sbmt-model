@@ -22,11 +22,6 @@ class PerspectiveImageOffsetCalculator
 
     // location in pixel coordinates of the target origin for the adjusted frustum
     double[] targetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
-
-    // offset in world coordinates of the adjusted frustum from the loaded frustum
-    // private double[] offsetPixelCoordinates = { Double.MAX_VALUE,
-    // Double.MAX_VALUE };
-
     double[] zoomFactor = { 1.0 };
 
     double[] rotationOffset = { 0.0 };
@@ -44,28 +39,10 @@ class PerspectiveImageOffsetCalculator
 
     void setTargetPixelCoordinates(double[] frustumCenterPixel)
     {
-        // System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
-        // frustumCenterPixel[0]);
-
         this.targetPixelCoordinates[0] = frustumCenterPixel[0];
         this.targetPixelCoordinates[1] = frustumCenterPixel[1];
         setApplyFrameAdjustments(true);
     }
-
-    // public void setPixelOffset(double[] pixelOffset)
-    // {
-    //// System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
-    // frustumCenterPixel[0]);
-    //
-    // this.offsetPixelCoordinates[0] = pixelOffset[0];
-    // this.offsetPixelCoordinates[1] = pixelOffset[1];
-    //
-    // updateFrameAdjustments();
-    //
-    // loadFootprint();
-    // calculateFrustum();
-    // saveImageInfo();
-    // }
 
     void setLineOffset(double offset)
     {
@@ -81,8 +58,6 @@ class PerspectiveImageOffsetCalculator
 
     void setRotationOffset(double offset)
     {
-        // System.out.println("setRotationOffset(): " + offset);
-
         if (rotationOffset == null)
             rotationOffset = new double[1];
 
@@ -92,8 +67,6 @@ class PerspectiveImageOffsetCalculator
 
     void setYawOffset(double offset)
     {
-        // System.out.println("setRotationOffset(): " + offset);
-
         if (yawOffset == null)
             yawOffset = new double[1];
 
@@ -103,8 +76,6 @@ class PerspectiveImageOffsetCalculator
 
     void setPitchOffset(double offset)
     {
-        // System.out.println("setRotationOffset(): " + offset);
-
         if (pitchOffset == null)
             pitchOffset = new double[1];
 
@@ -114,13 +85,8 @@ class PerspectiveImageOffsetCalculator
 
     void setZoomFactor(double offset)
     {
-        // System.out.println("setZoomFactor(): " + offset);
-
         if (zoomFactor == null)
-        {
             zoomFactor = new double[1];
-            zoomFactor[0] = 1.0;
-        }
 
         zoomFactor[0] = offset;
         setApplyFrameAdjustments(true);
@@ -128,7 +94,6 @@ class PerspectiveImageOffsetCalculator
 
     void setApplyFrameAdjustments(boolean state)
     {
-        // System.out.println("setApplyFrameAdjustments(): " + state);
         applyFrameAdjustments[0] = state;
         updateFrameAdjustments();
         image.loadFootprint();
@@ -174,73 +139,29 @@ class PerspectiveImageOffsetCalculator
                 double[] newTargetPixelDirection = image.getPixelDirection(sample, line);
                 rotateTargetPixelDirectionToLocalOrigin(newTargetPixelDirection);
             }
-            // else if (offsetPixelCoordinates[0] != Double.MAX_VALUE &&
-            // offsetPixelCoordinates[1] != Double.MAX_VALUE)
-            // {
-            // int height = getImageHeight();
-            // int width = getImageWidth();
-            // double line = height - 1 - offsetPixelCoordinates[0];
-            // double sample = offsetPixelCoordinates[1];
-            //
-            // double[] newOffsetPixelDirection = getPixelDirection(sample, line);
-            // rotateBoresightTo(newOffsetPixelDirection);
-            // }
 
             if (sampleOffset != 0 || lineOffset != 0)
             	translateSpacecraftInImagePlane(sampleOffset, lineOffset);
             else
             	translateSpacecraftInImagePlane(0, 0);
 
-//            if (yawOffset[0] != 0.0)
-//            {
-//            	rotateFrameAboutYawAxis(yawOffset[0]);
-//            }
-//
-//            if (pitchOffset[0] != 0.0)
-//            {
-//            	rotateFrameAboutPitchAxis(pitchOffset[0]);
-//
-//            }
+            rotateFrameAboutTarget(rotationOffset[0]);
+            zoomFrame(zoomFactor[0]);
 
-            if (rotationOffset[0] != 0.0)
-            {
-                rotateFrameAboutTarget(rotationOffset[0]);
-            }
-            if (zoomFactor[0] != 1.0)
-            {
-                zoomFrame(zoomFactor[0]);
-            }
+            image.setUseDefaultFootprint(false);
         }
 
-        // int slice = getCurrentSlice();
         int nslices = image.getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
-        	image.frusta[slice] = null;
-        	image.footprintGenerated[slice] = false;
+        	resetFrustaAndFootprint(slice);
         }
     }
 
     void zoomFrame(double zoomFactor)
     {
-        // System.out.println("zoomFrame(" + zoomFactor + ")");
-        // Vector3D spacecraftPositionVector = new
-        // Vector3D(spacecraftPositionOriginal[currentSlice]);
-        // Vector3D spacecraftToOriginVector =
-        // spacecraftPositionVector.scalarMultiply(-1.0);
-        // Vector3D originPointingVector = spacecraftToOriginVector.normalize();
-        // double distance = spacecraftToOriginVector.getNorm();
-        // Vector3D deltaVector = originPointingVector.scalarMultiply(distance *
-        // (zoomFactor - 1.0));
-        // double[] delta = { deltaVector.getX(), deltaVector.getY(), deltaVector.getZ()
-        // };
-
+    	if (zoomFactor == 1.0) return;
         double zoomRatio = 1.0 / zoomFactor;
-        if (zoomRatio < 1.0)
-    	{
-        	zoomRatio = 1.0;
-        	return;
-    	}
         int nslices = image.getImageDepth();
         int currentSlice = image.getCurrentSlice();
         for (int slice = 0; slice < nslices; slice++)
@@ -251,12 +172,8 @@ class PerspectiveImageOffsetCalculator
             {
             	surfacePoint[currentSlice][i] = image.getSpacecraftPositionOriginal()[currentSlice][i] + image.getBoresightDirectionOriginal()[currentSlice][i];
             	spacecraftPositionAdjusted[currentSlice][i] = surfacePoint[currentSlice][i] - image.getBoresightDirectionOriginal()[currentSlice][i] * zoomRatio;
-
-//                spacecraftPositionAdjusted[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] * zoomRatio;
-//                boresightDirectionAdjusted[currentSlice][i] = boresightDirectionOriginal[currentSlice][i] * zoomRatio;
             }
-            image.frusta[slice] = null;
-            image.footprintGenerated[slice] = false;
+            resetFrustaAndFootprint(slice);
         }
     }
 
@@ -274,10 +191,10 @@ class PerspectiveImageOffsetCalculator
             MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
             MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
             MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+
+            resetFrustaAndFootprint(slice);
         }
-
     }
-
 
     void rotateFrameAboutYawAxis(double angleDegrees)
     {
@@ -293,18 +210,17 @@ class PerspectiveImageOffsetCalculator
             MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
             MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
             MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+
+            resetFrustaAndFootprint(slice);
         }
     }
 
     void rotateFrameAboutTarget(double angleDegrees)
     {
-         Vector3D axis = new Vector3D(image.getBoresightDirectionOriginal()[image.currentSlice]);
-//        Vector3D axis = new Vector3D(spacecraftPositionAdjusted[currentSlice]);
-//        axis.normalize();
-//        axis.negate();
+    	if (angleDegrees == 0) return;
+        Vector3D axis = new Vector3D(image.getBoresightDirectionOriginal()[image.currentSlice]);
         Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
 
-        // int slice = getCurrentSlice();
         int nslices = image.getImageDepth();
         for (int slice = 0; slice < nslices; slice++)
         {
@@ -314,8 +230,7 @@ class PerspectiveImageOffsetCalculator
             MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
             MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
 
-            image.frusta[slice] = null;
-            image.footprintGenerated[slice] = false;
+            resetFrustaAndFootprint(slice);
         }
     }
 
@@ -340,54 +255,33 @@ class PerspectiveImageOffsetCalculator
 
     void moveTargetPixelCoordinates(double[] pixelDelta)
     {
-         System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
-         pixelDelta[0]);
-         System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
         double height = (double) image.getImageHeight();
         if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
         {
             targetPixelCoordinates = image.getPixelFromPoint(image.bodyOrigin);
             targetPixelCoordinates[0] = height - 1 - targetPixelCoordinates[0];
         }
-        System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords 2 " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
 
         double line = this.targetPixelCoordinates[0] + pixelDelta[0];
         double sample = targetPixelCoordinates[1] + pixelDelta[1];
         double[] newFrustumCenterPixel = { line, sample };
-        System.out.println("moveTargetPixelCoordinates(): " + newFrustumCenterPixel[1] + " " + newFrustumCenterPixel[0]);
         setTargetPixelCoordinates(newFrustumCenterPixel);
     }
 
-    // public void moveOffsetPixelCoordinates(double[] pixelDelta)
-    // {
-    //// System.out.println("moveOffsetPixelCoordinates(): " + pixelDelta[1] + " " +
-    // pixelDelta[0]);
-    //
-    // double height = (double)getImageHeight();
-    // double width = (double)getImageWidth();
-    // if (offsetPixelCoordinates[0] == Double.MAX_VALUE ||
-    // offsetPixelCoordinates[1] == Double.MAX_VALUE)
-    // {
-    // offsetPixelCoordinates[0] = 0.0;
-    // offsetPixelCoordinates[1] = 0.0;
-    // }
-    // double line = offsetPixelCoordinates[0] + pixelDelta[0];
-    // double sample = offsetPixelCoordinates[1] + pixelDelta[1];
-    // double[] newPixelOffset = { line, sample };
-    //
-    // setPixelOffset(newPixelOffset);
-    // }
+    private void resetFrustaAndFootprint(int slice)
+    {
+    	image.getRendererHelper().frusta[slice] = null;
+        image.getRendererHelper().footprintGenerated[slice] = false;
+    }
 
     void movePitchAngleBy(double rotationDelta)
     {
-    	double newPitchOffset = pitchOffset[0] + rotationDelta;
-    	setPitchOffset(newPitchOffset);
+    	setPitchOffset(pitchOffset[0] + rotationDelta);
     }
 
     void moveYawAngleBy(double rotationDelta)
     {
-    	double newYawOffset = yawOffset[0] + rotationDelta;
-    	setYawOffset(newYawOffset);
+    	setYawOffset(yawOffset[0] + rotationDelta);
     }
 
     void moveLineOffsetBy(double offset)
@@ -400,27 +294,18 @@ class PerspectiveImageOffsetCalculator
     	setSampleOffset(sampleOffset + offset);
     }
 
-
     /**
      * This adjusts the roll angle about the boresight direction
      * @param rotationDelta
      */
     void moveRotationAngleBy(double rotationDelta)
     {
-        // System.out.println("moveRotationAngleBy(): " + rotationDelta);
-
-        double newRotationOffset = rotationOffset[0] + rotationDelta;
-
-        setRotationOffset(newRotationOffset);
+        setRotationOffset(rotationOffset[0] + rotationDelta);
     }
 
     void moveZoomFactorBy(double zoomDelta)
     {
-        // System.out.println("moveZoomDeltaBy(): " + zoomDelta);
-
-        double newZoomFactor = zoomFactor[0] * zoomDelta;
-
-        setZoomFactor(newZoomFactor);
+        setZoomFactor(zoomFactor[0] * zoomDelta);
     }
 
     // private void rotateBoresightDirectionTo(double[] newDirection)
@@ -468,8 +353,8 @@ class PerspectiveImageOffsetCalculator
             MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
             MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
 
-            image.frusta[slice] = null;
-            image.footprintGenerated[slice] = false;
+            image.getRendererHelper().frusta[slice] = null;
+            image.getRendererHelper().footprintGenerated[slice] = false;
         }
     }
 
@@ -483,6 +368,6 @@ class PerspectiveImageOffsetCalculator
         sampleOffset = 0.0;
         pitchOffset[0] = 0.0;
         yawOffset[0] = 0.0;
+        image.setUseDefaultFootprint(true);
     }
-
 }

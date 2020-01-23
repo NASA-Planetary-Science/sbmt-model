@@ -27,35 +27,14 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-import com.github.davidmoten.guavamini.Preconditions;
 import com.google.common.base.Stopwatch;
 
-import vtk.vtkActor;
-import vtk.vtkCell;
-import vtk.vtkCellArray;
-import vtk.vtkCellData;
-import vtk.vtkDataArray;
 import vtk.vtkFeatureEdges;
-import vtk.vtkFloatArray;
-import vtk.vtkIdList;
-import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageData;
-import vtk.vtkImageMapToColors;
-import vtk.vtkImageMask;
-import vtk.vtkImageReslice;
-import vtk.vtkLookupTable;
 import vtk.vtkPNGReader;
-import vtk.vtkPointData;
-import vtk.vtkPoints;
 import vtk.vtkPolyData;
-import vtk.vtkPolyDataMapper;
-import vtk.vtkPolyDataNormals;
-import vtk.vtkPolyDataReader;
-import vtk.vtkPolyDataWriter;
 import vtk.vtkProp;
-import vtk.vtkProperty;
 import vtk.vtkTexture;
-import vtk.vtkXMLPolyDataReader;
 
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.model.ModelManager;
@@ -67,7 +46,6 @@ import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.ObjUtil;
-import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -123,79 +101,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public static final double[] bodyOrigin = { 0.0, 0.0, 0.0 };
 
-    private SmallBodyModel smallBodyModel;
-
-    public SmallBodyModel getSmallBodyModel()
-    {
-        return smallBodyModel;
-    }
-
-    private ModelManager modelManager;
-
-    protected ModelManager getModelManager()
-    {
-        return modelManager;
-    }
-
-    protected vtkImageData rawImage;
-    private vtkImageData displayedImage;
-    protected int currentSlice = 0;
-
+    ///////////////////////
+    // Pointing Properties
+    ///////////////////////
     private double rotation = 0.0;
-
-    public double getRotation()
-    {
-        return rotation;
-    }
-
     private String flip = "None";
-
-    public String getFlip()
-    {
-        return flip;
-    }
-
-    private boolean useDefaultFootprint = true;
-    private vtkPolyData[] footprint = new vtkPolyData[1];
-    boolean[] footprintGenerated = new boolean[1];
-    private final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
-
-    private vtkActor footprintActor;
-    private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
-
-    vtkPolyData frustumPolyData;
-    private vtkActor frustumActor;
-
-    private vtkPolyDataNormals normalsFilter;
-
-    private vtkFloatArray textureCoords;
-
-    private boolean normalsGenerated = false;
-
-    private double minIncidence = Double.MAX_VALUE;
-    private double maxIncidence = -Double.MAX_VALUE;
-    private double minEmission = Double.MAX_VALUE;
-    private double maxEmission = -Double.MAX_VALUE;
-    private double minPhase = Double.MAX_VALUE;
-    private double maxPhase = -Double.MAX_VALUE;
-    private double minHorizontalPixelScale = Double.MAX_VALUE;
-    private double maxHorizontalPixelScale = -Double.MAX_VALUE;
-    private double meanHorizontalPixelScale = 0.0;
-    private double minVerticalPixelScale = Double.MAX_VALUE;
-    private double maxVerticalPixelScale = -Double.MAX_VALUE;
-    private double meanVerticalPixelScale = 0.0;
-
-    private float[] minValue = new float[1];
-    private float[] maxValue = new float[1];
-
-    private int[] currentMask = new int[4];
-
-    // Always use accessors to use this field -- even within this class!
-    private IntensityRange[] displayedRange = null;
-    // Always use accessors to use this field -- even within this class!
-//    private IntensityRange offLimbDisplayedRange = null;
-//    private boolean contrastSynced = false; // by default, the contrast of offlimb is not synced with on limb
-    private double imageOpacity = 1.0;
+    private String infoFileFullPath;
+    private String sumFileFullPath;
 
     private double[][] spacecraftPositionOriginal = new double[1][3];
     private double[][] frustum1Original = new double[1][3];
@@ -206,53 +118,20 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double[][] upVectorOriginal = new double[1][3];
     private double[][] sunPositionOriginal = new double[1][3];
 
-//    protected double[][] spacecraftPositionAdjusted = new double[1][3];
-//    protected double[][] frustum1Adjusted = new double[1][3];
-//    protected double[][] frustum2Adjusted = new double[1][3];
-//    protected double[][] frustum3Adjusted = new double[1][3];
-//    protected double[][] frustum4Adjusted = new double[1][3];
-//    private double[][] boresightDirectionAdjusted = new double[1][3];
-//    private double[][] upVectorAdjusted = new double[1][3];
-//    private double[][] sunPositionAdjusted = new double[1][3];
-//
-//    // location in pixel coordinates of the target origin for the adjusted frustum
-//    private double[] targetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
-
-//    // offset in world coordinates of the adjusted frustum from the loaded frustum
-//    // private double[] offsetPixelCoordinates = { Double.MAX_VALUE,
-//    // Double.MAX_VALUE };
-//
-//    private double[] zoomFactor = { 1.0 };
-//
-//    private double[] rotationOffset = { 0.0 };
-//    private double[] pitchOffset = { 0.0 };
-//    private double[] yawOffset = { 0.0 };
-//    private double sampleOffset = 0.0;
-//    private double lineOffset = 0.0;
-//
-//    // apply all frame adjustments if true
-//    private boolean[] applyFrameAdjustments = { true };
-
-    Frustum[] frusta = new Frustum[1];
-
-    private boolean showFrustum = false;
-    private boolean simulateLighting = false;
-
+    //////////////////////
+    // Other properties
+    //////////////////////
+    private String imageName;
+    protected int currentSlice = 0;
+    private SmallBodyModel smallBodyModel;
     private String startTime = "";
     private String stopTime = "";
-
-    private vtkImageCanvasSource2D maskSource;
-
     protected int imageWidth;
     protected int imageHeight;
     private int imageDepth = 1;
     int numBackplanes = BackplaneInfo.values().length;
 
-    public int getNumBackplanes()
-    {
-        return numBackplanes;
-    }
-
+    private ModelManager modelManager;
     private String pngFileFullPath; // The actual path of the PNG image stored on the local disk (after downloading
                                     // from the server)
     private String fitFileFullPath; // The actual path of the FITS image stored on the local disk (after downloading
@@ -260,43 +139,20 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private String enviFileFullPath; // The actual path of the ENVI binary stored on the local disk (after
                                      // downloading from the server)
     private String labelFileFullPath;
-    private String infoFileFullPath;
-    private String sumFileFullPath;
+
     protected int fitFileImageExtension = 0; // Default is to use the primary FITS image.
 
-    protected vtkTexture imageTexture;
-
-    // If true, then the footprint is generated by intersecting a frustum with the
-    // asteroid.
-    // This setting is used when generating the files on the server.
-    // If false, then the footprint is downloaded from the server. This setting is
-    // used by the GUI.
-    private static boolean generateFootprint = true;
-
+    float[] minValue = new float[1];
+    float[] maxValue = new float[1];
     private boolean loadPointingOnly;
-
-    public double[] maxFrustumDepth;
-    public double[] minFrustumDepth;
-
     private final boolean transposeFITSData;
+    Stopwatch sw;
 
     PerspectiveImageBackplanesHelper backplanesHelper;
     PerspectiveImageOffsetCalculator imageOffsetCalculator;
     PerspectiveImageOfflimbPlaneHelper offlimbPlaneHelper;
     PerspectiveImageRendererHelper rendererHelper;
-//    /*
-//     * For off-limb images
-//     */
-//    vtkPolyData offLimbPlane = null;
-//    private vtkActor offLimbActor;
-//    private vtkTexture offLimbTexture;
-//    vtkPolyData offLimbBoundary = null;
-//    private vtkActor offLimbBoundaryActor;
-//    double offLimbFootprintDepth;
-//    private boolean offLimbVisibility;
-//    private boolean offLimbBoundaryVisibility;
-//    OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
-    Stopwatch sw;
+
 
     public PerspectiveImage( //
             ImageKeyInterface key, //
@@ -388,8 +244,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         sw = new Stopwatch();
         sw.start();
-        footprint[0] = new vtkPolyData();
-        shiftedFootprint[0] = new vtkPolyData();
+//        footprint[0] = new vtkPolyData();
+//        shiftedFootprint[0] = new vtkPolyData();
 
         if (key.getSource().equals(ImageSource.LOCAL_PERSPECTIVE))
         {
@@ -440,25 +296,25 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             imageOffsetCalculator.updateFrameAdjustments();
         }
 
-        maxFrustumDepth = new double[imageDepth];
-        minFrustumDepth = new double[imageDepth];
+        rendererHelper.maxFrustumDepth = new double[imageDepth];
+        rendererHelper.minFrustumDepth = new double[imageDepth];
     }
 
-//    private void copySpacecraftState()
-//    {
-//        int nslices = getImageDepth();
-//        for (int i = 0; i < nslices; i++)
-//        {
-//            spacecraftPositionAdjusted = MathUtil.copy(spacecraftPositionOriginal);
-//            frustum1Adjusted = MathUtil.copy(frustum1Original);
-//            frustum2Adjusted = MathUtil.copy(frustum2Original);
-//            frustum3Adjusted = MathUtil.copy(frustum3Original);
-//            frustum4Adjusted = MathUtil.copy(frustum4Original);
-//            boresightDirectionAdjusted = MathUtil.copy(boresightDirectionOriginal);
-//            upVectorAdjusted = MathUtil.copy(upVectorOriginal);
-//            sunPositionAdjusted = MathUtil.copy(sunPositionOriginal);
-//        }
-//    }
+    private void initSpacecraftStateVariables()
+    {
+        int nslices = getImageDepth();
+        spacecraftPositionOriginal = new double[nslices][3];
+        frustum1Original = new double[nslices][3];
+        frustum2Original = new double[nslices][3];
+        frustum3Original = new double[nslices][3];
+        frustum4Original = new double[nslices][3];
+        sunPositionOriginal = new double[nslices][3];
+        boresightDirectionOriginal = new double[nslices][3];
+        upVectorOriginal = new double[nslices][3];
+        rendererHelper.frusta = new Frustum[nslices];
+        rendererHelper.footprint = new vtkPolyData[nslices];
+        rendererHelper.footprintGenerated = new boolean[nslices];
+    }
 
     public void resetSpacecraftState()
     {
@@ -466,8 +322,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         int nslices = getImageDepth();
         for (int i = 0; i < nslices; i++)
         {
-            frusta[i] = null;
-            footprintGenerated[i] = false;
+            rendererHelper.frusta[i] = null;
+            rendererHelper.footprintGenerated[i] = false;
         }
 
         // offsetPixelCoordinates[0] = Double.MAX_VALUE;
@@ -618,547 +474,18 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public void setSpectrumRegion(double[][] vertices)
     {}
 
-//    public void setTargetPixelCoordinates(double[] frustumCenterPixel)
-//    {
-//        // System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
-//        // frustumCenterPixel[0]);
-//
-//        this.targetPixelCoordinates[0] = frustumCenterPixel[0];
-//        this.targetPixelCoordinates[1] = frustumCenterPixel[1];
-//        setApplyFrameAdjustments(true);
-//    }
-
-    // public void setPixelOffset(double[] pixelOffset)
-    // {
-    //// System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
-    // frustumCenterPixel[0]);
-    //
-    // this.offsetPixelCoordinates[0] = pixelOffset[0];
-    // this.offsetPixelCoordinates[1] = pixelOffset[1];
-    //
-    // updateFrameAdjustments();
-    //
-    // loadFootprint();
-    // calculateFrustum();
-    // saveImageInfo();
-    // }
-
-//    public void setLineOffset(double offset)
-//    {
-//        lineOffset = offset;
-//        setApplyFrameAdjustments(true);
-//    }
-//
-//    public void setSampleOffset(double offset)
-//    {
-//        sampleOffset = offset;
-//        setApplyFrameAdjustments(true);
-//    }
-//
-//    public void setRotationOffset(double offset)
-//    {
-//        // System.out.println("setRotationOffset(): " + offset);
-//
-//        if (rotationOffset == null)
-//            rotationOffset = new double[1];
-//
-//        rotationOffset[0] = offset;
-//        setApplyFrameAdjustments(true);
-//    }
-//
-//    public void setYawOffset(double offset)
-//    {
-//        // System.out.println("setRotationOffset(): " + offset);
-//
-//        if (yawOffset == null)
-//            yawOffset = new double[1];
-//
-//        yawOffset[0] = offset;
-//        setApplyFrameAdjustments(true);
-//    }
-//
-//    public void setPitchOffset(double offset)
-//    {
-//        // System.out.println("setRotationOffset(): " + offset);
-//
-//        if (pitchOffset == null)
-//            pitchOffset = new double[1];
-//
-//        pitchOffset[0] = offset;
-//        setApplyFrameAdjustments(true);
-//    }
-//
-//    public void setZoomFactor(double offset)
-//    {
-//        // System.out.println("setZoomFactor(): " + offset);
-//
-//        if (zoomFactor == null)
-//        {
-//            zoomFactor = new double[1];
-//            zoomFactor[0] = 1.0;
-//        }
-//
-//        zoomFactor[0] = offset;
-//        setApplyFrameAdjustments(true);
-//    }
-
-//    public void setApplyFrameAdjustments(boolean state)
-//    {
-//        // System.out.println("setApplyFrameAdjustments(): " + state);
-//        applyFrameAdjustments[0] = state;
-//        updateFrameAdjustments();
-//        loadFootprint();
-//        calculateFrustum();
-//        saveImageInfo();
-//    }
-//
-//    public boolean getApplyFramedAdjustments()
-//    {
-//        return applyFrameAdjustments[0];
-//    }
-
-//    private void updateFrameAdjustments()
-//    {
-//        // adjust wrt the original spacecraft pointing direction, not the previous
-//        // adjusted one
-//        copySpacecraftState();
-//
-//        if (applyFrameAdjustments[0])
-//        {
-//            if (targetPixelCoordinates[0] != Double.MAX_VALUE && targetPixelCoordinates[1] != Double.MAX_VALUE)
-//            {
-//                int height = getImageHeight();
-//                double line = height - 1 - targetPixelCoordinates[0];
-//                double sample = targetPixelCoordinates[1];
-//
-//                double[] newTargetPixelDirection = getPixelDirection(sample, line);
-//                rotateTargetPixelDirectionToLocalOrigin(newTargetPixelDirection);
-//            }
-//            // else if (offsetPixelCoordinates[0] != Double.MAX_VALUE &&
-//            // offsetPixelCoordinates[1] != Double.MAX_VALUE)
-//            // {
-//            // int height = getImageHeight();
-//            // int width = getImageWidth();
-//            // double line = height - 1 - offsetPixelCoordinates[0];
-//            // double sample = offsetPixelCoordinates[1];
-//            //
-//            // double[] newOffsetPixelDirection = getPixelDirection(sample, line);
-//            // rotateBoresightTo(newOffsetPixelDirection);
-//            // }
-//
-//            if (sampleOffset != 0 || lineOffset != 0)
-//            	translateSpacecraftInImagePlane(sampleOffset, lineOffset);
-//            else
-//            	translateSpacecraftInImagePlane(0, 0);
-//
-////            if (yawOffset[0] != 0.0)
-////            {
-////            	rotateFrameAboutYawAxis(yawOffset[0]);
-////            }
-////
-////            if (pitchOffset[0] != 0.0)
-////            {
-////            	rotateFrameAboutPitchAxis(pitchOffset[0]);
-////
-////            }
-//
-//            if (rotationOffset[0] != 0.0)
-//            {
-//                rotateFrameAboutTarget(rotationOffset[0]);
-//            }
-//            if (zoomFactor[0] != 1.0)
-//            {
-//                zoomFrame(zoomFactor[0]);
-//            }
-//        }
-//
-//        // int slice = getCurrentSlice();
-//        int nslices = getImageDepth();
-//        for (int slice = 0; slice < nslices; slice++)
-//        {
-//            frusta[slice] = null;
-//            footprintGenerated[slice] = false;
-//        }
-//    }
-//
-//    private void zoomFrame(double zoomFactor)
-//    {
-//        // System.out.println("zoomFrame(" + zoomFactor + ")");
-//        // Vector3D spacecraftPositionVector = new
-//        // Vector3D(spacecraftPositionOriginal[currentSlice]);
-//        // Vector3D spacecraftToOriginVector =
-//        // spacecraftPositionVector.scalarMultiply(-1.0);
-//        // Vector3D originPointingVector = spacecraftToOriginVector.normalize();
-//        // double distance = spacecraftToOriginVector.getNorm();
-//        // Vector3D deltaVector = originPointingVector.scalarMultiply(distance *
-//        // (zoomFactor - 1.0));
-//        // double[] delta = { deltaVector.getX(), deltaVector.getY(), deltaVector.getZ()
-//        // };
-//
-//        double zoomRatio = 1.0 / zoomFactor;
-//        if (zoomRatio < 1.0)
-//    	{
-//        	zoomRatio = 1.0;
-//        	return;
-//    	}
-//        int nslices = getImageDepth();
-//        for (int slice = 0; slice < nslices; slice++)
-//        {
-//            double[][] surfacePoint = new double[nslices][3];
-//
-//            for (int i = 0; i < 3; i++)
-//            {
-//            	surfacePoint[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] + boresightDirectionOriginal[currentSlice][i];
-//            	spacecraftPositionAdjusted[currentSlice][i] = surfacePoint[currentSlice][i] - boresightDirectionOriginal[currentSlice][i] * zoomRatio;
-//
-////                spacecraftPositionAdjusted[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] * zoomRatio;
-////                boresightDirectionAdjusted[currentSlice][i] = boresightDirectionOriginal[currentSlice][i] * zoomRatio;
-//            }
-//            frusta[slice] = null;
-//            footprintGenerated[slice] = false;
-//        }
-//    }
-//
-//    private void rotateFrameAboutPitchAxis(double angleDegrees)
-//    {
-//    	int nslices = getImageDepth();
-//        for (int slice = 0; slice < nslices; slice++)
-//        {
-//        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
-//        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], vout);
-//        	MathUtil.unorm(vout, vout);
-//        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
-//        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-//        }
-//
-//    }
-//
-//
-//    private void rotateFrameAboutYawAxis(double angleDegrees)
-//    {
-//    	int nslices = getImageDepth();
-//        for (int slice = 0; slice < nslices; slice++)
-//        {
-//        	double[] vout = new double[] { 0.0, 0.0, 0.0 };
-//        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], vout);
-//        	MathUtil.unorm(vout, vout);
-//        	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
-//        	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-//        }
-//    }
-//
-//    private void rotateFrameAboutTarget(double angleDegrees)
-//    {
-//         Vector3D axis = new Vector3D(boresightDirectionOriginal[currentSlice]);
-////        Vector3D axis = new Vector3D(spacecraftPositionAdjusted[currentSlice]);
-////        axis.normalize();
-////        axis.negate();
-//        Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
-//
-//        // int slice = getCurrentSlice();
-//        int nslices = getImageDepth();
-//        for (int slice = 0; slice < nslices; slice++)
-//        {
-//            MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-//
-//            frusta[slice] = null;
-//            footprintGenerated[slice] = false;
-//        }
-//    }
-//
-//    private void translateSpacecraftInImagePlane(double sampleDelta, double lineDelta)
-//    {
-//    	int nslices = getImageDepth();
-//
-//        for (int slice = 0; slice < nslices; slice++)
-//        {
-//        	double[] sampleAxis = new double[] { 0.0, 0.0, 0.0 };
-//        	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], sampleAxis);
-//        	MathUtil.unorm(sampleAxis, sampleAxis);
-//        	double[] lineAxis = new double[] { 0.0, 0.0, 0.0 };
-//        	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], lineAxis);
-//        	MathUtil.unorm(lineAxis, lineAxis);
-//        	MathUtil.vscl(sampleDelta, sampleAxis, sampleAxis);
-//        	MathUtil.vadd(spacecraftPositionAdjusted[slice], sampleAxis, spacecraftPositionAdjusted[slice]);
-//        	MathUtil.vscl(lineDelta, lineAxis, lineAxis);
-//        	MathUtil.vadd(spacecraftPositionAdjusted[slice], lineAxis, spacecraftPositionAdjusted[slice]);
-//        }
-//    }
-//
-//    public void moveTargetPixelCoordinates(double[] pixelDelta)
-//    {
-//         System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
-//         pixelDelta[0]);
-//         System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
-//        double height = (double) getImageHeight();
-//        if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
-//        {
-//            targetPixelCoordinates = getPixelFromPoint(bodyOrigin);
-//            targetPixelCoordinates[0] = height - 1 - targetPixelCoordinates[0];
-//        }
-//        System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords 2 " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
-//
-//        double line = this.targetPixelCoordinates[0] + pixelDelta[0];
-//        double sample = targetPixelCoordinates[1] + pixelDelta[1];
-//        double[] newFrustumCenterPixel = { line, sample };
-//        System.out.println("moveTargetPixelCoordinates(): " + newFrustumCenterPixel[1] + " " + newFrustumCenterPixel[0]);
-//        setTargetPixelCoordinates(newFrustumCenterPixel);
-//    }
-//
-//    // public void moveOffsetPixelCoordinates(double[] pixelDelta)
-//    // {
-//    //// System.out.println("moveOffsetPixelCoordinates(): " + pixelDelta[1] + " " +
-//    // pixelDelta[0]);
-//    //
-//    // double height = (double)getImageHeight();
-//    // double width = (double)getImageWidth();
-//    // if (offsetPixelCoordinates[0] == Double.MAX_VALUE ||
-//    // offsetPixelCoordinates[1] == Double.MAX_VALUE)
-//    // {
-//    // offsetPixelCoordinates[0] = 0.0;
-//    // offsetPixelCoordinates[1] = 0.0;
-//    // }
-//    // double line = offsetPixelCoordinates[0] + pixelDelta[0];
-//    // double sample = offsetPixelCoordinates[1] + pixelDelta[1];
-//    // double[] newPixelOffset = { line, sample };
-//    //
-//    // setPixelOffset(newPixelOffset);
-//    // }
-//
-//    public void movePitchAngleBy(double rotationDelta)
-//    {
-//    	double newPitchOffset = pitchOffset[0] + rotationDelta;
-//    	setPitchOffset(newPitchOffset);
-//    }
-//
-//    public void moveYawAngleBy(double rotationDelta)
-//    {
-//    	double newYawOffset = yawOffset[0] + rotationDelta;
-//    	setYawOffset(newYawOffset);
-//    }
-
-//    public void moveLineOffsetBy(double offset)
-//    {
-//    	setLineOffset(lineOffset + offset);
-//    }
-//
-//    public void moveSampleOffsetBy(double offset)
-//    {
-//    	setSampleOffset(sampleOffset + offset);
-//    }
-//
-//
-//    /**
-//     * This adjusts the roll angle about the boresight direction
-//     * @param rotationDelta
-//     */
-//    public void moveRotationAngleBy(double rotationDelta)
-//    {
-//        // System.out.println("moveRotationAngleBy(): " + rotationDelta);
-//
-//        double newRotationOffset = rotationOffset[0] + rotationDelta;
-//
-//        setRotationOffset(newRotationOffset);
-//    }
-//
-//    public void moveZoomFactorBy(double zoomDelta)
-//    {
-//        // System.out.println("moveZoomDeltaBy(): " + zoomDelta);
-//
-//        double newZoomFactor = zoomFactor[0] * zoomDelta;
-//
-//        setZoomFactor(newZoomFactor);
-//    }
-
-    // private void rotateBoresightDirectionTo(double[] newDirection)
-    // {
-    // Vector3D oldDirectionVector = new
-    // Vector3D(boresightDirectionOriginal[currentSlice]);
-    // Vector3D newDirectionVector = new Vector3D(newDirection);
-    //
-    // Rotation rotation = new Rotation(oldDirectionVector, newDirectionVector);
-    //
-    // int nslices = getNumberBands();
-    // for (int i = 0; i<nslices; i++)
-    // {
-    // MathUtil.rotateVector(frustum1Adjusted[i], rotation, frustum1Adjusted[i]);
-    // MathUtil.rotateVector(frustum2Adjusted[i], rotation, frustum2Adjusted[i]);
-    // MathUtil.rotateVector(frustum3Adjusted[i], rotation, frustum3Adjusted[i]);
-    // MathUtil.rotateVector(frustum4Adjusted[i], rotation, frustum4Adjusted[i]);
-    // MathUtil.rotateVector(boresightDirectionAdjusted[i], rotation,
-    // boresightDirectionAdjusted[i]);
-    //
-    // frusta[i] = null;
-    // footprintGenerated[i] = false;
-    // }
-    //
-    //// loadFootprint();
-    //// calculateFrustum();
-    // }
-
-//    private void rotateTargetPixelDirectionToLocalOrigin(double[] direction)
-//    {
-//        Vector3D directionVector = new Vector3D(direction);
-//        Vector3D spacecraftPositionVector = new Vector3D(spacecraftPositionOriginal[currentSlice]);
-//        Vector3D spacecraftToOriginVector = spacecraftPositionVector.scalarMultiply(-1.0);
-//        Vector3D originPointingVector = spacecraftToOriginVector.normalize();
-//
-//        Rotation rotation = new Rotation(directionVector, originPointingVector);
-//
-//        // int slice = getCurrentSlice();
-//        int nslices = getImageDepth();
-//        for (int slice = 0; slice < nslices; slice++)
-//        {
-//            MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
-//            MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
-//            MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
-//            MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
-//            MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
-//
-//            frusta[slice] = null;
-//            footprintGenerated[slice] = false;
-//        }
-//    }
-
-    public void calculateFrustum()
-    {
-        if (frustumActor == null)
-            return;
-        // System.out.println("recalculateFrustum()");
-        frustumPolyData = new vtkPolyData();
-
-        vtkPoints points = new vtkPoints();
-        vtkCellArray lines = new vtkCellArray();
-
-        vtkIdList idList = new vtkIdList();
-        idList.SetNumberOfIds(2);
-
-        double[][] frustum1Adjusted = getFrustum1Adjusted();
-        double[][] frustum2Adjusted = getFrustum2Adjusted();
-        double[][] frustum3Adjusted = getFrustum3Adjusted();
-        double[][] frustum4Adjusted = getFrustum4Adjusted();
-        double[][] spacecraftPositionAdjusted = getSpacecraftPositionAdjusted();
-        double maxFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) + smallBodyModel.getBoundingBoxDiagonalLength();
-        double[] origin = spacecraftPositionAdjusted[currentSlice];
-        double[] UL = { origin[0] + frustum1Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum1Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum1Adjusted[currentSlice][2] * maxFrustumRayLength };
-        double[] UR = { origin[0] + frustum2Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum2Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum2Adjusted[currentSlice][2] * maxFrustumRayLength };
-        double[] LL = { origin[0] + frustum3Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum3Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum3Adjusted[currentSlice][2] * maxFrustumRayLength };
-        double[] LR = { origin[0] + frustum4Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum4Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum4Adjusted[currentSlice][2] * maxFrustumRayLength };
-
-        double minFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) - smallBodyModel.getBoundingBoxDiagonalLength();
-        maxFrustumDepth[currentSlice] = maxFrustumRayLength; // a reasonable approximation for a max bound on the frustum depth
-        minFrustumDepth[currentSlice] = minFrustumRayLength; // a reasonable approximation for a min bound on the frustum depth
-
-        points.InsertNextPoint(spacecraftPositionAdjusted[currentSlice]);
-        points.InsertNextPoint(UL);
-        points.InsertNextPoint(UR);
-        points.InsertNextPoint(LL);
-        points.InsertNextPoint(LR);
-
-        idList.SetId(0, 0);
-        idList.SetId(1, 1);
-        lines.InsertNextCell(idList);
-        idList.SetId(0, 0);
-        idList.SetId(1, 2);
-        lines.InsertNextCell(idList);
-        idList.SetId(0, 0);
-        idList.SetId(1, 3);
-        lines.InsertNextCell(idList);
-        idList.SetId(0, 0);
-        idList.SetId(1, 4);
-        lines.InsertNextCell(idList);
-
-        frustumPolyData.SetPoints(points);
-        frustumPolyData.SetLines(lines);
-
-        vtkPolyDataMapper frusMapper = new vtkPolyDataMapper();
-        frusMapper.SetInputData(frustumPolyData);
-
-        frustumActor.SetMapper(frusMapper);
-    }
-
     /**
-     * Return the multispectral image's spectrum region in pixel space.
+     * Return the default mask sizes as a 4 element integer array where the: first
+     * element is the top mask size, second element is the right mask size, third
+     * element is the bottom mask size, fourth element is the left mask size.
      *
-     * @return array describing region over which the spectrum is calculated.
+     * @return
      */
-    public double[][] getSpectrumRegion()
-    {
-        return null;
-    }
+    abstract protected int[] getMaskSizes();
 
-    public void setPickedPosition(double[] position)
-    {
-        // System.out.println("PerspectiveImage.setPickedPosition(): " + position[0] +
-        // ", " + position[1] + ", " + position[2]);
-        double[] pixelPosition = getPixelFromPoint(position);
-        double[][] region = { { pixelPosition[0], pixelPosition[1] } };
-        setSpectrumRegion(region);
-    }
-
-    public double[] getPixelFromPoint(double[] pt)
-    {
-        double[] uv = new double[2];
-        Frustum frustum = getFrustum();
-        frustum.computeTextureCoordinatesFromPoint(pt, getImageWidth(), getImageHeight(), uv, false);
-
-        double[] pixel = new double[2];
-        pixel[0] = uv[0] * getImageHeight();
-        pixel[1] = uv[1] * getImageWidth();
-
-        return pixel;
-    }
-
-    public double getPixelDistance(double[] pt1, double[] pt2)
-    {
-        double[] pixel1 = getPixelFromPoint(pt1);
-        double[] pixel2 = getPixelFromPoint(pt2);
-
-        return MathUtil.distanceBetween(pixel1, pixel2);
-    }
-
-    private void deleteAdjustedImageInfo(String filePath)
-    {
-        // Deletes for either SUM or INFO files with the following priority scheme:
-        // - if a SUM file is specified, look first for an adjusted INFO file, then look
-        // for the SUM file
-        // - if an INFO file is specified, look first for an adjusted INFO file, the the
-        // INFO file
-
-        if (filePath == null || filePath.endsWith("null"))
-        {
-            filePath = getSumfileFullPath();
-            if (filePath != null && filePath.endsWith("SUM"))
-                filePath = filePath.substring(0, filePath.length()-FilenameUtils.getExtension(filePath).length()) + "INFO";
-            else
-                filePath = "";
-        }
-
-        // look for an adjusted file first
-        try
-        {
-            File f = new File(filePath + ".adjusted");
-            if (f.exists())
-                f.delete();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
+    ///////////////////////////
+    // Pointing methods
+    ///////////////////////////
     protected void loadImageInfo( //
             String infoFilename, //
             int startSlice, // for loading multiple info files, the starting array index to put the info
@@ -1427,142 +754,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         in.close();
     }
 
-    public void exportAsEnvi( //
-            String enviFilename, // no extensions
-            String interleaveType, // "bsq", "bil", or "bip"
-            boolean hostByteOrder //
-    ) throws IOException //
-    {
-        // Check if interleave type is recognized
-        switch (interleaveType)
-        {
-        case "bsq":
-        case "bil":
-        case "bip":
-            break;
-        default:
-            System.out.println("Interleave type " + interleaveType + " unrecognized, aborting exportAsEnvi()");
-            return;
-        }
-
-        // Create output stream for header (.hdr) file
-        FileOutputStream fs = null;
-        try
-        {
-            fs = new FileOutputStream(enviFilename + ".hdr");
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-            return;
-        }
-        OutputStreamWriter osw = new OutputStreamWriter(fs);
-        BufferedWriter out = new BufferedWriter(osw);
-
-        // Write the fields of the header
-        out.write("ENVI\n");
-        out.write("samples = " + imageWidth + "\n");
-        out.write("lines = " + imageHeight + "\n");
-        out.write("bands = " + getImageDepth() + "\n");
-        out.write("header offset = " + "0" + "\n");
-        out.write("data type = " + "4" + "\n"); // 1 = byte, 2 = int, 3 = signed int, 4 = float
-        out.write("interleave = " + interleaveType + "\n"); // bsq = band sequential, bil = band interleaved by line, bip = band interleaved
-                                                            // by pixel
-        out.write("byte order = "); // 0 = host(intel, LSB first), 1 = network (IEEE, MSB first)
-        if (hostByteOrder)
-        {
-            // Host byte order
-            out.write("0" + "\n");
-        }
-        else
-        {
-            // Network byte order
-            out.write("1" + "\n");
-        }
-        out.write(getEnviHeaderAppend());
-        out.close();
-
-        // Configure byte buffer & endianess
-        ByteBuffer bb = ByteBuffer.allocate(4 * imageWidth * imageHeight * getImageDepth()); // 4 bytes per float
-        if (hostByteOrder)
-        {
-            // Little Endian = LSB stored first
-            bb.order(ByteOrder.LITTLE_ENDIAN);
-        }
-        else
-        {
-            // Big Endian = MSB stored first
-            bb.order(ByteOrder.BIG_ENDIAN);
-        }
-
-        // Write pixels to byte buffer
-        // Remember, VTK origin is at bottom left while ENVI origin is at top left
-        float[][][] imageData = ImageDataUtil.vtkImageDataToArray3D(rawImage);
-        switch (interleaveType)
-        {
-        case "bsq":
-            // Band sequential: col, then row, then depth
-            for (int depth = 0; depth < getImageDepth(); depth++)
-            {
-                // for(int row = imageHeight-1; row >= 0; row--)
-                for (int row = 0; row < imageHeight; row++)
-                {
-                    for (int col = 0; col < imageWidth; col++)
-                    {
-                        bb.putFloat(imageData[depth][row][col]);
-                    }
-                }
-            }
-            break;
-        case "bil":
-            // Band interleaved by line: col, then depth, then row
-            // for(int row=imageHeight-1; row >= 0; row--)
-            for (int row = 0; row < imageHeight; row++)
-            {
-                for (int depth = 0; depth < getImageDepth(); depth++)
-                {
-                    for (int col = 0; col < imageWidth; col++)
-                    {
-                        bb.putFloat(imageData[depth][row][col]);
-                    }
-                }
-            }
-            break;
-        case "bip":
-            // Band interleaved by pixel: depth, then col, then row
-            // for(int row=imageHeight-1; row >= 0; row--)
-            for (int row = 0; row < imageHeight; row++)
-            {
-                for (int col = 0; col < imageWidth; col++)
-                {
-                    for (int depth = 0; depth < getImageDepth(); depth++)
-                    {
-                        bb.putFloat(imageData[depth][row][col]);
-                    }
-                }
-            }
-            break;
-        }
-
-        // Create output stream and write contents of byte buffer
-        try (FileOutputStream stream = new FileOutputStream(enviFilename))
-        {
-            FileChannel fc = stream.getChannel();
-            bb.flip(); // flip() is a misleading name, nothing is being flipped. Buffer end is set to
-                       // curr pos and curr pos set to beginning.
-            fc.write(bb);
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public String getEnviHeaderAppend()
-    {
-        return "";
-    }
-
     public void saveImageInfo( //
             String infoFilename, //
             int slice, // currently, we only support single-frame INFO files
@@ -1648,420 +839,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         out.close();
     }
 
-    /**
-     * Return the default mask sizes as a 4 element integer array where the: first
-     * element is the top mask size, second element is the right mask size, third
-     * element is the bottom mask size, fourth element is the left mask size.
-     *
-     * @return
-     */
-    abstract protected int[] getMaskSizes();
-
-    protected String initializeFitFileFullPath() throws IOException
-    {
-        return initLocalFitFileFullPath();
-    }
-
-    protected String initializeEnviFileFullPath()
-    {
-        return initLocalEnviFileFullPath();
-    }
-
-    protected String initializePngFileFullPath()
-    {
-        return initializeLabelFileFullPath();
-    }
-
-    protected String initLocalPngFileFullPath()
-    {
-        String name = getKey().getName().endsWith(".png") ? getKey().getName() : null;
-        if (name == null)
-            return name;
-        if (name.startsWith("file://"))
-            return name.substring(name.indexOf("file://") + 7);
-        else
-            return name;
-    }
-
-    protected String initLocalFitFileFullPath()
-    {
-        String keyName = getKey().getName();
-        if (keyName.endsWith(".fit") || keyName.endsWith(".fits") ||
-                keyName.endsWith(".FIT") || keyName.endsWith(".FITS"))
-        {
-            // Allowed fit file extensions for getKey().name
-            return keyName;
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    protected String initLocalEnviFileFullPath()
-    {
-        return VtkENVIReader.isENVIFilename(getKey().getName()) ? getKey().getName() : null;
-    }
-
-    protected String initializeLabelFileFullPath()
-    {
-        return initLocalLabelFileFullPath();
-    }
-
-    protected String initializeInfoFileFullPath()
-    {
-        return initLocalInfoFileFullPath();
-    }
-
-    protected String initializeSumfileFullPath() throws IOException
-    {
-        return initLocalSumfileFullPath();
-    }
-
-    protected String initLocalLabelFileFullPath()
-    {
-        return null;
-    }
-
-    private List<CustomImageKeyInterface> getCustomImageMetadata() throws IOException
-    {
-        final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
-        String file;
-        if (getKey().getName().startsWith("file://"))
-            file = getKey().getName().substring(7, getKey().getName().lastIndexOf("/"));
-        else
-            file = new File(getKey().getImageFilename()).getParent();
-        String configFilename = file + File.separator + "config.txt";
-        FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
-        return metadata.get(customImagesKey);
-
-    }
-
-    protected <T> T read(Key<T> key, Metadata configMetadata)
-    {
-        T value = configMetadata.get(key);
-        if (value != null)
-            return value;
-        return null;
-    }
-
-    protected String initLocalInfoFileFullPath()
-    {
-        List<CustomImageKeyInterface> images;
-        try
-        {
-            images = getCustomImageMetadata();
-            for (ImageKeyInterface info : images)
-            {
-                String filename = new File(getKey().getName()).getName();
-                if (filename.equals(info.getImageFilename()))
-                {
-                    if (info.getFileType() == FileType.SUM)
-                        return null;
-                    String string = new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
-                    if (getKey().getName().startsWith("file:/"))
-                        return string.substring(5);
-                    else
-                        return string;
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    protected String initLocalSumfileFullPath()
-    {
-
-        List<CustomImageKeyInterface> images;
-        try
-        {
-            images = getCustomImageMetadata();
-            for (CustomImageKeyInterface info : images)
-            {
-                String filename = new File(getKey().getName()).getName();
-                if (filename.equals(info.getImageFilename()))
-                {
-                    if (info.getFileType() == FileType.INFO)
-                        return null;
-
-                    String string = new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
-                    if (getKey().getName().startsWith("file:/"))
-                        return string.substring(5);
-                    else
-                        return string;
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private void loadImageInfoFromConfigFile()
-    {
-        List<CustomImageKeyInterface> images;
-        try
-        {
-            images = getCustomImageMetadata();
-            for (CustomImageKeyInterface info : images)
-            {
-                String filename = new File(getKey().getName()).getName();
-                if (filename.equals(info.getImageFilename()))
-                {
-                    imageName = info.getImageFilename();
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-//        // Look in the config file and figure out which index this image
-//        // corresponds to. The config file is located in the same folder
-//        // as the image file
-//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
-//        MapUtil configMap = new MapUtil(configFilename);
-//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
-//        for (int i=0; i<imageFilenames.length; ++i)
-//        {
-//            String filename = new File(getKey().name).getName();
-//            if (filename.equals(imageFilenames[i]))
-//            {
-//                imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
-//                break;
-//            }
-//        }
-    }
-
-    private String imageName;
-
-    @Override
-    public String getImageName()
-    {
-        if (imageName != null)
-            return imageName;
-        else
-            return super.getImageName();
-    }
-
-//    protected void appendWithPadding(StringBuffer strbuf, String str)
-//    {
-//        strbuf.append(str);
-//
-//        int length = str.length();
-//        while (length < 78)
-//        {
-//            strbuf.append(' ');
-//            ++length;
-//        }
-//
-//        strbuf.append("\r\n");
-//    }
-
-//    /**
-//     * Generate PDS 3 format backplanes label file. This is the default
-//     * implementation for classes extending PerspectiveImage.
-//     *
-//     * @param imgName - pointer to the data File for which this label is being
-//     *            created
-//     * @param lblFileName - pointer to the output label file to be written, without
-//     *            file name extension. The extension is dependent on image type
-//     *            (e.g. MSI images are written as PDS 4 XML labels), and is assigned
-//     *            in the class implementing this function.
-//     * @throws IOException
-//     */
-//    public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
-//    {
-//        StringBuffer strbuf = new StringBuffer("");
-//
-//        int numBands = 16;
-//
-//        appendWithPadding(strbuf, "PDS_VERSION_ID               = PDS3");
-//        appendWithPadding(strbuf, "");
-//
-//        appendWithPadding(strbuf, "PRODUCT_TYPE                 = DDR");
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        Date date = new Date();
-//        String dateStr = sdf.format(date).replace(' ', 'T');
-//        appendWithPadding(strbuf, "PRODUCT_CREATION_TIME        = " + dateStr);
-//        appendWithPadding(strbuf, "PRODUCER_INSTITUTION_NAME    = \"APPLIED PHYSICS LABORATORY\"");
-//        appendWithPadding(strbuf, "SOFTWARE_NAME                = \"Small Body Mapping Tool\"");
-//        appendWithPadding(strbuf, "SHAPE_MODEL                  = \"" + smallBodyModel.getModelName() + "\"");
-//
-//        appendWithPadding(strbuf, "");
-//        appendWithPadding(strbuf, "/* This DDR label describes one data file:                               */");
-//        appendWithPadding(strbuf, "/* 1. A multiple-band backplane image file with wavelength-independent,  */");
-//        appendWithPadding(strbuf, "/* spatial pixel-dependent geometric and timing information.             */");
-//        appendWithPadding(strbuf, "");
-//        appendWithPadding(strbuf, "OBJECT                       = FILE");
-//
-//        appendWithPadding(strbuf, "  ^IMAGE                     = \"" + imgName.getName() + "\"");
-//
-//        appendWithPadding(strbuf, "  RECORD_TYPE                = FIXED_LENGTH");
-//        appendWithPadding(strbuf, "  RECORD_BYTES               = " + (imageHeight * 4));
-//        appendWithPadding(strbuf, "  FILE_RECORDS               = " + (imageWidth * numBands));
-//        appendWithPadding(strbuf, "");
-//
-//        appendWithPadding(strbuf, "  OBJECT                     = IMAGE");
-//        appendWithPadding(strbuf, "    LINES                    = " + imageHeight);
-//        appendWithPadding(strbuf, "    LINE_SAMPLES             = " + imageWidth);
-//        appendWithPadding(strbuf, "    SAMPLE_TYPE              = IEEE_REAL");
-//        appendWithPadding(strbuf, "    SAMPLE_BITS              = 32");
-//        appendWithPadding(strbuf, "    CORE_NULL                = 16#F49DC5AE#"); // bit pattern of -1.0e32 in hex
-//
-//        appendWithPadding(strbuf, "    BANDS                    = " + numBands);
-//        appendWithPadding(strbuf, "    BAND_STORAGE_TYPE        = BAND_SEQUENTIAL");
-//        appendWithPadding(strbuf, "    BAND_NAME                = (\"Pixel value\",");
-//        appendWithPadding(strbuf, "                                \"x coordinate of center of pixel, km\",");
-//        appendWithPadding(strbuf, "                                \"y coordinate of center of pixel, km\",");
-//        appendWithPadding(strbuf, "                                \"z coordinate of center of pixel, km\",");
-//        appendWithPadding(strbuf, "                                \"Latitude, deg\",");
-//        appendWithPadding(strbuf, "                                \"Longitude, deg\",");
-//        appendWithPadding(strbuf, "                                \"Distance from center of body, km\",");
-//        appendWithPadding(strbuf, "                                \"Incidence angle, deg\",");
-//        appendWithPadding(strbuf, "                                \"Emission angle, deg\",");
-//        appendWithPadding(strbuf, "                                \"Phase angle, deg\",");
-//        appendWithPadding(strbuf, "                                \"Horizontal pixel scale, km per pixel\",");
-//        appendWithPadding(strbuf, "                                \"Vertical pixel scale, km per pixel\",");
-//        appendWithPadding(strbuf, "                                \"Slope, deg\",");
-//        appendWithPadding(strbuf, "                                \"Elevation, m\",");
-//        appendWithPadding(strbuf, "                                \"Gravitational acceleration, m/s^2\",");
-//        appendWithPadding(strbuf, "                                \"Gravitational potential, J/kg\")");
-//        appendWithPadding(strbuf, "");
-//        appendWithPadding(strbuf, "  END_OBJECT                 = IMAGE");
-//        appendWithPadding(strbuf, "END_OBJECT                   = FILE");
-//
-//        appendWithPadding(strbuf, "");
-//        appendWithPadding(strbuf, "END");
-//
-//        // return strbuf.toString();
-//        byte[] bytes = strbuf.toString().getBytes();
-//        OutputStream out = new FileOutputStream(lblFileName.getAbsolutePath() + ".lbl");
-//        out.write(bytes, 0, bytes.length);
-//        out.close();
-//    }
-
-    /**
-     * Get filter as an integer id. Return -1 if no filter is available.
-     *
-     * @return
-     */
-    public int getFilter()
-    {
-        return -1;
-    }
-
-    /**
-     * Get filter name as string. By default cast filter id to string. Return null
-     * if filter id is negative.
-     *
-     * @return
-     */
-    public String getFilterName()
-    {
-        int filter = getFilter();
-        if (filter < 0)
-            return null;
-        else
-            return String.valueOf(filter);
-    }
-
-    /**
-     * Return the camera id. We assign an integer id to each camera. For example, if
-     * there are 2 cameras on the spacecraft, return either 1 or 2. If there are 2
-     * spacecrafts each with a single camera, then also return either 1 or 2. Return
-     * -1 if camera is not available.
-     *
-     * @return
-     */
-    public int getCamera()
-    {
-        return -1;
-    }
-
-    /**
-     * Get camera name as string. By default cast camera id to string. Return null
-     * if camera id is negative.
-     *
-     * @return
-     */
-    public String getCameraName()
-    {
-        int camera = getCamera();
-        if (camera < 0)
-            return null;
-        else
-            return String.valueOf(camera);
-    }
-
-    public int getImageWidth()
-    {
-        return imageWidth;
-    }
-
-    public int getImageHeight()
-    {
-        return imageHeight;
-    }
-
-    public int getImageDepth()
-    {
-        return imageDepth;
-    }
-
-    public String getPngFileFullPath()
-    {
-        return pngFileFullPath;
-    }
-
-    public String getFitFileFullPath()
-    {
-        return fitFileFullPath;
-    }
-
-    public String getEnviFileFullPath()
-    {
-        return enviFileFullPath;
-    }
-
-    public String getImageFileFullPath()
-    {
-        if (fitFileFullPath != null)
-        {
-            return fitFileFullPath;
-        }
-        else if (pngFileFullPath != null)
-        {
-            return pngFileFullPath;
-        }
-        else if (enviFileFullPath != null)
-        {
-            return enviFileFullPath;
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    public String[] getFitFilesFullPath()
-    {
-        String[] result = { fitFileFullPath };
-        return result;
-    }
-
     public String getLabelFileFullPath()
     {
         return labelFileFullPath;
@@ -2086,415 +863,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public String getLabelfileFullPath()
     {
         return getLabelFileFullPath();
-    }
-
-    /**
-     * Give oppurtunity to subclass to do some processing on the raw image such as
-     * resizing, flipping, masking, etc.
-     *
-     * @param rawImage
-     */
-    protected void processRawImage(vtkImageData rawImage)
-    {
-    	if (getFlip().equals("X"))
-        {
-            ImageDataUtil.flipImageXAxis(rawImage);
-        }
-        else if (getFlip().equals("Y"))
-        {
-            ImageDataUtil.flipImageYAxis(rawImage);
-        }
-        if (getRotation() != 0.0)
-            ImageDataUtil.rotateImage(rawImage, 360.0 - getRotation());
-    }
-
-    protected vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)
-    {
-        return createRawImage(height, width, depth, true, array2D, array3D);
-    }
-
-    public vtkImageData createRawImage(int height, int width, int depth, boolean transpose, float[][] array2D, float[][][] array3D)
-    {
-        // Allocate enough room to store min/max value at each layer
-        maxValue = new float[depth];
-        minValue = new float[depth];
-
-        // Call
-        return ImageDataUtil.createRawImage(height, width, depth, transpose, array2D, array3D, minValue, maxValue);
-    }
-
-    protected void loadImageCalibrationData(Fits f) throws FitsException, IOException
-    {
-        // to be overridden by subclasses that load calibration data
-    }
-
-    protected void loadPngFile()
-    {
-        String name = getPngFileFullPath();
-
-        String imageFile = null;
-        if (getKey().getSource() == ImageSource.IMAGE_MAP)
-            imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
-        else
-            imageFile = getKey().getName();
-        if (imageFile.startsWith("file://"))
-            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
-        if (rawImage == null)
-            rawImage = new vtkImageData();
-
-        vtkPNGReader reader = new vtkPNGReader();
-        reader.SetFileName(imageFile);
-        reader.Update();
-        rawImage.DeepCopy(reader.GetOutput());
-    }
-
-    protected void loadFitsFiles() throws FitsException, IOException
-    {
-        // TODO: maybe make this more efficient if possible
-
-        String[] filenames = getFitFilesFullPath();
-        String filename = filenames[0];
-
-        float[][] array2D = null;
-        float[][][] array3D = null;
-        double[][][] array3Ddouble = null;
-
-        int[] fitsAxes = null;
-        int fitsNAxes = 0;
-        // height is axis 0
-        int fitsHeight = 0;
-        // for 2D pixel arrays, width is axis 1, for 3D pixel arrays, width axis is 2
-        int fitsWidth = 0;
-        // for 2D pixel arrays, depth is 0, for 3D pixel arrays, depth axis is 1
-        int fitsDepth = 0;
-
-        // single file images (e.g. LORRI and LEISA)
-        if (filenames.length == 1)
-        {
-            try (Fits f = new Fits(filename))
-            {
-                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
-
-                fitsAxes = h.getAxes();
-                fitsNAxes = fitsAxes.length;
-                fitsHeight = fitsAxes[0];
-                fitsWidth = fitsNAxes == 3 ? fitsAxes[2] : fitsAxes[1];
-                fitsDepth = fitsNAxes == 3 ? fitsAxes[1] : 1;
-
-                Object data = h.getData().getData();
-
-                // for 3D arrays we consider the second axis the "spectral" axis
-                if (data instanceof float[][][])
-                {
-                    if (shiftBands())
-                    {
-                        array3D = new float[fitsHeight][fitsWidth][fitsDepth];
-                        for (int i = 0; i < fitsHeight; ++i)
-                            for (int j = 0; j < fitsWidth; ++j)
-                                for (int k = 0; k < fitsDepth; ++k)
-                                {
-                                    int w = i + j - fitsDepth / 2;
-                                    if (w >= 0 && w < fitsHeight)
-                                        array3D[w][j][k] = ((float[][][]) data)[i][j][k];
-                                }
-
-                    }
-                    else
-                        array3D = (float[][][]) data;
-
-                    // System.out.println("3D pixel array detected: " + array3D.length + "x" +
-                    // array3D[0].length + "x" + array3D[0][0].length);
-                }
-                else if (data instanceof double[][][])
-                {
-                    array3Ddouble = new double[fitsHeight][fitsWidth][fitsDepth];
-                    if (shiftBands())
-                    {
-                        for (int i = 0; i < fitsHeight; ++i)
-                            for (int j = 0; j < fitsWidth; ++j)
-                                for (int k = 0; k < fitsDepth; ++k)
-                                {
-                                    int w = i + j - fitsDepth / 2;
-                                    if (w >= 0 && w < fitsHeight)
-                                        array3Ddouble[w][j][k] = ((double[][][]) data)[i][j][k];
-                                }
-
-                    }
-                    else
-                    {
-                        for (int i = 0; i < fitsHeight; ++i)
-                            for (int j = 0; j < fitsWidth; ++j)
-                                for (int k = 0; k < fitsDepth; ++k)
-                                {
-                                    array3Ddouble[i][j][k] = ((double[][][]) data)[i][j][k];
-                                }
-
-                    }
-
-                    // System.out.println("3D pixel array detected: " + array3D.length + "x" +
-                    // array3D[0].length + "x" + array3D[0][0].length);
-                }
-                else if (data instanceof float[][])
-                {
-                    array2D = (float[][]) data;
-                }
-                else if (data instanceof short[][])
-                {
-                    short[][] arrayS = (short[][]) data;
-                    array2D = new float[fitsHeight][fitsWidth];
-
-                    for (int i = 0; i < fitsHeight; ++i)
-                        for (int j = 0; j < fitsWidth; ++j)
-                        {
-                            array2D[i][j] = arrayS[i][j];
-                        }
-                }
-                else if (data instanceof double[][])
-                {
-                    double[][] arrayDouble = (double[][]) data;
-                    array2D = new float[fitsHeight][fitsWidth];
-
-                    for (int i = 0; i < fitsHeight; ++i)
-                        for (int j = 0; j < fitsWidth; ++j)
-                        {
-                            array2D[i][j] = (float) arrayDouble[i][j];
-                        }
-                }
-                else if (data instanceof byte[][])
-                {
-                    byte[][] arrayB = (byte[][]) data;
-                    array2D = new float[fitsHeight][fitsWidth];
-
-                    for (int i = 0; i < fitsHeight; ++i)
-                        for (int j = 0; j < fitsWidth; ++j)
-                        {
-                            array2D[i][j] = arrayB[i][j] & 0xFF;
-                        }
-                }
-                else
-                {
-                    System.out.println("Data type not supported: " + data.getClass().getCanonicalName());
-                    return;
-                }
-
-                // load in calibration info
-                loadImageCalibrationData(f);
-            }
-        }
-        // for multi-file images (e.g. MVIC)
-        else if (filenames.length > 1)
-        {
-            fitsDepth = filenames.length;
-            fitsAxes = new int[3];
-            fitsAxes[2] = fitsDepth;
-            fitsNAxes = 3;
-
-            for (int k = 0; k < fitsDepth; k++)
-            {
-                try (Fits f = new Fits(filenames[k]))
-                {
-                    BasicHDU<?> h = f.getHDU(fitFileImageExtension);
-
-                    int[] multiImageAxes = h.getAxes();
-                    int multiImageNAxes = multiImageAxes.length;
-
-                    if (multiImageNAxes > 2)
-                    {
-                        System.out.println("Multi-file images must be 2D.");
-                        return;
-                    }
-
-                    // height is axis 0, width is axis 1
-                    fitsHeight = fitsAxes[0] = multiImageAxes[0];
-                    fitsWidth = fitsAxes[2] = multiImageAxes[1];
-
-                    if (array3D == null)
-                        array3D = new float[fitsHeight][fitsDepth][fitsWidth];
-
-                    Object data = h.getData().getData();
-
-                    if (data instanceof float[][])
-                    {
-                        // NOTE: could performance be improved if depth was the first index and the
-                        // entire 2D array could be assigned to a each slice? -turnerj1
-                        for (int i = 0; i < fitsHeight; ++i)
-                            for (int j = 0; j < fitsWidth; ++j)
-                            {
-                                array3D[i][k][j] = ((float[][]) data)[i][j];
-                            }
-                    }
-                    else if (data instanceof short[][])
-                    {
-                        short[][] arrayS = (short[][]) data;
-
-                        for (int i = 0; i < fitsHeight; ++i)
-                            for (int j = 0; j < fitsWidth; ++j)
-                            {
-                                array3D[i][k][j] = arrayS[i][j];
-                            }
-                    }
-                    else if (data instanceof byte[][])
-                    {
-                        byte[][] arrayB = (byte[][]) data;
-
-                        for (int i = 0; i < fitsHeight; ++i)
-                            for (int j = 0; j < fitsWidth; ++j)
-                            {
-                                array3D[i][k][j] = arrayB[i][j] & 0xFF;
-                            }
-                    }
-                    else
-                    {
-                        System.out.println("Data type not supported!");
-                        return;
-                    }
-                }
-            }
-        }
-        rawImage = createRawImage(fitsHeight, fitsWidth, fitsDepth, transposeFITSData, array2D, array3D);
-    }
-
-    protected void loadEnviFile()
-    {
-        String name = getEnviFileFullPath();
-
-        String imageFile = null;
-        if (getKey().getSource() == ImageSource.IMAGE_MAP)
-            imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
-        else
-            imageFile = getKey().getName();
-
-        if (rawImage == null)
-            rawImage = new vtkImageData();
-        if (imageFile.startsWith("file://"))
-            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
-        if (imageFile.startsWith("file:/"))
-            imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
-        System.out.println("PerspectiveImage: loadEnviFile: image file is " + imageFile);
-        VtkENVIReader reader = new VtkENVIReader();
-        reader.SetFileName(imageFile);
-        reader.Update();
-        rawImage.DeepCopy(reader.GetOutput());
-        minValue = reader.getMinValues();
-        maxValue = reader.getMaxValues();
-    }
-
-    protected vtkImageData loadRawImage() throws FitsException, IOException
-    {
-        if (getFitFileFullPath() != null)
-            loadFitsFiles();
-        else if (getPngFileFullPath() != null)
-            loadPngFile();
-        else if (getEnviFileFullPath() != null)
-            loadEnviFile();
-
-        return rawImage;
-    }
-
-    protected void loadImage() throws FitsException, IOException
-    {
-        rawImage = loadRawImage();
-
-        if (rawImage == null)
-            return;
-
-        processRawImage(rawImage);
-
-        int[] dims = rawImage.GetDimensions();
-        imageWidth = dims[0];
-        imageHeight = dims[1];
-        imageDepth = dims[2];
-
-        int[] masking = getMaskSizes();
-        int topMask = masking[0];
-        int rightMask = masking[1];
-        int bottomMask = masking[2];
-        int leftMask = masking[3];
-        for (int i = 0; i < masking.length; ++i)
-            currentMask[i] = masking[i];
-
-        maskSource = new vtkImageCanvasSource2D();
-        maskSource.SetScalarTypeToUnsignedChar();
-        maskSource.SetNumberOfScalarComponents(1);
-        // maskSource.SetExtent(0, imageWidth-1, 0, imageHeight-1, 0, imageDepth-1);
-        maskSource.SetExtent(0, imageWidth - 1, 0, imageHeight - 1, 0, 0);
-        // Initialize the mask to black which masks out the image
-        maskSource.SetDrawColor(0.0, 0.0, 0.0, 0.0);
-        maskSource.FillBox(0, imageWidth - 1, 0, imageHeight - 1);
-        // Create a square inside mask which passes through the image.
-        maskSource.SetDrawColor(255.0, 255.0, 255.0, 255.0);
-        maskSource.FillBox(leftMask, imageWidth - 1 - rightMask, bottomMask, imageHeight - 1 - topMask);
-        maskSource.Update();
-
-        for (int k = 0; k < getImageDepth(); k++)
-        {
-            footprint[k] = new vtkPolyData();
-        }
-
-        shiftedFootprint[0] = new vtkPolyData();
-        textureCoords = new vtkFloatArray();
-        normalsFilter = new vtkPolyDataNormals();
-
-        if (getPngFileFullPath() != null)
-        {
-            double[] scalarRange = rawImage.GetScalarRange();
-            minValue[0] = (float) scalarRange[0];
-            maxValue[0] = (float) scalarRange[1];
-        }
-
-        setDisplayedImageRange(null);
-        setOfflimbImageRange(null);
-    }
-
-    protected int loadNumSlices()
-    {
-        int imageDepth = getImageDepth();
-        if (getFitFileFullPath() != null)
-        {
-            String filename = getFitFileFullPath();
-            try (Fits f = new Fits(filename))
-            {
-                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
-
-                int[] fitsAxes = h.getAxes();
-                int fitsNAxes = fitsAxes.length;
-                int fitsDepth = fitsNAxes == 3 ? fitsAxes[1] : 1;
-
-                imageDepth = fitsDepth;
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else if (getPngFileFullPath() != null)
-        {
-            // Do nothing for now
-        }
-        else if (getEnviFileFullPath() != null)
-        {
-            // Get the number of bands from the ENVI header
-            String name = getEnviFileFullPath();
-
-            String imageFile = null;
-            if (getKey().getSource() == ImageSource.IMAGE_MAP)
-                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
-            else
-                imageFile = getKey().getName();
-
-            if (imageFile.startsWith("file://"))
-                imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
-            if (imageFile.startsWith("file:/"))
-                imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
-            VtkENVIReader reader = new VtkENVIReader();
-            reader.SetFileName(imageFile);
-            imageDepth = reader.getNumBands();
-            // for multislice images, set slice to middle slice
-            if (imageDepth > 1)
-                setCurrentSlice(imageDepth / 2);
-        }
-
-        return imageDepth;
     }
 
     protected void loadPointing() throws FitsException, IOException
@@ -2578,404 +946,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         // copy loaded state values into the adjusted values
         copySpacecraftState();
-    }
-
-    public vtkImageData getRawImage()
-    {
-        return rawImage;
-    }
-
-    public vtkImageData getDisplayedImage()
-    {
-        return displayedImage;
-    }
-
-    public void setCurrentSlice(int slice)
-    {
-        this.currentSlice = slice;
-    }
-
-    public int getCurrentSlice()
-    {
-        return currentSlice;
-    }
-
-    public int getDefaultSlice()
-    {
-        return 0;
-    }
-
-    public void setUseDefaultFootprint(boolean useDefaultFootprint)
-    {
-        this.useDefaultFootprint = useDefaultFootprint;
-        for (int i = 0; i < getImageDepth(); i++)
-        {
-            footprintGenerated[i] = false;
-        }
-    }
-
-    public boolean useDefaultFootprint()
-    {
-        return useDefaultFootprint;
-    }
-
-    public String getCurrentBand()
-    {
-        return Integer.toString(currentSlice);
-    }
-
-    public vtkTexture getTexture()
-    {
-        return imageTexture;
-    }
-
-    public static void setGenerateFootprint(boolean b)
-    {
-        generateFootprint = b;
-    }
-
-    public List<vtkProp> getProps()
-    {
-
-        // System.out.println("getProps()");
-        if (footprintActor == null)
-        {
-            loadFootprint();
-
-            imageTexture = new vtkTexture();
-            imageTexture.InterpolateOn();
-            imageTexture.RepeatOff();
-            imageTexture.EdgeClampOn();
-            imageTexture.SetInputData(getDisplayedImage());
-
-            vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
-            footprintMapper.SetInputData(shiftedFootprint[0]);
-            footprintMapper.Update();
-            footprintActor = new vtkActor();
-            footprintActor.SetMapper(footprintMapper);
-            footprintActor.SetTexture(imageTexture);
-            vtkProperty footprintProperty = footprintActor.GetProperty();
-            footprintProperty.LightingOff();
-
-            footprintActors.add(footprintActor);
-        }
-
-        if (frustumActor == null)
-        {
-            frustumActor = new vtkActor();
-
-            calculateFrustum();
-
-            vtkProperty frustumProperty = frustumActor.GetProperty();
-            frustumProperty.SetColor(0.0, 1.0, 0.0);
-            frustumProperty.SetLineWidth(2.0);
-            frustumActor.VisibilityOff();
-
-            footprintActors.add(frustumActor);
-        }
-
-        // for offlimb
-        getOffLimbTexture();
-        footprintActors.addAll(offlimbPlaneHelper.getProps());
-//        if (offLimbActor == null && offLimbTexture != null)
-//        {
-//            loadOffLimbPlane();
-//            if (footprintActors.contains(offLimbActor))
-//                footprintActors.remove(offLimbActor);
-//            footprintActors.add(offLimbActor);
-//            if (footprintActors.contains(offLimbBoundaryActor))
-//                footprintActors.remove(offLimbBoundaryActor);
-//            footprintActors.add(offLimbBoundaryActor);
-//        }
-
-        return footprintActors;
-    }
-
-    @Override
-    public void outputToOBJ(String filePath)
-    {
-        // write image to obj triangles w/ texture map based on displayed image
-        Path footprintFilePath = Paths.get(filePath);
-        String headerString = "start time " + getStartTime() + " end time " + getStopTime();
-        ObjUtil.writePolyDataToObj(shiftedFootprint[0], getDisplayedImage(), footprintFilePath, headerString);
-        // write footprint boundary to obj lines
-        vtkFeatureEdges edgeFilter = new vtkFeatureEdges();
-        edgeFilter.SetInputData(shiftedFootprint[0]);
-        edgeFilter.Update();
-        Path basedir = Paths.get(filePath).getParent();
-        String filename = Paths.get(filePath).getFileName().toString();
-        Path boundaryFilePath = basedir.resolve("bnd_" + filename);
-        ObjUtil.writePolyDataToObj(edgeFilter.GetOutput(), boundaryFilePath);
-        //
-        Path frustumFilePath = basedir.resolve("frst_" + filename);
-        double[] spacecraftPosition = new double[3];
-        double[] focalPoint = new double[3];
-        double[] upVector = new double[3];
-        getCameraOrientation(spacecraftPosition, focalPoint, upVector);
-        String frustumFileHeader = "Camera position=" + new Vector3D(spacecraftPosition) + " Camera focal point=" + new Vector3D(focalPoint) + " Camera up vector=" + new Vector3D(upVector);
-        ObjUtil.writePolyDataToObj(frustumPolyData, frustumFilePath, frustumFileHeader);
-    }
-
-    public void setShowFrustum(boolean b)
-    {
-        showFrustum = b;
-
-        if (showFrustum)
-        {
-            frustumActor.VisibilityOn();
-        }
-        else
-        {
-            frustumActor.VisibilityOff();
-        }
-
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-    }
-
-    public boolean isFrustumShowing()
-    {
-        return showFrustum;
-    }
-
-    public void setSimulateLighting(boolean b)
-    {
-        simulateLighting = b;
-    }
-
-    public boolean isSimulatingLighingOn()
-    {
-        return simulateLighting;
-    }
-
-    public double getMinIncidence()
-    {
-        return minIncidence;
-    }
-
-    public double getMaxIncidence()
-    {
-        return maxIncidence;
-    }
-
-    public double getMinEmission()
-    {
-        return minEmission;
-    }
-
-    public double getMaxEmission()
-    {
-        return maxEmission;
-    }
-
-    public double getMinPhase()
-    {
-        return minPhase;
-    }
-
-    public double getMaxPhase()
-    {
-        return maxPhase;
-    }
-
-//    public IntensityRange getOffLimbDisplayedRange()
-//    {
-//        if (offLimbDisplayedRange == null)
-//        {
-//            offLimbDisplayedRange = new IntensityRange(0, 255);
-//        }
-//
-//        return offLimbDisplayedRange;
-//    }
-
-    public IntensityRange getDisplayedRange()
-    {
-        return getDisplayedRange(currentSlice);
-    }
-
-    /**
-     * This getter lazily initializes the range field as necessary to
-     * ensure this returns a valid, non-null range as long as the argument
-     * is in range for this image.
-     *
-     * @param slice the number of the slice whose displayed range to return.
-     */
-    public IntensityRange getDisplayedRange(int slice)
-    {
-        int nslices = getImageDepth();
-
-        Preconditions.checkArgument(slice < nslices);
-
-        if (displayedRange == null)
-        {
-            displayedRange = new IntensityRange[nslices];
-        }
-        if (displayedRange[slice] == null)
-        {
-            displayedRange[slice] = new IntensityRange(0, 255);
-        }
-
-        return displayedRange[slice];
-    }
-
-    /**
-     * Set the displayed image range of the currently selected slice of the image.
-     * As a side-effect, this method also MAYBE CREATES the displayed image.
-     *
-     * @param range the new displayed range of the image. If null is passed,
-     */
-    public void setDisplayedImageRange(IntensityRange range)
-    {
-        if (rawImage != null)
-        {
-            if (rawImage.GetNumberOfScalarComponents() > 1)
-            {
-                displayedImage = rawImage;
-                return;
-            }
-
-        }
-
-        IntensityRange displayedRange = getDisplayedRange(currentSlice);
-        if (range == null || displayedRange.min != range.min || displayedRange.max != range.max)
-        {
-            if (range != null)
-            {
-                this.displayedRange[currentSlice] = range;
-                saveImageInfo();
-            }
-
-            if (rawImage != null)
-            {
-                vtkImageData img = getImageWithDisplayedRange(range, false);
-
-                if (displayedImage == null)
-                    displayedImage = new vtkImageData();
-                displayedImage.DeepCopy(img);
-            }
-        }
-
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-    }
-
-//    public void setOfflimbImageRange(IntensityRange intensityRange)
-//    {
-//
-//        IntensityRange displayedRange = getOffLimbDisplayedRange();
-//        if (intensityRange == null || displayedRange.min != intensityRange.min || displayedRange.max != intensityRange.max)
-//        {
-//            if (intensityRange != null)
-//            {
-//                offLimbDisplayedRange = intensityRange;
-//                saveImageInfo();
-//            }
-//
-//            if (rawImage != null)
-//            {
-//                vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
-//
-//                if (offLimbTexture == null && !Configuration.isHeadless())
-//                    offLimbTexture = new vtkTexture();
-//                if (offLimbTexture != null)
-//                {
-//                    offLimbTexture.SetInputData(image);
-//                    image.Delete();
-//                    offLimbTexture.Modified();
-//                }
-//            }
-//
-//            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-//        }
-//
-//    }
-
-    vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
-    {
-        float minValue = getMinValue();
-        float maxValue = getMaxValue();
-        float dx = (maxValue - minValue) / 255.0f;
-
-        float min = minValue;
-        float max = maxValue;
-        if (!offlimb)
-        {
-            IntensityRange displayedRange = getDisplayedRange(currentSlice);
-            min = minValue + displayedRange.min * dx;
-            max = minValue + displayedRange.max * dx;
-        }
-        else
-        {
-            IntensityRange offLimbDisplayedRange = getOffLimbDisplayedRange();
-            min = minValue + offLimbDisplayedRange.min * dx;
-            max = minValue + offLimbDisplayedRange.max * dx;
-        }
-
-        // Update the displayed image
-        vtkLookupTable lut = new vtkLookupTable();
-        lut.SetTableRange(min, max);
-        lut.SetValueRange(0.0, 1.0);
-        lut.SetHueRange(0.0, 0.0);
-        lut.SetSaturationRange(0.0, 0.0);
-        // lut.SetNumberOfTableValues(402);
-        lut.SetRampToLinear();
-        lut.Build();
-
-        // for 3D images, take the current slice
-        vtkImageData image2D = rawImage;
-        if (getImageDepth() > 1)
-        {
-            vtkImageReslice slicer = new vtkImageReslice();
-            slicer.SetInputData(rawImage);
-            slicer.SetOutputDimensionality(2);
-            slicer.SetInterpolationModeToNearestNeighbor();
-            slicer.SetOutputSpacing(1.0, 1.0, 1.0);
-            slicer.SetResliceAxesDirectionCosines(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
-
-            slicer.SetOutputOrigin(0.0, 0.0, (double) currentSlice);
-            slicer.SetResliceAxesOrigin(0.0, 0.0, (double) currentSlice);
-
-            slicer.SetOutputExtent(0, imageWidth - 1, 0, imageHeight - 1, 0, 0);
-
-            slicer.Update();
-            image2D = slicer.GetOutput();
-        }
-
-        vtkImageMapToColors mapToColors = new vtkImageMapToColors();
-        mapToColors.SetInputData(image2D);
-        mapToColors.SetOutputFormatToRGBA();
-        mapToColors.SetLookupTable(lut);
-        mapToColors.Update();
-
-        vtkImageData mapToColorsOutput = mapToColors.GetOutput();
-        vtkImageData maskSourceOutput = maskSource.GetOutput();
-
-        vtkImageMask maskFilter = new vtkImageMask();
-        maskFilter.SetImageInputData(mapToColorsOutput);
-        maskFilter.SetMaskInputData(maskSourceOutput);
-        maskFilter.Update();
-
-        vtkImageData maskFilterOutput = maskFilter.GetOutput();
-        mapToColors.Delete();
-        lut.Delete();
-        mapToColorsOutput.Delete();
-        maskSourceOutput.Delete();
-        maskFilter.Delete();
-        return maskFilterOutput;
-    }
-
-    private void initSpacecraftStateVariables()
-    {
-        int nslices = getImageDepth();
-        spacecraftPositionOriginal = new double[nslices][3];
-        frustum1Original = new double[nslices][3];
-        frustum2Original = new double[nslices][3];
-        frustum3Original = new double[nslices][3];
-        frustum4Original = new double[nslices][3];
-        sunPositionOriginal = new double[nslices][3];
-        boresightDirectionOriginal = new double[nslices][3];
-        upVectorOriginal = new double[nslices][3];
-        frusta = new Frustum[nslices];
-        footprint = new vtkPolyData[nslices];
-        footprintGenerated = new boolean[nslices];
     }
 
     private void loadImageInfo() throws NumberFormatException, IOException
@@ -3364,6 +1334,36 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         in.close();
     }
 
+    private void deleteAdjustedImageInfo(String filePath)
+    {
+        // Deletes for either SUM or INFO files with the following priority scheme:
+        // - if a SUM file is specified, look first for an adjusted INFO file, then look
+        // for the SUM file
+        // - if an INFO file is specified, look first for an adjusted INFO file, the the
+        // INFO file
+
+        if (filePath == null || filePath.endsWith("null"))
+        {
+            filePath = getSumfileFullPath();
+            if (filePath != null && filePath.endsWith("SUM"))
+                filePath = filePath.substring(0, filePath.length()-FilenameUtils.getExtension(filePath).length()) + "INFO";
+            else
+                filePath = "";
+        }
+
+        // look for an adjusted file first
+        try
+        {
+            File f = new File(filePath + ".adjusted");
+            if (f.exists())
+                f.delete();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     //
     // Label (.lbl) file parsing methods
     //
@@ -3394,7 +1394,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private double nln = 32.0;
     private double kmatrix00 = 1.0;
     private double kmatrix11 = 1.0;
-//    private Color offLimbBoundaryColor = Color.RED; // default
 
     private void parseLabelKeyValuePair( //
             String key, //
@@ -3751,57 +1750,783 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     }
 
-    public boolean containsLimb()
+    public void setLabelFileFullPath(String labelFileFullPath)
     {
-        // TODO Speed this up: Determine if there is a limb without computing the entire
-        // backplane.
-
-        float[] bp = backplanesHelper.generateBackplanes(true);
-        if (bp == null)
-            return true;
-        else
-            return false;
+        this.labelFileFullPath = labelFileFullPath;
     }
 
-    public vtkPolyData getFootprint(int defaultSlice)
+    ////////////////////////
+    // I/O Methods
+    ////////////////////////
+    public void exportAsEnvi( //
+            String enviFilename, // no extensions
+            String interleaveType, // "bsq", "bil", or "bip"
+            boolean hostByteOrder //
+    ) throws IOException //
     {
-        if (footprint[0].GetNumberOfPoints() > 0)
-            return footprint[0];
-        // first check the cache
-        vtkPolyData existingFootprint = checkForExistingFootprint();
-        if (existingFootprint != null)
-            return existingFootprint;
+        // Check if interleave type is recognized
+        switch (interleaveType)
+        {
+        case "bsq":
+        case "bil":
+        case "bip":
+            break;
+        default:
+            System.out.println("Interleave type " + interleaveType + " unrecognized, aborting exportAsEnvi()");
+            return;
+        }
+
+        // Create output stream for header (.hdr) file
+        FileOutputStream fs = null;
+        try
+        {
+            fs = new FileOutputStream(enviFilename + ".hdr");
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+            return;
+        }
+        OutputStreamWriter osw = new OutputStreamWriter(fs);
+        BufferedWriter out = new BufferedWriter(osw);
+
+        // Write the fields of the header
+        out.write("ENVI\n");
+        out.write("samples = " + imageWidth + "\n");
+        out.write("lines = " + imageHeight + "\n");
+        out.write("bands = " + getImageDepth() + "\n");
+        out.write("header offset = " + "0" + "\n");
+        out.write("data type = " + "4" + "\n"); // 1 = byte, 2 = int, 3 = signed int, 4 = float
+        out.write("interleave = " + interleaveType + "\n"); // bsq = band sequential, bil = band interleaved by line, bip = band interleaved
+                                                            // by pixel
+        out.write("byte order = "); // 0 = host(intel, LSB first), 1 = network (IEEE, MSB first)
+        if (hostByteOrder)
+        {
+            // Host byte order
+            out.write("0" + "\n");
+        }
         else
         {
-            vtkPolyData footprint = smallBodyModel.computeFrustumIntersection(getSpacecraftPositionAdjusted()[defaultSlice],
-            																	getFrustum1Adjusted()[defaultSlice],
-            																	getFrustum3Adjusted()[defaultSlice],
-            																	getFrustum4Adjusted()[defaultSlice],
-            																	getFrustum2Adjusted()[defaultSlice]);
-//            System.out.println("PerspectiveImage: getFootprint: footprint creation " + sw.elapsedMillis());
-            return footprint;
+            // Network byte order
+            out.write("1" + "\n");
+        }
+        out.write(getEnviHeaderAppend());
+        out.close();
+
+        // Configure byte buffer & endianess
+        ByteBuffer bb = ByteBuffer.allocate(4 * imageWidth * imageHeight * getImageDepth()); // 4 bytes per float
+        if (hostByteOrder)
+        {
+            // Little Endian = LSB stored first
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+        }
+        else
+        {
+            // Big Endian = MSB stored first
+            bb.order(ByteOrder.BIG_ENDIAN);
+        }
+
+        // Write pixels to byte buffer
+        // Remember, VTK origin is at bottom left while ENVI origin is at top left
+        float[][][] imageData = ImageDataUtil.vtkImageDataToArray3D(getRawImage());
+        switch (interleaveType)
+        {
+        case "bsq":
+            // Band sequential: col, then row, then depth
+            for (int depth = 0; depth < getImageDepth(); depth++)
+            {
+                // for(int row = imageHeight-1; row >= 0; row--)
+                for (int row = 0; row < imageHeight; row++)
+                {
+                    for (int col = 0; col < imageWidth; col++)
+                    {
+                        bb.putFloat(imageData[depth][row][col]);
+                    }
+                }
+            }
+            break;
+        case "bil":
+            // Band interleaved by line: col, then depth, then row
+            // for(int row=imageHeight-1; row >= 0; row--)
+            for (int row = 0; row < imageHeight; row++)
+            {
+                for (int depth = 0; depth < getImageDepth(); depth++)
+                {
+                    for (int col = 0; col < imageWidth; col++)
+                    {
+                        bb.putFloat(imageData[depth][row][col]);
+                    }
+                }
+            }
+            break;
+        case "bip":
+            // Band interleaved by pixel: depth, then col, then row
+            // for(int row=imageHeight-1; row >= 0; row--)
+            for (int row = 0; row < imageHeight; row++)
+            {
+                for (int col = 0; col < imageWidth; col++)
+                {
+                    for (int depth = 0; depth < getImageDepth(); depth++)
+                    {
+                        bb.putFloat(imageData[depth][row][col]);
+                    }
+                }
+            }
+            break;
+        }
+
+        // Create output stream and write contents of byte buffer
+        try (FileOutputStream stream = new FileOutputStream(enviFilename))
+        {
+            FileChannel fc = stream.getChannel();
+            bb.flip(); // flip() is a misleading name, nothing is being flipped. Buffer end is set to
+                       // curr pos and curr pos set to beginning.
+            fc.write(bb);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
         }
     }
 
-    private vtkPolyData checkForExistingFootprint()
+    public String getEnviHeaderAppend()
     {
-        String intersectionFileName = getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
-        if (FileCache.isFileGettable(intersectionFileName))
+        return "";
+    }
+
+    protected String initializeFitFileFullPath() throws IOException
+    {
+        return initLocalFitFileFullPath();
+    }
+
+    protected String initializeEnviFileFullPath()
+    {
+        return initLocalEnviFileFullPath();
+    }
+
+    protected String initializePngFileFullPath()
+    {
+        return initializeLabelFileFullPath();
+    }
+
+    protected String initLocalPngFileFullPath()
+    {
+        String name = getKey().getName().endsWith(".png") ? getKey().getName() : null;
+        if (name == null)
+            return name;
+        if (name.startsWith("file://"))
+            return name.substring(name.indexOf("file://") + 7);
+        else
+            return name;
+    }
+
+    protected String initLocalFitFileFullPath()
+    {
+        String keyName = getKey().getName();
+        if (keyName.endsWith(".fit") || keyName.endsWith(".fits") ||
+                keyName.endsWith(".FIT") || keyName.endsWith(".FITS"))
         {
-//            System.out.println(
-//                    "PerspectiveImage: checkForExistingFootprint: getting from server");
-            File file = FileCache.getFileFromServer(intersectionFileName);
-//            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally " + file.getAbsolutePath());
-            vtkPolyDataReader reader = new vtkPolyDataReader();
-//            reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));	//This is wrong.  The old code was stripping off .gz from the intersection name.  This now further removes .vtk which is bad.
-            reader.SetFileName(file.getAbsolutePath()); // now just reads in the file path as it should.
-            reader.Update();
-            vtkPolyData footprint = reader.GetOutput();
-            return footprint;
+            // Allowed fit file extensions for getKey().name
+            return keyName;
         }
+        else
+        {
+            return null;
+        }
+    }
+
+    protected String initLocalEnviFileFullPath()
+    {
+        return VtkENVIReader.isENVIFilename(getKey().getName()) ? getKey().getName() : null;
+    }
+
+    protected String initializeLabelFileFullPath()
+    {
+        return initLocalLabelFileFullPath();
+    }
+
+    protected String initializeInfoFileFullPath()
+    {
+        return initLocalInfoFileFullPath();
+    }
+
+    protected String initializeSumfileFullPath() throws IOException
+    {
+        return initLocalSumfileFullPath();
+    }
+
+    protected String initLocalLabelFileFullPath()
+    {
         return null;
     }
 
+    private List<CustomImageKeyInterface> getCustomImageMetadata() throws IOException
+    {
+        final Key<List<CustomImageKeyInterface>> customImagesKey = Key.of("customImages");
+        String file;
+        if (getKey().getName().startsWith("file://"))
+            file = getKey().getName().substring(7, getKey().getName().lastIndexOf("/"));
+        else
+            file = new File(getKey().getImageFilename()).getParent();
+        String configFilename = file + File.separator + "config.txt";
+        FixedMetadata metadata = Serializers.deserialize(new File(configFilename), "CustomImages");
+        return metadata.get(customImagesKey);
+
+    }
+
+    protected <T> T read(Key<T> key, Metadata configMetadata)
+    {
+        T value = configMetadata.get(key);
+        if (value != null)
+            return value;
+        return null;
+    }
+
+    protected String initLocalInfoFileFullPath()
+    {
+        List<CustomImageKeyInterface> images;
+        try
+        {
+            images = getCustomImageMetadata();
+            for (ImageKeyInterface info : images)
+            {
+                String filename = new File(getKey().getName()).getName();
+                if (filename.equals(info.getImageFilename()))
+                {
+                    if (info.getFileType() == FileType.SUM)
+                        return null;
+                    String string = new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
+                    if (getKey().getName().startsWith("file:/"))
+                        return string.substring(5);
+                    else
+                        return string;
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    protected String initLocalSumfileFullPath()
+    {
+
+        List<CustomImageKeyInterface> images;
+        try
+        {
+            images = getCustomImageMetadata();
+            for (CustomImageKeyInterface info : images)
+            {
+                String filename = new File(getKey().getName()).getName();
+                if (filename.equals(info.getImageFilename()))
+                {
+                    if (info.getFileType() == FileType.INFO)
+                        return null;
+
+                    String string = new File(getKey().getName()).getParent() + File.separator + info.getPointingFile();
+                    if (getKey().getName().startsWith("file:/"))
+                        return string.substring(5);
+                    else
+                        return string;
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private void loadImageInfoFromConfigFile()
+    {
+        List<CustomImageKeyInterface> images;
+        try
+        {
+            images = getCustomImageMetadata();
+            for (CustomImageKeyInterface info : images)
+            {
+                String filename = new File(getKey().getName()).getName();
+                if (filename.equals(info.getImageFilename()))
+                {
+                    imageName = info.getImageFilename();
+                }
+            }
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+//        // Look in the config file and figure out which index this image
+//        // corresponds to. The config file is located in the same folder
+//        // as the image file
+//        String configFilename = new File(getKey().name).getParent() + File.separator + "config.txt";
+//        MapUtil configMap = new MapUtil(configFilename);
+//        String[] imageFilenames = configMap.getAsArray(IMAGE_FILENAMES);
+//        for (int i=0; i<imageFilenames.length; ++i)
+//        {
+//            String filename = new File(getKey().name).getName();
+//            if (filename.equals(imageFilenames[i]))
+//            {
+//                imageName = configMap.getAsArray(Image.IMAGE_NAMES)[i];
+//                break;
+//            }
+//        }
+    }
+
+    public String getPngFileFullPath()
+    {
+        return pngFileFullPath;
+    }
+
+    public String getFitFileFullPath()
+    {
+        return fitFileFullPath;
+    }
+
+    public String getEnviFileFullPath()
+    {
+        return enviFileFullPath;
+    }
+
+    public String getImageFileFullPath()
+    {
+        if (fitFileFullPath != null)
+        {
+            return fitFileFullPath;
+        }
+        else if (pngFileFullPath != null)
+        {
+            return pngFileFullPath;
+        }
+        else if (enviFileFullPath != null)
+        {
+            return enviFileFullPath;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public String[] getFitFilesFullPath()
+    {
+        String[] result = { fitFileFullPath };
+        return result;
+    }
+
+    protected void loadPngFile()
+    {
+        String name = getPngFileFullPath();
+
+        String imageFile = null;
+        if (getKey().getSource() == ImageSource.IMAGE_MAP)
+            imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+        else
+            imageFile = getKey().getName();
+        if (imageFile.startsWith("file://"))
+            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        if (getRawImage() == null)
+            setRawImage(new vtkImageData());
+
+        vtkPNGReader reader = new vtkPNGReader();
+        reader.SetFileName(imageFile);
+        reader.Update();
+        getRawImage().DeepCopy(reader.GetOutput());
+    }
+
+    protected void loadFitsFiles() throws FitsException, IOException
+    {
+        // TODO: maybe make this more efficient if possible
+
+        String[] filenames = getFitFilesFullPath();
+        String filename = filenames[0];
+
+        float[][] array2D = null;
+        float[][][] array3D = null;
+        double[][][] array3Ddouble = null;
+
+        int[] fitsAxes = null;
+        int fitsNAxes = 0;
+        // height is axis 0
+        int fitsHeight = 0;
+        // for 2D pixel arrays, width is axis 1, for 3D pixel arrays, width axis is 2
+        int fitsWidth = 0;
+        // for 2D pixel arrays, depth is 0, for 3D pixel arrays, depth axis is 1
+        int fitsDepth = 0;
+
+        // single file images (e.g. LORRI and LEISA)
+        if (filenames.length == 1)
+        {
+            try (Fits f = new Fits(filename))
+            {
+                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
+
+                fitsAxes = h.getAxes();
+                fitsNAxes = fitsAxes.length;
+                fitsHeight = fitsAxes[0];
+                fitsWidth = fitsNAxes == 3 ? fitsAxes[2] : fitsAxes[1];
+                fitsDepth = fitsNAxes == 3 ? fitsAxes[1] : 1;
+
+                Object data = h.getData().getData();
+
+                // for 3D arrays we consider the second axis the "spectral" axis
+                if (data instanceof float[][][])
+                {
+                    if (shiftBands())
+                    {
+                        array3D = new float[fitsHeight][fitsWidth][fitsDepth];
+                        for (int i = 0; i < fitsHeight; ++i)
+                            for (int j = 0; j < fitsWidth; ++j)
+                                for (int k = 0; k < fitsDepth; ++k)
+                                {
+                                    int w = i + j - fitsDepth / 2;
+                                    if (w >= 0 && w < fitsHeight)
+                                        array3D[w][j][k] = ((float[][][]) data)[i][j][k];
+                                }
+
+                    }
+                    else
+                        array3D = (float[][][]) data;
+
+                    // System.out.println("3D pixel array detected: " + array3D.length + "x" +
+                    // array3D[0].length + "x" + array3D[0][0].length);
+                }
+                else if (data instanceof double[][][])
+                {
+                    array3Ddouble = new double[fitsHeight][fitsWidth][fitsDepth];
+                    if (shiftBands())
+                    {
+                        for (int i = 0; i < fitsHeight; ++i)
+                            for (int j = 0; j < fitsWidth; ++j)
+                                for (int k = 0; k < fitsDepth; ++k)
+                                {
+                                    int w = i + j - fitsDepth / 2;
+                                    if (w >= 0 && w < fitsHeight)
+                                        array3Ddouble[w][j][k] = ((double[][][]) data)[i][j][k];
+                                }
+
+                    }
+                    else
+                    {
+                        for (int i = 0; i < fitsHeight; ++i)
+                            for (int j = 0; j < fitsWidth; ++j)
+                                for (int k = 0; k < fitsDepth; ++k)
+                                {
+                                    array3Ddouble[i][j][k] = ((double[][][]) data)[i][j][k];
+                                }
+
+                    }
+
+                    // System.out.println("3D pixel array detected: " + array3D.length + "x" +
+                    // array3D[0].length + "x" + array3D[0][0].length);
+                }
+                else if (data instanceof float[][])
+                {
+                    array2D = (float[][]) data;
+                }
+                else if (data instanceof short[][])
+                {
+                    short[][] arrayS = (short[][]) data;
+                    array2D = new float[fitsHeight][fitsWidth];
+
+                    for (int i = 0; i < fitsHeight; ++i)
+                        for (int j = 0; j < fitsWidth; ++j)
+                        {
+                            array2D[i][j] = arrayS[i][j];
+                        }
+                }
+                else if (data instanceof double[][])
+                {
+                    double[][] arrayDouble = (double[][]) data;
+                    array2D = new float[fitsHeight][fitsWidth];
+
+                    for (int i = 0; i < fitsHeight; ++i)
+                        for (int j = 0; j < fitsWidth; ++j)
+                        {
+                            array2D[i][j] = (float) arrayDouble[i][j];
+                        }
+                }
+                else if (data instanceof byte[][])
+                {
+                    byte[][] arrayB = (byte[][]) data;
+                    array2D = new float[fitsHeight][fitsWidth];
+
+                    for (int i = 0; i < fitsHeight; ++i)
+                        for (int j = 0; j < fitsWidth; ++j)
+                        {
+                            array2D[i][j] = arrayB[i][j] & 0xFF;
+                        }
+                }
+                else
+                {
+                    System.out.println("Data type not supported: " + data.getClass().getCanonicalName());
+                    return;
+                }
+
+                // load in calibration info
+                loadImageCalibrationData(f);
+            }
+        }
+        // for multi-file images (e.g. MVIC)
+        else if (filenames.length > 1)
+        {
+            fitsDepth = filenames.length;
+            fitsAxes = new int[3];
+            fitsAxes[2] = fitsDepth;
+            fitsNAxes = 3;
+
+            for (int k = 0; k < fitsDepth; k++)
+            {
+                try (Fits f = new Fits(filenames[k]))
+                {
+                    BasicHDU<?> h = f.getHDU(fitFileImageExtension);
+
+                    int[] multiImageAxes = h.getAxes();
+                    int multiImageNAxes = multiImageAxes.length;
+
+                    if (multiImageNAxes > 2)
+                    {
+                        System.out.println("Multi-file images must be 2D.");
+                        return;
+                    }
+
+                    // height is axis 0, width is axis 1
+                    fitsHeight = fitsAxes[0] = multiImageAxes[0];
+                    fitsWidth = fitsAxes[2] = multiImageAxes[1];
+
+                    if (array3D == null)
+                        array3D = new float[fitsHeight][fitsDepth][fitsWidth];
+
+                    Object data = h.getData().getData();
+
+                    if (data instanceof float[][])
+                    {
+                        // NOTE: could performance be improved if depth was the first index and the
+                        // entire 2D array could be assigned to a each slice? -turnerj1
+                        for (int i = 0; i < fitsHeight; ++i)
+                            for (int j = 0; j < fitsWidth; ++j)
+                            {
+                                array3D[i][k][j] = ((float[][]) data)[i][j];
+                            }
+                    }
+                    else if (data instanceof short[][])
+                    {
+                        short[][] arrayS = (short[][]) data;
+
+                        for (int i = 0; i < fitsHeight; ++i)
+                            for (int j = 0; j < fitsWidth; ++j)
+                            {
+                                array3D[i][k][j] = arrayS[i][j];
+                            }
+                    }
+                    else if (data instanceof byte[][])
+                    {
+                        byte[][] arrayB = (byte[][]) data;
+
+                        for (int i = 0; i < fitsHeight; ++i)
+                            for (int j = 0; j < fitsWidth; ++j)
+                            {
+                                array3D[i][k][j] = arrayB[i][j] & 0xFF;
+                            }
+                    }
+                    else
+                    {
+                        System.out.println("Data type not supported!");
+                        return;
+                    }
+                }
+            }
+        }
+        setRawImage(createRawImage(fitsHeight, fitsWidth, fitsDepth, transposeFITSData, array2D, array3D));
+    }
+
+    protected void loadEnviFile()
+    {
+        String name = getEnviFileFullPath();
+
+        String imageFile = null;
+        if (getKey().getSource() == ImageSource.IMAGE_MAP)
+            imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+        else
+            imageFile = getKey().getName();
+
+        if (getRawImage() == null)
+            setRawImage(new vtkImageData());
+        if (imageFile.startsWith("file://"))
+            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        if (imageFile.startsWith("file:/"))
+            imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
+        System.out.println("PerspectiveImage: loadEnviFile: image file is " + imageFile);
+        VtkENVIReader reader = new VtkENVIReader();
+        reader.SetFileName(imageFile);
+        reader.Update();
+        getRawImage().DeepCopy(reader.GetOutput());
+        minValue = reader.getMinValues();
+        maxValue = reader.getMaxValues();
+    }
+
+    protected vtkImageData loadRawImage() throws FitsException, IOException
+    {
+        if (getFitFileFullPath() != null)
+            loadFitsFiles();
+        else if (getPngFileFullPath() != null)
+            loadPngFile();
+        else if (getEnviFileFullPath() != null)
+            loadEnviFile();
+
+        return getRawImage();
+    }
+
+    protected int loadNumSlices()
+    {
+        int imageDepth = getImageDepth();
+        if (getFitFileFullPath() != null)
+        {
+            String filename = getFitFileFullPath();
+            try (Fits f = new Fits(filename))
+            {
+                BasicHDU<?> h = f.getHDU(fitFileImageExtension);
+
+                int[] fitsAxes = h.getAxes();
+                int fitsNAxes = fitsAxes.length;
+                int fitsDepth = fitsNAxes == 3 ? fitsAxes[1] : 1;
+
+                imageDepth = fitsDepth;
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else if (getPngFileFullPath() != null)
+        {
+            // Do nothing for now
+        }
+        else if (getEnviFileFullPath() != null)
+        {
+            // Get the number of bands from the ENVI header
+            String name = getEnviFileFullPath();
+
+            String imageFile = null;
+            if (getKey().getSource() == ImageSource.IMAGE_MAP)
+                imageFile = FileCache.getFileFromServer(name).getAbsolutePath();
+            else
+                imageFile = getKey().getName();
+
+            if (imageFile.startsWith("file://"))
+                imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+            if (imageFile.startsWith("file:/"))
+                imageFile = imageFile.substring(imageFile.indexOf("file:/") + 6);
+            VtkENVIReader reader = new VtkENVIReader();
+            reader.SetFileName(imageFile);
+            imageDepth = reader.getNumBands();
+            // for multislice images, set slice to middle slice
+            if (imageDepth > 1)
+                setCurrentSlice(imageDepth / 2);
+        }
+
+        return imageDepth;
+    }
+
+    @Override
+    public void outputToOBJ(String filePath)
+    {
+        // write image to obj triangles w/ texture map based on displayed image
+        Path footprintFilePath = Paths.get(filePath);
+        String headerString = "start time " + getStartTime() + " end time " + getStopTime();
+        ObjUtil.writePolyDataToObj(rendererHelper.shiftedFootprint[0], getDisplayedImage(), footprintFilePath, headerString);
+        // write footprint boundary to obj lines
+        vtkFeatureEdges edgeFilter = new vtkFeatureEdges();
+        edgeFilter.SetInputData(rendererHelper.shiftedFootprint[0]);
+        edgeFilter.Update();
+        Path basedir = Paths.get(filePath).getParent();
+        String filename = Paths.get(filePath).getFileName().toString();
+        Path boundaryFilePath = basedir.resolve("bnd_" + filename);
+        ObjUtil.writePolyDataToObj(edgeFilter.GetOutput(), boundaryFilePath);
+        //
+        Path frustumFilePath = basedir.resolve("frst_" + filename);
+        double[] spacecraftPosition = new double[3];
+        double[] focalPoint = new double[3];
+        double[] upVector = new double[3];
+        getCameraOrientation(spacecraftPosition, focalPoint, upVector);
+        String frustumFileHeader = "Camera position=" + new Vector3D(spacecraftPosition) + " Camera focal point=" + new Vector3D(focalPoint) + " Camera up vector=" + new Vector3D(upVector);
+        ObjUtil.writePolyDataToObj(rendererHelper.frustumPolyData, frustumFilePath, frustumFileHeader);
+    }
+
+    protected void loadImageCalibrationData(Fits f) throws FitsException, IOException
+    {
+        // to be overridden by subclasses that load calibration data
+    }
+
+    protected void loadImage() throws FitsException, IOException
+    {
+        setRawImage(loadRawImage());
+
+        if (getRawImage() == null)
+            return;
+
+        processRawImage(getRawImage());
+
+        int[] dims = getRawImage().GetDimensions();
+        imageWidth = dims[0];
+        imageHeight = dims[1];
+        imageDepth = dims[2];
+
+        rendererHelper.initializeMaskingAfterLoad();
+
+//        int[] masking = getMaskSizes();
+//        int topMask = masking[0];
+//        int rightMask = masking[1];
+//        int bottomMask = masking[2];
+//        int leftMask = masking[3];
+//        for (int i = 0; i < masking.length; ++i)
+//            currentMask[i] = masking[i];
+//
+//        maskSource = new vtkImageCanvasSource2D();
+//        maskSource.SetScalarTypeToUnsignedChar();
+//        maskSource.SetNumberOfScalarComponents(1);
+//        // maskSource.SetExtent(0, imageWidth-1, 0, imageHeight-1, 0, imageDepth-1);
+//        maskSource.SetExtent(0, imageWidth - 1, 0, imageHeight - 1, 0, 0);
+//        // Initialize the mask to black which masks out the image
+//        maskSource.SetDrawColor(0.0, 0.0, 0.0, 0.0);
+//        maskSource.FillBox(0, imageWidth - 1, 0, imageHeight - 1);
+//        // Create a square inside mask which passes through the image.
+//        maskSource.SetDrawColor(255.0, 255.0, 255.0, 255.0);
+//        maskSource.FillBox(leftMask, imageWidth - 1 - rightMask, bottomMask, imageHeight - 1 - topMask);
+//        maskSource.Update();
+//
+//        for (int k = 0; k < getImageDepth(); k++)
+//        {
+//            footprint[k] = new vtkPolyData();
+//        }
+//
+//        shiftedFootprint[0] = new vtkPolyData();
+//        textureCoords = new vtkFloatArray();
+//        normalsFilter = new vtkPolyDataNormals();
+
+        if (getPngFileFullPath() != null)
+        {
+            double[] scalarRange = getRawImage().GetScalarRange();
+            minValue[0] = (float) scalarRange[0];
+            maxValue[0] = (float) scalarRange[1];
+        }
+
+        setDisplayedImageRange(null);
+        setOfflimbImageRange(null);
+    }
+
+    //////////////////
+    // Other methods
+    //////////////////
     public String getPrerenderingFileNameBase()
     {
         String imageName = getKey().getName();
@@ -3819,150 +2544,144 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return result;
     }
 
-    public void loadFootprint()
+    /**
+     * Return the multispectral image's spectrum region in pixel space.
+     *
+     * @return array describing region over which the spectrum is calculated.
+     */
+    public double[][] getSpectrumRegion()
     {
-        vtkPolyData existingFootprint = checkForExistingFootprint();
-        if (existingFootprint != null)
-        {
-        	System.out.println("PerspectiveImage: loadFootprint: existing footprint");
-            footprint[0] = existingFootprint;
-
-            vtkPointData pointData = footprint[currentSlice].GetPointData();
-            pointData.SetTCoords(textureCoords);
-//            System.out.println("PerspectiveImage: loadFootprint: setting texture coords " + sw.elapsedMillis());
-            PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
-//            System.out.println("PerspectiveImage: loadFootprint: set texture coords " + sw.elapsedMillis());
-            pointData.Delete();
-
-            shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
-            PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], getOffset());
-            return;
-        }
-
-        if (generateFootprint)
-        {
-        	System.out.println("PerspectiveImage: loadFootprint: generate footprint true");
-            vtkPolyData tmp = null;
-
-            if (!footprintGenerated[currentSlice])
-            {
-            	System.out.println("PerspectiveImage: loadFootprint: footprint not generated");
-                if (useDefaultFootprint())
-                {
-                	System.out.println("PerspectiveImage: loadFootprint: using default footprint");
-                    int defaultSlice = getDefaultSlice();
-                    if (footprintGenerated[defaultSlice] == false)
-                    {
-                        footprint[defaultSlice] = getFootprint(defaultSlice);
-                        if (footprint[defaultSlice] == null)
-                            return;
-
-                        // Need to clear out scalar data since if coloring data is being shown,
-                        // then the color might mix-in with the image.
-                        footprint[defaultSlice].GetCellData().SetScalars(null);
-                        footprint[defaultSlice].GetPointData().SetScalars(null);
-
-                        footprintGenerated[defaultSlice] = true;
-                    }
-
-                    tmp = footprint[defaultSlice];
-
-                }
-                else
-                {
-                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
-                    tmp = smallBodyModel.computeFrustumIntersection(getSpacecraftPositionAdjusted()[currentSlice],
-                    												getFrustum1Adjusted()[currentSlice],
-                    												getFrustum3Adjusted()[currentSlice],
-                    												getFrustum4Adjusted()[currentSlice],
-                    												getFrustum2Adjusted()[currentSlice]);
-                    if (tmp == null)
-                        return;
-
-                    // Need to clear out scalar data since if coloring data is being shown,
-                    // then the color might mix-in with the image.
-                    tmp.GetCellData().SetScalars(null);
-                    tmp.GetPointData().SetScalars(null);
-                }
-
-                // vtkPolyDataWriter writer=new vtkPolyDataWriter();
-                // writer.SetInputData(tmp);
-                // writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
-                // writer.SetFileTypeToBinary();
-                // writer.Write();
-
-                footprint[currentSlice].DeepCopy(tmp);
-
-                footprintGenerated[currentSlice] = true;
-            }
-            System.out.println("PerspectiveImage: loadFootprint: footprint generated");
-            vtkPointData pointData = footprint[currentSlice].GetPointData();
-            pointData.SetTCoords(textureCoords);
-            PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
-            pointData.Delete();
-        }
-        else
-        {
-        	System.out.println("PerspectiveImage: loadFootprint: fetching from server, generate footprint false");
-            int resolutionLevel = smallBodyModel.getModelResolution();
-
-            String footprintFilename = null;
-            File file = null;
-
-            if (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.CORRECTED_SPICE)
-                footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_PDS.VTP";
-            else
-                footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_GASKELL.VTP";
-
-            file = FileCache.getFileFromServer(footprintFilename);
-
-            if (file == null || !file.exists())
-            {
-                System.out.println("Warning: " + footprintFilename + " not found");
-                return;
-            }
-
-            vtkXMLPolyDataReader footprintReader = new vtkXMLPolyDataReader();
-            footprintReader.SetFileName(file.getAbsolutePath());
-            footprintReader.Update();
-
-            vtkPolyData footprintReaderOutput = footprintReader.GetOutput();
-            footprint[currentSlice].DeepCopy(footprintReaderOutput);
-        }
-
-        shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
-        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], getOffset());
-        vtkPolyDataWriter writer = new vtkPolyDataWriter();
-        writer.SetInputData(footprint[0]);
-//        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
-        String intersectionFileName = getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
-        File file = FileCache.instance().getFile(intersectionFileName);
-//        System.out.println("PerspectiveImage: loadFootprint: saving to " + intersectionFileName);
-        writer.SetFileName(file.getPath());
-        writer.SetFileTypeToBinary();
-        writer.Write();
+        return null;
     }
 
-    public vtkPolyData generateBoundary()
+    public void setPickedPosition(double[] position)
     {
-        loadFootprint();
+        // System.out.println("PerspectiveImage.setPickedPosition(): " + position[0] +
+        // ", " + position[1] + ", " + position[2]);
+        double[] pixelPosition = getPixelFromPoint(position);
+        double[][] region = { { pixelPosition[0], pixelPosition[1] } };
+        setSpectrumRegion(region);
+    }
 
-        if (footprint[currentSlice].GetNumberOfPoints() == 0)
+    public double[] getPixelFromPoint(double[] pt)
+    {
+        double[] uv = new double[2];
+        Frustum frustum = getFrustum();
+        frustum.computeTextureCoordinatesFromPoint(pt, getImageWidth(), getImageHeight(), uv, false);
+
+        double[] pixel = new double[2];
+        pixel[0] = uv[0] * getImageHeight();
+        pixel[1] = uv[1] * getImageWidth();
+
+        return pixel;
+    }
+
+    public double getPixelDistance(double[] pt1, double[] pt2)
+    {
+        double[] pixel1 = getPixelFromPoint(pt1);
+        double[] pixel2 = getPixelFromPoint(pt2);
+
+        return MathUtil.distanceBetween(pixel1, pixel2);
+    }
+
+    /**
+     * Get filter as an integer id. Return -1 if no filter is available.
+     *
+     * @return
+     */
+    public int getFilter()
+    {
+        return -1;
+    }
+
+    /**
+     * Get filter name as string. By default cast filter id to string. Return null
+     * if filter id is negative.
+     *
+     * @return
+     */
+    public String getFilterName()
+    {
+        int filter = getFilter();
+        if (filter < 0)
             return null;
+        else
+            return String.valueOf(filter);
+    }
 
-        vtkFeatureEdges edgeExtracter = new vtkFeatureEdges();
-        edgeExtracter.SetInputData(footprint[currentSlice]);
-        edgeExtracter.BoundaryEdgesOn();
-        edgeExtracter.FeatureEdgesOff();
-        edgeExtracter.NonManifoldEdgesOff();
-        edgeExtracter.ManifoldEdgesOff();
-        edgeExtracter.Update();
+    /**
+     * Return the camera id. We assign an integer id to each camera. For example, if
+     * there are 2 cameras on the spacecraft, return either 1 or 2. If there are 2
+     * spacecrafts each with a single camera, then also return either 1 or 2. Return
+     * -1 if camera is not available.
+     *
+     * @return
+     */
+    public int getCamera()
+    {
+        return -1;
+    }
 
-        vtkPolyData boundary = new vtkPolyData();
-        vtkPolyData edgeExtracterOutput = edgeExtracter.GetOutput();
-        boundary.DeepCopy(edgeExtracterOutput);
+    /**
+     * Get camera name as string. By default cast camera id to string. Return null
+     * if camera id is negative.
+     *
+     * @return
+     */
+    public String getCameraName()
+    {
+        int camera = getCamera();
+        if (camera < 0)
+            return null;
+        else
+            return String.valueOf(camera);
+    }
 
-        return boundary;
+    public int getImageWidth()
+    {
+        return imageWidth;
+    }
+
+    public int getImageHeight()
+    {
+        return imageHeight;
+    }
+
+    public int getImageDepth()
+    {
+        return imageDepth;
+    }
+
+    public void setCurrentSlice(int slice)
+    {
+        this.currentSlice = slice;
+    }
+
+    public int getCurrentSlice()
+    {
+        return currentSlice;
+    }
+
+    public int getDefaultSlice()
+    {
+        return 0;
+    }
+
+    public String getCurrentBand()
+    {
+        return Integer.toString(currentSlice);
+    }
+
+    public boolean containsLimb()
+    {
+        // TODO Speed this up: Determine if there is a limb without computing the entire
+        // backplane.
+
+        float[] bp = backplanesHelper.generateBackplanes(true);
+        if (bp == null)
+            return true;
+        else
+            return false;
     }
 
     public String getStartTime()
@@ -3975,482 +2694,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return stopTime;
     }
 
-    public double getMinimumHorizontalPixelScale()
-    {
-        return minHorizontalPixelScale;
-    }
-
-    public double getMaximumHorizontalPixelScale()
-    {
-        return maxHorizontalPixelScale;
-    }
-
-    public double getMeanHorizontalPixelScale()
-    {
-        return meanHorizontalPixelScale;
-    }
-
-    public double getMinimumVerticalPixelScale()
-    {
-        return minVerticalPixelScale;
-    }
-
-    public double getMaximumVerticalPixelScale()
-    {
-        return maxVerticalPixelScale;
-    }
-
-    public double getMeanVerticalPixelScale()
-    {
-        return meanVerticalPixelScale;
-    }
-
     public double getSpacecraftDistance()
     {
         return MathUtil.vnorm(getSpacecraftPositionAdjusted()[currentSlice]);
-    }
-
-    private void computeCellNormals()
-    {
-        if (normalsGenerated == false)
-        {
-            normalsFilter.SetInputData(footprint[currentSlice]);
-            normalsFilter.SetComputeCellNormals(1);
-            normalsFilter.SetComputePointNormals(0);
-            // normalsFilter.AutoOrientNormalsOn();
-            // normalsFilter.ConsistencyOn();
-            normalsFilter.SplittingOff();
-            normalsFilter.Update();
-
-            if (footprint != null && footprint[currentSlice] != null)
-            {
-                vtkPolyData normalsFilterOutput = normalsFilter.GetOutput();
-                footprint[currentSlice].DeepCopy(normalsFilterOutput);
-                normalsGenerated = true;
-            }
-        }
-    }
-
-    // Computes the incidence, emission, and phase at a point on the footprint with
-    // a given normal.
-    // (I.e. the normal of the plate which the point is lying on).
-    // The output is a 3-vector with the first component equal to the incidence,
-    // the second component equal to the emission and the third component equal to
-    // the phase.
-    public double[] computeIlluminationAnglesAtPoint(double[] pt, double[] normal)
-    {
-    	double[][] spacecraftPositionAdjusted = getSpacecraftPositionAdjusted();
-        double[] scvec = {
-                spacecraftPositionAdjusted[currentSlice][0] - pt[0],
-                spacecraftPositionAdjusted[currentSlice][1] - pt[1],
-                spacecraftPositionAdjusted[currentSlice][2] - pt[2] };
-
-        double[] sunVectorAdjusted = getSunVector();
-        double incidence = MathUtil.vsep(normal, sunVectorAdjusted) * 180.0 / Math.PI;
-        double emission = MathUtil.vsep(normal, scvec) * 180.0 / Math.PI;
-        double phase = MathUtil.vsep(sunVectorAdjusted, scvec) * 180.0 / Math.PI;
-
-        double[] angles = { incidence, emission, phase };
-
-        return angles;
-    }
-
-    protected void computeIlluminationAngles()
-    {
-        if (footprintGenerated[currentSlice] == false)
-            loadFootprint();
-
-        computeCellNormals();
-
-        int numberOfCells = footprint[currentSlice].GetNumberOfCells();
-
-        vtkPoints points = footprint[currentSlice].GetPoints();
-        vtkCellData footprintCellData = footprint[currentSlice].GetCellData();
-        vtkDataArray normals = footprintCellData.GetNormals();
-
-        this.minEmission = Double.MAX_VALUE;
-        this.maxEmission = -Double.MAX_VALUE;
-        this.minIncidence = Double.MAX_VALUE;
-        this.maxIncidence = -Double.MAX_VALUE;
-        this.minPhase = Double.MAX_VALUE;
-        this.maxPhase = -Double.MAX_VALUE;
-
-        for (int i = 0; i < numberOfCells; ++i)
-        {
-            vtkCell cell = footprint[currentSlice].GetCell(i);
-            double[] pt0 = points.GetPoint(cell.GetPointId(0));
-            double[] pt1 = points.GetPoint(cell.GetPointId(1));
-            double[] pt2 = points.GetPoint(cell.GetPointId(2));
-            double[] centroid = {
-                    (pt0[0] + pt1[0] + pt2[0]) / 3.0,
-                    (pt0[1] + pt1[1] + pt2[1]) / 3.0,
-                    (pt0[2] + pt1[2] + pt2[2]) / 3.0
-            };
-            double[] normal = normals.GetTuple3(i);
-
-            double[] angles = computeIlluminationAnglesAtPoint(centroid, normal);
-            double incidence = angles[0];
-            double emission = angles[1];
-            double phase = angles[2];
-
-            if (incidence < minIncidence)
-                minIncidence = incidence;
-            if (incidence > maxIncidence)
-                maxIncidence = incidence;
-            if (emission < minEmission)
-                minEmission = emission;
-            if (emission > maxEmission)
-                maxEmission = emission;
-            if (phase < minPhase)
-                minPhase = phase;
-            if (phase > maxPhase)
-                maxPhase = phase;
-            cell.Delete();
-        }
-
-        points.Delete();
-        footprintCellData.Delete();
-        if (normals != null)
-            normals.Delete();
-    }
-
-    protected void computePixelScale()
-    {
-    	double[][] spacecraftPositionAdjusted = getSunPositionAdjusted();
-    	double[][] frustum1Adjusted = getFrustum1Adjusted();
-    	double[][] frustum2Adjusted = getFrustum2Adjusted();
-    	double[][] frustum3Adjusted = getFrustum3Adjusted();
-        if (footprintGenerated[currentSlice] == false)
-            loadFootprint();
-
-        int numberOfPoints = footprint[currentSlice].GetNumberOfPoints();
-
-        vtkPoints points = footprint[currentSlice].GetPoints();
-
-        minHorizontalPixelScale = Double.MAX_VALUE;
-        maxHorizontalPixelScale = -Double.MAX_VALUE;
-        meanHorizontalPixelScale = 0.0;
-        minVerticalPixelScale = Double.MAX_VALUE;
-        maxVerticalPixelScale = -Double.MAX_VALUE;
-        meanVerticalPixelScale = 0.0;
-
-        double horizScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice]) / 2.0) / imageHeight;
-        double vertScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum2Adjusted[currentSlice]) / 2.0) / imageWidth;
-
-        double[] vec = new double[3];
-
-        for (int i = 0; i < numberOfPoints; ++i)
-        {
-            double[] pt = points.GetPoint(i);
-
-            vec[0] = pt[0] - spacecraftPositionAdjusted[currentSlice][0];
-            vec[1] = pt[1] - spacecraftPositionAdjusted[currentSlice][1];
-            vec[2] = pt[2] - spacecraftPositionAdjusted[currentSlice][2];
-            double dist = MathUtil.vnorm(vec);
-
-            double horizPixelScale = dist * horizScaleFactor;
-            double vertPixelScale = dist * vertScaleFactor;
-
-            if (horizPixelScale < minHorizontalPixelScale)
-                minHorizontalPixelScale = horizPixelScale;
-            if (horizPixelScale > maxHorizontalPixelScale)
-                maxHorizontalPixelScale = horizPixelScale;
-            if (vertPixelScale < minVerticalPixelScale)
-                minVerticalPixelScale = vertPixelScale;
-            if (vertPixelScale > maxVerticalPixelScale)
-                maxVerticalPixelScale = vertPixelScale;
-
-            meanHorizontalPixelScale += horizPixelScale;
-            meanVerticalPixelScale += vertPixelScale;
-        }
-
-        meanHorizontalPixelScale /= (double) numberOfPoints;
-        meanVerticalPixelScale /= (double) numberOfPoints;
-
-        points.Delete();
-    }
-
-//    public float[] generateBackplanes()
-//    {
-//        return generateBackplanes(false);
-//    }
-
-//    /**
-//     * If <code>returnNullIfContainsLimb</code> then return null if any ray in the
-//     * direction of a pixel in the image does not intersect the asteroid. By setting
-//     * this boolean to true, you can (usually) determine whether or not the image
-//     * contains a limb without having to compute the entire backplane. Note that
-//     * this is a bit of a hack and a better way is needed to quickly determine if
-//     * there is a limb.
-//     *
-//     * @param returnNullIfContainsLimb
-//     * @return
-//     */
-//    private float[] generateBackplanes(boolean returnNullIfContainsLimb)
-//    {
-//        // We need to use cell normals not point normals for the calculations
-//        vtkDataArray normals = null;
-//        if (!returnNullIfContainsLimb)
-//            normals = smallBodyModel.getCellNormals();
-//
-//        float[] data = new float[numBackplanes * imageHeight * imageWidth];
-//
-//        vtksbCellLocator cellLocator = smallBodyModel.getCellLocator();
-//
-//        // vtkPoints intersectPoints = new vtkPoints();
-//        // vtkIdList intersectCells = new vtkIdList();
-//        vtkGenericCell cell = new vtkGenericCell();
-//
-//        // For each pixel in the image we need to compute the vector
-//        // from the spacecraft pointing in the direction of that pixel.
-//        // To do this, for each row in the image compute the left and
-//        // right vectors of the entire row. Then for each pixel in
-//        // the row use the two vectors from either side to compute
-//        // the vector of that pixel.
-//        double[] corner1 = {
-//                spacecraftPositionAdjusted[currentSlice][0] + frustum1Adjusted[currentSlice][0],
-//                spacecraftPositionAdjusted[currentSlice][1] + frustum1Adjusted[currentSlice][1],
-//                spacecraftPositionAdjusted[currentSlice][2] + frustum1Adjusted[currentSlice][2]
-//        };
-//        double[] corner2 = {
-//                spacecraftPositionAdjusted[currentSlice][0] + frustum2Adjusted[currentSlice][0],
-//                spacecraftPositionAdjusted[currentSlice][1] + frustum2Adjusted[currentSlice][1],
-//                spacecraftPositionAdjusted[currentSlice][2] + frustum2Adjusted[currentSlice][2]
-//        };
-//        double[] corner3 = {
-//                spacecraftPositionAdjusted[currentSlice][0] + frustum3Adjusted[currentSlice][0],
-//                spacecraftPositionAdjusted[currentSlice][1] + frustum3Adjusted[currentSlice][1],
-//                spacecraftPositionAdjusted[currentSlice][2] + frustum3Adjusted[currentSlice][2]
-//        };
-//        double[] vec12 = {
-//                corner2[0] - corner1[0],
-//                corner2[1] - corner1[1],
-//                corner2[2] - corner1[2]
-//        };
-//        double[] vec13 = {
-//                corner3[0] - corner1[0],
-//                corner3[1] - corner1[1],
-//                corner3[2] - corner1[2]
-//        };
-//
-//        double horizScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice]) / 2.0) / imageHeight;
-//        double vertScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum2Adjusted[currentSlice]) / 2.0) / imageWidth;
-//
-//        double scdist = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]);
-//
-//        for (int i = 0; i < imageHeight; ++i)
-//        {
-//            // Compute the vector on the left of the row.
-//            double fracHeight = ((double) i / (double) (imageHeight - 1));
-//            double[] left = {
-//                    corner1[0] + fracHeight * vec13[0],
-//                    corner1[1] + fracHeight * vec13[1],
-//                    corner1[2] + fracHeight * vec13[2]
-//            };
-//
-//            for (int j = 0; j < imageWidth; ++j)
-//            {
-//                // If we're just trying to know if there is a limb, we
-//                // only need to do intersections around the boundary of
-//                // the backplane, not the interior pixels.
-//                if (returnNullIfContainsLimb)
-//                {
-//                    if (j == 1 && i > 0 && i < imageHeight - 1)
-//                    {
-//                        j = imageWidth - 2;
-//                        continue;
-//                    }
-//                }
-//
-//                double fracWidth = ((double) j / (double) (imageWidth - 1));
-//                double[] vec = {
-//                        left[0] + fracWidth * vec12[0],
-//                        left[1] + fracWidth * vec12[1],
-//                        left[2] + fracWidth * vec12[2]
-//                };
-//                vec[0] -= spacecraftPositionAdjusted[currentSlice][0];
-//                vec[1] -= spacecraftPositionAdjusted[currentSlice][1];
-//                vec[2] -= spacecraftPositionAdjusted[currentSlice][2];
-//                MathUtil.unorm(vec, vec);
-//
-//                double[] lookPt = {
-//                        spacecraftPositionAdjusted[currentSlice][0] + 2.0 * scdist * vec[0],
-//                        spacecraftPositionAdjusted[currentSlice][1] + 2.0 * scdist * vec[1],
-//                        spacecraftPositionAdjusted[currentSlice][2] + 2.0 * scdist * vec[2]
-//                };
-//
-//                // cellLocator.IntersectWithLine(spacecraftPosition, lookPt, intersectPoints,
-//                // intersectCells);
-//                double tol = 1e-6;
-//                double[] t = new double[1];
-//                double[] x = new double[3];
-//                double[] pcoords = new double[3];
-//                int[] subId = new int[1];
-//                int[] cellId = new int[1];
-//                int result = cellLocator.IntersectWithLine(spacecraftPositionAdjusted[currentSlice], lookPt, tol, t, x, pcoords, subId, cellId, cell);
-//
-//                // if (intersectPoints.GetNumberOfPoints() == 0)
-//                // System.out.println(i + " " + j + " " + intersectPoints.GetNumberOfPoints());
-//
-//                // int numberOfPoints = intersectPoints.GetNumberOfPoints();
-//
-//                if (result > 0)
-//                {
-//                    // If we're just trying to know if there is a limb, do not
-//                    // compute the values of the backplane (It will crash since
-//                    // we don't have normals of the asteroid itself)
-//                    if (returnNullIfContainsLimb)
-//                        continue;
-//
-//                    // double[] closestPoint = intersectPoints.GetPoint(0);
-//                    // int closestCell = intersectCells.GetId(0);
-//                    double[] closestPoint = x;
-//                    int closestCell = cellId[0];
-//                    double closestDist = MathUtil.distanceBetween(closestPoint, getSpacecraftPositionAdjusted()[currentSlice]);
-//
-//                    /*
-//                     * // compute the closest point to the spacecraft of all the intersecting
-//                     * points. if (numberOfPoints > 1) { for (int k=1; k<numberOfPoints; ++k) {
-//                     * double[] pt = intersectPoints.GetPoint(k); double dist =
-//                     * GeometryUtil.distanceBetween(pt, spacecraftPosition); if (dist < closestDist)
-//                     * { closestDist = dist; closestCell = intersectCells.GetId(k); closestPoint =
-//                     * pt; } } }
-//                     */
-//
-//                    LatLon llr = MathUtil.reclat(closestPoint);
-//                    double lat = llr.lat * 180.0 / Math.PI;
-//                    double lon = llr.lon * 180.0 / Math.PI;
-//                    if (lon < 0.0)
-//                        lon += 360.0;
-//
-//                    double[] normal = normals.GetTuple3(closestCell);
-//                    double[] illumAngles = computeIlluminationAnglesAtPoint(closestPoint, normal);
-//
-//                    double horizPixelScale = closestDist * horizScaleFactor;
-//                    double vertPixelScale = closestDist * vertScaleFactor;
-//
-//                    double[] coloringValues;
-//                    try
-//                    {
-//                        coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
-//                    }
-//                    catch (@SuppressWarnings("unused") IOException e)
-//                    {
-//                        coloringValues = new double[] {};
-//                    }
-//                    int colorValueSize = coloringValues.length;
-//
-//                    data[index(j, i, BackplaneInfo.PIXEL.ordinal())] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
-//                    data[index(j, i, BackplaneInfo.X.ordinal())] = (float) closestPoint[0];
-//                    data[index(j, i, BackplaneInfo.Y.ordinal())] = (float) closestPoint[1];
-//                    data[index(j, i, BackplaneInfo.Z.ordinal())] = (float) closestPoint[2];
-//                    data[index(j, i, BackplaneInfo.LAT.ordinal())] = (float) lat;
-//                    data[index(j, i, BackplaneInfo.LON.ordinal())] = (float) lon;
-//                    data[index(j, i, BackplaneInfo.DIST.ordinal())] = (float) llr.rad;
-//                    data[index(j, i, BackplaneInfo.INC.ordinal())] = (float) illumAngles[0];
-//                    data[index(j, i, BackplaneInfo.EMI.ordinal())] = (float) illumAngles[1];
-//                    data[index(j, i, BackplaneInfo.PHASE.ordinal())] = (float) illumAngles[2];
-//                    data[index(j, i, BackplaneInfo.HSCALE.ordinal())] = (float) horizPixelScale;
-//                    data[index(j, i, BackplaneInfo.VSCALE.ordinal())] = (float) vertPixelScale;
-//                    data[index(j, i, BackplaneInfo.SLOPE.ordinal())] = colorValueSize > 0 ? (float) coloringValues[0] : 0.0F; // slope
-//                    data[index(j, i, BackplaneInfo.EL.ordinal())] = colorValueSize > 1 ? (float) coloringValues[1] : 0.0F; // elevation
-//                    data[index(j, i, BackplaneInfo.GRAVACC.ordinal())] = colorValueSize > 2 ? (float) coloringValues[2] : 0.0F; // grav acc;
-//                    data[index(j, i, BackplaneInfo.GRAVPOT.ordinal())] = colorValueSize > 3 ? (float) coloringValues[3] : 0.0F; // grav pot
-//                }
-//                else
-//                {
-//                    if (returnNullIfContainsLimb)
-//                        return null;
-//
-//                    data[index(j, i, 0)] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
-//                    for (int k = 1; k < numBackplanes; ++k)
-//                        data[index(j, i, k)] = PDS_NA;
-//                }
-//            }
-//        }
-//
-//        return data;
-//    }
-
-//    public int index(int i, int j, int k)
-//    {
-//        return ((k * imageHeight + j) * imageWidth + i);
-//    }
-
-    public void propertyChange(PropertyChangeEvent evt)
-    {
-        if (Properties.MODEL_RESOLUTION_CHANGED.equals(evt.getPropertyName()))
-        {
-            loadFootprint();
-            normalsGenerated = false;
-            this.minEmission = Double.MAX_VALUE;
-            this.maxEmission = -Double.MAX_VALUE;
-            this.minIncidence = Double.MAX_VALUE;
-            this.maxIncidence = -Double.MAX_VALUE;
-            this.minPhase = Double.MAX_VALUE;
-            this.maxPhase = -Double.MAX_VALUE;
-            this.minHorizontalPixelScale = Double.MAX_VALUE;
-            this.maxHorizontalPixelScale = -Double.MAX_VALUE;
-            this.minVerticalPixelScale = Double.MAX_VALUE;
-            this.maxVerticalPixelScale = -Double.MAX_VALUE;
-            this.meanHorizontalPixelScale = 0.0;
-            this.meanVerticalPixelScale = 0.0;
-
-            this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-        }
-    }
-
-    /**
-     * The shifted footprint is the original footprint shifted slightly in the
-     * normal direction so that it will be rendered correctly and not obscured by
-     * the asteroid.
-     *
-     * @return
-     */
-    @Override
-    public vtkPolyData getShiftedFootprint()
-    {
-        return shiftedFootprint[0];
-    }
-
-    /**
-     * The original footprint whose cells exactly overlap the original asteroid. If
-     * rendered as is, it would interfere with the asteroid. Note: this is made
-     * public in this class for the benefit of backplane generators, which use it.
-     *
-     * @return
-     */
-    @Override
-    public vtkPolyData getUnshiftedFootprint()
-    {
-        return footprint[currentSlice];
-    }
-
-    public void Delete()
-    {
-        displayedImage.Delete();
-        rawImage.Delete();
-
-        for (int i = 0; i < footprint.length; i++)
-        {
-            // Footprints can be null if no frustum intersection is found
-            if (footprint[i] != null)
-            {
-                footprint[i].Delete();
-            }
-        }
-
-        for (int i = 0; i < shiftedFootprint.length; i++)
-        {
-            if (shiftedFootprint[i] != null)
-            {
-                shiftedFootprint[i].Delete();
-            }
-        }
-
-        textureCoords.Delete();
-        normalsFilter.Delete();
-        maskSource.Delete();
     }
 
     public void getCameraOrientation(double[] spacecraftPosition, double[] focalPoint, double[] upVector)
@@ -4470,7 +2716,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         if (cellId < 0)
         {
-            BoundingBox bb = new BoundingBox(footprint[currentSlice].GetBounds());
+            BoundingBox bb = new BoundingBox(rendererHelper.footprint[currentSlice].GetBounds());
             double[] centerPoint = bb.getCenterPoint();
             // double[] centerPoint = footprint[currentSlice].GetPoint(0);
             double distanceToCenter = MathUtil.distanceBetween(spacecraftPosition, centerPoint);
@@ -4518,25 +2764,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return rotation;
     }
 
-    public Frustum getFrustum(int slice)
-    {
-        if (useDefaultFootprint())
-        {
-            int defaultSlice = getDefaultSlice();
-            if (frusta[defaultSlice] == null)
-                frusta[defaultSlice] = new Frustum(getSpacecraftPositionAdjusted()[defaultSlice], getFrustum1Adjusted()[defaultSlice], getFrustum3Adjusted()[defaultSlice], getFrustum4Adjusted()[defaultSlice], getFrustum2Adjusted()[defaultSlice]);
-            return frusta[defaultSlice];
-        }
-
-        if (frusta[slice] == null)
-            frusta[slice] = new Frustum(getSpacecraftPositionAdjusted()[slice], getFrustum1Adjusted()[slice], getFrustum3Adjusted()[slice], getFrustum4Adjusted()[slice], getFrustum2Adjusted()[slice]);
-        return frusta[slice];
-    }
-
-    public Frustum getFrustum()
-    {
-        return getFrustum(currentSlice);
-    }
 
     /**
      * Get the maximum FOV angle in degrees of the image (the max of either the
@@ -4679,12 +2906,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             return null;
     }
 
-    public void setVisible(boolean b)
-    {
-        footprintActor.SetVisibility(b ? 1 : 0);
-        super.setVisible(b);
-    }
-
     public double getDefaultOffset()
     {
         return 3.0 * smallBodyModel.getMinShiftAmount();
@@ -4695,49 +2916,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         setShowFrustum(false);
     }
 
-    public int getNumberOfComponentsOfOriginalImage()
-    {
-        return rawImage.GetNumberOfScalarComponents();
-    }
-
-    /**
-     * Return surface area of footprint (unshifted) of image.
-     *
-     * @return
-     */
-    public double getSurfaceArea()
-    {
-        return PolyDataUtil.getSurfaceArea(footprint[currentSlice]);
-    }
-
-    public double getOpacity()
-    {
-        return imageOpacity;
-    }
-
-    public void setOpacity(double imageOpacity)
-    {
-        this.imageOpacity = imageOpacity;
-        vtkProperty smallBodyProperty = footprintActor.GetProperty();
-        smallBodyProperty.SetOpacity(imageOpacity);
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-    }
-
-    public double getMaxFrustumDepth(int slice)
-    {
-        return maxFrustumDepth[slice];
-    }
-
-    public double getMinFrustumDepth(int slice)
-    {
-        return minFrustumDepth[slice];
-    }
-
     @Override
     public LinkedHashMap<String, String> getProperties() throws IOException
     {
         LinkedHashMap<String, String> properties = new LinkedHashMap<String, String>();
-        if (footprint == null || footprint[currentSlice] == null)
+        if (rendererHelper.getFootprint() == null || rendererHelper.getFootprint(currentSlice) == null)
             return properties;
 
         if (getMaxPhase() < getMinPhase())
@@ -4793,83 +2976,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
-    public void setCurrentMask(int[] masking)
-    {
-        int topMask = masking[0];
-        int rightMask = masking[1];
-        int bottomMask = masking[2];
-        int leftMask = masking[3];
-        // Initialize the mask to black which masks out the image
-        maskSource.SetDrawColor(0.0, 0.0, 0.0, 0.0);
-        maskSource.FillBox(0, imageWidth - 1, 0, imageHeight - 1);
-        // Create a square inside mask which passes through the image.
-        maskSource.SetDrawColor(255.0, 255.0, 255.0, 255.0);
-        maskSource.FillBox(leftMask, imageWidth - 1 - rightMask, bottomMask, imageHeight - 1 - topMask);
-        maskSource.Update();
-
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-        setDisplayedImageRange(null);
-
-        for (int i = 0; i < masking.length; ++i)
-            currentMask[i] = masking[i];
-    }
-
-    public int[] getCurrentMask()
-    {
-        return currentMask.clone();
-    }
-
-    public void setLabelFileFullPath(String labelFileFullPath)
-    {
-        this.labelFileFullPath = labelFileFullPath;
-    }
-
-//    /**
-//     * Generate metadata to be used in PDS4 XML creation by parsing existing PDS3
-//     * label. By default creates a bare-bones metadata class that only contains the
-//     * output XML filename. Use this method to use an existing PDS3 label as the
-//     * source metadata on which to describe a new PDS4 product.
-//     */
-//    public BPMetaBuilder pds3ToXmlMeta(String pds3Fname, String outXmlFname)
-//    {
-//        BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
-//        return metaDataBuilder;
-//    }
-//
-//    /**
-//     * Generate metadata to be used in PDS4 XML creation by parsing existing PDS4
-//     * label. By default creates a bare-bones metdata class that only contains the
-//     * output XML filename. Use this method to use an existing PDS4 label as the
-//     * source metadata on which to describe a new PDS4 product.
-//     */
-//    public BPMetaBuilder pds4ToXmlMeta(String pds4Fname, String outXmlFname)
-//    {
-//        BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
-//        return metaDataBuilder;
-//    }
-//
-//    /**
-//     * Parse additional metadata from the fits file and add to the metaDataBuilder.
-//     *
-//     * @throws FitsException
-//     */
-//    public BPMetaBuilder fitsToXmlMeta(File fitsFile, BPMetaBuilder metaDataBuilder) throws FitsException
-//    {
-//        return metaDataBuilder;
-//    }
-//
-//    /**
-//     * Generate XML document from XmlMetadata
-//     *
-//     * @param metaData - metadata to be used in populating XmlDoc
-//     * @param xmlTemplate - path to XML template file
-//     */
-//    public BackPlanesXml metaToXmlDoc(BackPlanesXmlMeta metaData, String xmlTemplate)
-//    {
-//        BackPlanesXml xmlLabel = new BackPlanesXml(metaData, xmlTemplate);
-//        return xmlLabel;
-//    }
-
     @Override
     public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
     {
@@ -4878,7 +2984,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
         // Append raw pixel value information
         status += ", Raw Value = ";
-        if (rawImage == null)
+        if (getRawImage() == null)
         {
             status += "Unavailable";
         }
@@ -4886,9 +2992,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         {
             int ip0 = (int) Math.round(pickPosition[0]);
             int ip1 = (int) Math.round(pickPosition[1]);
-            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            if (!getRawImage().GetScalarTypeAsString().contains("char"))
             {
-                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight - 1 - ip0, ip1);
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(getRawImage(), imageHeight - 1 - ip0, ip1);
                 status += pixelColumn[currentSlice];
             }
             else
@@ -5231,10 +3337,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.instrumentId = instrumentId;
     }
 
-    public void setRawImage(vtkImageData rawImage)
-    {
-        this.rawImage = rawImage;
-    }
+
 
     public void setFilterName(String filterName)
     {
@@ -5291,193 +3394,44 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 //        return fileIO;
 //    }
 
-    public boolean[] getFootprintGenerated()
-    {
-        return footprintGenerated;
-    }
-
-    public void setFootprintGenerated(boolean footprintGenerated)
-    {
-        this.footprintGenerated[getDefaultSlice()] = footprintGenerated;
-    }
-
-    public void setFootprintGenerated(boolean footprintGenerated, int slice)
-    {
-        this.footprintGenerated[slice] = footprintGenerated;
-    }
-
-    public boolean isNormalsGenerated()
-    {
-        return normalsGenerated;
-    }
-
-    public static boolean isGenerateFootprint()
-    {
-        return generateFootprint;
-    }
-
-    public void setNormalsGenerated(boolean normalsGenerated)
-    {
-        this.normalsGenerated = normalsGenerated;
-    }
-
-//    /*
-//     * FOR OFF-LIMB IMAGES
-//     */
-//
-//    /**
-//     * No-argument entry point into the off-limb geometry-creation implementation.
-//     * This will create an offlimbPlaneCalculator and create the actors for the
-//     * plane and the boundaries.
-//     */
-//    protected void loadOffLimbPlane()
-//    {
-//        double[] spacecraftPosition = new double[3];
-//        double[] focalPoint = new double[3];
-//        double[] upVector = new double[3];
-//        this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
-//        this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
-//        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-//        offLimbActor = calculator.getOffLimbActor();
-//        offLimbBoundaryActor = calculator.getOffLimbBoundaryActor();
-//        offLimbTexture = calculator.getOffLimbTexture();
-//        // set initial visibilities
-//        if (offLimbActor != null)
-//        {
-//            offLimbActor.SetVisibility(offLimbVisibility ? 1 : 0);
-//            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility ? 1 : 0);
-//        }
-//    }
-//
-//    /**
-//     * Set the distance of the off-limb plane from the camera position, along its
-//     * look vector. The associated polydata doesn't need to be regenerated every
-//     * time this method is called since the body's shadow in frustum coordinates
-//     * does not change with depth along the look axis. The call to loadOffLimbPlane
-//     * here does actually re-create the polydata, which should be unnecessary, and
-//     * needs to be fixed in a future release.
-//     *
-//     * @param footprintDepth
-//     */
-//    public void setOffLimbPlaneDepth(double footprintDepth)
-//    {
-//        this.offLimbFootprintDepth = footprintDepth;
-//        calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
-//    }
-//
-//    public void setOffLimbFootprintAlpha(double alpha) // between 0-1
-//    {
-//        if (offLimbActor == null)
-//            loadOffLimbPlane();
-//        offLimbActor.GetProperty().SetOpacity(alpha);
-//    }
-//
-//    public boolean offLimbFootprintIsVisible()
-//    {
-//        return offLimbVisibility;
-//    }
-//
-//    /**
-//     * Set visibility of the off-limb footprint
-//     *
-//     * Checks if offLimbActor has been instantiated; if not then call
-//     * loadOffLimbPlane() before showing/hiding actors.
-//     *
-//     * @param visible
-//     */
-//    public void setOffLimbFootprintVisibility(boolean visible)
-//    {
-//
-//        offLimbVisibility = visible;
-//        offLimbBoundaryVisibility = visible;
-//        if (offLimbVisibility && offLimbActor == null)
-//            loadOffLimbPlane();
-//
-//        if (offLimbActor != null)
-//        {
-//            offLimbActor.SetVisibility(visible ? 1 : 0);
-//            offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
-//        }
-//
-//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//    }
-//
-//    /**
-//     * Set visibility of the off-limb footprint boundary
-//     *
-//     * Checks if offLimbActor has been instantiated; if not then call
-//     * loadOffLimbPlane() before showing/hiding actors.
-//     *
-//     * @param visible
-//     */
-//    public void setOffLimbBoundaryVisibility(boolean visible)
-//    {
-//
-//        offLimbBoundaryVisibility = visible;
-//        if (offLimbActor == null)
-//            loadOffLimbPlane();
-//        offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
-//
-//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//    }
-//
-//    public vtkTexture getOffLimbTexture()
-//    {
-//        if (offLimbTexture == null)
-//        { // if offlimbtexture is null, initialize it.
-//            vtkImageData image = new vtkImageData();
-//            image.DeepCopy(getDisplayedImage());
-//            offLimbTexture = new vtkTexture();
-//            offLimbTexture.SetInputData(image);
-//            offLimbTexture.Modified();
-//        }
-//        return offLimbTexture;
-//    }
-//
-//    public void setOffLimbTexture(vtkTexture offLimbTexture)
-//    {
-//        this.offLimbTexture = offLimbTexture;
-//    }
-//
-//    public double getOffLimbPlaneDepth()
-//    {
-//        return offLimbFootprintDepth;
-//    }
-//
-//    public void setContrastSynced(boolean selected)
-//    {
-//        this.contrastSynced = selected;
-//        if (contrastSynced)
-//        {
-//            // if we just changed this to true, update the values to match
-//            offLimbDisplayedRange = getDisplayedRange();
-//            setOfflimbImageRange(offLimbDisplayedRange);
-//            pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//        }
-//    }
-//
-//    public boolean isContrastSynced()
-//    {
-//        return contrastSynced;
-//    }
-//
-//    public void setOfflimbBoundaryColor(Color color)
-//    {
-//        this.offLimbBoundaryColor = color;
-//        offLimbBoundaryActor.GetProperty().SetColor(color.getRed() / 255., color.getGreen() / 255., color.getBlue() / 255.);
-//        offLimbBoundaryActor.Modified();
-//        pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
-//    }
-//
-//    public Color getOfflimbBoundaryColor()
-//    {
-//        return offLimbBoundaryColor;
-//    }
-
 	String getModelName()
 	{
 		return smallBodyModel.getModelName();
 	}
+
+    public double getRotation()
+    {
+        return rotation;
+    }
+
+    public String getFlip()
+    {
+        return flip;
+    }
+
+    public SmallBodyModel getSmallBodyModel()
+    {
+        return smallBodyModel;
+    }
+
+    public int getNumBackplanes()
+    {
+        return numBackplanes;
+    }
+
+    protected ModelManager getModelManager()
+    {
+        return modelManager;
+    }
+
+    @Override
+    public String getImageName()
+    {
+        if (imageName != null)
+            return imageName;
+        else
+            return super.getImageName();
+    }
 
 	void firePropertyChange(String propertyName, Object oldValue, Object newValue)
 	{
@@ -5673,4 +3627,2375 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		return offlimbPlaneHelper.getOffLimbTexture();
 	}
 
+	/////////////////////////////////////
+	/// Renderer Helper delegate methods
+	/////////////////////////////////////
+	public void Delete()
+	{
+		rendererHelper.Delete();
+	}
+
+	@Override
+	public vtkPolyData getUnshiftedFootprint()
+	{
+		return rendererHelper.getUnshiftedFootprint();
+	}
+
+	@Override
+	public vtkPolyData getShiftedFootprint()
+	{
+		return rendererHelper.getShiftedFootprint();
+	}
+
+	public void calculateFrustum()
+	{
+		rendererHelper.calculateFrustum();
+	}
+
+
+
+	public int getNumberOfComponentsOfOriginalImage()
+	{
+		return rendererHelper.getNumberOfComponentsOfOriginalImage();
+	}
+
+	public void loadFootprint()
+	{
+		rendererHelper.loadFootprint();
+	}
+
+	public boolean useDefaultFootprint()
+	{
+		return rendererHelper.useDefaultFootprint();
+	}
+
+	public void setUseDefaultFootprint(boolean useDefaultFootprint)
+	{
+		rendererHelper.setUseDefaultFootprint(useDefaultFootprint);
+	}
+
+	public void setSimulateLighting(boolean b)
+	{
+		rendererHelper.setSimulateLighting(b);
+	}
+
+	public boolean isSimulatingLighingOn()
+	{
+		return rendererHelper.isSimulatingLighingOn();
+	}
+
+	public void setShowFrustum(boolean b)
+	{
+		rendererHelper.setShowFrustum(b);
+	}
+
+	public boolean isFrustumShowing()
+	{
+		return rendererHelper.isFrustumShowing();
+	}
+
+	public double getMaxFrustumDepth(int slice)
+	{
+		return rendererHelper.getMaxFrustumDepth(slice);
+	}
+
+	public double getMinFrustumDepth(int slice)
+	{
+		return rendererHelper.getMinFrustumDepth(slice);
+	}
+
+	public void setDisplayedImageRange(IntensityRange range)
+	{
+		rendererHelper.setDisplayedImageRange(range);
+	}
+
+	public vtkImageData getRawImage()
+	{
+		return rendererHelper.getRawImage();
+	}
+
+	public vtkImageData getDisplayedImage()
+	{
+		return rendererHelper.getDisplayedImage();
+	}
+
+	public vtkTexture getTexture()
+	{
+		return rendererHelper.getTexture();
+	}
+
+	public List<vtkProp> getProps()
+	{
+		return rendererHelper.getProps();
+	}
+
+	public void propertyChange(PropertyChangeEvent evt)
+	{
+		rendererHelper.propertyChange(evt);
+	}
+
+	public double getMinIncidence()
+	{
+		return rendererHelper.getMinIncidence();
+	}
+
+	public double getMaxIncidence()
+	{
+		return rendererHelper.getMaxIncidence();
+	}
+
+	public double getMinEmission()
+	{
+		return rendererHelper.getMinEmission();
+	}
+
+	public double getMaxEmission()
+	{
+		return rendererHelper.getMaxEmission();
+	}
+
+	public double getMinPhase()
+	{
+		return rendererHelper.getMinPhase();
+	}
+
+	public double getMaxPhase()
+	{
+		return rendererHelper.getMaxPhase();
+	}
+
+	public IntensityRange getDisplayedRange()
+	{
+		return rendererHelper.getDisplayedRange();
+	}
+
+	public IntensityRange getDisplayedRange(int slice)
+	{
+		return rendererHelper.getDisplayedRange(slice);
+	}
+
+	public vtkPolyData getFootprint(int defaultSlice)
+	{
+		return rendererHelper.getFootprint(defaultSlice);
+	}
+
+	public Frustum getFrustum(int slice)
+	{
+		return rendererHelper.getFrustum(slice);
+	}
+
+	public Frustum getFrustum()
+	{
+		return rendererHelper.getFrustum();
+	}
+
+	public void setRawImage(vtkImageData rawImage)
+	{
+		rendererHelper.setRawImage(rawImage);
+	}
+
+	public void setMaxFrustumDepth(int slice, double value)
+	{
+		rendererHelper.setMaxFrustumDepth(slice, value);
+	}
+
+	public void setMinFrustumDepth(int slice, double value)
+	{
+		rendererHelper.setMinFrustumDepth(slice, value);
+	}
+
+	public double getMinimumHorizontalPixelScale()
+	{
+		return rendererHelper.minHorizontalPixelScale;
+	}
+
+	public double getMaximumHorizontalPixelScale()
+	{
+		return rendererHelper.maxHorizontalPixelScale;
+	}
+
+	public double getMeanHorizontalPixelScale()
+	{
+		return rendererHelper.meanHorizontalPixelScale;
+	}
+
+	public double getMinimumVerticalPixelScale()
+	{
+		return rendererHelper.minVerticalPixelScale;
+	}
+
+	public double getMaximumVerticalPixelScale()
+	{
+		return rendererHelper.maxVerticalPixelScale;
+	}
+
+	public double getMeanVerticalPixelScale()
+	{
+		return rendererHelper.meanVerticalPixelScale;
+	}
+
+	public static void setGenerateFootprint(boolean b)
+	{
+		PerspectiveImageRendererHelper.setGenerateFootprint(b);
+	}
+
+	public vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
+	{
+		return rendererHelper.getImageWithDisplayedRange(range, offlimb);
+	}
+
+	private vtkPolyData checkForExistingFootprint()
+	{
+		return rendererHelper.checkForExistingFootprint();
+	}
+
+	private vtkPolyData generateBoundary()
+	{
+		return rendererHelper.generateBoundary();
+	}
+
+	private void computeCellNormals()
+	{
+		rendererHelper.computeCellNormals();
+	}
+
+	public double[] computeIlluminationAnglesAtPoint(double[] pt, double[] normal)
+	{
+		return rendererHelper.computeIlluminationAnglesAtPoint(pt, normal);
+	}
+
+	public void computeIlluminationAngles()
+	{
+		rendererHelper.computeIlluminationAngles();
+	}
+
+	public void computePixelScale()
+	{
+		rendererHelper.computePixelScale();
+	}
+
+	public double getOpacity()
+    {
+        return rendererHelper.getOpacity();
+    }
+
+    public void setOpacity(double imageOpacity)
+    {
+    	rendererHelper.setOpacity(imageOpacity);
+    }
+
+	public void setCurrentMask(int[] masking)
+	{
+		rendererHelper.setCurrentMask(masking);
+	}
+
+	public int[] getCurrentMask()
+	{
+		return rendererHelper.getCurrentMask();
+	}
+
+	protected void processRawImage(vtkImageData rawImage)
+	{
+		rendererHelper.processRawImage(rawImage);
+	}
+
+    protected vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)
+    {
+    	return rendererHelper.createRawImage(height, width, depth, array2D, array3D);
+    }
+
+    public vtkImageData createRawImage(int height, int width, int depth, boolean transpose, float[][] array2D, float[][][] array3D)
+    {
+    	return rendererHelper.createRawImage(height, width, depth, transpose, array2D, array3D);
+    }
+
+	public boolean[] getFootprintGenerated()
+	{
+		return rendererHelper.getFootprintGenerated();
+	}
+
+	public void setFootprintGenerated(boolean footprintGenerated)
+	{
+		rendererHelper.setFootprintGenerated(footprintGenerated);
+	}
+
+	public void setFootprintGenerated(boolean footprintGenerated, int slice)
+	{
+		rendererHelper.setFootprintGenerated(footprintGenerated, slice);
+	}
+
+	public boolean isNormalsGenerated()
+	{
+		return rendererHelper.isNormalsGenerated();
+	}
+
+	public static boolean isGenerateFootprint()
+	{
+		return PerspectiveImageRendererHelper.isGenerateFootprint();
+	}
+
+	public void setNormalsGenerated(boolean normalsGenerated)
+	{
+		rendererHelper.setNormalsGenerated(normalsGenerated);
+	}
+
+	public double getSurfaceArea()
+	{
+		return rendererHelper.getSurfaceArea();
+	}
+
+	public void setVisible(boolean b)
+	{
+		rendererHelper.setVisible(b);
+		super.setVisible(b);
+	}
+
 }
+
+//Moving currently commented out sections that are handled with helper classes to down here for now
+
+///////////////////////
+// Rendering properties
+///////////////////////
+//protected vtkImageData rawImage;
+//private vtkImageData displayedImage;
+//private boolean useDefaultFootprint = true;
+//private vtkPolyData[] footprint = new vtkPolyData[1];
+//boolean[] footprintGenerated = new boolean[1];
+//private final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
+//private vtkActor footprintActor;
+//private List<vtkProp> footprintActors = new ArrayList<vtkProp>();
+//vtkPolyData frustumPolyData;
+//private vtkActor frustumActor;
+//private vtkPolyDataNormals normalsFilter;
+//private vtkFloatArray textureCoords;
+//private boolean normalsGenerated = false;
+//private double minIncidence = Double.MAX_VALUE;
+//private double maxIncidence = -Double.MAX_VALUE;
+//private double minEmission = Double.MAX_VALUE;
+//private double maxEmission = -Double.MAX_VALUE;
+//private double minPhase = Double.MAX_VALUE;
+//private double maxPhase = -Double.MAX_VALUE;
+//private double minHorizontalPixelScale = Double.MAX_VALUE;
+//private double maxHorizontalPixelScale = -Double.MAX_VALUE;
+//private double meanHorizontalPixelScale = 0.0;
+//private double minVerticalPixelScale = Double.MAX_VALUE;
+//private double maxVerticalPixelScale = -Double.MAX_VALUE;
+//private double meanVerticalPixelScale = 0.0;
+//
+//// Always use accessors to use this field -- even within this class!
+//private IntensityRange[] displayedRange = null;
+//private double imageOpacity = 1.0;
+//protected vtkTexture imageTexture;
+//
+//// If true, then the footprint is generated by intersecting a frustum with the
+//// asteroid.
+//// This setting is used when generating the files on the server.
+//// If false, then the footprint is downloaded from the server. This setting is
+//// used by the GUI.
+//private static boolean generateFootprint = true;
+//private int[] currentMask = new int[4];
+//
+//Frustum[] frusta = new Frustum[1];
+//
+//private boolean showFrustum = false;
+//private boolean simulateLighting = false;
+//private vtkImageCanvasSource2D maskSource;
+//public double[] maxFrustumDepth;
+//public double[] minFrustumDepth;
+
+////////////
+// Offset properties
+///////////
+//protected double[][] spacecraftPositionAdjusted = new double[1][3];
+//protected double[][] frustum1Adjusted = new double[1][3];
+//protected double[][] frustum2Adjusted = new double[1][3];
+//protected double[][] frustum3Adjusted = new double[1][3];
+//protected double[][] frustum4Adjusted = new double[1][3];
+//private double[][] boresightDirectionAdjusted = new double[1][3];
+//private double[][] upVectorAdjusted = new double[1][3];
+//private double[][] sunPositionAdjusted = new double[1][3];
+//
+//// location in pixel coordinates of the target origin for the adjusted frustum
+//private double[] targetPixelCoordinates = { Double.MAX_VALUE, Double.MAX_VALUE };
+
+//// offset in world coordinates of the adjusted frustum from the loaded frustum
+//// private double[] offsetPixelCoordinates = { Double.MAX_VALUE,
+//// Double.MAX_VALUE };
+//
+//private double[] zoomFactor = { 1.0 };
+//
+//private double[] rotationOffset = { 0.0 };
+//private double[] pitchOffset = { 0.0 };
+//private double[] yawOffset = { 0.0 };
+//private double sampleOffset = 0.0;
+//private double lineOffset = 0.0;
+//
+//// apply all frame adjustments if true
+//private boolean[] applyFrameAdjustments = { true };
+
+/////////////////////////
+//// off-limb images properties
+////////////////////////
+//vtkPolyData offLimbPlane = null;
+//private vtkActor offLimbActor;
+//private vtkTexture offLimbTexture;
+//vtkPolyData offLimbBoundary = null;
+//private vtkActor offLimbBoundaryActor;
+//double offLimbFootprintDepth;
+//private boolean offLimbVisibility;
+//private boolean offLimbBoundaryVisibility;
+//OffLimbPlaneCalculator calculator = new OffLimbPlaneCalculator();
+// Always use accessors to use this field -- even within this class!
+//private IntensityRange offLimbDisplayedRange = null;
+//private boolean contrastSynced = false; // by default, the contrast of offlimb is not synced with on limb
+//private Color offLimbBoundaryColor = Color.RED; // default
+
+
+////////////////////////////////
+// Image offset methods
+////////////////////////////////
+
+
+//private void copySpacecraftState()
+//{
+//  int nslices = getImageDepth();
+//  for (int i = 0; i < nslices; i++)
+//  {
+//      spacecraftPositionAdjusted = MathUtil.copy(spacecraftPositionOriginal);
+//      frustum1Adjusted = MathUtil.copy(frustum1Original);
+//      frustum2Adjusted = MathUtil.copy(frustum2Original);
+//      frustum3Adjusted = MathUtil.copy(frustum3Original);
+//      frustum4Adjusted = MathUtil.copy(frustum4Original);
+//      boresightDirectionAdjusted = MathUtil.copy(boresightDirectionOriginal);
+//      upVectorAdjusted = MathUtil.copy(upVectorOriginal);
+//      sunPositionAdjusted = MathUtil.copy(sunPositionOriginal);
+//  }
+//}
+
+//public void setTargetPixelCoordinates(double[] frustumCenterPixel)
+//{
+//    // System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
+//    // frustumCenterPixel[0]);
+//
+//    this.targetPixelCoordinates[0] = frustumCenterPixel[0];
+//    this.targetPixelCoordinates[1] = frustumCenterPixel[1];
+//    setApplyFrameAdjustments(true);
+//}
+
+// public void setPixelOffset(double[] pixelOffset)
+// {
+//// System.out.println("setFrustumOffset(): " + frustumCenterPixel[1] + " " +
+// frustumCenterPixel[0]);
+//
+// this.offsetPixelCoordinates[0] = pixelOffset[0];
+// this.offsetPixelCoordinates[1] = pixelOffset[1];
+//
+// updateFrameAdjustments();
+//
+// loadFootprint();
+// calculateFrustum();
+// saveImageInfo();
+// }
+
+//public void setLineOffset(double offset)
+//{
+//    lineOffset = offset;
+//    setApplyFrameAdjustments(true);
+//}
+//
+//public void setSampleOffset(double offset)
+//{
+//    sampleOffset = offset;
+//    setApplyFrameAdjustments(true);
+//}
+//
+//public void setRotationOffset(double offset)
+//{
+//    // System.out.println("setRotationOffset(): " + offset);
+//
+//    if (rotationOffset == null)
+//        rotationOffset = new double[1];
+//
+//    rotationOffset[0] = offset;
+//    setApplyFrameAdjustments(true);
+//}
+//
+//public void setYawOffset(double offset)
+//{
+//    // System.out.println("setRotationOffset(): " + offset);
+//
+//    if (yawOffset == null)
+//        yawOffset = new double[1];
+//
+//    yawOffset[0] = offset;
+//    setApplyFrameAdjustments(true);
+//}
+//
+//public void setPitchOffset(double offset)
+//{
+//    // System.out.println("setRotationOffset(): " + offset);
+//
+//    if (pitchOffset == null)
+//        pitchOffset = new double[1];
+//
+//    pitchOffset[0] = offset;
+//    setApplyFrameAdjustments(true);
+//}
+//
+//public void setZoomFactor(double offset)
+//{
+//    // System.out.println("setZoomFactor(): " + offset);
+//
+//    if (zoomFactor == null)
+//    {
+//        zoomFactor = new double[1];
+//        zoomFactor[0] = 1.0;
+//    }
+//
+//    zoomFactor[0] = offset;
+//    setApplyFrameAdjustments(true);
+//}
+
+//public void setApplyFrameAdjustments(boolean state)
+//{
+//    // System.out.println("setApplyFrameAdjustments(): " + state);
+//    applyFrameAdjustments[0] = state;
+//    updateFrameAdjustments();
+//    loadFootprint();
+//    calculateFrustum();
+//    saveImageInfo();
+//}
+//
+//public boolean getApplyFramedAdjustments()
+//{
+//    return applyFrameAdjustments[0];
+//}
+
+//private void updateFrameAdjustments()
+//{
+//    // adjust wrt the original spacecraft pointing direction, not the previous
+//    // adjusted one
+//    copySpacecraftState();
+//
+//    if (applyFrameAdjustments[0])
+//    {
+//        if (targetPixelCoordinates[0] != Double.MAX_VALUE && targetPixelCoordinates[1] != Double.MAX_VALUE)
+//        {
+//            int height = getImageHeight();
+//            double line = height - 1 - targetPixelCoordinates[0];
+//            double sample = targetPixelCoordinates[1];
+//
+//            double[] newTargetPixelDirection = getPixelDirection(sample, line);
+//            rotateTargetPixelDirectionToLocalOrigin(newTargetPixelDirection);
+//        }
+//        // else if (offsetPixelCoordinates[0] != Double.MAX_VALUE &&
+//        // offsetPixelCoordinates[1] != Double.MAX_VALUE)
+//        // {
+//        // int height = getImageHeight();
+//        // int width = getImageWidth();
+//        // double line = height - 1 - offsetPixelCoordinates[0];
+//        // double sample = offsetPixelCoordinates[1];
+//        //
+//        // double[] newOffsetPixelDirection = getPixelDirection(sample, line);
+//        // rotateBoresightTo(newOffsetPixelDirection);
+//        // }
+//
+//        if (sampleOffset != 0 || lineOffset != 0)
+//        	translateSpacecraftInImagePlane(sampleOffset, lineOffset);
+//        else
+//        	translateSpacecraftInImagePlane(0, 0);
+//
+////        if (yawOffset[0] != 0.0)
+////        {
+////        	rotateFrameAboutYawAxis(yawOffset[0]);
+////        }
+////
+////        if (pitchOffset[0] != 0.0)
+////        {
+////        	rotateFrameAboutPitchAxis(pitchOffset[0]);
+////
+////        }
+//
+//        if (rotationOffset[0] != 0.0)
+//        {
+//            rotateFrameAboutTarget(rotationOffset[0]);
+//        }
+//        if (zoomFactor[0] != 1.0)
+//        {
+//            zoomFrame(zoomFactor[0]);
+//        }
+//    }
+//
+//    // int slice = getCurrentSlice();
+//    int nslices = getImageDepth();
+//    for (int slice = 0; slice < nslices; slice++)
+//    {
+//        frusta[slice] = null;
+//        footprintGenerated[slice] = false;
+//    }
+//}
+//
+//private void zoomFrame(double zoomFactor)
+//{
+//    // System.out.println("zoomFrame(" + zoomFactor + ")");
+//    // Vector3D spacecraftPositionVector = new
+//    // Vector3D(spacecraftPositionOriginal[currentSlice]);
+//    // Vector3D spacecraftToOriginVector =
+//    // spacecraftPositionVector.scalarMultiply(-1.0);
+//    // Vector3D originPointingVector = spacecraftToOriginVector.normalize();
+//    // double distance = spacecraftToOriginVector.getNorm();
+//    // Vector3D deltaVector = originPointingVector.scalarMultiply(distance *
+//    // (zoomFactor - 1.0));
+//    // double[] delta = { deltaVector.getX(), deltaVector.getY(), deltaVector.getZ()
+//    // };
+//
+//    double zoomRatio = 1.0 / zoomFactor;
+//    if (zoomRatio < 1.0)
+//	{
+//    	zoomRatio = 1.0;
+//    	return;
+//	}
+//    int nslices = getImageDepth();
+//    for (int slice = 0; slice < nslices; slice++)
+//    {
+//        double[][] surfacePoint = new double[nslices][3];
+//
+//        for (int i = 0; i < 3; i++)
+//        {
+//        	surfacePoint[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] + boresightDirectionOriginal[currentSlice][i];
+//        	spacecraftPositionAdjusted[currentSlice][i] = surfacePoint[currentSlice][i] - boresightDirectionOriginal[currentSlice][i] * zoomRatio;
+//
+////            spacecraftPositionAdjusted[currentSlice][i] = spacecraftPositionOriginal[currentSlice][i] * zoomRatio;
+////            boresightDirectionAdjusted[currentSlice][i] = boresightDirectionOriginal[currentSlice][i] * zoomRatio;
+//        }
+//        frusta[slice] = null;
+//        footprintGenerated[slice] = false;
+//    }
+//}
+//
+//private void rotateFrameAboutPitchAxis(double angleDegrees)
+//{
+//	int nslices = getImageDepth();
+//    for (int slice = 0; slice < nslices; slice++)
+//    {
+//    	double[] vout = new double[] { 0.0, 0.0, 0.0 };
+//    	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], vout);
+//    	MathUtil.unorm(vout, vout);
+//    	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+//    	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//        MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//        MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//        MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//        MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//    }
+//
+//}
+//
+//
+//private void rotateFrameAboutYawAxis(double angleDegrees)
+//{
+//	int nslices = getImageDepth();
+//    for (int slice = 0; slice < nslices; slice++)
+//    {
+//    	double[] vout = new double[] { 0.0, 0.0, 0.0 };
+//    	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], vout);
+//    	MathUtil.unorm(vout, vout);
+//    	Rotation rotation = new Rotation(new Vector3D(vout), Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+//    	MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//        MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//        MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//        MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//        MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//    }
+//}
+//
+//private void rotateFrameAboutTarget(double angleDegrees)
+//{
+//     Vector3D axis = new Vector3D(boresightDirectionOriginal[currentSlice]);
+////    Vector3D axis = new Vector3D(spacecraftPositionAdjusted[currentSlice]);
+////    axis.normalize();
+////    axis.negate();
+//    Rotation rotation = new Rotation(axis, Math.toRadians(angleDegrees), RotationConvention.VECTOR_OPERATOR);
+//
+//    // int slice = getCurrentSlice();
+//    int nslices = getImageDepth();
+//    for (int slice = 0; slice < nslices; slice++)
+//    {
+//        MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//        MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//        MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//        MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//        MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//
+//        frusta[slice] = null;
+//        footprintGenerated[slice] = false;
+//    }
+//}
+//
+//private void translateSpacecraftInImagePlane(double sampleDelta, double lineDelta)
+//{
+//	int nslices = getImageDepth();
+//
+//    for (int slice = 0; slice < nslices; slice++)
+//    {
+//    	double[] sampleAxis = new double[] { 0.0, 0.0, 0.0 };
+//    	MathUtil.vsub(frustum1Adjusted[slice], frustum2Adjusted[slice], sampleAxis);
+//    	MathUtil.unorm(sampleAxis, sampleAxis);
+//    	double[] lineAxis = new double[] { 0.0, 0.0, 0.0 };
+//    	MathUtil.vsub(frustum1Adjusted[slice], frustum3Adjusted[slice], lineAxis);
+//    	MathUtil.unorm(lineAxis, lineAxis);
+//    	MathUtil.vscl(sampleDelta, sampleAxis, sampleAxis);
+//    	MathUtil.vadd(spacecraftPositionAdjusted[slice], sampleAxis, spacecraftPositionAdjusted[slice]);
+//    	MathUtil.vscl(lineDelta, lineAxis, lineAxis);
+//    	MathUtil.vadd(spacecraftPositionAdjusted[slice], lineAxis, spacecraftPositionAdjusted[slice]);
+//    }
+//}
+//
+//public void moveTargetPixelCoordinates(double[] pixelDelta)
+//{
+//     System.out.println("moveTargetPixelCoordinates(): " + pixelDelta[1] + " " +
+//     pixelDelta[0]);
+//     System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
+//    double height = (double) getImageHeight();
+//    if (targetPixelCoordinates[0] == Double.MAX_VALUE || targetPixelCoordinates[1] == Double.MAX_VALUE)
+//    {
+//        targetPixelCoordinates = getPixelFromPoint(bodyOrigin);
+//        targetPixelCoordinates[0] = height - 1 - targetPixelCoordinates[0];
+//    }
+//    System.out.println("PerspectiveImage: moveTargetPixelCoordinates: current target pixel coords 2 " + targetPixelCoordinates[0] + " " + targetPixelCoordinates[1]);
+//
+//    double line = this.targetPixelCoordinates[0] + pixelDelta[0];
+//    double sample = targetPixelCoordinates[1] + pixelDelta[1];
+//    double[] newFrustumCenterPixel = { line, sample };
+//    System.out.println("moveTargetPixelCoordinates(): " + newFrustumCenterPixel[1] + " " + newFrustumCenterPixel[0]);
+//    setTargetPixelCoordinates(newFrustumCenterPixel);
+//}
+//
+//// public void moveOffsetPixelCoordinates(double[] pixelDelta)
+//// {
+////// System.out.println("moveOffsetPixelCoordinates(): " + pixelDelta[1] + " " +
+//// pixelDelta[0]);
+////
+//// double height = (double)getImageHeight();
+//// double width = (double)getImageWidth();
+//// if (offsetPixelCoordinates[0] == Double.MAX_VALUE ||
+//// offsetPixelCoordinates[1] == Double.MAX_VALUE)
+//// {
+//// offsetPixelCoordinates[0] = 0.0;
+//// offsetPixelCoordinates[1] = 0.0;
+//// }
+//// double line = offsetPixelCoordinates[0] + pixelDelta[0];
+//// double sample = offsetPixelCoordinates[1] + pixelDelta[1];
+//// double[] newPixelOffset = { line, sample };
+////
+//// setPixelOffset(newPixelOffset);
+//// }
+//
+//public void movePitchAngleBy(double rotationDelta)
+//{
+//	double newPitchOffset = pitchOffset[0] + rotationDelta;
+//	setPitchOffset(newPitchOffset);
+//}
+//
+//public void moveYawAngleBy(double rotationDelta)
+//{
+//	double newYawOffset = yawOffset[0] + rotationDelta;
+//	setYawOffset(newYawOffset);
+//}
+
+//public void moveLineOffsetBy(double offset)
+//{
+//	setLineOffset(lineOffset + offset);
+//}
+//
+//public void moveSampleOffsetBy(double offset)
+//{
+//	setSampleOffset(sampleOffset + offset);
+//}
+//
+//
+///**
+// * This adjusts the roll angle about the boresight direction
+// * @param rotationDelta
+// */
+//public void moveRotationAngleBy(double rotationDelta)
+//{
+//    // System.out.println("moveRotationAngleBy(): " + rotationDelta);
+//
+//    double newRotationOffset = rotationOffset[0] + rotationDelta;
+//
+//    setRotationOffset(newRotationOffset);
+//}
+//
+//public void moveZoomFactorBy(double zoomDelta)
+//{
+//    // System.out.println("moveZoomDeltaBy(): " + zoomDelta);
+//
+//    double newZoomFactor = zoomFactor[0] * zoomDelta;
+//
+//    setZoomFactor(newZoomFactor);
+//}
+
+// private void rotateBoresightDirectionTo(double[] newDirection)
+// {
+// Vector3D oldDirectionVector = new
+// Vector3D(boresightDirectionOriginal[currentSlice]);
+// Vector3D newDirectionVector = new Vector3D(newDirection);
+//
+// Rotation rotation = new Rotation(oldDirectionVector, newDirectionVector);
+//
+// int nslices = getNumberBands();
+// for (int i = 0; i<nslices; i++)
+// {
+// MathUtil.rotateVector(frustum1Adjusted[i], rotation, frustum1Adjusted[i]);
+// MathUtil.rotateVector(frustum2Adjusted[i], rotation, frustum2Adjusted[i]);
+// MathUtil.rotateVector(frustum3Adjusted[i], rotation, frustum3Adjusted[i]);
+// MathUtil.rotateVector(frustum4Adjusted[i], rotation, frustum4Adjusted[i]);
+// MathUtil.rotateVector(boresightDirectionAdjusted[i], rotation,
+// boresightDirectionAdjusted[i]);
+//
+// frusta[i] = null;
+// footprintGenerated[i] = false;
+// }
+//
+//// loadFootprint();
+//// calculateFrustum();
+// }
+
+//private void rotateTargetPixelDirectionToLocalOrigin(double[] direction)
+//{
+//    Vector3D directionVector = new Vector3D(direction);
+//    Vector3D spacecraftPositionVector = new Vector3D(spacecraftPositionOriginal[currentSlice]);
+//    Vector3D spacecraftToOriginVector = spacecraftPositionVector.scalarMultiply(-1.0);
+//    Vector3D originPointingVector = spacecraftToOriginVector.normalize();
+//
+//    Rotation rotation = new Rotation(directionVector, originPointingVector);
+//
+//    // int slice = getCurrentSlice();
+//    int nslices = getImageDepth();
+//    for (int slice = 0; slice < nslices; slice++)
+//    {
+//        MathUtil.rotateVector(frustum1Adjusted[slice], rotation, frustum1Adjusted[slice]);
+//        MathUtil.rotateVector(frustum2Adjusted[slice], rotation, frustum2Adjusted[slice]);
+//        MathUtil.rotateVector(frustum3Adjusted[slice], rotation, frustum3Adjusted[slice]);
+//        MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
+//        MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
+//
+//        frusta[slice] = null;
+//        footprintGenerated[slice] = false;
+//    }
+//}
+
+
+///////////////////////////////////
+// Rendering methods
+///////////////////////////////////
+//public void calculateFrustum()
+//{
+//    if (frustumActor == null)
+//        return;
+//    // System.out.println("recalculateFrustum()");
+//    frustumPolyData = new vtkPolyData();
+//
+//    vtkPoints points = new vtkPoints();
+//    vtkCellArray lines = new vtkCellArray();
+//
+//    vtkIdList idList = new vtkIdList();
+//    idList.SetNumberOfIds(2);
+//
+//    double[][] frustum1Adjusted = getFrustum1Adjusted();
+//    double[][] frustum2Adjusted = getFrustum2Adjusted();
+//    double[][] frustum3Adjusted = getFrustum3Adjusted();
+//    double[][] frustum4Adjusted = getFrustum4Adjusted();
+//    double[][] spacecraftPositionAdjusted = getSpacecraftPositionAdjusted();
+//    double maxFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) + smallBodyModel.getBoundingBoxDiagonalLength();
+//    double[] origin = spacecraftPositionAdjusted[currentSlice];
+//    double[] UL = { origin[0] + frustum1Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum1Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum1Adjusted[currentSlice][2] * maxFrustumRayLength };
+//    double[] UR = { origin[0] + frustum2Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum2Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum2Adjusted[currentSlice][2] * maxFrustumRayLength };
+//    double[] LL = { origin[0] + frustum3Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum3Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum3Adjusted[currentSlice][2] * maxFrustumRayLength };
+//    double[] LR = { origin[0] + frustum4Adjusted[currentSlice][0] * maxFrustumRayLength, origin[1] + frustum4Adjusted[currentSlice][1] * maxFrustumRayLength, origin[2] + frustum4Adjusted[currentSlice][2] * maxFrustumRayLength };
+//
+//    double minFrustumRayLength = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]) - smallBodyModel.getBoundingBoxDiagonalLength();
+//    maxFrustumDepth[currentSlice] = maxFrustumRayLength; // a reasonable approximation for a max bound on the frustum depth
+//    minFrustumDepth[currentSlice] = minFrustumRayLength; // a reasonable approximation for a min bound on the frustum depth
+//
+//    points.InsertNextPoint(spacecraftPositionAdjusted[currentSlice]);
+//    points.InsertNextPoint(UL);
+//    points.InsertNextPoint(UR);
+//    points.InsertNextPoint(LL);
+//    points.InsertNextPoint(LR);
+//
+//    idList.SetId(0, 0);
+//    idList.SetId(1, 1);
+//    lines.InsertNextCell(idList);
+//    idList.SetId(0, 0);
+//    idList.SetId(1, 2);
+//    lines.InsertNextCell(idList);
+//    idList.SetId(0, 0);
+//    idList.SetId(1, 3);
+//    lines.InsertNextCell(idList);
+//    idList.SetId(0, 0);
+//    idList.SetId(1, 4);
+//    lines.InsertNextCell(idList);
+//
+//    frustumPolyData.SetPoints(points);
+//    frustumPolyData.SetLines(lines);
+//
+//    vtkPolyDataMapper frusMapper = new vtkPolyDataMapper();
+//    frusMapper.SetInputData(frustumPolyData);
+//
+//    frustumActor.SetMapper(frusMapper);
+//}
+//
+//public vtkImageData getRawImage()
+//{
+//    return rawImage;
+//}
+//
+//public vtkImageData getDisplayedImage()
+//{
+//    return displayedImage;
+//}
+//
+//public void setUseDefaultFootprint(boolean useDefaultFootprint)
+//{
+//    this.useDefaultFootprint = useDefaultFootprint;
+//    for (int i = 0; i < getImageDepth(); i++)
+//    {
+//        footprintGenerated[i] = false;
+//    }
+//}
+//
+//public boolean useDefaultFootprint()
+//{
+//    return useDefaultFootprint;
+//}
+//
+//public vtkTexture getTexture()
+//{
+//    return imageTexture;
+//}
+//
+//public static void setGenerateFootprint(boolean b)
+//{
+//    generateFootprint = b;
+//}
+//
+//public List<vtkProp> getProps()
+//{
+//
+//    // System.out.println("getProps()");
+//    if (footprintActor == null)
+//    {
+//        loadFootprint();
+//
+//        imageTexture = new vtkTexture();
+//        imageTexture.InterpolateOn();
+//        imageTexture.RepeatOff();
+//        imageTexture.EdgeClampOn();
+//        imageTexture.SetInputData(getDisplayedImage());
+//
+//        vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
+//        footprintMapper.SetInputData(shiftedFootprint[0]);
+//        footprintMapper.Update();
+//        footprintActor = new vtkActor();
+//        footprintActor.SetMapper(footprintMapper);
+//        footprintActor.SetTexture(imageTexture);
+//        vtkProperty footprintProperty = footprintActor.GetProperty();
+//        footprintProperty.LightingOff();
+//
+//        footprintActors.add(footprintActor);
+//    }
+//
+//    if (frustumActor == null)
+//    {
+//        frustumActor = new vtkActor();
+//
+//        calculateFrustum();
+//
+//        vtkProperty frustumProperty = frustumActor.GetProperty();
+//        frustumProperty.SetColor(0.0, 1.0, 0.0);
+//        frustumProperty.SetLineWidth(2.0);
+//        frustumActor.VisibilityOff();
+//
+//        footprintActors.add(frustumActor);
+//    }
+//
+//    // for offlimb
+//    getOffLimbTexture();
+//    footprintActors.addAll(offlimbPlaneHelper.getProps());
+////    if (offLimbActor == null && offLimbTexture != null)
+////    {
+////        loadOffLimbPlane();
+////        if (footprintActors.contains(offLimbActor))
+////            footprintActors.remove(offLimbActor);
+////        footprintActors.add(offLimbActor);
+////        if (footprintActors.contains(offLimbBoundaryActor))
+////            footprintActors.remove(offLimbBoundaryActor);
+////        footprintActors.add(offLimbBoundaryActor);
+////    }
+//
+//    return footprintActors;
+//}
+//
+//public void setShowFrustum(boolean b)
+//{
+//    showFrustum = b;
+//
+//    if (showFrustum)
+//    {
+//        frustumActor.VisibilityOn();
+//    }
+//    else
+//    {
+//        frustumActor.VisibilityOff();
+//    }
+//
+//    this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
+//}
+//
+//public boolean isFrustumShowing()
+//{
+//    return showFrustum;
+//}
+//
+//public void setSimulateLighting(boolean b)
+//{
+//    simulateLighting = b;
+//}
+//
+//public boolean isSimulatingLighingOn()
+//{
+//    return simulateLighting;
+//}
+//
+//public double getMinIncidence()
+//{
+//    return minIncidence;
+//}
+//
+//public double getMaxIncidence()
+//{
+//    return maxIncidence;
+//}
+//
+//public double getMinEmission()
+//{
+//    return minEmission;
+//}
+//
+//public double getMaxEmission()
+//{
+//    return maxEmission;
+//}
+//
+//public double getMinPhase()
+//{
+//    return minPhase;
+//}
+//
+//public double getMaxPhase()
+//{
+//    return maxPhase;
+//}
+//
+//public IntensityRange getDisplayedRange()
+//{
+//    return getDisplayedRange(currentSlice);
+//}
+//
+///**
+// * This getter lazily initializes the range field as necessary to
+// * ensure this returns a valid, non-null range as long as the argument
+// * is in range for this image.
+// *
+// * @param slice the number of the slice whose displayed range to return.
+// */
+//public IntensityRange getDisplayedRange(int slice)
+//{
+//    int nslices = getImageDepth();
+//
+//    Preconditions.checkArgument(slice < nslices);
+//
+//    if (displayedRange == null)
+//    {
+//        displayedRange = new IntensityRange[nslices];
+//    }
+//    if (displayedRange[slice] == null)
+//    {
+//        displayedRange[slice] = new IntensityRange(0, 255);
+//    }
+//
+//    return displayedRange[slice];
+//}
+//
+///**
+// * Set the displayed image range of the currently selected slice of the image.
+// * As a side-effect, this method also MAYBE CREATES the displayed image.
+// *
+// * @param range the new displayed range of the image. If null is passed,
+// */
+//public void setDisplayedImageRange(IntensityRange range)
+//{
+//    if (rawImage != null)
+//    {
+//        if (rawImage.GetNumberOfScalarComponents() > 1)
+//        {
+//            displayedImage = rawImage;
+//            return;
+//        }
+//
+//    }
+//
+//    IntensityRange displayedRange = getDisplayedRange(currentSlice);
+//    if (range == null || displayedRange.min != range.min || displayedRange.max != range.max)
+//    {
+//        if (range != null)
+//        {
+//            this.displayedRange[currentSlice] = range;
+//            saveImageInfo();
+//        }
+//
+//        if (rawImage != null)
+//        {
+//            vtkImageData img = getImageWithDisplayedRange(range, false);
+//
+//            if (displayedImage == null)
+//                displayedImage = new vtkImageData();
+//            displayedImage.DeepCopy(img);
+//        }
+//    }
+//
+//    this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
+//}
+//
+//public vtkPolyData getFootprint(int defaultSlice)
+//{
+//    if (footprint[0].GetNumberOfPoints() > 0)
+//        return footprint[0];
+//    // first check the cache
+//    vtkPolyData existingFootprint = checkForExistingFootprint();
+//    if (existingFootprint != null)
+//        return existingFootprint;
+//    else
+//    {
+//        vtkPolyData footprint = smallBodyModel.computeFrustumIntersection(getSpacecraftPositionAdjusted()[defaultSlice],
+//        																	getFrustum1Adjusted()[defaultSlice],
+//        																	getFrustum3Adjusted()[defaultSlice],
+//        																	getFrustum4Adjusted()[defaultSlice],
+//        																	getFrustum2Adjusted()[defaultSlice]);
+////        System.out.println("PerspectiveImage: getFootprint: footprint creation " + sw.elapsedMillis());
+//        return footprint;
+//    }
+//}
+//
+//public void loadFootprint()
+//{
+//    vtkPolyData existingFootprint = checkForExistingFootprint();
+//    if (existingFootprint != null)
+//    {
+//    	System.out.println("PerspectiveImage: loadFootprint: existing footprint");
+//        footprint[0] = existingFootprint;
+//
+//        vtkPointData pointData = footprint[currentSlice].GetPointData();
+//        pointData.SetTCoords(textureCoords);
+////        System.out.println("PerspectiveImage: loadFootprint: setting texture coords " + sw.elapsedMillis());
+//        PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
+////        System.out.println("PerspectiveImage: loadFootprint: set texture coords " + sw.elapsedMillis());
+//        pointData.Delete();
+//
+//        shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
+//        PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], getOffset());
+//        return;
+//    }
+//
+//    if (generateFootprint)
+//    {
+//    	System.out.println("PerspectiveImage: loadFootprint: generate footprint true");
+//        vtkPolyData tmp = null;
+//
+//        if (!footprintGenerated[currentSlice])
+//        {
+//        	System.out.println("PerspectiveImage: loadFootprint: footprint not generated");
+//            if (useDefaultFootprint())
+//            {
+//            	System.out.println("PerspectiveImage: loadFootprint: using default footprint");
+//                int defaultSlice = getDefaultSlice();
+//                if (footprintGenerated[defaultSlice] == false)
+//                {
+//                    footprint[defaultSlice] = getFootprint(defaultSlice);
+//                    if (footprint[defaultSlice] == null)
+//                        return;
+//
+//                    // Need to clear out scalar data since if coloring data is being shown,
+//                    // then the color might mix-in with the image.
+//                    footprint[defaultSlice].GetCellData().SetScalars(null);
+//                    footprint[defaultSlice].GetPointData().SetScalars(null);
+//
+//                    footprintGenerated[defaultSlice] = true;
+//                }
+//
+//                tmp = footprint[defaultSlice];
+//
+//            }
+//            else
+//            {
+//            	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
+//                tmp = smallBodyModel.computeFrustumIntersection(getSpacecraftPositionAdjusted()[currentSlice],
+//                												getFrustum1Adjusted()[currentSlice],
+//                												getFrustum3Adjusted()[currentSlice],
+//                												getFrustum4Adjusted()[currentSlice],
+//                												getFrustum2Adjusted()[currentSlice]);
+//                if (tmp == null)
+//                    return;
+//
+//                // Need to clear out scalar data since if coloring data is being shown,
+//                // then the color might mix-in with the image.
+//                tmp.GetCellData().SetScalars(null);
+//                tmp.GetPointData().SetScalars(null);
+//            }
+//
+//            // vtkPolyDataWriter writer=new vtkPolyDataWriter();
+//            // writer.SetInputData(tmp);
+//            // writer.SetFileName("/Users/zimmemi1/Desktop/test.vtk");
+//            // writer.SetFileTypeToBinary();
+//            // writer.Write();
+//
+//            footprint[currentSlice].DeepCopy(tmp);
+//
+//            footprintGenerated[currentSlice] = true;
+//        }
+//        System.out.println("PerspectiveImage: loadFootprint: footprint generated");
+//        vtkPointData pointData = footprint[currentSlice].GetPointData();
+//        pointData.SetTCoords(textureCoords);
+//        PolyDataUtil.generateTextureCoordinates(getFrustum(), getImageWidth(), getImageHeight(), footprint[currentSlice]);
+//        pointData.Delete();
+//    }
+//    else
+//    {
+//    	System.out.println("PerspectiveImage: loadFootprint: fetching from server, generate footprint false");
+//        int resolutionLevel = smallBodyModel.getModelResolution();
+//
+//        String footprintFilename = null;
+//        File file = null;
+//
+//        if (key.getSource() == ImageSource.SPICE || key.getSource() == ImageSource.CORRECTED_SPICE)
+//            footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_PDS.VTP";
+//        else
+//            footprintFilename = key.getName() + "_FOOTPRINT_RES" + resolutionLevel + "_GASKELL.VTP";
+//
+//        file = FileCache.getFileFromServer(footprintFilename);
+//
+//        if (file == null || !file.exists())
+//        {
+//            System.out.println("Warning: " + footprintFilename + " not found");
+//            return;
+//        }
+//
+//        vtkXMLPolyDataReader footprintReader = new vtkXMLPolyDataReader();
+//        footprintReader.SetFileName(file.getAbsolutePath());
+//        footprintReader.Update();
+//
+//        vtkPolyData footprintReaderOutput = footprintReader.GetOutput();
+//        footprint[currentSlice].DeepCopy(footprintReaderOutput);
+//    }
+//
+//    shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
+//    PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], getOffset());
+//    vtkPolyDataWriter writer = new vtkPolyDataWriter();
+//    writer.SetInputData(footprint[0]);
+////    System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
+//    String intersectionFileName = getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
+//    File file = FileCache.instance().getFile(intersectionFileName);
+////    System.out.println("PerspectiveImage: loadFootprint: saving to " + intersectionFileName);
+//    writer.SetFileName(file.getPath());
+//    writer.SetFileTypeToBinary();
+//    writer.Write();
+//}
+//
+//public double getMinimumHorizontalPixelScale()
+//{
+//    return minHorizontalPixelScale;
+//}
+//
+//public double getMaximumHorizontalPixelScale()
+//{
+//    return maxHorizontalPixelScale;
+//}
+//
+//public double getMeanHorizontalPixelScale()
+//{
+//    return meanHorizontalPixelScale;
+//}
+//
+//public double getMinimumVerticalPixelScale()
+//{
+//    return minVerticalPixelScale;
+//}
+//
+//public double getMaximumVerticalPixelScale()
+//{
+//    return maxVerticalPixelScale;
+//}
+//
+//public double getMeanVerticalPixelScale()
+//{
+//    return meanVerticalPixelScale;
+//}
+//
+//// Computes the incidence, emission, and phase at a point on the footprint with
+//// a given normal.
+//// (I.e. the normal of the plate which the point is lying on).
+//// The output is a 3-vector with the first component equal to the incidence,
+//// the second component equal to the emission and the third component equal to
+//// the phase.
+//public double[] computeIlluminationAnglesAtPoint(double[] pt, double[] normal)
+//{
+//	double[][] spacecraftPositionAdjusted = getSpacecraftPositionAdjusted();
+//    double[] scvec = {
+//            spacecraftPositionAdjusted[currentSlice][0] - pt[0],
+//            spacecraftPositionAdjusted[currentSlice][1] - pt[1],
+//            spacecraftPositionAdjusted[currentSlice][2] - pt[2] };
+//
+//    double[] sunVectorAdjusted = getSunVector();
+//    double incidence = MathUtil.vsep(normal, sunVectorAdjusted) * 180.0 / Math.PI;
+//    double emission = MathUtil.vsep(normal, scvec) * 180.0 / Math.PI;
+//    double phase = MathUtil.vsep(sunVectorAdjusted, scvec) * 180.0 / Math.PI;
+//
+//    double[] angles = { incidence, emission, phase };
+//
+//    return angles;
+//}
+//
+//public void propertyChange(PropertyChangeEvent evt)
+//{
+//    if (Properties.MODEL_RESOLUTION_CHANGED.equals(evt.getPropertyName()))
+//    {
+//        loadFootprint();
+//        normalsGenerated = false;
+//        this.minEmission = Double.MAX_VALUE;
+//        this.maxEmission = -Double.MAX_VALUE;
+//        this.minIncidence = Double.MAX_VALUE;
+//        this.maxIncidence = -Double.MAX_VALUE;
+//        this.minPhase = Double.MAX_VALUE;
+//        this.maxPhase = -Double.MAX_VALUE;
+//        this.minHorizontalPixelScale = Double.MAX_VALUE;
+//        this.maxHorizontalPixelScale = -Double.MAX_VALUE;
+//        this.minVerticalPixelScale = Double.MAX_VALUE;
+//        this.maxVerticalPixelScale = -Double.MAX_VALUE;
+//        this.meanHorizontalPixelScale = 0.0;
+//        this.meanVerticalPixelScale = 0.0;
+//
+//        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
+//    }
+//}
+//
+///**
+// * The shifted footprint is the original footprint shifted slightly in the
+// * normal direction so that it will be rendered correctly and not obscured by
+// * the asteroid.
+// *
+// * @return
+// */
+//@Override
+//public vtkPolyData getShiftedFootprint()
+//{
+//    return shiftedFootprint[0];
+//}
+//
+///**
+// * The original footprint whose cells exactly overlap the original asteroid. If
+// * rendered as is, it would interfere with the asteroid. Note: this is made
+// * public in this class for the benefit of backplane generators, which use it.
+// *
+// * @return
+// */
+//@Override
+//public vtkPolyData getUnshiftedFootprint()
+//{
+//    return footprint[currentSlice];
+//}
+//
+//public void Delete()
+//{
+//    displayedImage.Delete();
+//    rawImage.Delete();
+//
+//    for (int i = 0; i < footprint.length; i++)
+//    {
+//        // Footprints can be null if no frustum intersection is found
+//        if (footprint[i] != null)
+//        {
+//            footprint[i].Delete();
+//        }
+//    }
+//
+//    for (int i = 0; i < shiftedFootprint.length; i++)
+//    {
+//        if (shiftedFootprint[i] != null)
+//        {
+//            shiftedFootprint[i].Delete();
+//        }
+//    }
+//
+//    textureCoords.Delete();
+//    normalsFilter.Delete();
+//    maskSource.Delete();
+//}
+//
+//public Frustum getFrustum(int slice)
+//{
+//    if (useDefaultFootprint())
+//    {
+//        int defaultSlice = getDefaultSlice();
+//        if (frusta[defaultSlice] == null)
+//            frusta[defaultSlice] = new Frustum(getSpacecraftPositionAdjusted()[defaultSlice], getFrustum1Adjusted()[defaultSlice], getFrustum3Adjusted()[defaultSlice], getFrustum4Adjusted()[defaultSlice], getFrustum2Adjusted()[defaultSlice]);
+//        return frusta[defaultSlice];
+//    }
+//
+//    if (frusta[slice] == null)
+//        frusta[slice] = new Frustum(getSpacecraftPositionAdjusted()[slice], getFrustum1Adjusted()[slice], getFrustum3Adjusted()[slice], getFrustum4Adjusted()[slice], getFrustum2Adjusted()[slice]);
+//    return frusta[slice];
+//}
+//
+//public Frustum getFrustum()
+//{
+//    return getFrustum(currentSlice);
+//}
+//
+//public int getNumberOfComponentsOfOriginalImage()
+//{
+//    return rawImage.GetNumberOfScalarComponents();
+//}
+//
+//public void setRawImage(vtkImageData rawImage)
+//{
+//    this.rawImage = rawImage;
+//}
+//
+//public double getMaxFrustumDepth(int slice)
+//{
+//    return maxFrustumDepth[slice];
+//}
+//
+//public double getMinFrustumDepth(int slice)
+//{
+//    return minFrustumDepth[slice];
+//}
+//
+//vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
+//{
+//    float minValue = getMinValue();
+//    float maxValue = getMaxValue();
+//    float dx = (maxValue - minValue) / 255.0f;
+//
+//    float min = minValue;
+//    float max = maxValue;
+//    if (!offlimb)
+//    {
+//        IntensityRange displayedRange = getDisplayedRange(currentSlice);
+//        min = minValue + displayedRange.min * dx;
+//        max = minValue + displayedRange.max * dx;
+//    }
+//    else
+//    {
+//        IntensityRange offLimbDisplayedRange = getOffLimbDisplayedRange();
+//        min = minValue + offLimbDisplayedRange.min * dx;
+//        max = minValue + offLimbDisplayedRange.max * dx;
+//    }
+//
+//    // Update the displayed image
+//    vtkLookupTable lut = new vtkLookupTable();
+//    lut.SetTableRange(min, max);
+//    lut.SetValueRange(0.0, 1.0);
+//    lut.SetHueRange(0.0, 0.0);
+//    lut.SetSaturationRange(0.0, 0.0);
+//    // lut.SetNumberOfTableValues(402);
+//    lut.SetRampToLinear();
+//    lut.Build();
+//
+//    // for 3D images, take the current slice
+//    vtkImageData image2D = rawImage;
+//    if (getImageDepth() > 1)
+//    {
+//        vtkImageReslice slicer = new vtkImageReslice();
+//        slicer.SetInputData(rawImage);
+//        slicer.SetOutputDimensionality(2);
+//        slicer.SetInterpolationModeToNearestNeighbor();
+//        slicer.SetOutputSpacing(1.0, 1.0, 1.0);
+//        slicer.SetResliceAxesDirectionCosines(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+//
+//        slicer.SetOutputOrigin(0.0, 0.0, (double) currentSlice);
+//        slicer.SetResliceAxesOrigin(0.0, 0.0, (double) currentSlice);
+//
+//        slicer.SetOutputExtent(0, imageWidth - 1, 0, imageHeight - 1, 0, 0);
+//
+//        slicer.Update();
+//        image2D = slicer.GetOutput();
+//    }
+//
+//    vtkImageMapToColors mapToColors = new vtkImageMapToColors();
+//    mapToColors.SetInputData(image2D);
+//    mapToColors.SetOutputFormatToRGBA();
+//    mapToColors.SetLookupTable(lut);
+//    mapToColors.Update();
+//
+//    vtkImageData mapToColorsOutput = mapToColors.GetOutput();
+//    vtkImageData maskSourceOutput = maskSource.GetOutput();
+//
+//    vtkImageMask maskFilter = new vtkImageMask();
+//    maskFilter.SetImageInputData(mapToColorsOutput);
+//    maskFilter.SetMaskInputData(maskSourceOutput);
+//    maskFilter.Update();
+//
+//    vtkImageData maskFilterOutput = maskFilter.GetOutput();
+//    mapToColors.Delete();
+//    lut.Delete();
+//    mapToColorsOutput.Delete();
+//    maskSourceOutput.Delete();
+//    maskFilter.Delete();
+//    return maskFilterOutput;
+//}
+//
+///**
+// * Give oppurtunity to subclass to do some processing on the raw image such as
+// * resizing, flipping, masking, etc.
+// *
+// * @param rawImage
+// */
+//protected void processRawImage(vtkImageData rawImage)
+//{
+//	if (getFlip().equals("X"))
+//    {
+//        ImageDataUtil.flipImageXAxis(rawImage);
+//    }
+//    else if (getFlip().equals("Y"))
+//    {
+//        ImageDataUtil.flipImageYAxis(rawImage);
+//    }
+//    if (getRotation() != 0.0)
+//        ImageDataUtil.rotateImage(rawImage, 360.0 - getRotation());
+//}
+//
+//protected vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)
+//{
+//    return createRawImage(height, width, depth, true, array2D, array3D);
+//}
+//
+//public vtkImageData createRawImage(int height, int width, int depth, boolean transpose, float[][] array2D, float[][][] array3D)
+//{
+//    // Allocate enough room to store min/max value at each layer
+//    maxValue = new float[depth];
+//    minValue = new float[depth];
+//
+//    // Call
+//    return ImageDataUtil.createRawImage(height, width, depth, transpose, array2D, array3D, minValue, maxValue);
+//}
+//
+//private vtkPolyData checkForExistingFootprint()
+//{
+//    String intersectionFileName = getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
+//    if (FileCache.isFileGettable(intersectionFileName))
+//    {
+////        System.out.println(
+////                "PerspectiveImage: checkForExistingFootprint: getting from server");
+//        File file = FileCache.getFileFromServer(intersectionFileName);
+////        System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally " + file.getAbsolutePath());
+//        vtkPolyDataReader reader = new vtkPolyDataReader();
+////        reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));	//This is wrong.  The old code was stripping off .gz from the intersection name.  This now further removes .vtk which is bad.
+//        reader.SetFileName(file.getAbsolutePath()); // now just reads in the file path as it should.
+//        reader.Update();
+//        vtkPolyData footprint = reader.GetOutput();
+//        return footprint;
+//    }
+//    return null;
+//}
+//
+//public vtkPolyData generateBoundary()
+//{
+//    loadFootprint();
+//
+//    if (footprint[currentSlice].GetNumberOfPoints() == 0)
+//        return null;
+//
+//    vtkFeatureEdges edgeExtracter = new vtkFeatureEdges();
+//    edgeExtracter.SetInputData(footprint[currentSlice]);
+//    edgeExtracter.BoundaryEdgesOn();
+//    edgeExtracter.FeatureEdgesOff();
+//    edgeExtracter.NonManifoldEdgesOff();
+//    edgeExtracter.ManifoldEdgesOff();
+//    edgeExtracter.Update();
+//
+//    vtkPolyData boundary = new vtkPolyData();
+//    vtkPolyData edgeExtracterOutput = edgeExtracter.GetOutput();
+//    boundary.DeepCopy(edgeExtracterOutput);
+//
+//    return boundary;
+//}
+//
+//private void computeCellNormals()
+//{
+//    if (normalsGenerated == false)
+//    {
+//        normalsFilter.SetInputData(footprint[currentSlice]);
+//        normalsFilter.SetComputeCellNormals(1);
+//        normalsFilter.SetComputePointNormals(0);
+//        // normalsFilter.AutoOrientNormalsOn();
+//        // normalsFilter.ConsistencyOn();
+//        normalsFilter.SplittingOff();
+//        normalsFilter.Update();
+//
+//        if (footprint != null && footprint[currentSlice] != null)
+//        {
+//            vtkPolyData normalsFilterOutput = normalsFilter.GetOutput();
+//            footprint[currentSlice].DeepCopy(normalsFilterOutput);
+//            normalsGenerated = true;
+//        }
+//    }
+//}
+//
+//protected void computeIlluminationAngles()
+//{
+//    if (footprintGenerated[currentSlice] == false)
+//        loadFootprint();
+//
+//    computeCellNormals();
+//
+//    int numberOfCells = footprint[currentSlice].GetNumberOfCells();
+//
+//    vtkPoints points = footprint[currentSlice].GetPoints();
+//    vtkCellData footprintCellData = footprint[currentSlice].GetCellData();
+//    vtkDataArray normals = footprintCellData.GetNormals();
+//
+//    this.minEmission = Double.MAX_VALUE;
+//    this.maxEmission = -Double.MAX_VALUE;
+//    this.minIncidence = Double.MAX_VALUE;
+//    this.maxIncidence = -Double.MAX_VALUE;
+//    this.minPhase = Double.MAX_VALUE;
+//    this.maxPhase = -Double.MAX_VALUE;
+//
+//    for (int i = 0; i < numberOfCells; ++i)
+//    {
+//        vtkCell cell = footprint[currentSlice].GetCell(i);
+//        double[] pt0 = points.GetPoint(cell.GetPointId(0));
+//        double[] pt1 = points.GetPoint(cell.GetPointId(1));
+//        double[] pt2 = points.GetPoint(cell.GetPointId(2));
+//        double[] centroid = {
+//                (pt0[0] + pt1[0] + pt2[0]) / 3.0,
+//                (pt0[1] + pt1[1] + pt2[1]) / 3.0,
+//                (pt0[2] + pt1[2] + pt2[2]) / 3.0
+//        };
+//        double[] normal = normals.GetTuple3(i);
+//
+//        double[] angles = computeIlluminationAnglesAtPoint(centroid, normal);
+//        double incidence = angles[0];
+//        double emission = angles[1];
+//        double phase = angles[2];
+//
+//        if (incidence < minIncidence)
+//            minIncidence = incidence;
+//        if (incidence > maxIncidence)
+//            maxIncidence = incidence;
+//        if (emission < minEmission)
+//            minEmission = emission;
+//        if (emission > maxEmission)
+//            maxEmission = emission;
+//        if (phase < minPhase)
+//            minPhase = phase;
+//        if (phase > maxPhase)
+//            maxPhase = phase;
+//        cell.Delete();
+//    }
+//
+//    points.Delete();
+//    footprintCellData.Delete();
+//    if (normals != null)
+//        normals.Delete();
+//}
+//
+//protected void computePixelScale()
+//{
+//	double[][] spacecraftPositionAdjusted = getSunPositionAdjusted();
+//	double[][] frustum1Adjusted = getFrustum1Adjusted();
+//	double[][] frustum2Adjusted = getFrustum2Adjusted();
+//	double[][] frustum3Adjusted = getFrustum3Adjusted();
+//    if (footprintGenerated[currentSlice] == false)
+//        loadFootprint();
+//
+//    int numberOfPoints = footprint[currentSlice].GetNumberOfPoints();
+//
+//    vtkPoints points = footprint[currentSlice].GetPoints();
+//
+//    minHorizontalPixelScale = Double.MAX_VALUE;
+//    maxHorizontalPixelScale = -Double.MAX_VALUE;
+//    meanHorizontalPixelScale = 0.0;
+//    minVerticalPixelScale = Double.MAX_VALUE;
+//    maxVerticalPixelScale = -Double.MAX_VALUE;
+//    meanVerticalPixelScale = 0.0;
+//
+//    double horizScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice]) / 2.0) / imageHeight;
+//    double vertScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum2Adjusted[currentSlice]) / 2.0) / imageWidth;
+//
+//    double[] vec = new double[3];
+//
+//    for (int i = 0; i < numberOfPoints; ++i)
+//    {
+//        double[] pt = points.GetPoint(i);
+//
+//        vec[0] = pt[0] - spacecraftPositionAdjusted[currentSlice][0];
+//        vec[1] = pt[1] - spacecraftPositionAdjusted[currentSlice][1];
+//        vec[2] = pt[2] - spacecraftPositionAdjusted[currentSlice][2];
+//        double dist = MathUtil.vnorm(vec);
+//
+//        double horizPixelScale = dist * horizScaleFactor;
+//        double vertPixelScale = dist * vertScaleFactor;
+//
+//        if (horizPixelScale < minHorizontalPixelScale)
+//            minHorizontalPixelScale = horizPixelScale;
+//        if (horizPixelScale > maxHorizontalPixelScale)
+//            maxHorizontalPixelScale = horizPixelScale;
+//        if (vertPixelScale < minVerticalPixelScale)
+//            minVerticalPixelScale = vertPixelScale;
+//        if (vertPixelScale > maxVerticalPixelScale)
+//            maxVerticalPixelScale = vertPixelScale;
+//
+//        meanHorizontalPixelScale += horizPixelScale;
+//        meanVerticalPixelScale += vertPixelScale;
+//    }
+//
+//    meanHorizontalPixelScale /= (double) numberOfPoints;
+//    meanVerticalPixelScale /= (double) numberOfPoints;
+//
+//    points.Delete();
+//}
+//
+//public double getOpacity()
+//{
+//    return imageOpacity;
+//}
+//
+//public void setOpacity(double imageOpacity)
+//{
+//    this.imageOpacity = imageOpacity;
+//    vtkProperty smallBodyProperty = footprintActor.GetProperty();
+//    smallBodyProperty.SetOpacity(imageOpacity);
+//    this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
+//}
+//
+//public void setCurrentMask(int[] masking)
+//{
+//    int topMask = masking[0];
+//    int rightMask = masking[1];
+//    int bottomMask = masking[2];
+//    int leftMask = masking[3];
+//    // Initialize the mask to black which masks out the image
+//    maskSource.SetDrawColor(0.0, 0.0, 0.0, 0.0);
+//    maskSource.FillBox(0, imageWidth - 1, 0, imageHeight - 1);
+//    // Create a square inside mask which passes through the image.
+//    maskSource.SetDrawColor(255.0, 255.0, 255.0, 255.0);
+//    maskSource.FillBox(leftMask, imageWidth - 1 - rightMask, bottomMask, imageHeight - 1 - topMask);
+//    maskSource.Update();
+//
+//    this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
+//    setDisplayedImageRange(null);
+//
+//    for (int i = 0; i < masking.length; ++i)
+//        currentMask[i] = masking[i];
+//}
+//
+//public int[] getCurrentMask()
+//{
+//    return currentMask.clone();
+//}
+
+//public boolean[] getFootprintGenerated()
+//{
+//  return footprintGenerated;
+//}
+//
+//public void setFootprintGenerated(boolean footprintGenerated)
+//{
+//  this.footprintGenerated[getDefaultSlice()] = footprintGenerated;
+//}
+//
+//public void setFootprintGenerated(boolean footprintGenerated, int slice)
+//{
+//  this.footprintGenerated[slice] = footprintGenerated;
+//}
+//
+//public boolean isNormalsGenerated()
+//{
+//  return normalsGenerated;
+//}
+//
+//public static boolean isGenerateFootprint()
+//{
+//  return generateFootprint;
+//}
+//
+//public void setNormalsGenerated(boolean normalsGenerated)
+//{
+//  this.normalsGenerated = normalsGenerated;
+//}
+///**
+// * Return surface area of footprint (unshifted) of image.
+// *
+// * @return
+// */
+//public double getSurfaceArea()
+//{
+//    return PolyDataUtil.getSurfaceArea(footprint[currentSlice]);
+//}
+//public void setVisible(boolean b)
+//{
+//    footprintActor.SetVisibility(b ? 1 : 0);
+//    super.setVisible(b);
+//}
+
+
+/////////////////////
+// Backplane methods
+/////////////////////
+
+//protected void appendWithPadding(StringBuffer strbuf, String str)
+//{
+//    strbuf.append(str);
+//
+//    int length = str.length();
+//    while (length < 78)
+//    {
+//        strbuf.append(' ');
+//        ++length;
+//    }
+//
+//    strbuf.append("\r\n");
+//}
+
+///**
+// * Generate PDS 3 format backplanes label file. This is the default
+// * implementation for classes extending PerspectiveImage.
+// *
+// * @param imgName - pointer to the data File for which this label is being
+// *            created
+// * @param lblFileName - pointer to the output label file to be written, without
+// *            file name extension. The extension is dependent on image type
+// *            (e.g. MSI images are written as PDS 4 XML labels), and is assigned
+// *            in the class implementing this function.
+// * @throws IOException
+// */
+//public void generateBackplanesLabel(File imgName, File lblFileName) throws IOException
+//{
+//    StringBuffer strbuf = new StringBuffer("");
+//
+//    int numBands = 16;
+//
+//    appendWithPadding(strbuf, "PDS_VERSION_ID               = PDS3");
+//    appendWithPadding(strbuf, "");
+//
+//    appendWithPadding(strbuf, "PRODUCT_TYPE                 = DDR");
+//    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//    Date date = new Date();
+//    String dateStr = sdf.format(date).replace(' ', 'T');
+//    appendWithPadding(strbuf, "PRODUCT_CREATION_TIME        = " + dateStr);
+//    appendWithPadding(strbuf, "PRODUCER_INSTITUTION_NAME    = \"APPLIED PHYSICS LABORATORY\"");
+//    appendWithPadding(strbuf, "SOFTWARE_NAME                = \"Small Body Mapping Tool\"");
+//    appendWithPadding(strbuf, "SHAPE_MODEL                  = \"" + smallBodyModel.getModelName() + "\"");
+//
+//    appendWithPadding(strbuf, "");
+//    appendWithPadding(strbuf, "/* This DDR label describes one data file:                               */");
+//    appendWithPadding(strbuf, "/* 1. A multiple-band backplane image file with wavelength-independent,  */");
+//    appendWithPadding(strbuf, "/* spatial pixel-dependent geometric and timing information.             */");
+//    appendWithPadding(strbuf, "");
+//    appendWithPadding(strbuf, "OBJECT                       = FILE");
+//
+//    appendWithPadding(strbuf, "  ^IMAGE                     = \"" + imgName.getName() + "\"");
+//
+//    appendWithPadding(strbuf, "  RECORD_TYPE                = FIXED_LENGTH");
+//    appendWithPadding(strbuf, "  RECORD_BYTES               = " + (imageHeight * 4));
+//    appendWithPadding(strbuf, "  FILE_RECORDS               = " + (imageWidth * numBands));
+//    appendWithPadding(strbuf, "");
+//
+//    appendWithPadding(strbuf, "  OBJECT                     = IMAGE");
+//    appendWithPadding(strbuf, "    LINES                    = " + imageHeight);
+//    appendWithPadding(strbuf, "    LINE_SAMPLES             = " + imageWidth);
+//    appendWithPadding(strbuf, "    SAMPLE_TYPE              = IEEE_REAL");
+//    appendWithPadding(strbuf, "    SAMPLE_BITS              = 32");
+//    appendWithPadding(strbuf, "    CORE_NULL                = 16#F49DC5AE#"); // bit pattern of -1.0e32 in hex
+//
+//    appendWithPadding(strbuf, "    BANDS                    = " + numBands);
+//    appendWithPadding(strbuf, "    BAND_STORAGE_TYPE        = BAND_SEQUENTIAL");
+//    appendWithPadding(strbuf, "    BAND_NAME                = (\"Pixel value\",");
+//    appendWithPadding(strbuf, "                                \"x coordinate of center of pixel, km\",");
+//    appendWithPadding(strbuf, "                                \"y coordinate of center of pixel, km\",");
+//    appendWithPadding(strbuf, "                                \"z coordinate of center of pixel, km\",");
+//    appendWithPadding(strbuf, "                                \"Latitude, deg\",");
+//    appendWithPadding(strbuf, "                                \"Longitude, deg\",");
+//    appendWithPadding(strbuf, "                                \"Distance from center of body, km\",");
+//    appendWithPadding(strbuf, "                                \"Incidence angle, deg\",");
+//    appendWithPadding(strbuf, "                                \"Emission angle, deg\",");
+//    appendWithPadding(strbuf, "                                \"Phase angle, deg\",");
+//    appendWithPadding(strbuf, "                                \"Horizontal pixel scale, km per pixel\",");
+//    appendWithPadding(strbuf, "                                \"Vertical pixel scale, km per pixel\",");
+//    appendWithPadding(strbuf, "                                \"Slope, deg\",");
+//    appendWithPadding(strbuf, "                                \"Elevation, m\",");
+//    appendWithPadding(strbuf, "                                \"Gravitational acceleration, m/s^2\",");
+//    appendWithPadding(strbuf, "                                \"Gravitational potential, J/kg\")");
+//    appendWithPadding(strbuf, "");
+//    appendWithPadding(strbuf, "  END_OBJECT                 = IMAGE");
+//    appendWithPadding(strbuf, "END_OBJECT                   = FILE");
+//
+//    appendWithPadding(strbuf, "");
+//    appendWithPadding(strbuf, "END");
+//
+//    // return strbuf.toString();
+//    byte[] bytes = strbuf.toString().getBytes();
+//    OutputStream out = new FileOutputStream(lblFileName.getAbsolutePath() + ".lbl");
+//    out.write(bytes, 0, bytes.length);
+//    out.close();
+//}
+//public float[] generateBackplanes()
+//{
+//  return generateBackplanes(false);
+//}
+
+///**
+//* If <code>returnNullIfContainsLimb</code> then return null if any ray in the
+//* direction of a pixel in the image does not intersect the asteroid. By setting
+//* this boolean to true, you can (usually) determine whether or not the image
+//* contains a limb without having to compute the entire backplane. Note that
+//* this is a bit of a hack and a better way is needed to quickly determine if
+//* there is a limb.
+//*
+//* @param returnNullIfContainsLimb
+//* @return
+//*/
+//private float[] generateBackplanes(boolean returnNullIfContainsLimb)
+//{
+//  // We need to use cell normals not point normals for the calculations
+//  vtkDataArray normals = null;
+//  if (!returnNullIfContainsLimb)
+//      normals = smallBodyModel.getCellNormals();
+//
+//  float[] data = new float[numBackplanes * imageHeight * imageWidth];
+//
+//  vtksbCellLocator cellLocator = smallBodyModel.getCellLocator();
+//
+//  // vtkPoints intersectPoints = new vtkPoints();
+//  // vtkIdList intersectCells = new vtkIdList();
+//  vtkGenericCell cell = new vtkGenericCell();
+//
+//  // For each pixel in the image we need to compute the vector
+//  // from the spacecraft pointing in the direction of that pixel.
+//  // To do this, for each row in the image compute the left and
+//  // right vectors of the entire row. Then for each pixel in
+//  // the row use the two vectors from either side to compute
+//  // the vector of that pixel.
+//  double[] corner1 = {
+//          spacecraftPositionAdjusted[currentSlice][0] + frustum1Adjusted[currentSlice][0],
+//          spacecraftPositionAdjusted[currentSlice][1] + frustum1Adjusted[currentSlice][1],
+//          spacecraftPositionAdjusted[currentSlice][2] + frustum1Adjusted[currentSlice][2]
+//  };
+//  double[] corner2 = {
+//          spacecraftPositionAdjusted[currentSlice][0] + frustum2Adjusted[currentSlice][0],
+//          spacecraftPositionAdjusted[currentSlice][1] + frustum2Adjusted[currentSlice][1],
+//          spacecraftPositionAdjusted[currentSlice][2] + frustum2Adjusted[currentSlice][2]
+//  };
+//  double[] corner3 = {
+//          spacecraftPositionAdjusted[currentSlice][0] + frustum3Adjusted[currentSlice][0],
+//          spacecraftPositionAdjusted[currentSlice][1] + frustum3Adjusted[currentSlice][1],
+//          spacecraftPositionAdjusted[currentSlice][2] + frustum3Adjusted[currentSlice][2]
+//  };
+//  double[] vec12 = {
+//          corner2[0] - corner1[0],
+//          corner2[1] - corner1[1],
+//          corner2[2] - corner1[2]
+//  };
+//  double[] vec13 = {
+//          corner3[0] - corner1[0],
+//          corner3[1] - corner1[1],
+//          corner3[2] - corner1[2]
+//  };
+//
+//  double horizScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice]) / 2.0) / imageHeight;
+//  double vertScaleFactor = 2.0 * Math.tan(MathUtil.vsep(frustum1Adjusted[currentSlice], frustum2Adjusted[currentSlice]) / 2.0) / imageWidth;
+//
+//  double scdist = MathUtil.vnorm(spacecraftPositionAdjusted[currentSlice]);
+//
+//  for (int i = 0; i < imageHeight; ++i)
+//  {
+//      // Compute the vector on the left of the row.
+//      double fracHeight = ((double) i / (double) (imageHeight - 1));
+//      double[] left = {
+//              corner1[0] + fracHeight * vec13[0],
+//              corner1[1] + fracHeight * vec13[1],
+//              corner1[2] + fracHeight * vec13[2]
+//      };
+//
+//      for (int j = 0; j < imageWidth; ++j)
+//      {
+//          // If we're just trying to know if there is a limb, we
+//          // only need to do intersections around the boundary of
+//          // the backplane, not the interior pixels.
+//          if (returnNullIfContainsLimb)
+//          {
+//              if (j == 1 && i > 0 && i < imageHeight - 1)
+//              {
+//                  j = imageWidth - 2;
+//                  continue;
+//              }
+//          }
+//
+//          double fracWidth = ((double) j / (double) (imageWidth - 1));
+//          double[] vec = {
+//                  left[0] + fracWidth * vec12[0],
+//                  left[1] + fracWidth * vec12[1],
+//                  left[2] + fracWidth * vec12[2]
+//          };
+//          vec[0] -= spacecraftPositionAdjusted[currentSlice][0];
+//          vec[1] -= spacecraftPositionAdjusted[currentSlice][1];
+//          vec[2] -= spacecraftPositionAdjusted[currentSlice][2];
+//          MathUtil.unorm(vec, vec);
+//
+//          double[] lookPt = {
+//                  spacecraftPositionAdjusted[currentSlice][0] + 2.0 * scdist * vec[0],
+//                  spacecraftPositionAdjusted[currentSlice][1] + 2.0 * scdist * vec[1],
+//                  spacecraftPositionAdjusted[currentSlice][2] + 2.0 * scdist * vec[2]
+//          };
+//
+//          // cellLocator.IntersectWithLine(spacecraftPosition, lookPt, intersectPoints,
+//          // intersectCells);
+//          double tol = 1e-6;
+//          double[] t = new double[1];
+//          double[] x = new double[3];
+//          double[] pcoords = new double[3];
+//          int[] subId = new int[1];
+//          int[] cellId = new int[1];
+//          int result = cellLocator.IntersectWithLine(spacecraftPositionAdjusted[currentSlice], lookPt, tol, t, x, pcoords, subId, cellId, cell);
+//
+//          // if (intersectPoints.GetNumberOfPoints() == 0)
+//          // System.out.println(i + " " + j + " " + intersectPoints.GetNumberOfPoints());
+//
+//          // int numberOfPoints = intersectPoints.GetNumberOfPoints();
+//
+//          if (result > 0)
+//          {
+//              // If we're just trying to know if there is a limb, do not
+//              // compute the values of the backplane (It will crash since
+//              // we don't have normals of the asteroid itself)
+//              if (returnNullIfContainsLimb)
+//                  continue;
+//
+//              // double[] closestPoint = intersectPoints.GetPoint(0);
+//              // int closestCell = intersectCells.GetId(0);
+//              double[] closestPoint = x;
+//              int closestCell = cellId[0];
+//              double closestDist = MathUtil.distanceBetween(closestPoint, getSpacecraftPositionAdjusted()[currentSlice]);
+//
+//              /*
+//               * // compute the closest point to the spacecraft of all the intersecting
+//               * points. if (numberOfPoints > 1) { for (int k=1; k<numberOfPoints; ++k) {
+//               * double[] pt = intersectPoints.GetPoint(k); double dist =
+//               * GeometryUtil.distanceBetween(pt, spacecraftPosition); if (dist < closestDist)
+//               * { closestDist = dist; closestCell = intersectCells.GetId(k); closestPoint =
+//               * pt; } } }
+//               */
+//
+//              LatLon llr = MathUtil.reclat(closestPoint);
+//              double lat = llr.lat * 180.0 / Math.PI;
+//              double lon = llr.lon * 180.0 / Math.PI;
+//              if (lon < 0.0)
+//                  lon += 360.0;
+//
+//              double[] normal = normals.GetTuple3(closestCell);
+//              double[] illumAngles = computeIlluminationAnglesAtPoint(closestPoint, normal);
+//
+//              double horizPixelScale = closestDist * horizScaleFactor;
+//              double vertPixelScale = closestDist * vertScaleFactor;
+//
+//              double[] coloringValues;
+//              try
+//              {
+//                  coloringValues = smallBodyModel.getAllColoringValues(closestPoint);
+//              }
+//              catch (@SuppressWarnings("unused") IOException e)
+//              {
+//                  coloringValues = new double[] {};
+//              }
+//              int colorValueSize = coloringValues.length;
+//
+//              data[index(j, i, BackplaneInfo.PIXEL.ordinal())] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
+//              data[index(j, i, BackplaneInfo.X.ordinal())] = (float) closestPoint[0];
+//              data[index(j, i, BackplaneInfo.Y.ordinal())] = (float) closestPoint[1];
+//              data[index(j, i, BackplaneInfo.Z.ordinal())] = (float) closestPoint[2];
+//              data[index(j, i, BackplaneInfo.LAT.ordinal())] = (float) lat;
+//              data[index(j, i, BackplaneInfo.LON.ordinal())] = (float) lon;
+//              data[index(j, i, BackplaneInfo.DIST.ordinal())] = (float) llr.rad;
+//              data[index(j, i, BackplaneInfo.INC.ordinal())] = (float) illumAngles[0];
+//              data[index(j, i, BackplaneInfo.EMI.ordinal())] = (float) illumAngles[1];
+//              data[index(j, i, BackplaneInfo.PHASE.ordinal())] = (float) illumAngles[2];
+//              data[index(j, i, BackplaneInfo.HSCALE.ordinal())] = (float) horizPixelScale;
+//              data[index(j, i, BackplaneInfo.VSCALE.ordinal())] = (float) vertPixelScale;
+//              data[index(j, i, BackplaneInfo.SLOPE.ordinal())] = colorValueSize > 0 ? (float) coloringValues[0] : 0.0F; // slope
+//              data[index(j, i, BackplaneInfo.EL.ordinal())] = colorValueSize > 1 ? (float) coloringValues[1] : 0.0F; // elevation
+//              data[index(j, i, BackplaneInfo.GRAVACC.ordinal())] = colorValueSize > 2 ? (float) coloringValues[2] : 0.0F; // grav acc;
+//              data[index(j, i, BackplaneInfo.GRAVPOT.ordinal())] = colorValueSize > 3 ? (float) coloringValues[3] : 0.0F; // grav pot
+//          }
+//          else
+//          {
+//              if (returnNullIfContainsLimb)
+//                  return null;
+//
+//              data[index(j, i, 0)] = (float) rawImage.GetScalarComponentAsFloat(j, i, 0, 0);
+//              for (int k = 1; k < numBackplanes; ++k)
+//                  data[index(j, i, k)] = PDS_NA;
+//          }
+//      }
+//  }
+//
+//  return data;
+//}
+
+//public int index(int i, int j, int k)
+//{
+//  return ((k * imageHeight + j) * imageWidth + i);
+//}
+///**
+//* Generate metadata to be used in PDS4 XML creation by parsing existing PDS3
+//* label. By default creates a bare-bones metadata class that only contains the
+//* output XML filename. Use this method to use an existing PDS3 label as the
+//* source metadata on which to describe a new PDS4 product.
+//*/
+//public BPMetaBuilder pds3ToXmlMeta(String pds3Fname, String outXmlFname)
+//{
+// BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
+// return metaDataBuilder;
+//}
+//
+///**
+//* Generate metadata to be used in PDS4 XML creation by parsing existing PDS4
+//* label. By default creates a bare-bones metdata class that only contains the
+//* output XML filename. Use this method to use an existing PDS4 label as the
+//* source metadata on which to describe a new PDS4 product.
+//*/
+//public BPMetaBuilder pds4ToXmlMeta(String pds4Fname, String outXmlFname)
+//{
+// BPMetaBuilder metaDataBuilder = new BackPlanesXmlMeta.BPMetaBuilder(outXmlFname);
+// return metaDataBuilder;
+//}
+//
+///**
+//* Parse additional metadata from the fits file and add to the metaDataBuilder.
+//*
+//* @throws FitsException
+//*/
+//public BPMetaBuilder fitsToXmlMeta(File fitsFile, BPMetaBuilder metaDataBuilder) throws FitsException
+//{
+// return metaDataBuilder;
+//}
+//
+///**
+//* Generate XML document from XmlMetadata
+//*
+//* @param metaData - metadata to be used in populating XmlDoc
+//* @param xmlTemplate - path to XML template file
+//*/
+//public BackPlanesXml metaToXmlDoc(BackPlanesXmlMeta metaData, String xmlTemplate)
+//{
+// BackPlanesXml xmlLabel = new BackPlanesXml(metaData, xmlTemplate);
+// return xmlLabel;
+//}
+
+
+///*
+//* FOR OFF-LIMB IMAGES
+//*/
+//
+///**
+//* No-argument entry point into the off-limb geometry-creation implementation.
+//* This will create an offlimbPlaneCalculator and create the actors for the
+//* plane and the boundaries.
+//*/
+//protected void loadOffLimbPlane()
+//{
+// double[] spacecraftPosition = new double[3];
+// double[] focalPoint = new double[3];
+// double[] upVector = new double[3];
+// this.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
+// this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
+// calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
+// offLimbActor = calculator.getOffLimbActor();
+// offLimbBoundaryActor = calculator.getOffLimbBoundaryActor();
+// offLimbTexture = calculator.getOffLimbTexture();
+// // set initial visibilities
+// if (offLimbActor != null)
+// {
+//     offLimbActor.SetVisibility(offLimbVisibility ? 1 : 0);
+//     offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility ? 1 : 0);
+// }
+//}
+//
+///**
+//* Set the distance of the off-limb plane from the camera position, along its
+//* look vector. The associated polydata doesn't need to be regenerated every
+//* time this method is called since the body's shadow in frustum coordinates
+//* does not change with depth along the look axis. The call to loadOffLimbPlane
+//* here does actually re-create the polydata, which should be unnecessary, and
+//* needs to be fixed in a future release.
+//*
+//* @param footprintDepth
+//*/
+//public void setOffLimbPlaneDepth(double footprintDepth)
+//{
+// this.offLimbFootprintDepth = footprintDepth;
+// calculator.loadOffLimbPlane(this, offLimbFootprintDepth);
+//}
+//
+//public void setOffLimbFootprintAlpha(double alpha) // between 0-1
+//{
+// if (offLimbActor == null)
+//     loadOffLimbPlane();
+// offLimbActor.GetProperty().SetOpacity(alpha);
+//}
+//
+//public boolean offLimbFootprintIsVisible()
+//{
+// return offLimbVisibility;
+//}
+//
+///**
+//* Set visibility of the off-limb footprint
+//*
+//* Checks if offLimbActor has been instantiated; if not then call
+//* loadOffLimbPlane() before showing/hiding actors.
+//*
+//* @param visible
+//*/
+//public void setOffLimbFootprintVisibility(boolean visible)
+//{
+//
+// offLimbVisibility = visible;
+// offLimbBoundaryVisibility = visible;
+// if (offLimbVisibility && offLimbActor == null)
+//     loadOffLimbPlane();
+//
+// if (offLimbActor != null)
+// {
+//     offLimbActor.SetVisibility(visible ? 1 : 0);
+//     offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
+// }
+//
+// pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//}
+//
+///**
+//* Set visibility of the off-limb footprint boundary
+//*
+//* Checks if offLimbActor has been instantiated; if not then call
+//* loadOffLimbPlane() before showing/hiding actors.
+//*
+//* @param visible
+//*/
+//public void setOffLimbBoundaryVisibility(boolean visible)
+//{
+//
+// offLimbBoundaryVisibility = visible;
+// if (offLimbActor == null)
+//     loadOffLimbPlane();
+// offLimbBoundaryActor.SetVisibility(visible ? 1 : 0);
+//
+// pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//}
+//
+//public vtkTexture getOffLimbTexture()
+//{
+// if (offLimbTexture == null)
+// { // if offlimbtexture is null, initialize it.
+//     vtkImageData image = new vtkImageData();
+//     image.DeepCopy(getDisplayedImage());
+//     offLimbTexture = new vtkTexture();
+//     offLimbTexture.SetInputData(image);
+//     offLimbTexture.Modified();
+// }
+// return offLimbTexture;
+//}
+//
+//public void setOffLimbTexture(vtkTexture offLimbTexture)
+//{
+// this.offLimbTexture = offLimbTexture;
+//}
+//
+//public double getOffLimbPlaneDepth()
+//{
+// return offLimbFootprintDepth;
+//}
+//
+//public void setContrastSynced(boolean selected)
+//{
+// this.contrastSynced = selected;
+// if (contrastSynced)
+// {
+//     // if we just changed this to true, update the values to match
+//     offLimbDisplayedRange = getDisplayedRange();
+//     setOfflimbImageRange(offLimbDisplayedRange);
+//     pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+// }
+//}
+//
+//public boolean isContrastSynced()
+//{
+// return contrastSynced;
+//}
+//
+//public void setOfflimbBoundaryColor(Color color)
+//{
+// this.offLimbBoundaryColor = color;
+// offLimbBoundaryActor.GetProperty().SetColor(color.getRed() / 255., color.getGreen() / 255., color.getBlue() / 255.);
+// offLimbBoundaryActor.Modified();
+// pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+//}
+//
+//public Color getOfflimbBoundaryColor()
+//{
+// return offLimbBoundaryColor;
+//}
+//public IntensityRange getOffLimbDisplayedRange()
+//{
+//if (offLimbDisplayedRange == null)
+//{
+//   offLimbDisplayedRange = new IntensityRange(0, 255);
+//}
+//
+//return offLimbDisplayedRange;
+//}
+//
+//public void setOfflimbImageRange(IntensityRange intensityRange)
+//{
+//
+//IntensityRange displayedRange = getOffLimbDisplayedRange();
+//if (intensityRange == null || displayedRange.min != intensityRange.min || displayedRange.max != intensityRange.max)
+//{
+//   if (intensityRange != null)
+//   {
+//       offLimbDisplayedRange = intensityRange;
+//       saveImageInfo();
+//   }
+//
+//   if (rawImage != null)
+//   {
+//       vtkImageData image = getImageWithDisplayedRange(intensityRange, true);
+//
+//       if (offLimbTexture == null && !Configuration.isHeadless())
+//           offLimbTexture = new vtkTexture();
+//       if (offLimbTexture != null)
+//       {
+//           offLimbTexture.SetInputData(image);
+//           image.Delete();
+//           offLimbTexture.Modified();
+//       }
+//   }
+//
+//   this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
+//}
+//
+//}

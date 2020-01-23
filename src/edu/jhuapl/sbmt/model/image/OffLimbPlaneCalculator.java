@@ -126,11 +126,11 @@ public class OffLimbPlaneCalculator
         // (2a) determine ray-cast depth; currently implemented as camera-to-origin distance plus body bounding-box diagonal length -- that way rays will always extend from the camera position past the entire body
         Vector3D scPos=new Vector3D(spacecraftPosition);
         int currentSlice = img.getCurrentSlice();
-        if (img.minFrustumDepth[currentSlice]==0)
-            img.minFrustumDepth[currentSlice]=0;
-        if (img.maxFrustumDepth[currentSlice]==0)
-            img.maxFrustumDepth[currentSlice]=scPos.getNorm()+img.getSmallBodyModel().getBoundingBoxDiagonalLength();
-        double maxRayDepth=(img.minFrustumDepth[currentSlice]+img.maxFrustumDepth[currentSlice]);
+        if (img.getMinFrustumDepth(currentSlice)==0)
+            img.setMinFrustumDepth(currentSlice, 0);
+        if (img.getMaxFrustumDepth(currentSlice)==0)
+            img.setMaxFrustumDepth(currentSlice, scPos.getNorm()+img.getSmallBodyModel().getBoundingBoxDiagonalLength());
+        double maxRayDepth=(img.getMinFrustumDepth(currentSlice)+img.getMaxFrustumDepth(currentSlice));
         double ffacx=maxRayDepth*Math.tan(Math.toRadians(fovx/2));    // img is the scaling factor in the plane perpendicular to the boresight, which maps unit vectors from the camera position onto the chosen max depth, in frustum coordinates, thus forming a ray
         double ffacy=maxRayDepth*Math.tan(Math.toRadians(fovy/2));
 

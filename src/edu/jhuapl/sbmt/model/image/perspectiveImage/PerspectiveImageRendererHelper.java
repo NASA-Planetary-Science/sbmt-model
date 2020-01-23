@@ -48,7 +48,7 @@ class PerspectiveImageRendererHelper
 	PerspectiveImage image;
 	protected vtkImageData rawImage;
     private vtkImageData displayedImage;
-    private vtkPolyData[] footprint = new vtkPolyData[1];
+    vtkPolyData[] footprint = new vtkPolyData[1];
     boolean[] footprintGenerated = new boolean[1];
     final vtkPolyData[] shiftedFootprint = new vtkPolyData[1];
     private vtkActor footprintActor;
@@ -106,7 +106,6 @@ class PerspectiveImageRendererHelper
         minFrustumDepth = new double[image.getImageDepth()];
         int nslices = image.getImageDepth();
         frusta = new Frustum[nslices];
-        System.out.println("PerspectiveImageRendererHelper: PerspectiveImageRendererHelper: slices " + nslices);
         footprint = new vtkPolyData[nslices];
         footprint[0] = new vtkPolyData();
         footprintGenerated = new boolean[nslices];
@@ -191,7 +190,7 @@ class PerspectiveImageRendererHelper
             currentMask[i] = masking[i];
     }
 
-    public int[] getCurrentMask()
+    int[] getCurrentMask()
     {
         return currentMask.clone();
     }
@@ -241,7 +240,7 @@ class PerspectiveImageRendererHelper
      *
      * @return
      */
-    public double getSurfaceArea()
+    double getSurfaceArea()
     {
         return PolyDataUtil.getSurfaceArea(footprint[image.currentSlice]);
     }
@@ -282,7 +281,6 @@ class PerspectiveImageRendererHelper
     public void setVisible(boolean b)
     {
         footprintActor.SetVisibility(b ? 1 : 0);
-        image.setVisible(b);
     }
 
     /**
@@ -336,7 +334,7 @@ class PerspectiveImageRendererHelper
         maskSource.Delete();
     }
 
-    private void computeCellNormals()
+    void computeCellNormals()
     {
         if (normalsGenerated == false)
         {
@@ -383,7 +381,7 @@ class PerspectiveImageRendererHelper
         return angles;
     }
 
-    protected void computeIlluminationAngles()
+    void computeIlluminationAngles()
     {
     	int currentSlice = image.getCurrentSlice();
         if (footprintGenerated[currentSlice] == false)
@@ -443,7 +441,7 @@ class PerspectiveImageRendererHelper
             normals.Delete();
     }
 
-    protected void computePixelScale()
+    void computePixelScale()
     {
     	double[][] spacecraftPositionAdjusted = image.getSpacecraftPositionAdjusted();
     	int currentSlice = image.currentSlice;
@@ -513,7 +511,7 @@ class PerspectiveImageRendererHelper
         vtkPolyData existingFootprint = checkForExistingFootprint();
         if (existingFootprint != null)
         {
-        	System.out.println("PerspectiveImage: loadFootprint: existing footprint");
+//        	System.out.println("PerspectiveImage: loadFootprint: existing footprint");
             footprint[0] = existingFootprint;
 
             vtkPointData pointData = footprint[currentSlice].GetPointData();
@@ -530,15 +528,15 @@ class PerspectiveImageRendererHelper
 
         if (generateFootprint)
         {
-        	System.out.println("PerspectiveImage: loadFootprint: generate footprint true");
+//        	System.out.println("PerspectiveImage: loadFootprint: generate footprint true");
             vtkPolyData tmp = null;
 
             if (!footprintGenerated[currentSlice])
             {
-            	System.out.println("PerspectiveImage: loadFootprint: footprint not generated");
+//            	System.out.println("PerspectiveImage: loadFootprint: footprint not generated");
                 if (useDefaultFootprint())
                 {
-                	System.out.println("PerspectiveImage: loadFootprint: using default footprint");
+//                	System.out.println("PerspectiveImage: loadFootprint: using default footprint");
                     int defaultSlice = image.getDefaultSlice();
                     if (footprintGenerated[defaultSlice] == false)
                     {
@@ -559,7 +557,7 @@ class PerspectiveImageRendererHelper
                 }
                 else
                 {
-                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
+//                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
                     tmp = image.getSmallBodyModel().computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice], frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
                     if (tmp == null)
                         return;
@@ -580,7 +578,7 @@ class PerspectiveImageRendererHelper
 
                 footprintGenerated[currentSlice] = true;
             }
-            System.out.println("PerspectiveImage: loadFootprint: footprint generated");
+//            System.out.println("PerspectiveImage: loadFootprint: footprint generated");
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
             PolyDataUtil.generateTextureCoordinates(getFrustum(), image.getImageWidth(), image.getImageHeight(), footprint[currentSlice]);
@@ -589,7 +587,7 @@ class PerspectiveImageRendererHelper
         else
         {
         	ImageKeyInterface key = image.getKey();
-        	System.out.println("PerspectiveImage: loadFootprint: fetching from server, generate footprint false");
+//        	System.out.println("PerspectiveImage: loadFootprint: fetching from server, generate footprint false");
             int resolutionLevel = image.getSmallBodyModel().getModelResolution();
 
             String footprintFilename = null;
@@ -627,9 +625,10 @@ class PerspectiveImageRendererHelper
         writer.SetFileName(file.getPath());
         writer.SetFileTypeToBinary();
         writer.Write();
+        setFootprintGenerated(true);
     }
 
-    public vtkPolyData generateBoundary()
+    vtkPolyData generateBoundary()
     {
         loadFootprint();
 
@@ -712,7 +711,6 @@ class PerspectiveImageRendererHelper
                 displayedImage = rawImage;
                 return;
             }
-
         }
 
         IntensityRange displayedRange = getDisplayedRange(currentSlice);
@@ -727,7 +725,6 @@ class PerspectiveImageRendererHelper
             if (rawImage != null)
             {
                 vtkImageData img = getImageWithDisplayedRange(range, false);
-
                 if (displayedImage == null)
                     displayedImage = new vtkImageData();
                 displayedImage.DeepCopy(img);
@@ -819,7 +816,7 @@ class PerspectiveImageRendererHelper
      *
      * @param slice the number of the slice whose displayed range to return.
      */
-    public IntensityRange getDisplayedRange(int slice)
+    IntensityRange getDisplayedRange(int slice)
     {
         int nslices = image.getImageDepth();
 
@@ -854,8 +851,6 @@ class PerspectiveImageRendererHelper
 
     List<vtkProp> getProps()
     {
-
-        // System.out.println("getProps()");
         if (footprintActor == null)
         {
             loadFootprint();
@@ -935,36 +930,28 @@ class PerspectiveImageRendererHelper
 
     public vtkPolyData getFootprint(int defaultSlice)
     {
-    	System.out.println("PerspectiveImageRendererHelper: getFootprint: slice " + defaultSlice);
-//    	System.out.println("PerspectiveImageRendererHelper: getFootprint: footprint 0 " + footprint[0]);
         if (footprint[0] != null && footprint[0].GetNumberOfPoints() > 0)
             return footprint[0];
         // first check the cache
-        System.out.println("PerspectiveImageRendererHelper: getFootprint: checking cache");
         vtkPolyData existingFootprint = checkForExistingFootprint();
         if (existingFootprint != null)
         {
-        	System.out.println("PerspectiveImageRendererHelper: getFootprint: using existing");
             return existingFootprint;
         }
         else
         {
-        	System.out.println("PerspectiveImageRendererHelper: getFootprint: created");
             vtkPolyData footprint = image.getSmallBodyModel().computeFrustumIntersection(image.getSpacecraftPositionAdjusted()[defaultSlice], image.getFrustum1Adjusted()[defaultSlice], image.getFrustum3Adjusted()[defaultSlice], image.getFrustum4Adjusted()[defaultSlice], image.getFrustum2Adjusted()[defaultSlice]);
-//            System.out.println("PerspectiveImage: getFootprint: footprint creation " + sw.elapsedMillis());
             return footprint;
         }
     }
 
-    private vtkPolyData checkForExistingFootprint()
+    vtkPolyData checkForExistingFootprint()
     {
+    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
         String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
         if (FileCache.isFileGettable(intersectionFileName))
         {
-//            System.out.println(
-//                    "PerspectiveImage: checkForExistingFootprint: getting from server");
             File file = FileCache.getFileFromServer(intersectionFileName);
-//            System.out.println("PerspectiveImage: checkForExistingFootprint: exists locally " + file.getAbsolutePath());
             vtkPolyDataReader reader = new vtkPolyDataReader();
 //            reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));	//This is wrong.  The old code was stripping off .gz from the intersection name.  This now further removes .vtk which is bad.
             reader.SetFileName(file.getAbsolutePath()); // now just reads in the file path as it should.
@@ -1000,25 +987,16 @@ class PerspectiveImageRendererHelper
 
     Frustum getFrustum(int slice)
     {
-        if (useDefaultFootprint())
-        {
-            int defaultSlice = image.getDefaultSlice();
-            if (frusta[defaultSlice] == null)
-                frusta[defaultSlice] = new Frustum(image.getSpacecraftPositionAdjusted()[defaultSlice],
-                									image.getFrustum1Adjusted()[defaultSlice],
-                									image.getFrustum3Adjusted()[defaultSlice],
-                									image.getFrustum4Adjusted()[defaultSlice],
-                									image.getFrustum2Adjusted()[defaultSlice]);
-            return frusta[defaultSlice];
-        }
+    	int sliceToUse = slice;
+        if (useDefaultFootprint()) sliceToUse = image.getDefaultSlice();
 
-        if (frusta[slice] == null)
-            frusta[slice] = new Frustum(image.getSpacecraftPositionAdjusted()[slice],
-            							image.getFrustum1Adjusted()[slice],
-            							image.getFrustum3Adjusted()[slice],
-            							image.getFrustum4Adjusted()[slice],
-            							image.getFrustum2Adjusted()[slice]);
-        return frusta[slice];
+        if (frusta[sliceToUse] == null)
+            frusta[sliceToUse] = new Frustum(image.getSpacecraftPositionAdjusted()[sliceToUse],
+            							image.getFrustum1Adjusted()[sliceToUse],
+            							image.getFrustum3Adjusted()[sliceToUse],
+            							image.getFrustum4Adjusted()[sliceToUse],
+            							image.getFrustum2Adjusted()[sliceToUse]);
+        return frusta[sliceToUse];
     }
 
     Frustum getFrustum()
@@ -1079,4 +1057,38 @@ class PerspectiveImageRendererHelper
         normalsFilter = new vtkPolyDataNormals();
     }
 
+    /**
+     * Give oppurtunity to subclass to do some processing on the raw image such as
+     * resizing, flipping, masking, etc.
+     *
+     * @param rawImage
+     */
+    void processRawImage(vtkImageData rawImage)
+    {
+    	if (image.getFlip().equals("X"))
+        {
+            ImageDataUtil.flipImageXAxis(rawImage);
+        }
+        else if (image.getFlip().equals("Y"))
+        {
+            ImageDataUtil.flipImageYAxis(rawImage);
+        }
+        if (image.getRotation() != 0.0)
+            ImageDataUtil.rotateImage(rawImage, 360.0 - image.getRotation());
+    }
+
+    vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)
+    {
+        return createRawImage(height, width, depth, true, array2D, array3D);
+    }
+
+    vtkImageData createRawImage(int height, int width, int depth, boolean transpose, float[][] array2D, float[][][] array3D)
+    {
+        // Allocate enough room to store min/max value at each layer
+        image.maxValue = new float[depth];
+        image.minValue = new float[depth];
+
+        // Call
+        return ImageDataUtil.createRawImage(height, width, depth, transpose, array2D, array3D, image.minValue, image.maxValue);
+    }
 }
