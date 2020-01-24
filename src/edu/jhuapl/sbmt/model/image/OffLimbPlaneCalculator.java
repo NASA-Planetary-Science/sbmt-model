@@ -48,6 +48,7 @@ public class OffLimbPlaneCalculator
     private vtkPolyData offLimbBoundary=null;
     private vtkActor offLimbBoundaryActor;
     private vtkPolyData imagePolyData;
+    private double currentDepth;
 
 	private vtkPolyData getOffLimbImageData(PerspectiveImage img, double offLimbFootprintDepth)
 	{
@@ -145,14 +146,14 @@ public class OffLimbPlaneCalculator
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
 
     	imagePolyData = getOffLimbImageData(img, offLimbFootprintDepth);
-    	if (imagePolyData != null)
+    	if ((imagePolyData != null) && (offLimbFootprintDepth == currentDepth))
     	{
     		makeActors(img);
     		return;
     	}
+    	this.currentDepth = offLimbFootprintDepth;
 
     	//pull from cache didn't work; build it in memory instead
-
 
         // (2c) use a vtkImageCanvasSource2D to represent the macro-pixels, with an unsigned char color type "true = (0, 0, 0) = ray hits surface" and "false = (255, 255, 255) = ray misses surface"... img might seem backwards but 0-values can be thought of as forming the "shadow" of the body against the sky as viewed by the camera
         // NOTE: img could be done more straightforwardly (and possibly more efficiently) just by using a java boolean[][] array... I think the present implementation is a hangover from prior experimentation with a vtkPolyDataSilhouette filter
