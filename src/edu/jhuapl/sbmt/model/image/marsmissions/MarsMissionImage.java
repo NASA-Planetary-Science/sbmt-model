@@ -76,7 +76,7 @@ public class MarsMissionImage extends BasicPerspectiveImage
         }
         else if (isViking(filename))
         {
-            String labelFilename = SafeURLPaths.instance().getString(new File(key.getName()).getParent(), filename.replaceFirst("^V", "f").replaceFirst("\\.[^\\.]*$", ".lbl"));
+            String labelFilename = SafeURLPaths.instance().getString(new File(key.getName()).getParent(), filename.replaceFirst("^V", "f").replaceFirst("\\.[^\\.]*$", "") + ".lbl");
 
             result = new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
                 String filterName = null;
@@ -247,10 +247,6 @@ public class MarsMissionImage extends BasicPerspectiveImage
     protected MarsMissionImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
-
-        // Label files are still used for determining Viking image
-        // camera and filter names to display in image properties window
-        setLabelFileFullPath(initializeLabelFileFullPath());
     }
 
     /**
