@@ -115,6 +115,9 @@ public class AmicaImage extends PerspectiveImage
         if (dims[0] == 1024 && dims[1] == 1024)
         {
             doFlatFieldCorrection(rawImage);
+
+            super.processRawImage(rawImage);
+
             return;
         }
 
