@@ -35,6 +35,7 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.image.model.ImageKey;
 import edu.jhuapl.sbmt.model.bennu.imaging.OcamsFlightImage;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 import edu.jhuapl.sbmt.tools.Authenticator;
 
 public class OffLimbPlaneCalculator
@@ -47,6 +48,7 @@ public class OffLimbPlaneCalculator
     private vtkPolyData offLimbBoundary=null;
     private vtkActor offLimbBoundaryActor;
     private vtkPolyData imagePolyData;
+    private double currentDepth;
 
 	private vtkPolyData getOffLimbImageData(PerspectiveImage img, double offLimbFootprintDepth)
 	{
@@ -125,11 +127,11 @@ public class OffLimbPlaneCalculator
         // (2a) determine ray-cast depth; currently implemented as camera-to-origin distance plus body bounding-box diagonal length -- that way rays will always extend from the camera position past the entire body
         Vector3D scPos=new Vector3D(spacecraftPosition);
         int currentSlice = img.getCurrentSlice();
-        if (img.minFrustumDepth[currentSlice]==0)
-            img.minFrustumDepth[currentSlice]=0;
-        if (img.maxFrustumDepth[currentSlice]==0)
-            img.maxFrustumDepth[currentSlice]=scPos.getNorm()+img.getSmallBodyModel().getBoundingBoxDiagonalLength();
-        double maxRayDepth=(img.minFrustumDepth[currentSlice]+img.maxFrustumDepth[currentSlice]);
+        if (img.getMinFrustumDepth(currentSlice)==0)
+            img.setMinFrustumDepth(currentSlice, 0);
+        if (img.getMaxFrustumDepth(currentSlice)==0)
+            img.setMaxFrustumDepth(currentSlice, scPos.getNorm()+img.getSmallBodyModel().getBoundingBoxDiagonalLength());
+        double maxRayDepth=(img.getMinFrustumDepth(currentSlice)+img.getMaxFrustumDepth(currentSlice));
         double ffacx=maxRayDepth*Math.tan(Math.toRadians(fovx/2));    // img is the scaling factor in the plane perpendicular to the boresight, which maps unit vectors from the camera position onto the chosen max depth, in frustum coordinates, thus forming a ray
         double ffacy=maxRayDepth*Math.tan(Math.toRadians(fovy/2));
 
@@ -144,14 +146,14 @@ public class OffLimbPlaneCalculator
         Rotation upRot=new Rotation(lookRot.applyTo(Vector3D.PLUS_J), upVec.normalize());
 
     	imagePolyData = getOffLimbImageData(img, offLimbFootprintDepth);
-    	if (imagePolyData != null)
+    	if ((imagePolyData != null) && (offLimbFootprintDepth == currentDepth))
     	{
     		makeActors(img);
     		return;
     	}
+    	this.currentDepth = offLimbFootprintDepth;
 
     	//pull from cache didn't work; build it in memory instead
-
 
         // (2c) use a vtkImageCanvasSource2D to represent the macro-pixels, with an unsigned char color type "true = (0, 0, 0) = ray hits surface" and "false = (255, 255, 255) = ray misses surface"... img might seem backwards but 0-values can be thought of as forming the "shadow" of the body against the sky as viewed by the camera
         // NOTE: img could be done more straightforwardly (and possibly more efficiently) just by using a java boolean[][] array... I think the present implementation is a hangover from prior experimentation with a vtkPolyDataSilhouette filter
