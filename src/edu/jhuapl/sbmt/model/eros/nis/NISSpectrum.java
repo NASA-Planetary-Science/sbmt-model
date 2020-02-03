@@ -26,6 +26,7 @@ import edu.jhuapl.sbmt.client.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
@@ -271,13 +272,8 @@ public class NISSpectrum extends BasicSpectrum
 
         out.close();
 
-//        File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
-//        FileChannel src = new FileInputStream(infoFile).getChannel();
-//        File infoFileDestination = new File(file.getParentFile() + File.separator + FilenameUtils.getBaseName(file.getName()) + ".INFO");
-//        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
-//        dest.transferFrom(src, 0, src.size());
-//        src.close();
-//        dest.close();
+        saveInfofile(file);
+
     }
 
     public void saveInfofile(File file) throws IOException
@@ -348,7 +344,7 @@ public class NISSpectrum extends BasicSpectrum
 	}
 
 	@Override
-	public void readSpectrumFromFile()
+	public void readSpectrumFromFile() throws SpectrumIOException
 	{
 		super.readSpectrumFromFile();
 		if (!isCustomSpectra)

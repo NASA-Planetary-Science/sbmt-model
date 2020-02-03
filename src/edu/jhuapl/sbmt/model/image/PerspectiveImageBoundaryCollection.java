@@ -18,6 +18,9 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
+import edu.jhuapl.sbmt.gui.image.ui.custom.CustomImageImporterDialog.ProjectionType;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
@@ -75,6 +78,16 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
     {
         if (containsKey(key))
             return;
+
+        if (key instanceof CustomImageKeyInterface)
+        {
+            ProjectionType projectionType = ((CustomImageKeyInterface) key).getProjectionType();
+            if (projectionType != ProjectionType.PERSPECTIVE)
+            {
+                System.err.println("Boundary does not exist for progjection type " + projectionType);
+                return;
+            }
+        }
 
         PerspectiveImageBoundary boundary = createBoundary(key, smallBodyModel);
 

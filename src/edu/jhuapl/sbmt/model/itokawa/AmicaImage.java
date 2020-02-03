@@ -21,7 +21,7 @@ import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
-import edu.jhuapl.sbmt.model.image.PerspectiveImage;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
@@ -115,6 +115,9 @@ public class AmicaImage extends PerspectiveImage
         if (dims[0] == 1024 && dims[1] == 1024)
         {
             doFlatFieldCorrection(rawImage);
+
+            super.processRawImage(rawImage);
+
             return;
         }
 
