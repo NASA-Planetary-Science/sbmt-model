@@ -20,6 +20,7 @@ import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
@@ -117,7 +118,7 @@ public class NIRS3Spectrum extends BasicSpectrum
     public void saveSpectrum(File file) throws IOException
     {
     	new NIRS3SpectrumWriter(file.getAbsolutePath(), this).write();
-
+    	saveInfofile(file);
     }
 
     public void saveInfofile(File file) throws IOException
@@ -215,7 +216,7 @@ public class NIRS3Spectrum extends BasicSpectrum
         this.dateTime=new DateTime(reader.getStartTime());
     }
 
-    public void readSpectrumFromFile()
+    public void readSpectrumFromFile() throws SpectrumIOException
     {
     	super.readSpectrumFromFile();
     	if (!isCustomSpectra)

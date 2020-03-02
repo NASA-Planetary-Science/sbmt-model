@@ -19,10 +19,10 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
 import edu.jhuapl.saavtk.model.SaavtkItemManager;
 import edu.jhuapl.saavtk.pick.DefaultPicker;
+import edu.jhuapl.saavtk.pick.HookUtil;
 import edu.jhuapl.saavtk.pick.PickListener;
 import edu.jhuapl.saavtk.pick.PickMode;
 import edu.jhuapl.saavtk.pick.PickTarget;
-import edu.jhuapl.saavtk.pick.PickUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.gui.lidar.color.ColorProvider;
@@ -437,10 +437,10 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	}
 
 	@Override
-	public void removeItems(List<LidarTrack> aItemL)
+	public void removeItems(Collection<LidarTrack> aItemC)
 	{
 		// Remove relevant state and VTK mappings
-		for (LidarTrack aTrack : aItemL)
+		for (LidarTrack aTrack : aItemC)
 		{
 			propM.remove(aTrack);
 
@@ -454,7 +454,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 		}
 
 		// Delegate
-		super.removeItems(aItemL);
+		super.removeItems(aItemC);
 
 		List<LidarTrack> tmpL = ImmutableList.of();
 		updateVtkVars(tmpL);
@@ -462,7 +462,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	}
 
 	@Override
-	public void setAllItems(List<LidarTrack> aItemL)
+	public void setAllItems(Collection<LidarTrack> aItemC)
 	{
 		// Clear relevant state vars
 		propM = new HashMap<>();
@@ -470,8 +470,8 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 
 		// Setup the initial props for all the items
 		int tmpIdx = 0;
-		int numItems = aItemL.size();
-		for (LidarTrack aItem : aItemL)
+		int numItems = aItemC.size();
+		for (LidarTrack aItem : aItemC)
 		{
 			ColorProvider tmpSrcCP = sourceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
 			ColorProvider tmpTgtCP = targetGCP.getColorProviderFor(aItem, tmpIdx, numItems);
@@ -489,7 +489,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 
 		vPainterM = new HashMap<>();
 		vActorToPainterM = new HashMap<>();
-		for (LidarTrack aItem : aItemL)
+		for (LidarTrack aItem : aItemC)
 		{
 			VtkLidarPainter<LidarTrack> tmpPainter = oldDrawM.remove(aItem);
 			if (tmpPainter == null)
@@ -513,20 +513,16 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 			aPainter.vtkDispose();
 
 		// Delegate
-		super.setAllItems(aItemL);
+		super.setAllItems(aItemC);
 
-		updateVtkVars(aItemL);
+		updateVtkVars(aItemC);
 		notifyVtkStateChange();
 	}
 
 	@Override
-	public void setSelectedItems(List<LidarTrack> aItemL)
+	public void setSelectedItems(Collection<LidarTrack> aItemC)
 	{
-		// Bail if the selection has not changed
-		if (aItemL.equals(getSelectedItems().asList()) == true)
-			return;
-
-		super.setSelectedItems(aItemL);
+		super.setSelectedItems(aItemC);
 
 		// Selected items will be rendered with a different point size.
 		// Force the painters to "update" their point size
@@ -609,25 +605,14 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 			vPointPainter.setData(tmpPoint, tmpTrack);
 		}
 
-		// Determine if this is a modified action
-		boolean isModifyKey = PickUtil.isModifyKey(aEvent);
-
-		// Determine the Tracks that will be marked as selected
-		List<LidarTrack> tmpL = new ArrayList<>(getSelectedItems());
-		if (isModifyKey == false)
-			tmpL = ImmutableList.of(tmpTrack);
-		else if (getSelectedItems().contains(tmpTrack) == false)
-			tmpL.add(tmpTrack);
-		else
-			tmpL.remove(tmpTrack);
-
-		// Update the selected Tracks
-		setSelectedItems(tmpL);
+		// Update the selection
+		HookUtil.updateSelection(this, aEvent, tmpTrack);
 
 		Object source = aEvent.getSource();
 		notifyListeners(source, ItemEventType.ItemsSelected);
 
-		updateVtkVars(tmpL);
+		Set<LidarTrack> tmpS = getSelectedItems();
+		updateVtkVars(tmpS);
 	}
 
 	/**

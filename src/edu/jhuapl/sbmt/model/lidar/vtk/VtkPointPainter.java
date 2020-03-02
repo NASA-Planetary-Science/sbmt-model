@@ -13,6 +13,7 @@ import vtk.vtkPolyDataMapper;
 import vtk.vtkUnsignedCharArray;
 
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
+import edu.jhuapl.saavtk.vtk.VtkResource;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.model.lidar.LidarGeoUtil;
 import edu.jhuapl.sbmt.model.lidar.LidarTrack;

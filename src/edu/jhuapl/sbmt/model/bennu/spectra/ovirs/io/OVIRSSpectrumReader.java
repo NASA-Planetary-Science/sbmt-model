@@ -8,13 +8,14 @@ import java.io.IOException;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import edu.jhuapl.sbmt.model.image.BasicFileReader;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
 
 /**
  * Reads in OVIRS files from O-REx, so those values can be stored in a OVIRSSpectrum object
  * @author steelrj1
  *
  */
-public class OVIRSSpectrumReader extends BasicFileReader
+public class OVIRSSpectrumReader extends BasicFileReader<SpectrumIOException>
 {
     double boresightX;
     double boresightY;
@@ -34,7 +35,7 @@ public class OVIRSSpectrumReader extends BasicFileReader
     }
 
     @Override
-    public void read()
+    public void read() throws SpectrumIOException
     {
         try
         {
@@ -48,6 +49,12 @@ public class OVIRSSpectrumReader extends BasicFileReader
             boresightZ = stream.readDouble();
 
             numberEntries = stream.readInt();
+            if (numberEntries < 0)
+        	{
+            	stream.close();
+            	throw new SpectrumIOException("Bad number of entries read from file; please ensure the file format is correct.");
+        	}
+
             xValues=new Double[numberEntries];
             yValues=new double[numberEntries];
 
@@ -65,8 +72,7 @@ public class OVIRSSpectrumReader extends BasicFileReader
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	throw new SpectrumIOException("Bad number of entries read from file; please ensure the file format is correct.");
         }
     }
 

@@ -21,6 +21,7 @@ import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.io.OVIRSSpectrumWriter;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
@@ -137,6 +138,7 @@ public class OVIRSSpectrum extends BasicSpectrum
     public void saveSpectrum(File file) throws IOException
     {
         new OVIRSSpectrumWriter(file.getAbsolutePath(), this).write();
+        saveInfofile(file);
     }
 
     public void saveInfofile(File file) throws IOException
@@ -152,13 +154,13 @@ public class OVIRSSpectrum extends BasicSpectrum
 
     protected String getLocalInfoFilePathOnServer()
     {
-    	String normalpath = SafeURLPaths.instance().getString(serverpath).substring(7);
+    	String normalpath = SafeURLPaths.instance().getString(serverpath);
     	return FilenameUtils.removeExtension(normalpath) + ".INFO";
     }
 
     protected String getLocalSpectrumFilePathOnServer()
     {
-        return SafeURLPaths.instance().getString(serverpath).substring(7);
+        return SafeURLPaths.instance().getString(serverpath);
     }
 
     protected String getInfoFilePathOnServer()
@@ -239,7 +241,7 @@ public class OVIRSSpectrum extends BasicSpectrum
 //        this.dateTime=new DateTime(reader.getStartTime());
     }
 
-    public void readSpectrumFromFile()
+    public void readSpectrumFromFile() throws SpectrumIOException
     {
     	super.readSpectrumFromFile();
         OVIRSSpectrumReader reader = null;

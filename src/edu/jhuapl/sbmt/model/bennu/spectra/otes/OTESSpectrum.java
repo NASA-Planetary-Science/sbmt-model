@@ -21,6 +21,7 @@ import edu.jhuapl.sbmt.model.bennu.spectra.otes.io.OTESSpectrumWriter;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
+import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
@@ -242,9 +243,10 @@ public class OTESSpectrum extends BasicSpectrum
 
     /**
      * Reads the spectrum data from the file
+     * @throws SpectrumIOException
      */
     @Override
-    public void readSpectrumFromFile()
+    public void readSpectrumFromFile() throws SpectrumIOException
     {
     	super.readSpectrumFromFile();
     	OTESSpectrumReader reader = null;

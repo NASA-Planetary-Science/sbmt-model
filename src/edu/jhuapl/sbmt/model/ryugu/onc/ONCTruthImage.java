@@ -47,7 +47,7 @@ public class ONCTruthImage extends ONCImage
 
      // Append raw pixel value information
         status += ", Raw Value = ";
-        if(rawImage == null)
+        if(getRawImage() == null)
         {
             status += "Unavailable";
         }
@@ -55,9 +55,9 @@ public class ONCTruthImage extends ONCImage
         {
             int ip0 = (int)Math.round(pickPosition[0]);
             int ip1 = (int)Math.round(pickPosition[1]);
-            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            if (!getRawImage().GetScalarTypeAsString().contains("char"))
             {
-                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(getRawImage(), imageHeight-1-ip0, ip1);
                 status += pixelColumn[currentSlice];
             }
             else

@@ -19,7 +19,7 @@ import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
-import edu.jhuapl.sbmt.model.image.PerspectiveImage;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
@@ -149,7 +149,7 @@ public class ONCImage extends PerspectiveImage
 
      // Append raw pixel value information
         status += ", Raw Value = ";
-        if(rawImage == null)
+        if(getRawImage() == null)
         {
             status += "Unavailable";
         }
@@ -157,9 +157,9 @@ public class ONCImage extends PerspectiveImage
         {
             int ip0 = (int)Math.round(pickPosition[0]);
             int ip1 = (int)Math.round(pickPosition[1]);
-            if (!rawImage.GetScalarTypeAsString().contains("char"))
+            if (!getRawImage().GetScalarTypeAsString().contains("char"))
             {
-                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(rawImage, imageHeight-1-ip0, ip1);
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(getRawImage(), imageHeight-1-ip0, ip1);
                 status += pixelColumn[currentSlice];
             }
             else
