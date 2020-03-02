@@ -1004,9 +1004,19 @@ class PerspectiveImageRendererHelper
         return getFrustum(image.currentSlice);
     }
 
+	public vtkActor getFrustumActor()
+	{
+		return frustumActor;
+	}
+
 	public vtkPolyData[] getFootprint()
 	{
 		return footprint;
+	}
+
+	public vtkActor getFootprintActor()
+	{
+		return footprintActor;
 	}
 
 	public void setFootprint(vtkPolyData[] footprint)

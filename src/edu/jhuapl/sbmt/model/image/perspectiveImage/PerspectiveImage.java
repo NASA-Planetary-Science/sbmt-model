@@ -29,6 +29,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import com.google.common.base.Stopwatch;
 
+import vtk.vtkActor;
 import vtk.vtkFeatureEdges;
 import vtk.vtkImageData;
 import vtk.vtkPNGReader;
@@ -3655,7 +3656,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		rendererHelper.calculateFrustum();
 	}
 
-
+	public vtkActor getFrustumActor()
+	{
+		return rendererHelper.getFrustumActor();
+	}
 
 	public int getNumberOfComponentsOfOriginalImage()
 	{
@@ -3665,6 +3669,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 	public void loadFootprint()
 	{
 		rendererHelper.loadFootprint();
+	}
+
+	public vtkActor getFootprintActor()
+	{
+		return rendererHelper.getFootprintActor();
 	}
 
 	public boolean useDefaultFootprint()
@@ -3953,6 +3962,15 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		super.setVisible(b);
 	}
 
+	public vtkActor getOfflimbActor()
+	{
+		return offlimbPlaneHelper.getOffLimbActor();
+	}
+
+	public vtkActor getOfflimbBoundaryActor()
+	{
+		return offlimbPlaneHelper.getOffLimbBoundaryActor();
+	}
 }
 
 //Moving currently commented out sections that are handled with helper classes to down here for now

@@ -253,4 +253,14 @@ class PerspectiveImageOfflimbPlaneHelper
         }
 
     }
+
+	public vtkActor getOffLimbActor()
+	{
+		return offLimbActor;
+	}
+
+	public vtkActor getOffLimbBoundaryActor()
+	{
+		return offLimbBoundaryActor;
+	}
 }
