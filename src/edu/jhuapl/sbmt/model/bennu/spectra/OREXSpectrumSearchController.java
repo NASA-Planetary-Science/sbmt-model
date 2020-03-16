@@ -52,7 +52,7 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 
         this.searchParametersController = new SpectrumSearchParametersController<S>(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
-        if (instrument.getQueryBase() instanceof FixedListQuery)
+        if (instrument.getQueryBase() instanceof FixedListQuery && !(hasHierarchicalSpectraSearch))
         	this.searchParametersController.setFixedListSearch(true);
         this.searchParametersController.setupSearchParametersPanel();
 
