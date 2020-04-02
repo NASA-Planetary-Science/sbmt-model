@@ -13,18 +13,18 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import com.google.common.collect.ImmutableList;
 
-import vtk.vtkActor;
 import vtk.vtkProp;
 
+import edu.jhuapl.saavtk.gui.render.SceneChangeNotifier;
+import edu.jhuapl.saavtk.gui.render.VtkPropProvider;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
-import edu.jhuapl.saavtk.model.SaavtkItemManager;
-import edu.jhuapl.saavtk.pick.DefaultPicker;
 import edu.jhuapl.saavtk.pick.HookUtil;
 import edu.jhuapl.saavtk.pick.PickListener;
 import edu.jhuapl.saavtk.pick.PickMode;
 import edu.jhuapl.saavtk.pick.PickTarget;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.gui.lidar.color.ColorProvider;
 import edu.jhuapl.sbmt.gui.lidar.color.ColorWheelGroupColorProvider;
 import edu.jhuapl.sbmt.gui.lidar.color.GroupColorProvider;
@@ -37,6 +37,7 @@ import edu.jhuapl.sbmt.model.lidar.vtk.VtkLidarUniPainter;
 import edu.jhuapl.sbmt.model.lidar.vtk.VtkPointPainter;
 import edu.jhuapl.sbmt.model.lidar.vtk.VtkUtil;
 
+import glum.item.BaseItemManager;
 import glum.item.ItemEventType;
 
 /**
@@ -50,19 +51,21 @@ import glum.item.ItemEventType;
  * <LI>Configuration of associated rendering properties
  * <LI>Track offset translation
  * <LI>Track error calculation
- * <LI>Support to apply a radial offset to all Tracks
- * <LI>Support to specify the point size to render Tracks
+ * <LI>Support to apply a radial offset to all items.
+ * <LI>Support to specify the point size to rendered items.
  * </UL>
  * <P>
  * Currently (VTK) rendering of Tracks is supported, however that capability
- * should eventually be removed and placed in a separate class/module.
+ * should eventually be moved and placed in a separate class/module.
  *
  * @author lopeznr1
  */
-public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements LidarManager<LidarTrack>, PickListener
+public class LidarTrackManager extends BaseItemManager<LidarTrack>
+		implements LidarManager<LidarTrack>, PickListener, VtkPropProvider
 {
 	// Reference vars
-	protected final PolyhedralModel refSmallBodyModel;
+	private final SceneChangeNotifier refSceneChangeNotifier;
+	protected final PolyhedralModel refSmallBody;
 
 	// State vars
 	private Map<LidarTrack, RenderProp> propM;
@@ -74,17 +77,17 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 
 	// VTK vars
 	private Map<LidarTrack, VtkLidarPainter<LidarTrack>> vPainterM;
-	private Map<vtkProp, VtkLidarPainter<LidarTrack>> vActorToPainterM;
-	private VtkPointPainter vPointPainter;
+	private VtkPointPainter<LidarTrack> vPointPainter;
 
 	/**
 	 * Standard Constructor
 	 *
-	 * @param aSmallBodyModel
+	 * @param aSmallBody
 	 */
-	public LidarTrackManager(PolyhedralModel aSmallBodyModel)
+	public LidarTrackManager(SceneChangeNotifier aSceneChangeNotifier, PolyhedralModel aSmallBody)
 	{
-		refSmallBodyModel = aSmallBodyModel;
+		refSceneChangeNotifier = aSceneChangeNotifier;
+		refSmallBody = aSmallBody;
 
 		propM = new HashMap<>();
 		sourceGCP = ColorWheelGroupColorProvider.Instance;
@@ -94,33 +97,30 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 		showSourcePoints = false;
 
 		vPainterM = new HashMap<>();
-		vActorToPainterM = new HashMap<>();
-		vPointPainter = new VtkPointPainter(this);
+		vPointPainter = new VtkPointPainter<LidarTrack>(this);
 
 		setPointSize(2);
 	}
 
 	/**
-	 * Returns the LidarPoint associated with the specified vtkActor and cellId.
+	 * Returns the LidarPoint associated with the specified {@link PickTarget}.
 	 * <P>
-	 * Returns null if there is no LidarPoint corresponding the specified
+	 * Returns null if there is no LidarPoint corresponding to the associated
 	 * vtkActor / cellId.
-	 *
-	 * @param aActor The vtkActor associated with the pick action
-	 * @param aCellId The cell id associated with the pick action
 	 */
-	public LidarPoint getLidarPointFromVtkPick(vtkActor aActor, int aCellId)
+	public LidarPoint getLidarPointFrom(PickTarget aPickTarget)
 	{
 		// Return the LidarPoint associated with the vPointPainter
-		if (aActor == vPointPainter.getActor())
+		if (aPickTarget.getActor() == vPointPainter.getActor())
 			return vPointPainter.getPoint();
 
-		// Bail if aActor is not associated with a relevant painter
-		VtkLidarPainter<LidarTrack> tmpPainter = vActorToPainterM.get(aActor);
+		// Bail if aActor has no associated painter
+		VtkLidarPainter<LidarTrack> tmpPainter = getPainterFor(aPickTarget);
 		if (tmpPainter == null)
 			return null;
 
-		return tmpPainter.getLidarPointForCell(aCellId);
+		// Delegate
+		return tmpPainter.getLidarPointForCell(aPickTarget.getCellId());
 	}
 
 	/**
@@ -129,26 +129,26 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	 * The cumulative error is defined as the summation of all of the error for
 	 * each LidarPoint associated with the Track.
 	 *
-	 * @param aTrack
+	 * @param aItem
 	 * @return
 	 */
-	public double getTrackError(LidarTrack aTrack)
+	public double getTrackError(LidarTrack aItem)
 	{
 		// Utilize the cached value
-		RenderProp tmpProp = propM.get(aTrack);
+		RenderProp tmpProp = propM.get(aItem);
 		double tmpErr = tmpProp.errAmt;
 		if (Double.isNaN(tmpErr) == false)
 			return tmpErr;
 
 		// Calculate the error
 		tmpErr = 0.0;
-		Vector3D tmpVect = getTranslation(aTrack);
-		for (LidarPoint aLP : aTrack.getPointList())
+		Vector3D tmpVect = getTranslation(aItem);
+		for (LidarPoint aLP : aItem.getPointList())
 		{
 			Vector3D targetV = aLP.getTargetPosition();
 
 			double[] ptLidarArr = LidarGeoUtil.transformTarget(tmpVect, radialOffset, targetV).toArray();
-			double[] ptClosest = refSmallBodyModel.findClosestPoint(ptLidarArr);
+			double[] ptClosest = refSmallBody.findClosestPoint(ptLidarArr);
 			tmpErr += MathUtil.distance2Between(ptLidarArr, ptClosest);
 		}
 
@@ -179,24 +179,24 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	/**
 	 * Sets the selected LidarPoint
 	 *
-	 * @param aLidarPoint The LidarPoint of interest
-	 * @param aLidarTrack The Track associated with the LidarPoint
+	 * @param aItem The item associated with the LidarPoint
+	 * @param aPoint The LidarPoint of interest
 	 */
-	public void setSelectedPoint(LidarPoint aLidarPoint, LidarTrack aLidarTrack)
+	public void setSelectedPoint(LidarTrack aItem, LidarPoint aPoint)
 	{
-		vPointPainter.setData(aLidarPoint, aLidarTrack);
+		vPointPainter.setData(aItem, aPoint);
 		notifyListeners(this, ItemEventType.ItemsSelected);
 
-		List<LidarTrack> tmpL = ImmutableList.of();
-		if (aLidarTrack != null)
-			tmpL = ImmutableList.of(aLidarTrack);
-		updateVtkVars(tmpL);
+		List<LidarTrack> tmpItemL = ImmutableList.of();
+		if (aItem != null)
+			tmpItemL = ImmutableList.of(aItem);
+		updateVtkVars(tmpItemL);
 	}
 
 	@Override
 	public void clearCustomColorProvider(List<LidarTrack> aItemL)
 	{
-		Set<LidarTrack> tmpSet = new HashSet<>(aItemL);
+		Set<LidarTrack> tmpItemS = new HashSet<>(aItemL);
 
 		int tmpIdx = -1;
 		int numItems = getNumItems();
@@ -205,7 +205,7 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 			tmpIdx++;
 
 			// Skip to next if not in aItemL
-			if (tmpSet.contains(aItem) == false)
+			if (tmpItemS.contains(aItem) == false)
 				continue;
 
 			// Skip to next if no RenderProp
@@ -366,28 +366,26 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 
 		notifyListeners(this, ItemEventType.ItemsMutated);
 		updateVtkVars(aItemL);
-		notifyVtkStateChange();
 	}
 
 	@Override
 	public void setOthersHiddenExcept(List<LidarTrack> aItemL)
 	{
-		Set<LidarTrack> tmpSet = new HashSet<>(aItemL);
+		Set<LidarTrack> tmpItemS = new HashSet<>(aItemL);
 
-		// Update the visibility flag on each Track
+		// Update the visibility flag on each item
 		for (LidarTrack aItem : getAllItems())
 		{
 			RenderProp tmpProp = propM.get(aItem);
 			if (tmpProp == null)
 				continue;
 
-			boolean isVisible = tmpSet.contains(aItem);
+			boolean isVisible = tmpItemS.contains(aItem);
 			tmpProp.isVisible = isVisible;
 		}
 
 		notifyListeners(this, ItemEventType.ItemsMutated);
 		updateVtkVars(aItemL);
-		notifyVtkStateChange();
 	}
 
 	@Override
@@ -440,16 +438,12 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	public void removeItems(Collection<LidarTrack> aItemC)
 	{
 		// Remove relevant state and VTK mappings
-		for (LidarTrack aTrack : aItemC)
+		for (LidarTrack aItem : aItemC)
 		{
-			propM.remove(aTrack);
+			propM.remove(aItem);
 
 			// Remove and release the resources associated with the track
-			VtkLidarPainter<LidarTrack> tmpPainter = vPainterM.remove(aTrack);
-
-			for (vtkProp aProp : tmpPainter.getProps())
-				vActorToPainterM.remove(aProp);
-
+			VtkLidarPainter<LidarTrack> tmpPainter = vPainterM.remove(aItem);
 			tmpPainter.vtkDispose();
 		}
 
@@ -488,7 +482,6 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 		Map<LidarTrack, VtkLidarPainter<LidarTrack>> oldDrawM = vPainterM;
 
 		vPainterM = new HashMap<>();
-		vActorToPainterM = new HashMap<>();
 		for (LidarTrack aItem : aItemC)
 		{
 			VtkLidarPainter<LidarTrack> tmpPainter = oldDrawM.remove(aItem);
@@ -501,8 +494,6 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 			tmpPainter.setShowSourcePoints(showSourcePoints);
 
 			vPainterM.put(aItem, tmpPainter);
-			for (vtkProp aProp : tmpPainter.getProps())
-				vActorToPainterM.put(aProp, tmpPainter);
 
 			// Set in the hard coded configuration state
 			tmpPainter.setPercentageShown(0.0, 1.0);
@@ -527,21 +518,6 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 		// Selected items will be rendered with a different point size.
 		// Force the painters to "update" their point size
 		setPointSize(pointSize);
-	}
-
-	@Override
-	public String getClickStatusBarText(vtkProp aProp, int aCellId, double[] aPickPosition)
-	{
-		// Bail if there is no painter associated with the actor (aProp)
-		VtkLidarPainter<LidarTrack> tmpPainter = vActorToPainterM.get(aProp);
-		if (tmpPainter == null)
-			return "";
-
-		// Custom title
-		LidarTrack tmpItem = tmpPainter.getLidarItemForCell(aCellId);
-		String tmpTitle = "(Trk " + tmpItem.getId() + ")";
-
-		return tmpPainter.getDisplayInfoStr(aCellId, tmpTitle);
 	}
 
 	@Override
@@ -572,68 +548,73 @@ public class LidarTrackManager extends SaavtkItemManager<LidarTrack> implements 
 	@Override
 	public void handlePickAction(InputEvent aEvent, PickMode aMode, PickTarget aPrimaryTarg, PickTarget aSurfaceTarg)
 	{
-		// Bail if we are not the target model
-		if (aPrimaryTarg.getModel() != this)
+		// Respond only to primary actions
+		if (aMode != PickMode.ActivePri)
 			return;
 
-		// Respond only to active events
-		if (aMode != PickMode.Active)
-			return;
-
-		// Retrieve the selected lidar Point and corresponding track
-		LidarTrack tmpTrack = null;
+		// Retrieve the selected item (and corresponding point)
+		LidarTrack tmpItem = null;
 		LidarPoint tmpPoint = null;
 		vtkProp tmpActor = aPrimaryTarg.getActor();
 		if (tmpActor == vPointPainter.getActor())
 		{
 			tmpPoint = vPointPainter.getPoint();
-			tmpTrack = vPointPainter.getTrack();
+			tmpItem = vPointPainter.getItem();
 		}
 		else
 		{
-			// Bail if tmpActor is not associated with a relevant painter
-			VtkLidarPainter<LidarTrack> tmpPainter = vActorToPainterM.get(tmpActor);
+			// Bail if no associated painter
+			VtkLidarPainter<LidarTrack> tmpPainter = getPainterFor(aPrimaryTarg);
 			if (tmpPainter == null)
 				return;
 
-			// Determine the Track / Point that was selected
+			// Determine the item / point that was selected
 			int tmpCellId = aPrimaryTarg.getCellId();
-			tmpTrack = tmpPainter.getLidarItemForCell(tmpCellId);
+			tmpItem = tmpPainter.getLidarItemForCell(tmpCellId);
 			tmpPoint = tmpPainter.getLidarPointForCell(tmpCellId);
 
 			// Update the VtkPointPainter to reflect the selected point
-			vPointPainter.setData(tmpPoint, tmpTrack);
+			vPointPainter.setData(tmpItem, tmpPoint);
 		}
 
 		// Update the selection
-		HookUtil.updateSelection(this, aEvent, tmpTrack);
+		HookUtil.updateSelection(this, aEvent, tmpItem);
 
 		Object source = aEvent.getSource();
 		notifyListeners(source, ItemEventType.ItemsSelected);
 
-		Set<LidarTrack> tmpS = getSelectedItems();
-		updateVtkVars(tmpS);
+		Set<LidarTrack> tmpItemS = getSelectedItems();
+		updateVtkVars(tmpItemS);
 	}
 
 	/**
-	 * TODO: We should be registered with the "DefaultPicker" through different
-	 * means and not rely on unrelated third party registration...
+	 * Helper method that returns the {@link VtkLidarPainter} associated with the
+	 * specified {@link vtkProp}. Returns null if the {@link vtkProp} did not
+	 * originate from this manager.
 	 */
-	public void registerDefaultPickerHandler(DefaultPicker aDefaultPicker)
+	@SuppressWarnings("unchecked")
+	private VtkLidarPainter<LidarTrack> getPainterFor(PickTarget aPickTarg)
 	{
-		aDefaultPicker.addListener(this);
+		// Bail if aProp is not the right type
+		vtkProp tmpProp = aPickTarg.getActor();
+		if (tmpProp instanceof SaavtkLODActor == false)
+			return null;
+
+		// Retrieve the painter and return it if we are the associated manager
+		VtkLidarPainter<?> tmpPainter = ((SaavtkLODActor) tmpProp).getAssocModel(VtkLidarPainter.class);
+		if (tmpPainter != null && tmpPainter.getManager() == this)
+			return (VtkLidarPainter<LidarTrack>) tmpPainter;
+
+		return null;
 	}
 
 	/**
-	 * Helper method that notifies the relevant system that our internal VTK
-	 * state has been changed.
-	 * <P>
-	 * This is currently accomplished via firing off a
-	 * {@link Properties#MODEL_CHANGED} event.
+	 * Helper method that notifies the system that our internal VTK state has
+	 * been changed.
 	 */
 	private void notifyVtkStateChange()
 	{
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		refSceneChangeNotifier.notifySceneChange();
 	}
 
 	/**

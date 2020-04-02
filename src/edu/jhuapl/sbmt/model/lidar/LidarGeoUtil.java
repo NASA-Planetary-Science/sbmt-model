@@ -62,10 +62,10 @@ public class LidarGeoUtil
 			xyzPointList.add(target.toArray());
 		}
 
-		PolyhedralModel tmpSmallBodyModel = aManager.refSmallBodyModel;
+		PolyhedralModel tmpSmallBody = aManager.refSmallBody;
 		List<Point3D> accelerationVector = new ArrayList<Point3D>();
-		Gravity.getGravityAtPoints(xyzPointList, tmpSmallBodyModel.getDensity(), tmpSmallBodyModel.getRotationRate(),
-				tmpSmallBodyModel.getReferencePotential(), tmpSmallBodyModel.getSmallBodyPolyData(), aElevationL,
+		Gravity.getGravityAtPoints(xyzPointList, tmpSmallBody.getDensity(), tmpSmallBody.getRotationRate(),
+				tmpSmallBody.getReferencePotential(), tmpSmallBody.getSmallBodyPolyData(), aElevationL,
 				aAccelerationL, accelerationVector, aPotentialL);
 
 		double[] fittedLinePoint = new double[3];
@@ -84,11 +84,11 @@ public class LidarGeoUtil
 	// TODO: Add javadoc
 	public static double getOffsetScale(LidarTrackManager aTrackManager)
 	{
-		PolyhedralModel tmpSmallBodyModel = aTrackManager.refSmallBodyModel;
+		PolyhedralModel tmpSmallBody = aTrackManager.refSmallBody;
 
-		BodyViewConfig tmpBodyViewConfig = (BodyViewConfig) tmpSmallBodyModel.getConfig();
+		BodyViewConfig tmpBodyViewConfig = (BodyViewConfig) tmpSmallBody.getConfig();
 		if (tmpBodyViewConfig.lidarOffsetScale <= 0.0)
-			return tmpSmallBodyModel.getBoundingBoxDiagonalLength() / 1546.4224133453388;
+			return tmpSmallBody.getBoundingBoxDiagonalLength() / 1546.4224133453388;
 
 		return tmpBodyViewConfig.lidarOffsetScale;
 	}

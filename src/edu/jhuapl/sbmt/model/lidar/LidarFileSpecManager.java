@@ -1,7 +1,7 @@
 package edu.jhuapl.sbmt.model.lidar;
 
 import java.awt.Color;
-import java.io.File;
+import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,21 +15,28 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import vtk.vtkProp;
 
-import edu.jhuapl.saavtk.model.SaavtkItemManager;
-import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.gui.render.SceneChangeNotifier;
+import edu.jhuapl.saavtk.gui.render.VtkPropProvider;
+import edu.jhuapl.saavtk.pick.HookUtil;
+import edu.jhuapl.saavtk.pick.PickListener;
+import edu.jhuapl.saavtk.pick.PickMode;
+import edu.jhuapl.saavtk.pick.PickTarget;
+import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.lidar.color.ColorProvider;
 import edu.jhuapl.sbmt.gui.lidar.color.ConstColorProvider;
 import edu.jhuapl.sbmt.gui.lidar.color.ConstGroupColorProvider;
 import edu.jhuapl.sbmt.gui.lidar.color.GroupColorProvider;
+import edu.jhuapl.sbmt.lidar.BasicLidarPoint;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.model.lidar.feature.FeatureAttr;
 import edu.jhuapl.sbmt.model.lidar.feature.FeatureType;
 import edu.jhuapl.sbmt.model.lidar.vtk.VtkLidarPainter;
 import edu.jhuapl.sbmt.model.lidar.vtk.VtkLidarPointProvider;
+import edu.jhuapl.sbmt.model.lidar.vtk.VtkPointPainter;
 
+import glum.item.BaseItemManager;
 import glum.item.ItemEventType;
 
 /**
@@ -41,23 +48,26 @@ import glum.item.ItemEventType;
  * <LI>Management of collection of FileSpecs.
  * <LI>Support for LidarFileSpec selection
  * <LI>Configuration of associated rendering properties.
- * <LI>Support to apply a radial offset to all Tracks
+ * <LI>Support to apply a radial offset to all items.
+ * <LI>Support to specify the point size to rendered items.
  * </UL>
  * <P>
  * Currently (VTK) rendering of FileSpecs is supported, however that capability
- * should eventually be removed and placed in a separate class/module.
+ * should eventually be moved and placed in a separate class/module.
  *
  * @author lopeznr1
  */
-public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> implements LidarManager<LidarFileSpec>
+public class LidarFileSpecManager extends BaseItemManager<LidarFileSpec>
+		implements LidarManager<LidarFileSpec>, PickListener, VtkPropProvider
 {
-	// Ref vars
+	// Reference vars
+	private final SceneChangeNotifier refSceneChangeNotifier;
 	private final BodyViewConfig refBodyViewConfig;
 
 	// State vars
 	private Map<LidarFileSpec, RenderProp> propM;
-	private GroupColorProvider souceGCP;
-	private GroupColorProvider targeGCP;
+	private GroupColorProvider sourceGCP;
+	private GroupColorProvider targetGCP;
 	private double begPercent;
 	private double endPercent;
 	private double radialOffset;
@@ -67,19 +77,20 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	// VTK vars
 	private Map<LidarFileSpec, VtkLidarPointProvider> vAuxM;
 	private Map<LidarFileSpec, VtkLidarPainter<LidarFileSpec>> vPainterM;
-	private Map<vtkProp, VtkLidarPainter<LidarFileSpec>> vActorToPainterM;
+	private VtkPointPainter<LidarFileSpec> vPointPainter;
 
 	/**
 	 * Standard Constructor
 	 */
-	public LidarFileSpecManager(SmallBodyModel aSmallBodyModel)
+	public LidarFileSpecManager(SceneChangeNotifier aSceneChangeNotifier, SmallBodyViewConfig aBodyViewConfig)
 	{
 		// TODO: Just pass the needed args
-		refBodyViewConfig = (SmallBodyViewConfig) aSmallBodyModel.getSmallBodyConfig();
+		refSceneChangeNotifier = aSceneChangeNotifier;
+		refBodyViewConfig = aBodyViewConfig;
 
 		propM = new HashMap<>();
-		souceGCP = new ConstGroupColorProvider(new ConstColorProvider(Color.GREEN));
-		targeGCP = new ConstGroupColorProvider(new ConstColorProvider(Color.BLUE));
+		sourceGCP = new ConstGroupColorProvider(new ConstColorProvider(Color.GREEN));
+		targetGCP = new ConstGroupColorProvider(new ConstColorProvider(Color.BLUE));
 		begPercent = 0.0;
 		endPercent = 1.0;
 		radialOffset = 0.0;
@@ -88,7 +99,7 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 
 		vAuxM = new HashMap<>();
 		vPainterM = new HashMap<>();
-		vActorToPainterM = new HashMap<>();
+		vPointPainter = new VtkPointPainter<>(this);
 	}
 
 	/**
@@ -96,13 +107,13 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	 * <P>
 	 * Returns 0 if the file has not been loaded.
 	 */
-	public Integer getNumberOfPoints(LidarFileSpec aFileSpec)
+	public Integer getNumberOfPoints(LidarFileSpec aItem)
 	{
-		int numPoints = aFileSpec.getNumPoints();
+		int numPoints = aItem.getNumPoints();
 		if (numPoints > 0)
 			return numPoints;
 
-		VtkLidarPointProvider tmpLPP = vAuxM.get(aFileSpec);
+		VtkLidarPointProvider tmpLPP = vAuxM.get(aItem);
 		if (tmpLPP == null)
 			return 0;
 
@@ -112,9 +123,9 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	/**
 	 * Returns whether the specified LidarFileSpec has been loaded.
 	 */
-	public boolean isLoaded(LidarFileSpec aFileSpec)
+	public boolean isLoaded(LidarFileSpec aItem)
 	{
-		VtkLidarPainter<?> tmpPainter = vPainterM.get(aFileSpec);
+		VtkLidarPainter<?> tmpPainter = vPainterM.get(aItem);
 		if (tmpPainter == null)
 			return false;
 
@@ -133,13 +144,13 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 		for (VtkLidarPainter<?> aPainter : vPainterM.values())
 			aPainter.setPointSize(pointSize);
 
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		notifyVtkStateChange();
 	}
 
 	@Override
 	public void clearCustomColorProvider(List<LidarFileSpec> aItemL)
 	{
-		Set<LidarFileSpec> tmpSet = new HashSet<>(aItemL);
+		Set<LidarFileSpec> tmpItemS = new HashSet<>(aItemL);
 
 		int tmpIdx = -1;
 		int numItems = getNumItems();
@@ -148,7 +159,7 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 			tmpIdx++;
 
 			// Skip to next if not in aItemL
-			if (tmpSet.contains(aItem) == false)
+			if (tmpItemS.contains(aItem) == false)
 				continue;
 
 			// Skip to next if no RenderProp
@@ -161,8 +172,8 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 				continue;
 
 			tmpProp.isCustomCP = false;
-			tmpProp.srcCP = souceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
-			tmpProp.tgtCP = targeGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			tmpProp.srcCP = sourceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			tmpProp.tgtCP = targetGCP.getColorProviderFor(aItem, tmpIdx, numItems);
 		}
 
 		notifyListeners(this, ItemEventType.ItemsMutated);
@@ -212,8 +223,11 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	@Override
 	public LidarPoint getLidarPointAt(LidarFileSpec aItem, int aIdx)
 	{
-		// TODO: Unsupported at this time
-		throw new UnsupportedOperationException();
+		VtkLidarPointProvider tmpLPP = vAuxM.get(aItem);
+
+		// TODO: Note, time, intensity, range will be NaN
+		return new BasicLidarPoint(tmpLPP.getTargetPosition(aIdx), tmpLPP.getSourcePosition(aIdx), Double.NaN, Double.NaN,
+				Double.NaN);
 	}
 
 	@Override
@@ -266,8 +280,8 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	@Override
 	public void installGroupColorProviders(GroupColorProvider aSrcGCP, GroupColorProvider aTgtGCP)
 	{
-		souceGCP = aSrcGCP;
-		targeGCP = aTgtGCP;
+		sourceGCP = aSrcGCP;
+		targetGCP = aTgtGCP;
 
 		int tmpIdx = -1;
 		int numItems = getNumItems();
@@ -284,8 +298,8 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 			if (tmpProp.isCustomCP == true)
 				continue;
 
-			tmpProp.srcCP = souceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
-			tmpProp.tgtCP = targeGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			tmpProp.srcCP = sourceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			tmpProp.tgtCP = targetGCP.getColorProviderFor(aItem, tmpIdx, numItems);
 		}
 
 		notifyListeners(this, ItemEventType.ItemsMutated);
@@ -314,16 +328,16 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	@Override
 	public void setOthersHiddenExcept(List<LidarFileSpec> aItemL)
 	{
-		Set<LidarFileSpec> tmpSet = new HashSet<>(aItemL);
+		Set<LidarFileSpec> tmpItemS = new HashSet<>(aItemL);
 
-		// Update the visibility flag on each Track
+		// Update the visibility flag on each item
 		for (LidarFileSpec aItem : getAllItems())
 		{
 			RenderProp tmpProp = propM.get(aItem);
 			if (tmpProp == null)
 				continue;
 
-			boolean isVisible = tmpSet.contains(aItem);
+			boolean isVisible = tmpItemS.contains(aItem);
 			tmpProp.isVisible = isVisible;
 
 			if (isVisible == true)
@@ -369,8 +383,8 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 		int numItems = aItemC.size();
 		for (LidarFileSpec aItem : aItemC)
 		{
-			ColorProvider tmpSrcCP = souceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
-			ColorProvider tmpTgtCP = targeGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			ColorProvider tmpSrcCP = sourceGCP.getColorProviderFor(aItem, tmpIdx, numItems);
+			ColorProvider tmpTgtCP = targetGCP.getColorProviderFor(aItem, tmpIdx, numItems);
 
 			RenderProp tmpProp = new RenderProp();
 			tmpProp.isVisible = false;
@@ -410,24 +424,6 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	}
 
 	@Override
-	public String getClickStatusBarText(vtkProp aProp, int aCellId, double[] aPickPosition)
-	{
-		// Bail if there is no painter associated with the actor (aProp)
-		VtkLidarPainter<LidarFileSpec> tmpPainter = vActorToPainterM.get(aProp);
-		if (tmpPainter == null)
-			return "";
-
-		// Custom title
-		LidarFileSpec tmpItem = tmpPainter.getLidarItemForCell(aCellId);
-		String tmpPath = tmpItem.getPath();
-		if (tmpPath.toLowerCase().endsWith(".gz"))
-			tmpPath = tmpPath.substring(0, tmpPath.length() - 3);
-		File tmpFile = new File(tmpPath);
-
-		return tmpPainter.getDisplayInfoStr(aCellId, tmpFile.getName());
-	}
-
-	@Override
 	public List<vtkProp> getProps()
 	{
 		List<vtkProp> retL = new ArrayList<>();
@@ -447,7 +443,51 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 			retL.addAll(tmpPainter.getProps());
 		}
 
+		retL.add(vPointPainter.getActor());
+
 		return retL;
+	}
+
+	@Override
+	public void handlePickAction(InputEvent aEvent, PickMode aMode, PickTarget aPrimaryTarg, PickTarget aSurfaceTarg)
+	{
+		// Respond only to primary actions
+		if (aMode != PickMode.ActivePri)
+			return;
+
+		// Retrieve the selected item (and corresponding point)
+		LidarFileSpec tmpItem = null;
+		LidarPoint tmpPoint = null;
+		vtkProp tmpActor = aPrimaryTarg.getActor();
+		if (tmpActor == vPointPainter.getActor())
+		{
+			tmpPoint = vPointPainter.getPoint();
+			tmpItem = vPointPainter.getItem();
+		}
+		else
+		{
+			// Bail if no associated painter
+			VtkLidarPainter<LidarFileSpec> tmpPainter = getPainterFor(aPrimaryTarg);
+			if (tmpPainter == null)
+				return;
+
+			// Determine the item / point that was selected
+			int tmpCellId = aPrimaryTarg.getCellId();
+			tmpItem = tmpPainter.getLidarItemForCell(tmpCellId);
+			tmpPoint = tmpPainter.getLidarPointForCell(tmpCellId);
+
+			// Update the VtkPointPainter to reflect the selected point
+			vPointPainter.setData(tmpItem, tmpPoint);
+		}
+
+		// Update the selection
+		HookUtil.updateSelection(this, aEvent, tmpItem);
+
+		Object source = aEvent.getSource();
+		notifyListeners(source, ItemEventType.ItemsSelected);
+
+		Set<LidarFileSpec> tmpItemS = getSelectedItems();
+		updateVtkVars(tmpItemS);
 	}
 
 	@Override
@@ -462,23 +502,43 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	}
 
 	/**
-	 * Notification method that the lidar data associated with aFileSpec has been
-	 * loaded. The provided VtkLidarDataPainter will contain the loaded state.
+	 * Notification method that the lidar data associated with the FileSpec has
+	 * been loaded. The provided VtkLidarDataPainter will contain the loaded
+	 * state.
 	 */
-	protected void markLidarLoadComplete(LidarFileSpec aFileSpec, VtkLidarPointProvider aLidarPointProvider,
+	protected void markLidarLoadComplete(LidarFileSpec aItem, VtkLidarPointProvider aLidarPointProvider,
 			VtkLidarPainter<LidarFileSpec> aPainter)
 	{
-		vAuxM.put(aFileSpec, aLidarPointProvider);
+		vAuxM.put(aItem, aLidarPointProvider);
 
-		vPainterM.put(aFileSpec, aPainter);
-		for (vtkProp prop : aPainter.getProps())
-			vActorToPainterM.put(prop, aPainter);
+		vPainterM.put(aItem, aPainter);
 
 		aPainter.setShowSourcePoints(showSourcePoints);
 		aPainter.setPercentageShown(begPercent, endPercent);
 
 		notifyListeners(this, ItemEventType.ItemsMutated);
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		notifyVtkStateChange();
+	}
+
+	/**
+	 * Helper method that returns the {@link VtkLidarPainter} associated with the
+	 * specified {@link vtkProp}. Returns null if the {@link vtkProp} did not
+	 * originate from this manager.
+	 */
+	@SuppressWarnings("unchecked")
+	private VtkLidarPainter<LidarFileSpec> getPainterFor(PickTarget aPickTarg)
+	{
+		// Bail if tmpProp is not the right type
+		vtkProp tmpProp = aPickTarg.getActor();
+		if (tmpProp instanceof SaavtkLODActor == false)
+			return null;
+
+		// Retrieve the painter and return it if we are the associated manager
+		VtkLidarPainter<?> tmpPainter = ((SaavtkLODActor) tmpProp).getAssocModel(VtkLidarPainter.class);
+		if (tmpPainter != null && tmpPainter.getManager() == this)
+			return (VtkLidarPainter<LidarFileSpec>) tmpPainter;
+
+		return null;
 	}
 
 	/**
@@ -486,16 +546,16 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	 * <P>
 	 * The actual loading of the lidar data may happen asynchronously.
 	 */
-	private void loadVtkPainter(LidarFileSpec aFileSpec)
+	private void loadVtkPainter(LidarFileSpec aItem)
 	{
 		// Bail if the corresponding VTK data has already been created
-		VtkLidarPainter<?> tmpData = vPainterM.get(aFileSpec);
+		VtkLidarPainter<?> tmpData = vPainterM.get(aItem);
 		if (tmpData != null)
 			return;
 
 		try
 		{
-			LidarFileSpecLoadUtil.initLidarData(this, aFileSpec, refBodyViewConfig);
+			LidarFileSpecLoadUtil.initLidarData(this, aItem, refBodyViewConfig);
 		}
 		catch (IOException aExp)
 		{
@@ -504,13 +564,20 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 	}
 
 	/**
+	 * Helper method that notifies the system that our internal VTK state has
+	 * been changed.
+	 */
+	private void notifyVtkStateChange()
+	{
+		refSceneChangeNotifier.notifySceneChange();
+	}
+
+	/**
 	 * Helper method that will update all relevant VTK vars.
-	 * <P>
-	 * A notification will be sent out to PropertyChange listeners of the
-	 * {@link Properties#MODEL_CHANGED} event.
 	 */
 	private void updateVtkVars(Collection<LidarFileSpec> aUpdateC)
 	{
+		vPointPainter.vtkUpdateState();
 		for (LidarFileSpec aItem : aUpdateC)
 		{
 			// Skip to next if no installed painter
@@ -524,8 +591,7 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 		for (VtkLidarPainter<?> aPainter : vPainterM.values())
 			aPainter.vtkUpdateState();
 
-		// Notify our PropertyChangeListeners
-		pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+		notifyVtkStateChange();
 	}
 
 }

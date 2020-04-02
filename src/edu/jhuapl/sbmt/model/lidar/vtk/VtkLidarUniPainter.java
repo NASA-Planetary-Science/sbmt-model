@@ -19,8 +19,10 @@ import vtk.vtkUnsignedCharArray;
 import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.sbmt.gui.lidar.color.ColorProvider;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
+import edu.jhuapl.sbmt.model.lidar.LidarFileSpec;
 import edu.jhuapl.sbmt.model.lidar.LidarGeoUtil;
 import edu.jhuapl.sbmt.model.lidar.LidarManager;
+import edu.jhuapl.sbmt.model.lidar.LidarTrack;
 import edu.jhuapl.sbmt.model.lidar.feature.ConstFeatureAttr;
 import edu.jhuapl.sbmt.model.lidar.feature.FeatureAttr;
 import edu.jhuapl.sbmt.model.lidar.feature.FeatureType;
@@ -79,7 +81,8 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 	/**
 	 * Standard Constructor
 	 *
-	 * @param aManager The LidarManager responsible for the specified lidar item.
+	 * @param aManager The {@link LidarManager} responsible for the specified
+	 * lidar item.
 	 * @param aItem The lidar item of interest.
 	 * @param aVLS The {@link VtkLidarStruct} corresponding to the specified
 	 * lidar item.
@@ -111,20 +114,24 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 	}
 
 	@Override
-	public String getDisplayInfoStr(int aCellId, String aTitle)
+	public String getDisplayInfo(int aCellId)
 	{
 		aCellId = vTargetGF.GetPointMinimum() + aCellId;
 
-		String headStr = "Lidar point";
-		if (aTitle != null)
-			headStr = "Lidar point " + aTitle;
+		// Get the header
+		String headStr = "";
+		if (refItem instanceof LidarTrack)
+			headStr = String.format("Trk %d: ", ((LidarTrack) refItem).getId());
+		else if (refItem instanceof LidarFileSpec)
+			headStr = String.format("%s: ", ((LidarFileSpec) refItem).getName());
 
 		double timeVal = timeFA.getValAt(aCellId);
 		String timeStr = TimeUtil.et2str(timeVal);
 
 		double rangeVal = rangeFA.getValAt(aCellId) * 1000;
 
-		return String.format("%s acquired at %s, ET = %f, unmodified range = %f m", headStr, timeStr, timeVal, rangeVal);
+		return String.format("%s Lidar point acquired at %s, ET = %f, unmodified range = %f m", headStr, timeStr, timeVal,
+				rangeVal);
 	}
 
 	@Override
@@ -154,6 +161,12 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 	public LidarPoint getLidarPointForCell(int aCellId)
 	{
 		return refManager.getLidarPointAt(refItem, aCellId);
+	}
+
+	@Override
+	public LidarManager<G1> getManager()
+	{
+		return refManager;
 	}
 
 	@Override
@@ -297,7 +310,7 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 		vtkPolyDataMapper pointsMapperSource = new vtkPolyDataMapper();
 		pointsMapperSource.SetInputConnection(vSourceGF.GetOutputPort());
 
-		vSourceA = new SaavtkLODActor();
+		vSourceA = new SaavtkLODActor(this);
 		vSourceA.SetMapper(pointsMapperSource);
 		((SaavtkLODActor) vSourceA).setQuadricDecimatedLODMapper(vSourceGF.GetOutputPort());
 
@@ -332,7 +345,7 @@ public class VtkLidarUniPainter<G1> implements VtkLidarPainter<G1>
 		pointsMapperTarget.SetScalarModeToUseCellData();
 		pointsMapperTarget.SetInputConnection(vTargetGF.GetOutputPort());
 
-		vTargetA = new SaavtkLODActor();
+		vTargetA = new SaavtkLODActor(this);
 		vTargetA.SetMapper(pointsMapperTarget);
 		((SaavtkLODActor) vTargetA).setQuadricDecimatedLODMapper(vTargetGF.GetOutputPort());
 

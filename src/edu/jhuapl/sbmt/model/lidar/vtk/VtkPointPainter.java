@@ -16,8 +16,7 @@ import edu.jhuapl.saavtk.util.SaavtkLODActor;
 import edu.jhuapl.saavtk.vtk.VtkResource;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
 import edu.jhuapl.sbmt.model.lidar.LidarGeoUtil;
-import edu.jhuapl.sbmt.model.lidar.LidarTrack;
-import edu.jhuapl.sbmt.model.lidar.LidarTrackManager;
+import edu.jhuapl.sbmt.model.lidar.LidarManager;
 
 import glum.item.ItemEventListener;
 import glum.item.ItemEventType;
@@ -28,21 +27,21 @@ import glum.item.ItemEventType;
  * <P>
  * This class supports the following configurable state:
  * <UL>
- * <LI>Selected LidarPoint (index) and corresponding Track (index).
+ * <LI>Selected item and corresponding LidarPoint.
  * <LI>Point color
  * <LI>Point size
  * </UL>
  *
  * @author lopeznr1
  */
-public class VtkPointPainter implements ItemEventListener, VtkResource
+public class VtkPointPainter<G1> implements ItemEventListener, VtkResource
 {
 	// Reference vars
-	private LidarTrackManager refManager;
+	private final LidarManager<G1> refManager;
 
 	// State vars
-	private LidarPoint lidarPoint;
-	private LidarTrack lidarTrack;
+	private G1 workItem;
+	private LidarPoint workPoint;
 	private Color pointColor;
 	private boolean isStale;
 
@@ -56,12 +55,12 @@ public class VtkPointPainter implements ItemEventListener, VtkResource
 	 *
 	 * @param aManager
 	 */
-	public VtkPointPainter(LidarTrackManager aManager)
+	public VtkPointPainter(LidarManager<G1> aManager)
 	{
 		refManager = aManager;
 
-		lidarPoint = null;
-		lidarTrack = null;
+		workItem = null;
+		workPoint = null;
 		pointColor = new Color(0.1f, 0.1f, 1.0f);
 		isStale = false;
 
@@ -91,28 +90,28 @@ public class VtkPointPainter implements ItemEventListener, VtkResource
 	}
 
 	/**
-	 * Returns the LidarPoint associated with this VtkPainter
+	 * Returns the item associated with this VtkPainter.
+	 */
+	public G1 getItem()
+	{
+		return workItem;
+	}
+
+	/**
+	 * Returns the LidarPoint associated with this VtkPainter.
 	 */
 	public LidarPoint getPoint()
 	{
-		return lidarPoint;
+		return workPoint;
 	}
 
 	/**
-	 * Returns the Track associated with this VtkPainter
+	 * Sets in the working item and corresponding point.
 	 */
-	public LidarTrack getTrack()
+	public void setData(G1 aItem, LidarPoint aPoint)
 	{
-		return lidarTrack;
-	}
-
-	/**
-	 * Sets in the LidarPoint and corresponding Track.
-	 */
-	public void setData(LidarPoint aLidarPoint, LidarTrack aLidarTrack)
-	{
-		lidarPoint = aLidarPoint;
-		lidarTrack = aLidarTrack;
+		workItem = aItem;
+		workPoint = aPoint;
 
 		isStale = true;
 	}
@@ -159,11 +158,11 @@ public class VtkPointPainter implements ItemEventListener, VtkResource
 		vtkCellArray vert = vPolydata.GetVerts();
 		vtkUnsignedCharArray colors = (vtkUnsignedCharArray) vPolydata.GetCellData().GetScalars();
 
-		if (lidarPoint != null && lidarTrack != null && refManager.getIsVisible(lidarTrack) == true)
+		if (workPoint != null && workItem != null && refManager.getIsVisible(workItem) == true)
 		{
 			double radialOffset = refManager.getRadialOffset();
-			Vector3D translationV = refManager.getTranslation(lidarTrack);
-			Vector3D targetV = lidarPoint.getTargetPosition();
+			Vector3D translationV = refManager.getTranslation(workItem);
+			Vector3D targetV = workPoint.getTargetPosition();
 			targetV = LidarGeoUtil.transformTarget(translationV, radialOffset, targetV);
 
 			int id1 = points.InsertNextPoint(targetV.getX(), targetV.getY(), targetV.getZ());

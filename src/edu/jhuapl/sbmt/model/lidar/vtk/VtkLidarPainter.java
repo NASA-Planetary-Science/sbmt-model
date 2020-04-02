@@ -4,8 +4,10 @@ import java.util.List;
 
 import vtk.vtkProp;
 
+import edu.jhuapl.saavtk.status.StatusProvider;
 import edu.jhuapl.saavtk.vtk.VtkResource;
 import edu.jhuapl.sbmt.lidar.LidarPoint;
+import edu.jhuapl.sbmt.model.lidar.LidarManager;
 import edu.jhuapl.sbmt.model.lidar.feature.FeatureAttr;
 import edu.jhuapl.sbmt.model.lidar.feature.FeatureType;
 
@@ -15,17 +17,8 @@ import edu.jhuapl.sbmt.model.lidar.feature.FeatureType;
  *
  * @author lopeznr1
  */
-public interface VtkLidarPainter<G1> extends VtkResource
+public interface VtkLidarPainter<G1> extends StatusProvider, VtkResource
 {
-	/**
-	 * Returns a short description string that should be used for display
-	 * information.
-	 *
-	 * @param aCellId
-	 * @param aTitle
-	 */
-	public String getDisplayInfoStr(int aCellId, String aTitle);
-
 	/**
 	 * Returns the FeatureAttr associated with the specified FeatureType
 	 */
@@ -42,7 +35,12 @@ public interface VtkLidarPainter<G1> extends VtkResource
 	public LidarPoint getLidarPointForCell(int aCellId);
 
 	/**
-	 * Returns the list of VtkProps used to render this painter.
+	 * Returns the associated {@link LidarManager}.
+	 */
+	LidarManager<G1> getManager();
+
+	/**
+	 * Returns the list of {@link vtkProp}s used to render this painter.
 	 */
 	public List<vtkProp> getProps();
 

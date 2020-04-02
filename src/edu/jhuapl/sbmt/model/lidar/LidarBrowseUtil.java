@@ -16,7 +16,7 @@ import edu.jhuapl.saavtk.util.FileCache.UnauthorizedAccessException;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.util.TimeUtil;
 
-import glum.gui.GuiUtil;
+import glum.io.ParseUtil;
 
 /**
  * Utility class that provides various methods for working with lidar catalog
@@ -122,7 +122,7 @@ public class LidarBrowseUtil
 
 					// Read number of points field
 					if (strArr.length >= 3)
-						numPoints = GuiUtil.readInt(strArr[2], -1);
+						numPoints = ParseUtil.readInt(strArr[2], -1);
 				}
 				String name = new File(path).getName();
 				if (name.toLowerCase().endsWith(".gz"))
@@ -171,7 +171,7 @@ public class LidarBrowseUtil
 
 				int numPoints = -1;
 				if (strArr.length >= 4)
-					numPoints = GuiUtil.readInt(strArr[3], -1);
+					numPoints = ParseUtil.readInt(strArr[3], -1);
 
 				LidarFileSpec tmpItem = new LidarFileSpec(path, name, numPoints, timeBeg, timeEnd);
 				retL.add(tmpItem);
