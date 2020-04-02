@@ -23,7 +23,7 @@ import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
-import edu.jhuapl.sbmt.lidar.FileSystemOctreeGenerator;
+import edu.jhuapl.sbmt.lidar.misc.FileSystemOctreeGenerator;
 import edu.jhuapl.sbmt.model.bennu.shapeModel.Bennu;
 
 public class BennuFileSystemOctreeGenerator
