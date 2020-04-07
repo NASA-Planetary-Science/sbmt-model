@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FilenameUtils;
+
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileCache.UnauthorizedAccessException;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
@@ -126,7 +128,7 @@ public class LidarBrowseUtil
 				}
 				String name = new File(path).getName();
 				if (name.toLowerCase().endsWith(".gz"))
-					name = name.substring(0, name.length() - 3);
+					name = FilenameUtils.getBaseName(name);
 
 				LidarFileSpec tmpItem = new LidarFileSpec(path, name, numPoints, timeBeg, timeEnd);
 				retL.add(tmpItem);
