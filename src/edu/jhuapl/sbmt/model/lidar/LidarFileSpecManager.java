@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import vtk.vtkProp;
@@ -422,7 +421,7 @@ public class LidarFileSpecManager extends SaavtkItemManager<LidarFileSpec> imple
 		LidarFileSpec tmpItem = tmpPainter.getLidarItemForCell(aCellId);
 		String tmpPath = tmpItem.getPath();
 		if (tmpPath.toLowerCase().endsWith(".gz"))
-			tmpPath = FilenameUtils.getBaseName(tmpPath);
+			tmpPath = tmpPath.substring(0, tmpPath.length() - 3);
 		File tmpFile = new File(tmpPath);
 
 		return tmpPainter.getDisplayInfoStr(aCellId, tmpFile.getName());
