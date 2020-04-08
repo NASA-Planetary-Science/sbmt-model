@@ -96,7 +96,7 @@ public class BennuFileSystemOctreeGenerator
 			fileList.add(f);
 		}
 		//
-		Stopwatch sw = new Stopwatch();
+		Stopwatch sw = Stopwatch.createUnstarted();
 		int numFiles = fileList.size();
 		if (nFilesToProcess > -1)
 			numFiles = nFilesToProcess;
@@ -106,7 +106,7 @@ public class BennuFileSystemOctreeGenerator
 			Path inputPath = Paths.get(fileList.get(i).toString());
 			System.out.println("File " + (i + 1) + "/" + numFiles + ": " + inputPath);
 			tree.addPointsFromFileToRoot(inputPath);
-			System.out.println("Elapsed time = " + sw.elapsedTime(TimeUnit.SECONDS) + " s");
+			System.out.println("Elapsed time = " + sw.elapsed(TimeUnit.SECONDS) + " s");
 			System.out.println("Total points written so far = " + tree.getTotalPointsWritten());// TODO:
 																														// close
 																														// down
@@ -122,7 +122,7 @@ public class BennuFileSystemOctreeGenerator
 		sw.start();
 		System.out.println("Expanding tree.");
 		tree.expand();
-		System.out.println("Done expanding tree. Time elapsed=" + sw.elapsedTime(TimeUnit.SECONDS) + " s");
+		System.out.println("Done expanding tree. Time elapsed=" + sw.elapsed(TimeUnit.SECONDS) + " s");
 		System.out.println("Cleaning up.");
 		System.out.println();
 		tree.commit(); // clean up any empty or open data files
