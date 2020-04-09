@@ -38,16 +38,16 @@ public class MEGANESpectraFactory
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel, boolean headless) throws IOException
 			{
-				return new BasicSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new BasicSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean headless) throws IOException
 			{
 				MEGANESpectrum spectrum = new MEGANESpectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
-				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 		};
 		SbmtSpectrumModelFactory.registerModel("MEGANE", meganeSpectra, smallBodyModel);
