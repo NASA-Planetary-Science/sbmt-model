@@ -182,6 +182,8 @@ public class OTESSpectrum extends BasicSpectrum
         else
         {
             String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
+            System.out.println("OTESSpectrum: getInfoFilePathOnServer: spectrumPath");
+            System.out.println("OTESSpectrum: getInfoFilePathOnServer: path parent " + Paths.get(spectrumPath).getParent());
             return Paths.get(spectrumPath).getParent()
                     .resolveSibling("infofiles-corrected")
                     .resolve(FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO")
