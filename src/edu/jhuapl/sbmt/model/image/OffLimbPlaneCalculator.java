@@ -37,7 +37,6 @@ import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.image.model.ImageKey;
 import edu.jhuapl.sbmt.model.bennu.imaging.OcamsFlightImage;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
-import edu.jhuapl.sbmt.tools.Authenticator;
 
 public class OffLimbPlaneCalculator
 {
@@ -385,7 +384,7 @@ public class OffLimbPlaneCalculator
         SbmtMultiMissionTool.configureMission();
 
          // authentication
-        Authenticator.authenticate();
+        Configuration.authenticate();
         NativeLibraryLoader.loadVtkLibraries();
          // initialize view config
         SmallBodyViewConfig.initialize();
