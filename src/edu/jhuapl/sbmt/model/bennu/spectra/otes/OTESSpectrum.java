@@ -13,6 +13,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
@@ -140,13 +141,25 @@ public class OTESSpectrum extends BasicSpectrum
 
     public void saveInfofile(File file) throws IOException
     {
-    	File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
-        FileChannel src = new FileInputStream(infoFile).getChannel();
-        File infoFileDestination = new File(file.getParentFile() + File.separator + FilenameUtils.getBaseName(file.getName()) + ".INFO");
-        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
-        dest.transferFrom(src, 0, src.size());
-        src.close();
-        dest.close();
+    	try
+    	{
+	    	File infoFile = FileCache.getFileFromServer(getInfoFilePathOnServer());
+	        FileChannel src = new FileInputStream(infoFile).getChannel();
+	        File infoFileDestination = new File(file.getParentFile() + File.separator + FilenameUtils.getBaseName(file.getName()) + ".INFO");
+	        FileChannel dest = new FileOutputStream(infoFileDestination).getChannel();
+	        dest.transferFrom(src, 0, src.size());
+	        src.close();
+	        dest.close();
+    	}
+    	catch (RuntimeException rte)
+    	{
+    		File cachedFile = new File(getFullPath());
+    		File cachedInfoFile = new File(cachedFile.getParentFile(),
+					FilenameUtils.getBaseName(cachedFile.getAbsolutePath()) + ".INFO");
+			File toInfoFilename = new File(file.getParentFile(),
+					FilenameUtils.getBaseName(file.getAbsolutePath()) + ".INFO");
+			FileUtil.copyFile(cachedInfoFile, toInfoFilename);
+    	}
     }
 
     private String getLocalInfoFilePathOnServer()

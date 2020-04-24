@@ -83,7 +83,7 @@ public class ColorImage extends Image implements PropertyChangeListener
 
     public static enum Chromatism { POLY, MONO_RED, MONO_GREEN, MONO_BLUE };
 
-    public static class ColorImageKey
+    public static class ColorImageKey<T extends ImageKeyInterface> extends ImageKey
     {
         public ImageKeyInterface redImageKey;
         public ImageKeyInterface greenImageKey;
@@ -91,6 +91,7 @@ public class ColorImage extends Image implements PropertyChangeListener
 
         public ColorImageKey(ImageKeyInterface redImage, ImageKeyInterface greenImage, ImageKeyInterface blueImage)
         {
+            super(redImage.getName() + "-cube", redImage.getSource(), redImage.getFileType(), redImage.getImageType(), redImage.getInstrument(), redImage.getBand(), redImage.getSlice(), null);
             this.redImageKey = redImage;
             this.greenImageKey = greenImage;
             this.blueImageKey = blueImage;
