@@ -365,7 +365,8 @@ public final class NisQuery extends DatabaseQueryBase
 
     @Override
     protected List<List<String>> getCachedResults(
-            String pathToImageFolder
+            String pathToImageFolder,
+            String searchString
             )
     {
         JOptionPane.showMessageDialog(null,

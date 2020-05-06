@@ -74,7 +74,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
             return;
         }
 
-        Stopwatch sw = new Stopwatch();
+        Stopwatch sw = Stopwatch.createUnstarted();
         sw.start();
         Image image = createImage(key, smallBodyModel);
 //        System.out.println("ImageCollection: addImage: created image in " + sw.elapsedMillis() + " ms");

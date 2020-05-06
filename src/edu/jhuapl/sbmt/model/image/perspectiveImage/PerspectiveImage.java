@@ -243,7 +243,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void initialize() throws FitsException, IOException
     {
-        sw = new Stopwatch();
+        sw = Stopwatch.createUnstarted();
         sw.start();
 //        footprint[0] = new vtkPolyData();
 //        shiftedFootprint[0] = new vtkPolyData();

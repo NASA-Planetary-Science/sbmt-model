@@ -10,6 +10,7 @@ import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumColoringController;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumResultsTableController;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumSearchParametersController;
@@ -51,7 +52,8 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 
         this.searchParametersController = new SpectrumSearchParametersController<S>(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
-
+        if (instrument.getQueryBase() instanceof FixedListQuery && !(hasHierarchicalSpectraSearch))
+        	this.searchParametersController.setFixedListSearch(true);
         this.searchParametersController.setupSearchParametersPanel();
 
         this.coloringController = new SpectrumColoringController<S>(model, spectrumCollection, instrument.getRGBMaxVals(), instrument.getRGBDefaultIndices());
