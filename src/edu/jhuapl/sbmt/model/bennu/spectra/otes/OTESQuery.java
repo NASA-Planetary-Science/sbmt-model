@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.joda.time.DateTime;
 
@@ -81,7 +80,6 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
         DateTime stopDate = new DateTime(metadata.get(DatabaseSearchMetadata.STOP_DATE));
 //        List<Integer> polygonTypes = metadata.get(DatabaseSearchMetadata.POLYGON_TYPES);
         TreeSet<Integer> cubeList = metadata.get(SpectraDatabaseSearchMetadata.CUBE_LIST);
-        Vector<String> pathList = metadata.get(SpectraDatabaseSearchMetadata.PATH_LIST);
         String modelName = metadata.get(SpectraDatabaseSearchMetadata.MODEL_NAME);
         String dataType = metadata.get(SpectraDatabaseSearchMetadata.DATA_TYPE);
         spectraTableName = "bennu_" + modelName + "_otesspectra_" + dataType;
@@ -126,34 +124,19 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
 	            args.put("spectraTableName", spectraTableName);
 	            args.put("cubeTableName", cubeTableName);
 
-//	            if (cubeList != null && cubeList.size() > 0)
-//	            {
-//	                String cubesStr = "";
-//	                int size = cubeList.size();
-//	                int count = 0;
-//	                for (Integer i : cubeList)
-//	                {
-//	                    cubesStr += "" + i;
-//	                    if (count < size-1)
-//	                        cubesStr += ",";
-//	                    ++count;
-//	                }
-//	                args.put("cubes", cubesStr);
-//	            }
-
-	            if (pathList != null && pathList.size() > 0)
+	            if (cubeList != null && cubeList.size() > 0)
 	            {
-	                String pathStr = "";
+	                String cubesStr = "";
 	                int size = cubeList.size();
 	                int count = 0;
-	                for (String path : pathList)
+	                for (Integer i : cubeList)
 	                {
-	                    pathStr += "" + path;
+	                    cubesStr += "" + i;
 	                    if (count < size-1)
-	                        pathStr += ",";
+	                        cubesStr += ",";
 	                    ++count;
 	                }
-	                args.put("paths", pathStr);
+	                args.put("cubes", cubesStr);
 	            }
 
 
