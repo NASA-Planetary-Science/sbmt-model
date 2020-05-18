@@ -31,7 +31,6 @@ import edu.jhuapl.sbmt.lidar.hyperoctree.HyperBox;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperException;
 import edu.jhuapl.sbmt.lidar.misc.DataOutputStreamPool;
 import edu.jhuapl.sbmt.spectrum.model.hypertree.SpectrumHypertreeGenerator;
-import edu.jhuapl.sbmt.tools.Authenticator;
 
 public class BoundedObjectHyperTreeGenerator
 {
@@ -166,7 +165,7 @@ public class BoundedObjectHyperTreeGenerator
         SbmtMultiMissionTool.configureMission();
 
         // need password to access OREX data
-        Authenticator.authenticate();
+        Configuration.authenticate();
 
         SmallBodyViewConfig.initialize();
 
