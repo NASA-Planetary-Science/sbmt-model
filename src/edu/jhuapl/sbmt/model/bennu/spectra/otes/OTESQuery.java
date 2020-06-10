@@ -34,7 +34,6 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
 {
     private static OTESQuery instance=new OTESQuery();
 
-
     public static OTESQuery getInstance()
     {
         return instance;
@@ -55,13 +54,6 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
     {
         return "/bennu/shared/otes/";   //see constructor above for rootPath
     }
-
-//    @Override
-//    public ISearchResultsMetadata<BasicSpectrum> runQuery(SearchMetadata queryMetadata)
-//    {
-//        // TODO Auto-generated method stub
-//        return super.runQuery(queryMetadata);
-//    }
 
     @Override
     public ISearchResultsMetadata<BasicSpectrum> runQuery(SearchMetadata queryMetadata)
@@ -153,30 +145,14 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
         catch (Exception e)
         {
             e.printStackTrace();
-//            results = getResultsFromFileListOnServer(getDataPath() + "/nisTimes.txt", getDataPath(), getGalleryPath(), "");
-
         }
 
-//        List<BasicSpectrum> tempResults = new ArrayList<BasicSpectrum>();
         OTESSearchResult tempResults = new OTESSearchResult();
         try
         {
         	for (List<String> res : results)
         	{
-//        		System.out.println("OTESQuery: runQuery: res is " + res);
-//        		String path = NisQuery.getNisPath(res);
             	BasicSpectrum spectrum = SbmtSpectrumModelFactory.createSpectrum(res.get(3), SpectrumInstrumentFactory.getInstrumentForName("OTES"));
-//            	String str = path;
-//                String[] tokens = str.split("/");
-//                String filename = tokens[4];
-//                String strippedFileName=str.replace("/NIS/2000/", "");
-//                String detailedTime = NISSearchModel.nisFileToObservationTimeMap.get(strippedFileName);
-//                List<String> result = new ArrayList<String>();
-//                result.add(str);
-//                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-//                sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-//                spectrum.setDateTime(new DateTime(sdf.parse(detailedTime).getTime()));
-////            	spectrum.setMetadata(spec);	//TODO is this needed for NIS?
             	tempResults.addResult(spectrum);
         	}
         }
@@ -188,16 +164,10 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
         return tempResults;
     }
 
-    // Convert the 0th element of the result (the path to the data)
-    // with the full path, but only if the result does not already have
-    // a full path.
     protected void changeDataPathToFullPath(List<String> result)
     {
         String fullPath = result.get(3);
-//        if (!fullPath.startsWif("/"))
-//        {
-            result.set(3, getDataPath() + "" + fullPath);
-//        }
+        result.set(3, getDataPath() + "" + fullPath);
     }
 
     class OTESSearchResult implements ISearchResultsMetadata<BasicSpectrum>
