@@ -134,7 +134,6 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
 
 
 	            results = doQuery("searchotes.php", constructUrlArguments(args));
-	            System.out.println("OTESQuery: runQuery: number of results " + results.size());
         	}
 
         }
