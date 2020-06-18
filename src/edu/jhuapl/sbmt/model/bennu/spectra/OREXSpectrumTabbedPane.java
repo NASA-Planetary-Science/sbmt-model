@@ -37,7 +37,8 @@ public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
         BaseSpectrumSearchModel<S> model = new BaseSpectrumSearchModel<S>(modelManager, instrument);
         JComponent component = new OREXSpectrumSearchController<S>(
                 smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-                smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, null,
+                smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.hasHypertreeBasedSpectraSearch,
+                smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, null,
                 smallBodyConfig.hierarchicalSpectraSearchSpecification.clone(),
                 modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
 
@@ -49,7 +50,7 @@ public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
             {
     			OTESSearchModel model2 = new OTESSearchModel(modelManager, instrument);
     			JComponent component2 = new OREXSpectrumSearchController<OTESSpectrum>(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-    					false, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, new String[] {"L2", "L3"},
+    					false, smallBodyConfig.hasHypertreeBasedSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, new String[] {"L2", "L3"},
     					smallBodyConfig.hierarchicalSpectraSearchSpecification,
     					modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model2).getPanel();
     			addTab("Search", component2);
@@ -71,7 +72,7 @@ public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
             {
     			OVIRSSearchModel model3 = new OVIRSSearchModel(modelManager, instrument);
     			JComponent component3 = new OREXSpectrumSearchController<OVIRSSpectrum>(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-    					false, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, new String[] {"SA16l3escireff", "SA27l3csci", "SA29l3esciradf"},
+    					false, smallBodyConfig.hasHypertreeBasedSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, new String[] {"SA16l3escireff", "SA27l3csci", "SA29l3esciradf"},
     					smallBodyConfig.hierarchicalSpectraSearchSpecification,
     					modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model3).getPanel();
     			addTab("Search", component3);

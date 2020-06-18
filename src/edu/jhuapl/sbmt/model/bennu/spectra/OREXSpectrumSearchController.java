@@ -38,7 +38,8 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
     private BasicSpectrumInstrument instrument;
 
     public OREXSpectrumSearchController(Date imageSearchDefaultStartDate, Date imageSearchDefaultEndDate,
-    		boolean hasHierarchicalSpectraSearch, double imageSearchDefaultMaxSpacecraftDistance,
+    		boolean hasHierarchicalSpectraSearch, boolean hasHypertreeSpectralSearch,
+    		double imageSearchDefaultMaxSpacecraftDistance,
     		String[] dataTypes,
     		SpectraHierarchicalSearchSpecification spectraSpec,
     		ModelManager modelManager,
@@ -52,7 +53,7 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
         this.spectrumResultsTableController = new SpectrumResultsTableController<S>(instrument, spectrumCollection, modelManager, boundaryCollection, model, renderer, infoPanelManager);
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 
-        this.searchParametersController = new SpectrumSearchParametersController<S>(imageSearchDefaultStartDate, imageSearchDefaultEndDate, dataTypes, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
+        this.searchParametersController = new SpectrumSearchParametersController<S>(imageSearchDefaultStartDate, imageSearchDefaultEndDate, dataTypes, hasHierarchicalSpectraSearch, hasHypertreeSpectralSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
 //        this.searchParametersController.setDataTypes(new String[] {"L2", "L3"});
         if (instrument.getQueryBase() instanceof FixedListQuery && !(hasHierarchicalSpectraSearch))
         	this.searchParametersController.setFixedListSearch(true);
