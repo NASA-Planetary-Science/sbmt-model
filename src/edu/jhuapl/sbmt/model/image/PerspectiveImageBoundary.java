@@ -112,8 +112,8 @@ public class PerspectiveImageBoundary extends AbstractModel implements PropertyC
         // Note it doesn't matter what image size we use, even
         // if it's not the same size as the original image. Just
         // needs to large enough so enough points get drawn.
-        final int IMAGE_WIDTH = 475;
-        final int IMAGE_HEIGHT = 475;
+        final int IMAGE_WIDTH = 1024;
+        final int IMAGE_HEIGHT = 1024;
 
         int count = 0;
 
@@ -213,7 +213,7 @@ public class PerspectiveImageBoundary extends AbstractModel implements PropertyC
                 smallBodyModel.getSmallBodyPolyData(),
                 smallBodyModel.getCellNormals(),
                 smallBodyModel.getCellLocator(),
-                3.0*smallBodyModel.getMinShiftAmount());
+                1.0*smallBodyModel.getMinShiftAmount());
 
         boundary.Modified();
         boundaryMapper.SetInputData(boundary);

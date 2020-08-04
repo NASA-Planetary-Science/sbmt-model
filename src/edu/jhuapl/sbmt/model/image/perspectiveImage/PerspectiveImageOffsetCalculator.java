@@ -270,8 +270,7 @@ class PerspectiveImageOffsetCalculator
 
     private void resetFrustaAndFootprint(int slice)
     {
-    	image.getRendererHelper().frusta[slice] = null;
-        image.getRendererHelper().footprintGenerated[slice] = false;
+    	image.getRendererHelper().resetFrustaAndFootprint(slice);
     }
 
     void movePitchAngleBy(double rotationDelta)
@@ -353,8 +352,7 @@ class PerspectiveImageOffsetCalculator
             MathUtil.rotateVector(frustum4Adjusted[slice], rotation, frustum4Adjusted[slice]);
             MathUtil.rotateVector(boresightDirectionAdjusted[slice], rotation, boresightDirectionAdjusted[slice]);
 
-            image.getRendererHelper().frusta[slice] = null;
-            image.getRendererHelper().footprintGenerated[slice] = false;
+            image.getRendererHelper().resetFrustaAndFootprint(slice);
         }
     }
 
