@@ -3954,6 +3954,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		super.setVisible(b);
 	}
 
+	@Override
+	public void setBoundaryVisibility(boolean isVisible)
+	{
+		super.setBoundaryVisibility(isVisible);
+		rendererHelper.getFootprint().setBoundaryVisible(isVisible);
+		firePropertyChange(Properties.MODEL_CHANGED, null, this);
+	}
+
+	@Override
+	public void setBoundaryColor(Color color)
+	{
+		super.setBoundaryColor(color);
+		rendererHelper.getFootprint().setBoundaryColor(color);
+		firePropertyChange(Properties.MODEL_CHANGED, null, this);
+	}
+
 }
 
 //Moving currently commented out sections that are handled with helper classes to down here for now
