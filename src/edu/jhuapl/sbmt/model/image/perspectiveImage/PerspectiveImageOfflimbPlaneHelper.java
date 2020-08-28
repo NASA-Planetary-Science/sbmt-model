@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-
 import vtk.vtkActor;
 import vtk.vtkImageData;
 import vtk.vtkPolyData;
@@ -47,7 +45,7 @@ class PerspectiveImageOfflimbPlaneHelper
     {
 		List<vtkProp> footprintActors = new ArrayList<vtkProp>();
 		getOffLimbTexture();
-        if (offLimbActor == null && offLimbTexture != null)
+		if (offLimbActor == null && offLimbTexture != null)
         {
             loadOffLimbPlane();
             if (footprintActors.contains(offLimbActor))
@@ -71,21 +69,21 @@ class PerspectiveImageOfflimbPlaneHelper
      */
     void loadOffLimbPlane()
     {
-        double[] spacecraftPosition = new double[3];
-        double[] focalPoint = new double[3];
-        double[] upVector = new double[3];
-        image.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
-        this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
-        calculator.loadOffLimbPlane(image, offLimbFootprintDepth);
-        offLimbActor = calculator.getOffLimbActor();
-        offLimbBoundaryActor = calculator.getOffLimbBoundaryActor();
-        offLimbTexture = calculator.getOffLimbTexture();
-        // set initial visibilities
-        if (offLimbActor != null)
-        {
-            offLimbActor.SetVisibility(offLimbVisibility ? 1 : 0);
-            offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility ? 1 : 0);
-        }
+		double[] spacecraftPosition = new double[3];
+		double[] focalPoint = new double[3];
+		double[] upVector = new double[3];
+		image.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
+		//TODO not sure what this was supposed to do here
+//			this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
+		calculator.loadOffLimbPlane(image, 0);
+		offLimbActor = calculator.getOffLimbActor();
+		offLimbBoundaryActor = calculator.getOffLimbBoundaryActor();
+		offLimbTexture = calculator.getOffLimbTexture();
+		// set initial visibilities
+		if (offLimbActor != null) {
+			offLimbActor.SetVisibility(offLimbVisibility ? 1 : 0);
+			offLimbBoundaryActor.SetVisibility(offLimbBoundaryVisibility ? 1 : 0);
+		}
     }
 
     /**
