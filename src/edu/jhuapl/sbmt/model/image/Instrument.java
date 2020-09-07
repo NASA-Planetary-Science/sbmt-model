@@ -26,7 +26,10 @@ public enum Instrument
     ISS("ISS"),
     ONC("ONC"),
     TIR("TIR"),
-    LASER("LIDAR")
+    LASER("LIDAR"),
+    DRACO("DRACO"),
+    LUKE("LUKE"),
+    LEIA("LEIA"),
     ;
 
     final private String str;
