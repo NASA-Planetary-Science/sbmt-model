@@ -2523,9 +2523,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             minValue[0] = (float) scalarRange[0];
             maxValue[0] = (float) scalarRange[1];
         }
-
         setDisplayedImageRange(null);
         setOfflimbImageRange(null);
+        rendererHelper.getFootprint().updatePointing(this);
     }
 
     //////////////////

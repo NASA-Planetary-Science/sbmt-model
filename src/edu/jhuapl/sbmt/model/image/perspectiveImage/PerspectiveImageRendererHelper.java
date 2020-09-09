@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.image.perspectiveImage;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -530,6 +531,8 @@ class PerspectiveImageRendererHelper
     List<vtkProp> getProps()
     {
     	actors.addAll(footprint.getProps());
+    	//TODO make color dynamic later?
+    	frustum.setColor(Color.green);
     	actors.addAll(frustum.getProps());
         // for offlimb
         actors.addAll(image.getOfflimbPlaneHelper().getProps());

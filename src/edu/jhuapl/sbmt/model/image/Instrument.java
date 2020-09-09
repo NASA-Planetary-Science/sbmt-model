@@ -12,6 +12,8 @@ public enum Instrument
     SSI("SSI"),
     OSIRIS("OSIRIS"),
     OLA("OLA"),
+    ORX_OLA_HIGH("HELT"),
+    ORX_OLA_LOW("LELT"),
     MAPCAM("MAPCAM"),
     POLYCAM("POLYCAM"),
     NAVCAM("NAVCAM"),

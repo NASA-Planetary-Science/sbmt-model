@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.image.perspectiveImage;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class PerspectiveImageFrustum
 	double[][] scPos, frus1, frus2, frus3, frus4;
 	boolean useDefaultFootprint;
 	int defaultSlice;
+    private String instrumentName;
+    private Color frustumColor;
 
 	public PerspectiveImageFrustum(PerspectiveImage image)
 	{
@@ -51,6 +54,8 @@ public class PerspectiveImageFrustum
 
 	public PerspectiveImageFrustum(int numSlices, int currentSlice, int defaultSlice, boolean useDefaultFootprint, double diagonalLength)
 	{
+//		System.out.println("PerspectiveImageFrustum: PerspectiveImageFrustum: ***********************");
+
 		this.nslices = numSlices;
 		this.currentSlice = currentSlice;
 		this.diagonalLength = diagonalLength;
@@ -150,6 +155,10 @@ public class PerspectiveImageFrustum
 		{ origin[0] + frus4[currentSlice][0] * maxFrustumRayLength,
 				origin[1] + frus4[currentSlice][1] * maxFrustumRayLength,
 				origin[2] + frus4[currentSlice][2] * maxFrustumRayLength };
+
+
+//		System.out.println("PerspectiveImageFrustum: calculateFrustum: sc origin " + new Vector3D(origin));
+//		System.out.println("PerspectiveImageFrustum: calculateFrustum: upper left is " + new Vector3D(UL));
 
 		double minFrustumRayLength = MathUtil.vnorm(scPos[currentSlice])
 				- diagonalLength;
@@ -259,9 +268,8 @@ public class PerspectiveImageFrustum
 			frustumActor = new vtkActor();
 
 			calculateFrustum();
-
 			vtkProperty frustumProperty = frustumActor.GetProperty();
-			frustumProperty.SetColor(0.0, 1.0, 0.0);
+			frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
 			frustumProperty.SetLineWidth(2.0);
 			frustumActor.VisibilityOff();
 
@@ -271,6 +279,11 @@ public class PerspectiveImageFrustum
 
 	}
 
+	public void setColor(Color color)
+	{
+		this.frustumColor = color;
+	}
+
 	public vtkActor getFrustumActor()
 	{
 		if (frustumActor == null && scPos[0] != null)
@@ -278,6 +291,22 @@ public class PerspectiveImageFrustum
 			getProps();
 		}
 		return frustumActor;
+	}
+
+	/**
+	 * @return the instrumentName
+	 */
+	public String getInstrumentName()
+	{
+		return instrumentName;
+	}
+
+	/**
+	 * @param instrumentName the instrumentName to set
+	 */
+	public void setInstrumentName(String instrumentName)
+	{
+		this.instrumentName = instrumentName;
 	}
 
 }
