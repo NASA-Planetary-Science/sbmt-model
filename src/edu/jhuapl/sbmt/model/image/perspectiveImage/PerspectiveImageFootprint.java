@@ -58,7 +58,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
     private static boolean generateFootprint = true;
     private vtkFloatArray textureCoords;
     private double imageOpacity = 1.0;
-    protected vtkTexture imageTexture;
+    protected vtkTexture imageTexture = null;
     private vtkPolyData boundary;
     private vtkActor boundaryActor;
     private SmallBodyModel smallBodyModel;
@@ -105,6 +105,8 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		shiftedFootprint[0] = new vtkPolyData();
 		boundaryActor = new vtkActor();
 		boundaryActor.VisibilityOff();
+		footprintActor = new vtkActor();
+		footprintActor.VisibilityOff();
 	}
 
 	public PerspectiveImageFootprint()
@@ -129,6 +131,8 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		shiftedFootprint[0] = new vtkPolyData();
 		boundaryActor = new vtkActor();
 		boundaryActor.VisibilityOff();
+		footprintActor = new vtkActor();
+		footprintActor.VisibilityOff();
 	}
 
 	PerspectiveImageFootprint(PerspectiveImageFrustum frustum, SmallBodyModel smallBodyModel, int numSlices,
@@ -155,6 +159,8 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		shiftedFootprint[0] = new vtkPolyData();
 		boundaryActor = new vtkActor();
 		boundaryActor.VisibilityOff();
+		footprintActor = new vtkActor();
+		footprintActor.VisibilityOff();
 	}
 
 	public void initialize()
@@ -189,6 +195,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	public void updatePointing(double[] scPos, double[] frus1, double[] frus2, double[] frus3, double[] frus4,
 			int height, int width, int depth)
 	{
+//		System.out.println("PerspectiveImageFootprint: updatePointing: updating pointing");
 		this.scPos[0] = scPos;
 		this.frus1[0] = frus1;
 		this.frus2[0] = frus2;
@@ -531,7 +538,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	List<vtkProp> getProps()
 	{
-		if (footprintActor == null)
+		if (imageTexture == null)
         {
             loadFootprint();
 
@@ -544,10 +551,10 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	        footprintMapper.SetInputData(shiftedFootprint[0]);
 
 	        footprintMapper.Update();
-	        footprintActor = new vtkActor();
+//	        footprintActor = new vtkActor();
 	        footprintActor.SetMapper(footprintMapper);
 	        footprintActor.SetTexture(imageTexture);
-	        footprintActor.VisibilityOff();
+//	        footprintActor.VisibilityOn();
 	        vtkProperty footprintProperty = footprintActor.GetProperty();
 	        footprintProperty.LightingOff();
 
@@ -604,7 +611,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public vtkActor getFootprintActor()
 	{
-		if (footprintActor == null && scPos[0] != null)
+		if (imageTexture == null && scPos[0] != null)
 		{
 			getProps();
 		}

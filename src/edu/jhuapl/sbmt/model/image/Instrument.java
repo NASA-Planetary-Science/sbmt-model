@@ -17,6 +17,8 @@ public enum Instrument
     MAPCAM("MAPCAM"),
     POLYCAM("POLYCAM"),
     NAVCAM("NAVCAM"),
+    OTES("OTES"),
+    OVIRS("OVIRS"),
     IMAGING_DATA("Imaging"),
     MVIC("MVIC"),
     LEISA("LEISA"),

@@ -50,6 +50,8 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[image.getImageDepth()];
 		minFrustumDepth = new double[image.getImageDepth()];
 		frusta = new Frustum[nslices];
+		frustumActor = new vtkActor();
+		frustumActor.VisibilityOn();
 	}
 
 	public PerspectiveImageFrustum(int numSlices, int currentSlice, int defaultSlice, boolean useDefaultFootprint, double diagonalLength)
@@ -69,6 +71,8 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[1];
 		minFrustumDepth = new double[1];
 		frusta = new Frustum[1];
+		frustumActor = new vtkActor();
+		frustumActor.VisibilityOn();
 	}
 
 	public PerspectiveImageFrustum(int numSlices, int currentSlice, int defaultSlice, boolean useDefaultFootprint,
@@ -92,6 +96,8 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[1];
 		minFrustumDepth = new double[1];
 		frusta = new Frustum[1];
+		frustumActor = new vtkActor();
+		frustumActor.VisibilityOn();
 	}
 
 	public void updatePointing(PerspectiveImage image)
@@ -263,18 +269,19 @@ public class PerspectiveImageFrustum
 
 	List<vtkProp> getProps()
 	{
-		if (frustumActor == null)
-		{
-			frustumActor = new vtkActor();
+//		if (frustumActor == null)
+//		{
+//			frustumActor = new vtkActor();
 
 			calculateFrustum();
 			vtkProperty frustumProperty = frustumActor.GetProperty();
 			frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
 			frustumProperty.SetLineWidth(2.0);
-			frustumActor.VisibilityOff();
+			frustumActor.VisibilityOn();
+//			frustumActor.VisibilityOff();
 
 			frustumActors.add(frustumActor);
-		}
+//		}
 		return frustumActors;
 
 	}
@@ -286,10 +293,16 @@ public class PerspectiveImageFrustum
 
 	public vtkActor getFrustumActor()
 	{
+//		if (frustumActor != null)
+//			System.out.println("PerspectiveImageFrustum: getFrustumActor: frustum actor " + frustumActor.GetClassName());
+//		System.out.println("PerspectiveImageFrustum: getFrustumActor: scPos " + scPos[0] + " for frustum " + getClass().getName() + '@' + Integer.toHexString(hashCode()) + " " + instrumentName);
 		if (frustumActor == null && scPos[0] != null)
 		{
 			getProps();
 		}
+//		if (frustumActor != null)
+//			System.out.println("PerspectiveImageFrustum: getFrustumActor: frustum actor now " + frustumActor.GetClassName());
+
 		return frustumActor;
 	}
 
