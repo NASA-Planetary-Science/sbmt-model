@@ -211,6 +211,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		useDefaultFootprint = false;
 		generateBoundary();
 		setFootprintColor();
+		getProps();
 	}
 
 	public boolean[] getFootprintGenerated()
