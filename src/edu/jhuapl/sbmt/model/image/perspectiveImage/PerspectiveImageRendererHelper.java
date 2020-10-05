@@ -947,14 +947,20 @@ class PerspectiveImageRendererHelper
 
     vtkPolyData checkForExistingFootprint()
     {
-    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
         String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
-        if (FileCache.isFileGettable(intersectionFileName))
+        File file = null;
+        try
         {
-            File file = FileCache.getFileFromServer(intersectionFileName);
-            vtkPolyDataReader reader = new vtkPolyDataReader();
-//            reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));	//This is wrong.  The old code was stripping off .gz from the intersection name.  This now further removes .vtk which is bad.
-            reader.SetFileName(file.getAbsolutePath()); // now just reads in the file path as it should.
+        	file = FileCache.getFileFromServer(intersectionFileName);
+        }
+        catch (Exception e)
+        {
+        	return null;
+        }
+        if (file != null)
+        {
+        	vtkPolyDataReader reader = new vtkPolyDataReader();
+            reader.SetFileName(file.getAbsolutePath());
             reader.Update();
             vtkPolyData footprint = reader.GetOutput();
             return footprint;
