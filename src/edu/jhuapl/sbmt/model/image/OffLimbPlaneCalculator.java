@@ -377,7 +377,7 @@ public class OffLimbPlaneCalculator
     	boolean aplVersion = true;
         final SafeURLPaths safeUrlPaths = SafeURLPaths.instance();
 //        String rootURL = safeUrlPaths.getUrl("/disks/d0180/htdocs-sbmt/internal/multi-mission/test");
-        String rootURL = safeUrlPaths.getUrl("http://sbmt.jhuapl.edu/sbmt/prod/");
+        String rootURL = safeUrlPaths.getUrl("https://sbmt.jhuapl.edu/sbmt/prod/");
     	Configuration.setAPLVersion(aplVersion);
         Configuration.setRootURL(rootURL);
 
@@ -390,7 +390,7 @@ public class OffLimbPlaneCalculator
         SmallBodyViewConfig.initialize();
     	SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(body, type);
     	SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config);
-    	ImageKeyInterface key = new ImageKey("http://sbmt.jhuapl.edu/sbmt/prod/data/bennu/altwg-spc-v20190121/polycam/images/ocams20181108t042907s071_pol_iofl2pan_53003.fits", ImageSource.GASKELL);
+    	ImageKeyInterface key = new ImageKey("https://sbmt.jhuapl.edu/sbmt/prod/data/bennu/altwg-spc-v20190121/polycam/images/ocams20181108t042907s071_pol_iofl2pan_53003.fits", ImageSource.GASKELL);
     	OcamsFlightImage image = OcamsFlightImage.of(key, smallBodyModel, false);
     	String outputDir = ".";
     	String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getImageFileFullPath()) + "_" + 1 + "_offLimbImageData.vtk";
