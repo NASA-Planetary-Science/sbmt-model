@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
 import vtk.vtkActor;
 import vtk.vtkImageData;
 import vtk.vtkPolyData;
@@ -74,8 +76,8 @@ class PerspectiveImageOfflimbPlaneHelper
 		double[] upVector = new double[3];
 		image.getCameraOrientation(spacecraftPosition, focalPoint, upVector);
 		//TODO not sure what this was supposed to do here
-//			this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
-		calculator.loadOffLimbPlane(image, 0);
+		this.offLimbFootprintDepth = new Vector3D(spacecraftPosition).getNorm();
+		calculator.loadOffLimbPlane(image, this.offLimbFootprintDepth);
 		offLimbActor = calculator.getOffLimbActor();
 		offLimbBoundaryActor = calculator.getOffLimbBoundaryActor();
 		offLimbTexture = calculator.getOffLimbTexture();
