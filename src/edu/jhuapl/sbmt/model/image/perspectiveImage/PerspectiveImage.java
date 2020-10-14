@@ -2542,9 +2542,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // look up one level.
         IImagingInstrument instrument = getKey().getInstrument();
         String topPath = instrument != null ? smallBodyModel.serverPath("", instrument.getInstrumentName()) : FileCache.instance().getFile(imageName).getParent();
-
+        if (instrument == null)
+        {
+        	topPath = topPath.split(".sbmt")[1];
+        }
         String result = SAFE_URL_PATHS.getString(topPath, "support", key.getSource().name(), FilenameUtils.getBaseName(imageName) + "_" + smallBodyModel.getModelResolution());
-
         return result;
     }
 

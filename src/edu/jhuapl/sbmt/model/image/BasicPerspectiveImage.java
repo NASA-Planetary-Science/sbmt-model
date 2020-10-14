@@ -121,6 +121,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
     protected File getImagerDirectory(File imageFile)
     {
         File directory = imageFile.getParentFile();
+        if (imageFile.getAbsolutePath().contains(File.separator + "public" + File.separator) || imageFile.getAbsolutePath().contains(File.separator + "private" + File.separator)) directory = imageFile.getParentFile().getParentFile();
         Preconditions.checkNotNull(directory);
         File imagerDirectory = directory.getParentFile();
         Preconditions.checkNotNull(imagerDirectory);

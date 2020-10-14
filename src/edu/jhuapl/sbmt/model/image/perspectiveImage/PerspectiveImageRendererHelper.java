@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.image.perspectiveImage;
 
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,9 +20,11 @@ import vtk.vtkLookupTable;
 import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataNormals;
+import vtk.vtkPolyDataReader;
 import vtk.vtkProp;
 import vtk.vtkTexture;
 
+import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
@@ -575,6 +578,45 @@ class PerspectiveImageRendererHelper
         return getDisplayedRange(image.currentSlice);
     }
 
+//    public vtkPolyData getFootprint(int defaultSlice)
+//    {
+//        if (footprint[0] != null && footprint[0].GetNumberOfPoints() > 0)
+//            return footprint[0];
+//        // first check the cache
+//        vtkPolyData existingFootprint = checkForExistingFootprint();
+//        if (existingFootprint != null)
+//        {
+//            return existingFootprint;
+//        }
+//        else
+//        {
+//            vtkPolyData footprint = image.getSmallBodyModel().computeFrustumIntersection(image.getSpacecraftPositionAdjusted()[defaultSlice], image.getFrustum1Adjusted()[defaultSlice], image.getFrustum3Adjusted()[defaultSlice], image.getFrustum4Adjusted()[defaultSlice], image.getFrustum2Adjusted()[defaultSlice]);
+//            return footprint;
+//        }
+//    }
+
+    vtkPolyData checkForExistingFootprint()
+    {
+        String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
+        File file = null;
+        try
+        {
+        	file = FileCache.getFileFromServer(intersectionFileName);
+        }
+        catch (Exception e)
+        {
+        	return null;
+        }
+        if (file != null)
+        {
+        	vtkPolyDataReader reader = new vtkPolyDataReader();
+            reader.SetFileName(file.getAbsolutePath());
+            reader.Update();
+            vtkPolyData footprint = reader.GetOutput();
+            return footprint;
+        }
+        return null;
+    }
 
     public void propertyChange(PropertyChangeEvent evt)
     {
