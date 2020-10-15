@@ -605,7 +605,15 @@ public class PerspectiveImageFootprint implements PlannedDataActor
         setFootprintColor();
     }
 
-    vtkTexture getTexture()
+    /**
+	 * @return the isVisible
+	 */
+	public boolean isVisible()
+	{
+		return isVisible;
+	}
+
+	vtkTexture getTexture()
     {
         return imageTexture;
     }
@@ -757,6 +765,11 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	{
 		this.color = color;
 		setBoundaryColor(color);
+	}
+
+	public Color getColor()
+	{
+		return this.color;
 	}
 
 	/**

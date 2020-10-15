@@ -289,6 +289,13 @@ public class PerspectiveImageFrustum
 	public void setColor(Color color)
 	{
 		this.frustumColor = color;
+		vtkProperty frustumProperty = frustumActor.GetProperty();
+		frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
+	}
+
+	public Color getColor()
+	{
+		return this.frustumColor;
 	}
 
 	public vtkActor getFrustumActor()
