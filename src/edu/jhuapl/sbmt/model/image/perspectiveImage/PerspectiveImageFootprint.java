@@ -28,8 +28,8 @@ import vtk.vtkXMLPolyDataReader;
 
 import edu.jhuapl.saavtk.colormap.Colormap;
 import edu.jhuapl.saavtk.colormap.Colormaps;
-import edu.jhuapl.saavtk.model.ColoringData;
-import edu.jhuapl.saavtk.model.FacetColoringData;
+import edu.jhuapl.saavtk.model.plateColoring.ColoringData;
+import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
@@ -654,17 +654,17 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap(Colormaps.getDefaultColormapName());
 		int numberElements = smallBodyModel.getColoringDataManager().getResolutions().get(smallBodyModel.getModelResolution());
 		ColoringData globalColoringData = smallBodyModel.getColoringDataManager().get(coloringPlateName, numberElements);
-		if (!globalColoringData.isLoaded())
-			try
-			{
-				globalColoringData.load();
-			}
-			catch (IOException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		double[] range = globalColoringData.getData().GetRange();
+//		if (!globalColoringData.isLoaded())
+//			try
+//			{
+//				globalColoringData.load();
+//			}
+//			catch (IOException e1)
+//			{
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+		double[] range = globalColoringData.getDefaultRange();
 		colormap.setRangeMin(range[0]);
 		colormap.setRangeMax(range[1]);
 		colormap.setNumberOfLevels(32);
