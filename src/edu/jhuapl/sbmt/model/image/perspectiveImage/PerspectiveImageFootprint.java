@@ -646,24 +646,20 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		boundaryActor.Modified();
 	}
 
+	public FacetColoringData[] getFacetColoringDataForFootprint()
+	{
+		return smallBodyModel.getPlateDataInsidePolydata(getShiftedFootprint());
+	}
+
 	private vtkLookupTable updateColorFromPlate(String coloringPlateName)
 	{
 //		logger.log(Level.INFO, "Updating Colors");
 		//grab coloring data for plates near the footprint
-		FacetColoringData[] plateDataInsidePolydata = smallBodyModel.getPlateDataInsidePolydata(getShiftedFootprint());
+		FacetColoringData[] plateDataInsidePolydata = getFacetColoringDataForFootprint();
 		Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap(Colormaps.getDefaultColormapName());
 		int numberElements = smallBodyModel.getColoringDataManager().getResolutions().get(smallBodyModel.getModelResolution());
 		ColoringData globalColoringData = smallBodyModel.getColoringDataManager().get(coloringPlateName, numberElements);
-//		if (!globalColoringData.isLoaded())
-//			try
-//			{
-//				globalColoringData.load();
-//			}
-//			catch (IOException e1)
-//			{
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
+
 		double[] range = globalColoringData.getDefaultRange();
 		colormap.setRangeMin(range[0]);
 		colormap.setRangeMax(range[1]);
@@ -720,6 +716,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	{
 		if (footprintActor == null) getProps();
 		if (footprintActor.GetVisibility() == 0) return;
+
 		if (plateColoringName != null)
 		{
 			updateColorFromPlate(plateColoringName);

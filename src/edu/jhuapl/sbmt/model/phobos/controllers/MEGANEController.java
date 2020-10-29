@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -15,18 +16,40 @@ import javax.swing.event.ChangeListener;
 
 import org.jfree.chart.axis.ValueAxis;
 
+import com.github.davidmoten.guavamini.Preconditions;
+
+import vtk.vtkDataArray;
+import vtk.vtkFloatArray;
+
+import edu.jhuapl.saavtk.model.plateColoring.ColoringDataFactory;
+import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
+import edu.jhuapl.saavtk.model.plateColoring.CustomizableColoringDataManager;
+import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
+import edu.jhuapl.saavtk.model.plateColoring.LoadableColoringData;
+import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
 import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
+import edu.jhuapl.sbmt.stateHistory.model.liveColoring.ICalculatedPlateValues;
+import edu.jhuapl.sbmt.stateHistory.model.liveColoring.IFootprintConfinedPlateValues;
+import edu.jhuapl.sbmt.stateHistory.model.liveColoring.ITimeCalculatedPlateValues;
+import edu.jhuapl.sbmt.stateHistory.model.liveColoring.LiveColorableManager;
+import edu.jhuapl.sbmt.stateHistory.model.time.StateHistoryTimeModelChangedListener;
+import edu.jhuapl.sbmt.stateHistory.model.time.TimeWindow;
 
 public class MEGANEController implements PropertyChangeListener
 {
 	private MEGANEPlotPanel plotPanel;
 	private MEGANEDataModel model;
+	private CustomizableColoringDataManager coloringDataManager;
+	private SmallBodyModel smallBodyModel;
 
 	public MEGANEController(SmallBodyModel smallBodyModel)
 	{
+		this.smallBodyModel = smallBodyModel;
+		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss.SSS");
 		Date startDate = null;
 		Date stopDate = null;
@@ -82,6 +105,113 @@ public class MEGANEController implements PropertyChangeListener
 			}
 		});
 
+        initializeCalculatedPlateColorings();
+
+	}
+
+	private void initializeCalculatedPlateColorings()
+	{
+		LiveColorableManager.addICalculatedPlateValues("Time Per Facet", new IFootprintConfinedPlateValues()
+		{
+			private FacetColoringData[] facetColoring;
+			private PerspectiveImageFootprint footprint;
+			private vtkFloatArray values = new vtkFloatArray();
+
+			@Override
+			public vtkFloatArray getValues()
+			{
+				return values;
+			}
+
+			@Override
+			public vtkDataArray getPlateValuesForTime(double time)
+			{
+				Preconditions.checkArgument(values.GetNumberOfComponents() != 0);
+				Preconditions.checkArgument(values.GetNumberOfTuples() != 0);
+//				System.out.println(
+//						"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: facet coloring " + facetColoring);
+				if (facetColoring == null) return values;
+				if (footprint.isVisible() == false) return values;
+				for (FacetColoringData coloringData : footprint.getFacetColoringDataForFootprint())
+				{
+					int index = coloringData.getCellId();
+//					System.out.println(
+//							"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: index " + index);
+					double valueToCalculate = values.GetValue(index) + 1;
+					System.out.println(
+							"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: indx " + index + " value to calc " + valueToCalculate);
+					values.SetValue(index, valueToCalculate);
+				}
+				return values;
+			}
+
+			@Override
+			public void setFacetColoringDataForFootprint(PerspectiveImageFootprint footprint)
+			{
+				this.footprint = footprint;
+				System.out.println(
+						"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: setFacetColoringDataForFootprint: updating footprint " + footprint);
+				facetColoring = footprint.getFacetColoringDataForFootprint();
+			}
+
+			@Override
+			public void setNumberOfDimensions(int numDimensions)
+			{
+				values.SetNumberOfComponents(numDimensions);
+			}
+
+			@Override
+			public void setNumberOfValues(int numValues)
+			{
+				values.SetNumberOfTuples(numValues);
+			}
+		});
+		ICalculatedPlateValues timePerIndexCalculator = LiveColorableManager.getCalculatedPlateValuesFor("Time Per Facet");
+		int numberElements = smallBodyModel.getCellNormals().GetNumberOfTuples();
+		timePerIndexCalculator.setNumberOfValues(numberElements);
+		timePerIndexCalculator.setNumberOfDimensions(1);
+		timePerIndexCalculator.getValues().FillComponent(0, 0);
+		vtkFloatArray timePerFacetArray = timePerIndexCalculator.getValues();
+		IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(timePerFacetArray);
+//		System.out.println("MEGANEController: initializeCalculatedPlateColorings: adding time per facet coloring, num entries " + indexableTuple.size());
+		LoadableColoringData coloringData = ColoringDataFactory.of(ColoringDataFactory.of("Time Per Facet", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple), "MEGANE-TimePerFacet");
+		coloringDataManager.addCustom(coloringData);
+
+		LiveColorableManager.timeModel.addTimeModelChangeListener(new StateHistoryTimeModelChangedListener()
+		{
+
+			@Override
+			public void timeWindowChanged(TimeWindow twindow)
+			{
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void timeFractionChanged(double fraction)
+			{
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void timeChanged(double et)
+			{
+//				System.out.println(
+//						"MEGANEController.initializeCalculatedPlateColorings().new StateHistoryTimeModelChangedListener() {...}: timeChanged: time changed, updating megane coloring");
+				vtkDataArray valuesAtTime = ((ITimeCalculatedPlateValues)timePerIndexCalculator).getPlateValuesForTime(et);
+				IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(valuesAtTime);
+				LoadableColoringData coloringData = ColoringDataFactory.of(ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple), "MEGANE-TimePerFacet");
+				coloringDataManager.replaceCustom("Time Per Facet", coloringData);
+			}
+
+			@Override
+			public void fractionDisplayedChanged(double minFractionDisplayed, double maxFractionDisplayed)
+			{
+				// TODO Auto-generated method stub
+
+			}
+		});
 	}
 
 
