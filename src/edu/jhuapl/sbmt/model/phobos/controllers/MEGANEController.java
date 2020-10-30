@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.phobos.controllers;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -18,9 +19,9 @@ import org.jfree.chart.axis.ValueAxis;
 
 import com.github.davidmoten.guavamini.Preconditions;
 
-import vtk.vtkDataArray;
 import vtk.vtkFloatArray;
 
+import edu.jhuapl.saavtk.model.plateColoring.ColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringDataFactory;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
 import edu.jhuapl.saavtk.model.plateColoring.CustomizableColoringDataManager;
@@ -124,7 +125,7 @@ public class MEGANEController implements PropertyChangeListener
 			}
 
 			@Override
-			public vtkDataArray getPlateValuesForTime(double time)
+			public vtkFloatArray getPlateValuesForTime(double time)
 			{
 				Preconditions.checkArgument(values.GetNumberOfComponents() != 0);
 				Preconditions.checkArgument(values.GetNumberOfTuples() != 0);
@@ -174,8 +175,18 @@ public class MEGANEController implements PropertyChangeListener
 		vtkFloatArray timePerFacetArray = timePerIndexCalculator.getValues();
 		IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(timePerFacetArray);
 //		System.out.println("MEGANEController: initializeCalculatedPlateColorings: adding time per facet coloring, num entries " + indexableTuple.size());
-		LoadableColoringData coloringData = ColoringDataFactory.of(ColoringDataFactory.of("Time Per Facet", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple), "MEGANE-TimePerFacet");
-		coloringDataManager.addCustom(coloringData);
+		ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
+		LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
+		try
+		{
+			loadableColoringData.save();
+		}
+		catch (IOException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		coloringDataManager.addCustom(loadableColoringData);
 
 		LiveColorableManager.timeModel.addTimeModelChangeListener(new StateHistoryTimeModelChangedListener()
 		{
@@ -199,9 +210,18 @@ public class MEGANEController implements PropertyChangeListener
 			{
 //				System.out.println(
 //						"MEGANEController.initializeCalculatedPlateColorings().new StateHistoryTimeModelChangedListener() {...}: timeChanged: time changed, updating megane coloring");
-				vtkDataArray valuesAtTime = ((ITimeCalculatedPlateValues)timePerIndexCalculator).getPlateValuesForTime(et);
+				vtkFloatArray valuesAtTime = ((ITimeCalculatedPlateValues)timePerIndexCalculator).getPlateValuesForTime(et);
 				IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(valuesAtTime);
 				LoadableColoringData coloringData = ColoringDataFactory.of(ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple), "MEGANE-TimePerFacet");
+				try
+				{
+					coloringData.save();
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				coloringDataManager.replaceCustom("Time Per Facet", coloringData);
 			}
 
