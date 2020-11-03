@@ -104,8 +104,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     ///////////////////////
     // Pointing Properties
     ///////////////////////
-    private double rotation = 0.0;
-    private String flip = "None";
     private String infoFileFullPath;
     private String sumFileFullPath;
 
@@ -227,8 +225,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-        this.flip = key.getFlip();
-        this.rotation = key.getRotation();
 
         this.transposeFITSData = transposeData;
 
@@ -3404,16 +3400,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		return smallBodyModel.getModelName();
 	}
 
-    public double getRotation()
-    {
-        return rotation;
-    }
-
-    public String getFlip()
-    {
-        return flip;
-    }
-
     public SmallBodyModel getSmallBodyModel()
     {
         return smallBodyModel;
@@ -3847,21 +3833,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 	public vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
 	{
 		return rendererHelper.getImageWithDisplayedRange(range, offlimb);
-	}
-
-	private vtkPolyData checkForExistingFootprint()
-	{
-		return rendererHelper.checkForExistingFootprint();
-	}
-
-	private vtkPolyData generateBoundary()
-	{
-		return rendererHelper.generateBoundary();
-	}
-
-	private void computeCellNormals()
-	{
-		rendererHelper.computeCellNormals();
 	}
 
 	public double[] computeIlluminationAnglesAtPoint(double[] pt, double[] normal)
