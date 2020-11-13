@@ -2262,6 +2262,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                             array2D[i][j] = arrayB[i][j] & 0xFF;
                         }
                 }
+                // WARNING: THIS IS A TOTAL HACK TO SUPPORT DART LUKE TEST IMAGES:
+                else if (data instanceof byte[][][])
+                {
+                    // DART LUKE images are color: 3-d slab with the 3rd
+                    // dimension being RGB, but the first test images are
+                    // monochrome. Thus, in order to process the images, making
+                    // this temporary hack.
+                    byte[][] arrayB = ((byte[][][]) data)[0];
+                    array2D = new float[fitsHeight][fitsWidth];
+
+                    for (int i = 0; i < fitsHeight; ++i)
+                        for (int j = 0; j < fitsWidth; ++j)
+                        {
+                            array2D[i][j] = arrayB[i][j] & 0xFF;
+                        }
+                }
                 else
                 {
                     System.out.println("Data type not supported: " + data.getClass().getCanonicalName());
