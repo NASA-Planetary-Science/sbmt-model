@@ -81,12 +81,15 @@ public class BasicPerspectiveImage extends PerspectiveImage
         ImageKeyInterface key = getKey();
         String result = null;
 
-        if (key.getSource() == ImageSource.SPICE)
+        ImageSource source = key.getSource();
+        if (source == ImageSource.SPICE || source == ImageSource.CORRECTED_SPICE)
         {
+            String infoFilesDirName = source == ImageSource.SPICE ? "infofiles" : "infofiles-corrected";
+
             File keyFile = new File(key.getName());
             File imagerDirectory = getImagerDirectory(keyFile);
             String pointingFileName = keyFile.getName() + ".INFO";
-            String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), "infofiles", pointingFileName);
+            String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), infoFilesDirName, pointingFileName);
             result = FileCache.getFileFromServer(pointingFilePath).getAbsolutePath();
         }
 
