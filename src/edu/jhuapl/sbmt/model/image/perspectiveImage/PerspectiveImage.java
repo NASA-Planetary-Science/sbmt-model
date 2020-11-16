@@ -2269,19 +2269,19 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                     // dimension being RGB, but the first test images are
                     // monochrome. Thus, in order to process the images, making
                     // this temporary hack.
-                    byte[][] arrayB = ((byte[][][]) data)[0];
+                    byte[][][] arrayB = (byte[][][]) data;
 
                     // Override the default setup used for other 3-d images.
                     fitsDepth = 1;
-                    fitsHeight = arrayB.length;
-                    fitsWidth = arrayB[0].length;
+                    fitsHeight = arrayB[0].length;
+                    fitsWidth = arrayB[0][0].length;
 
                     array2D = new float[fitsHeight][fitsWidth];
 
                     for (int i = 0; i < fitsHeight; ++i)
                         for (int j = 0; j < fitsWidth; ++j)
                         {
-                            array2D[i][j] = arrayB[i][j];
+                            array2D[i][j] = arrayB[0][i][j] & 0xFF;
                         }
                 }
                 else
