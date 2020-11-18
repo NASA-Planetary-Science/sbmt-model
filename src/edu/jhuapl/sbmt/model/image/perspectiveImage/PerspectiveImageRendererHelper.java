@@ -34,12 +34,14 @@ import vtk.vtkTexture;
 import vtk.vtkXMLPolyDataReader;
 
 import edu.jhuapl.saavtk.util.FileCache;
+import edu.jhuapl.saavtk.util.FillDetector;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.sbmt.model.image.IImagingInstrument;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
@@ -1071,16 +1073,18 @@ class PerspectiveImageRendererHelper
      */
     void processRawImage(vtkImageData rawImage)
     {
-    	if (image.getFlip().equals("X"))
+        ImageKeyInterface key = image.getKey();
+
+        if (key.getFlip().equals("X"))
         {
             ImageDataUtil.flipImageXAxis(rawImage);
         }
-        else if (image.getFlip().equals("Y"))
+        else if (key.getFlip().equals("Y"))
         {
             ImageDataUtil.flipImageYAxis(rawImage);
         }
-        if (image.getRotation() != 0.0)
-            ImageDataUtil.rotateImage(rawImage, 360.0 - image.getRotation());
+        if (key.getRotation() != 0.0)
+            ImageDataUtil.rotateImage(rawImage, 360.0 - key.getRotation());
     }
 
     vtkImageData createRawImage(int height, int width, int depth, float[][] array2D, float[][][] array3D)
@@ -1094,7 +1098,10 @@ class PerspectiveImageRendererHelper
         image.maxValue = new float[depth];
         image.minValue = new float[depth];
 
-        // Call
-        return ImageDataUtil.createRawImage(height, width, depth, transpose, array2D, array3D, image.minValue, image.maxValue);
+        IImagingInstrument instrument = image.getKey().getInstrument();
+
+        FillDetector<Float> fillDetector = instrument != null ? instrument.getFillDetector(image) : ImageDataUtil.getDefaultFillDetector();
+
+        return ImageDataUtil.createRawImage(height, width, depth, transpose, array2D, array3D, image.minValue, image.maxValue, fillDetector, null);
     }
 }
