@@ -8,7 +8,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import edu.jhuapl.saavtk.util.FileCache;
@@ -87,9 +86,9 @@ public class BasicPerspectiveImage extends PerspectiveImage
             String infoFilesDirName = source == ImageSource.SPICE ? "infofiles" : "infofiles-corrected";
 
             File keyFile = new File(key.getName());
-            File imagerDirectory = getImagerDirectory(keyFile);
+            String imagerPath = getImagerPath(keyFile);
             String pointingFileName = keyFile.getName() + ".INFO";
-            String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), infoFilesDirName, pointingFileName);
+            String pointingFilePath = SafeURLPaths.instance().getString(imagerPath, infoFilesDirName, pointingFileName);
             result = FileCache.getFileFromServer(pointingFilePath).getAbsolutePath();
         }
 
@@ -105,7 +104,7 @@ public class BasicPerspectiveImage extends PerspectiveImage
         if (key.getSource() == ImageSource.GASKELL)
         {
             File keyFile = new File(getImageFileName(key));
-            String imagerDirectory = getImagerDirectory(keyFile).getPath();
+            String imagerDirectory = getImagerPath(keyFile);
             try
             {
                 String pointingFileName = getSumFileName(imagerDirectory, key);
@@ -121,14 +120,9 @@ public class BasicPerspectiveImage extends PerspectiveImage
         return result;
     }
 
-    protected File getImagerDirectory(File imageFile)
+    protected String getImagerPath(File imageFile)
     {
-        File directory = imageFile.getParentFile();
-        if (imageFile.getAbsolutePath().contains(File.separator + "public" + File.separator) || imageFile.getAbsolutePath().contains(File.separator + "private" + File.separator)) directory = imageFile.getParentFile().getParentFile();
-        Preconditions.checkNotNull(directory);
-        File imagerDirectory = directory.getParentFile();
-        Preconditions.checkNotNull(imagerDirectory);
-        return imagerDirectory;
+        return getKey().getInstrument().getSearchQuery().getRootPath();
     }
 
     protected String getSumFileName(String imagerDirectory, ImageKeyInterface key) throws IOException, ParseException
