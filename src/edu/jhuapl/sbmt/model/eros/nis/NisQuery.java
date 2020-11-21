@@ -87,7 +87,7 @@ public final class NisQuery extends DatabaseQueryBase
     }
 
     @Override
-    public NisQuery clone()
+    public NisQuery copy()
     {
         return getInstance();
     }
