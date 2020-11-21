@@ -94,7 +94,7 @@ public final class NisQuery extends DatabaseQueryBase
 
     private NisQuery()
     {
-        super(null);
+        super(null, null);
     }
 
     @Override
