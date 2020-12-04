@@ -38,7 +38,6 @@ public class MEGANEDataModel
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-D'T'HH:mm:ss.SSS");
 		UTCEpoch startEpoch = UTCEpoch.fromString(dateFormatter.format(startDate));
 		UTCEpoch endEpoch = UTCEpoch.fromString(dateFormatter.format(stopDate));
-		System.out.println("MEGANEDataModel: MEGANEDataModel: time is " + ( DefaultTimeSystems.getTDB().getTime( DefaultTimeSystems.getUTC().getTSEpoch(startEpoch))));
 		this.currentStartTime = DefaultTimeSystems.getTDB().getTime( DefaultTimeSystems.getUTC().getTSEpoch(startEpoch));
 		this.currentStopTime = DefaultTimeSystems.getTDB().getTime( DefaultTimeSystems.getUTC().getTSEpoch(endEpoch));
 

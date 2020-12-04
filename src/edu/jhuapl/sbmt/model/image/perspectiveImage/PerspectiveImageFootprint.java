@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import vtk.vtkActor;
@@ -78,6 +79,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
     private double time;
     private boolean staticFootprint = false;
     private boolean staticFootprintSet = false;
+    private vtkActor frustumActor;
 
 
 	PerspectiveImageFootprint(PerspectiveImage image)
@@ -195,7 +197,6 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	public void updatePointing(double[] scPos, double[] frus1, double[] frus2, double[] frus3, double[] frus4,
 			int height, int width, int depth)
 	{
-//		System.out.println("PerspectiveImageFootprint: updatePointing: updating pointing");
 		this.scPos[0] = scPos;
 		this.frus1[0] = frus1;
 		this.frus2[0] = frus2;
@@ -204,13 +205,11 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		this.imageHeight = height;
 		this.imageWidth = width;
 		this.imageDepth = depth;
-//		System.out.println("PerspectiveImageFootprint: updatePointing: updating scpos to " + scPos[0] + " " + scPos[1] + " " + scPos[2]);
-//		System.out.println("PerspectiveImageFootprint: updatePointing: updating frus1 to " + frus1[0] + " " + frus1[1] + " " + frus1[2]);
-//		System.out.println("PerspectiveImageFootprint: updatePointing: updating frus2 to " + frus2[0] + " " + frus2[1] + " " + frus2[2]);
 		footprintGenerated[currentSlice] = false;
 		useDefaultFootprint = false;
 		generateBoundary();
 		setFootprintColor();
+
 		getProps();
 	}
 
@@ -261,7 +260,9 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	vtkPolyData generateBoundary()
 	{
+		Logger.getAnonymousLogger().log(Level.INFO, "loading footprint");
 		loadFootprint();
+		Logger.getAnonymousLogger().log(Level.INFO, "Loaded footprint");
 
 		if (footprint[currentSlice].GetNumberOfPoints() == 0)
 			return null;
@@ -271,6 +272,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	private vtkPolyData updateBoundary()
 	{
+//		Logger.getAnonymousLogger().log(Level.INFO, "Getting edge extracter for footprint " + footprint[currentSlice].GetNumberOfCells());
 		vtkFeatureEdges edgeExtracter = new vtkFeatureEdges();
 		edgeExtracter.SetInputData(footprint[currentSlice]);
 		edgeExtracter.BoundaryEdgesOn();
@@ -294,7 +296,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public void loadFootprint()
     {
-//		logger.log(Level.INFO, "Loading footprint");
+		logger.log(Level.INFO, "Loading footprint");
         vtkPolyData existingFootprint = checkForExistingFootprint();
         if (existingFootprint != null)
         {
@@ -342,6 +344,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
                     tmp = smallBodyModel.computeFrustumIntersection(scPos[currentSlice], frus1[currentSlice], frus3[currentSlice], frus4[currentSlice], frus2[currentSlice]);
                     if (footprintActor != null && isVisible == true)
                     	footprintActor.SetVisibility(1);
+//                    Logger.getAnonymousLogger().log(Level.INFO, "Set visibility, result is " + tmp);
                     if (tmp == null)
                     {
                     	//TODO why is footprintActor null here?
@@ -394,7 +397,6 @@ public class PerspectiveImageFootprint implements PlannedDataActor
             vtkPolyData footprintReaderOutput = footprintReader.GetOutput();
             footprint[currentSlice].DeepCopy(footprintReaderOutput);
         }
-
         shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
         PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], imageOffset);
         vtkPolyDataWriter writer = new vtkPolyDataWriter();
@@ -405,7 +407,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
         writer.SetFileTypeToBinary();
         writer.Write();
         setFootprintGenerated(true);
-//        logger.log(Level.INFO, "Footprint load complete");
+//        logger.log(Level.INFO, "Footprint load complete, footprint size " + shiftedFootprint[0].GetNumberOfCells());
     }
 
 
@@ -433,12 +435,14 @@ public class PerspectiveImageFootprint implements PlannedDataActor
         String intersectionFileName = preRenderedName + "_frustumIntersection.vtk.gz";
         if (FileCache.isFileGettable(intersectionFileName))
         {
+        	logger.log(Level.INFO, "Loading existing");
             File file = FileCache.getFileFromServer(intersectionFileName);
             vtkPolyDataReader reader = new vtkPolyDataReader();
-//            reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));	//This is wrong.  The old code was stripping off .gz from the intersection name.  This now further removes .vtk which is bad.
             reader.SetFileName(file.getAbsolutePath()); // now just reads in the file path as it should.
+            logger.log(Level.INFO, "Updating");
             reader.Update();
             vtkPolyData footprint = reader.GetOutput();
+            logger.log(Level.INFO, "Returning existing");
             return footprint;
         }
         return null;
@@ -541,8 +545,9 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	{
 		if (imageTexture == null)
         {
+			System.out.println("PerspectiveImageFootprint: getProps: loading footprint");
             loadFootprint();
-
+            System.out.println("PerspectiveImageFootprint: getProps: loaded footprint");
             imageTexture = new vtkTexture();
             imageTexture.InterpolateOn();
             imageTexture.RepeatOff();
@@ -552,14 +557,12 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	        footprintMapper.SetInputData(shiftedFootprint[0]);
 
 	        footprintMapper.Update();
-//	        footprintActor = new vtkActor();
 	        footprintActor.SetMapper(footprintMapper);
 	        footprintActor.SetTexture(imageTexture);
-//	        footprintActor.VisibilityOn();
 	        vtkProperty footprintProperty = footprintActor.GetProperty();
 	        footprintProperty.LightingOff();
 
-	        if (boundary == null) generateBoundary();
+	        updateBoundary();
 
 	        boundaryMapper = new vtkPolyDataMapper();
 	        boundaryMapper.SetInputData(boundary);
@@ -570,6 +573,9 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	        footprintActors.add(boundaryActor);
 	        footprintActors.add(footprintActor);
         }
+		else
+			System.out.println("PerspectiveImageFootprint: getProps: image texture exists");
+
 
 	    return footprintActors;
 	}

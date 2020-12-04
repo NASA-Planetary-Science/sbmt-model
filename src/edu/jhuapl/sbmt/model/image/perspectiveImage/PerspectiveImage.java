@@ -3855,10 +3855,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		return rendererHelper.getFootprint().checkForExistingFootprint();
 	}
 
-	private vtkPolyData generateBoundary()
-	{
-		return rendererHelper.getFootprint().generateBoundary();
-	}
+//	private vtkPolyData generateBoundary()
+//	{
+//		return rendererHelper.getFootprint().generateBoundary();
+//	}
 
 	private void computeCellNormals()
 	{
@@ -3960,6 +3960,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 	public void setBoundaryVisibility(boolean isVisible)
 	{
 		super.setBoundaryVisibility(isVisible);
+		System.out.println("PerspectiveImage: setBoundaryVisibility: setting boundary visible to " + isVisible);
 		rendererHelper.getFootprint().setBoundaryVisible(isVisible);
 		firePropertyChange(Properties.MODEL_CHANGED, null, this);
 	}

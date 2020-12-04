@@ -32,7 +32,6 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
-import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
 import edu.jhuapl.sbmt.stateHistory.model.liveColoring.ICalculatedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.liveColoring.IFootprintConfinedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.liveColoring.ITimeCalculatedPlateValues;
@@ -139,8 +138,8 @@ public class MEGANEController implements PropertyChangeListener
 //					System.out.println(
 //							"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: index " + index);
 					double valueToCalculate = values.GetValue(index) + 1;
-					System.out.println(
-							"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: indx " + index + " value to calc " + valueToCalculate);
+//					System.out.println(
+//							"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: indx " + index + " value to calc " + valueToCalculate);
 					values.SetValue(index, valueToCalculate);
 				}
 				return values;
@@ -150,8 +149,8 @@ public class MEGANEController implements PropertyChangeListener
 			public void setFacetColoringDataForFootprint(PerspectiveImageFootprint footprint)
 			{
 				this.footprint = footprint;
-				System.out.println(
-						"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: setFacetColoringDataForFootprint: updating footprint " + footprint);
+//				System.out.println(
+//						"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: setFacetColoringDataForFootprint: updating footprint " + footprint);
 				facetColoring = footprint.getFacetColoringDataForFootprint();
 			}
 
@@ -177,6 +176,7 @@ public class MEGANEController implements PropertyChangeListener
 //		System.out.println("MEGANEController: initializeCalculatedPlateColorings: adding time per facet coloring, num entries " + indexableTuple.size());
 		ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
 		LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
+//		System.out.println("MEGANEController: initializeCalculatedPlateColorings: loadable coloring data " + loadableColoringData);
 		try
 		{
 			loadableColoringData.save();
@@ -208,21 +208,26 @@ public class MEGANEController implements PropertyChangeListener
 			@Override
 			public void timeChanged(double et)
 			{
-//				System.out.println(
-//						"MEGANEController.initializeCalculatedPlateColorings().new StateHistoryTimeModelChangedListener() {...}: timeChanged: time changed, updating megane coloring");
+//				Logger.getAnonymousLogger().log(Level.INFO, "Starting in MEGANE");
 				vtkFloatArray valuesAtTime = ((ITimeCalculatedPlateValues)timePerIndexCalculator).getPlateValuesForTime(et);
+//				Logger.getAnonymousLogger().log(Level.INFO, "Making INdexabletuple");
 				IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(valuesAtTime);
-				LoadableColoringData coloringData = ColoringDataFactory.of(ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple), "MEGANE-TimePerFacet");
-				try
-				{
-					coloringData.save();
-				}
-				catch (IOException e)
-				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+//				Logger.getAnonymousLogger().log(Level.INFO, "Making coloring data");
+				ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
+//				Logger.getAnonymousLogger().log(Level.INFO, "Making Loadable");
+//				try
+//				{
+//					LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
+//
+//					loadableColoringData.save();
+//				}
+//				catch (IOException e)
+//				{
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 				coloringDataManager.replaceCustom("Time Per Facet", coloringData);
+//				Logger.getAnonymousLogger().log(Level.INFO, "Ending in MEGANE");
 			}
 
 			@Override
@@ -250,8 +255,18 @@ public class MEGANEController implements PropertyChangeListener
 	{
 		if (evt.getPropertyName().equals("SPICEPROVIDER"))
 		{
-			model.setPointingProvider((SpicePointingProvider)(evt.getNewValue()));
-			plotPanel.createPlotsFromModel(model);
+//			Runnable runner = new Runnable()
+//			{
+//
+//				@Override
+//				public void run()
+//				{
+//					model.setPointingProvider((SpicePointingProvider)(evt.getNewValue()));
+//					plotPanel.createPlotsFromModel(model);
+//				}
+//			};
+//			Thread thread = new Thread(runner);
+//			thread.start();
 		}
 
 	}
