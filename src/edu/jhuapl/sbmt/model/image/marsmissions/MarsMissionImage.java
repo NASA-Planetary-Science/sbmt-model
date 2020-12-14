@@ -44,10 +44,6 @@ public class MarsMissionImage extends BasicPerspectiveImage
             String filterName = "Channel " + filterFromFileName;
 
             result = new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
-                @Override
-                public String getFlip() {
-                    return "Y";
-                }
 
                 @Override
                 public int getFilter()
@@ -82,11 +78,6 @@ public class MarsMissionImage extends BasicPerspectiveImage
                 String filterName = null;
                 Integer filter = null;
                 Integer camera = null;
-
-                @Override
-                public String getFlip() {
-                    return "Y";
-                }
 
                 @Override
                 public int getFilter()
@@ -202,15 +193,15 @@ public class MarsMissionImage extends BasicPerspectiveImage
         }
         else if (isMOC(filename))
         {
-            result = of(key, smallBodyModel, loadPointingOnly, 8, "Mars Global Surveyor, MOC", false);
+            result = of(key, smallBodyModel, loadPointingOnly, 8, "Mars Global Surveyor, MOC");
         }
         else if (isHiRISE(filename))
         {
-            result = of(key, smallBodyModel, loadPointingOnly, 7, "Mars Reconnaissance Orbiter, HiRISE", false);
+            result = of(key, smallBodyModel, loadPointingOnly, 7, "Mars Reconnaissance Orbiter, HiRISE");
         }
         else if (isHRSC(filename))
         {
-            result = of(key, smallBodyModel, loadPointingOnly, 6, "Mars Express, HRSC", true);
+            result = of(key, smallBodyModel, loadPointingOnly, 6, "Mars Express, HRSC");
         }
         else
         {
@@ -220,16 +211,9 @@ public class MarsMissionImage extends BasicPerspectiveImage
         return result;
     }
 
-    protected static MarsMissionImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly, int camera, String cameraName, boolean flipY) throws FitsException, IOException
+    protected static MarsMissionImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly, int camera, String cameraName) throws FitsException, IOException
     {
-        String flip = flipY ? "Y" : "None";
-
         return new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
-            @Override
-            public String getFlip() {
-                return flip;
-            }
-
             @Override
             public int getCamera()
             {
