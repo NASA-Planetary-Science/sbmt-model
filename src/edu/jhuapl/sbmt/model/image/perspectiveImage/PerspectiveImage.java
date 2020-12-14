@@ -3968,7 +3968,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 	public void setBoundaryVisibility(boolean isVisible)
 	{
 		super.setBoundaryVisibility(isVisible);
-		System.out.println("PerspectiveImage: setBoundaryVisibility: setting boundary visible to " + isVisible);
 		rendererHelper.getFootprint().setBoundaryVisible(isVisible);
 		firePropertyChange(Properties.MODEL_CHANGED, null, this);
 	}

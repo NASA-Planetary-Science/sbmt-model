@@ -6,17 +6,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import vtk.vtkActor;
+import vtk.vtkCellArray;
 import vtk.vtkFeatureEdges;
 import vtk.vtkFloatArray;
+import vtk.vtkGenericCell;
+import vtk.vtkIdList;
 import vtk.vtkImageData;
 import vtk.vtkLookupTable;
 import vtk.vtkPlane;
 import vtk.vtkPlaneCollection;
 import vtk.vtkPointData;
+import vtk.vtkPoints;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkPolyDataReader;
@@ -26,6 +29,7 @@ import vtk.vtkProperty;
 import vtk.vtkTexture;
 import vtk.vtkUnsignedCharArray;
 import vtk.vtkXMLPolyDataReader;
+import vtk.vtksbCellLocator;
 
 import edu.jhuapl.saavtk.colormap.Colormap;
 import edu.jhuapl.saavtk.colormap.Colormaps;
@@ -80,7 +84,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
     private boolean staticFootprint = false;
     private boolean staticFootprintSet = false;
     private vtkActor frustumActor;
-
+    private Color boundaryColor;
 
 	PerspectiveImageFootprint(PerspectiveImage image)
 	{
@@ -98,7 +102,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		this.frus2 = image.getFrustum2Adjusted();
 		this.frus3 = image.getFrustum3Adjusted();
 		this.frus4 = image.getFrustum4Adjusted();
-
+		this.boundaryColor = image.getBoundaryColor();
 
 		nslices = image.getImageDepth();
 		footprint = new vtkPolyData[nslices];
@@ -106,7 +110,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
 		boundaryActor = new vtkActor();
-		boundaryActor.VisibilityOff();
+		boundaryActor.VisibilityOn();
 		footprintActor = new vtkActor();
 		footprintActor.VisibilityOff();
 	}
@@ -132,7 +136,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
 		boundaryActor = new vtkActor();
-		boundaryActor.VisibilityOff();
+		boundaryActor.VisibilityOn();
 		footprintActor = new vtkActor();
 		footprintActor.VisibilityOff();
 	}
@@ -160,7 +164,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
 		boundaryActor = new vtkActor();
-		boundaryActor.VisibilityOff();
+		boundaryActor.VisibilityOn();
 		footprintActor = new vtkActor();
 		footprintActor.VisibilityOff();
 	}
@@ -207,10 +211,16 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		this.imageDepth = depth;
 		footprintGenerated[currentSlice] = false;
 		useDefaultFootprint = false;
-		generateBoundary();
-		setFootprintColor();
+
+		if (staticFootprint)
+			generateBoundary();
+		else
+			createOriginalStyleBoundary();
+
 
 		getProps();
+		setFootprintColor();
+
 	}
 
 	public boolean[] getFootprintGenerated()
@@ -260,9 +270,9 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	vtkPolyData generateBoundary()
 	{
-		Logger.getAnonymousLogger().log(Level.INFO, "loading footprint");
+//		Logger.getAnonymousLogger().log(Level.INFO, "loading footprint");
 		loadFootprint();
-		Logger.getAnonymousLogger().log(Level.INFO, "Loaded footprint");
+//		Logger.getAnonymousLogger().log(Level.INFO, "Loaded footprint");
 
 		if (footprint[currentSlice].GetNumberOfPoints() == 0)
 			return null;
@@ -296,7 +306,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public void loadFootprint()
     {
-		logger.log(Level.INFO, "Loading footprint");
+//		logger.log(Level.INFO, "Loading footprint");
         vtkPolyData existingFootprint = checkForExistingFootprint();
         if (existingFootprint != null)
         {
@@ -340,7 +350,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
                 }
                 else
                 {
-//            		Logger.getAnonymousLogger().log(Level.INFO, "Calculating frustum intersection");
+//            		Logger.getAnonymousLogger().log(Level.INFO, "Calculating frustum intersection, with origin " + scPos[0]);
                     tmp = smallBodyModel.computeFrustumIntersection(scPos[currentSlice], frus1[currentSlice], frus3[currentSlice], frus4[currentSlice], frus2[currentSlice]);
                     if (footprintActor != null && isVisible == true)
                     	footprintActor.SetVisibility(1);
@@ -435,14 +445,14 @@ public class PerspectiveImageFootprint implements PlannedDataActor
         String intersectionFileName = preRenderedName + "_frustumIntersection.vtk.gz";
         if (FileCache.isFileGettable(intersectionFileName))
         {
-        	logger.log(Level.INFO, "Loading existing");
+//        	logger.log(Level.INFO, "Loading existing");
             File file = FileCache.getFileFromServer(intersectionFileName);
             vtkPolyDataReader reader = new vtkPolyDataReader();
             reader.SetFileName(file.getAbsolutePath()); // now just reads in the file path as it should.
-            logger.log(Level.INFO, "Updating");
+//            logger.log(Level.INFO, "Updating");
             reader.Update();
             vtkPolyData footprint = reader.GetOutput();
-            logger.log(Level.INFO, "Returning existing");
+//            logger.log(Level.INFO, "Returning existing");
             return footprint;
         }
         return null;
@@ -543,27 +553,32 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	List<vtkProp> getProps()
 	{
-		if (imageTexture == null)
+		if (imageTexture != null) return footprintActors;
+
+        loadFootprint();
+        imageTexture = new vtkTexture();
+        imageTexture.InterpolateOn();
+        imageTexture.RepeatOff();
+        imageTexture.EdgeClampOn();
+        imageTexture.SetInputData(displayedImage);
+		footprintMapper = new vtkPolyDataMapper();
+        footprintMapper.SetInputData(shiftedFootprint[0]);
+
+        footprintMapper.Update();
+        footprintActor.SetMapper(footprintMapper);
+        footprintActor.SetTexture(imageTexture);
+        vtkProperty footprintProperty = footprintActor.GetProperty();
+        footprintProperty.LightingOff();
+
+        updateBoundary();
+
+        if (!staticFootprint)
         {
-			System.out.println("PerspectiveImageFootprint: getProps: loading footprint");
-            loadFootprint();
-            System.out.println("PerspectiveImageFootprint: getProps: loaded footprint");
-            imageTexture = new vtkTexture();
-            imageTexture.InterpolateOn();
-            imageTexture.RepeatOff();
-            imageTexture.EdgeClampOn();
-            imageTexture.SetInputData(displayedImage);
-			footprintMapper = new vtkPolyDataMapper();
-	        footprintMapper.SetInputData(shiftedFootprint[0]);
-
-	        footprintMapper.Update();
-	        footprintActor.SetMapper(footprintMapper);
-	        footprintActor.SetTexture(imageTexture);
-	        vtkProperty footprintProperty = footprintActor.GetProperty();
-	        footprintProperty.LightingOff();
-
-	        updateBoundary();
-
+        	createOriginalStyleBoundary();
+        	footprintActors.add(boundaryActor);
+        }
+        else
+        {
 	        boundaryMapper = new vtkPolyDataMapper();
 	        boundaryMapper.SetInputData(boundary);
 	        boundaryMapper.Update();
@@ -571,11 +586,8 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	        boundaryActor.GetProperty().SetLineWidth(3.0);
 	        boundaryActor.VisibilityOff();
 	        footprintActors.add(boundaryActor);
-	        footprintActors.add(footprintActor);
         }
-		else
-			System.out.println("PerspectiveImageFootprint: getProps: image texture exists");
-
+        footprintActors.add(footprintActor);
 
 	    return footprintActors;
 	}
@@ -633,6 +645,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		return footprintActor;
 	}
 
+	@Override
 	public vtkActor getFootprintBoundaryActor()
 	{
 		return boundaryActor;
@@ -646,6 +659,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public void setBoundaryColor(Color color)
 	{
+		boundaryColor = color;
 		boundaryActor.GetProperty().SetColor(new double[] {(double)color.getRed()/255.0,
 				(double)color.getGreen()/255.0,
 				(double)color.getBlue()/255.0});
@@ -842,5 +856,177 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	public void setStaticFootprintSet(boolean staticFootprintSet)
 	{
 		this.staticFootprintSet = staticFootprintSet;
+	}
+
+	private void createOriginalStyleBoundary()
+	{
+//	    vtkActor actor;
+//	    vtkPolyData boundary;
+//	    vtkPolyDataMapper boundaryMapper;
+	    double[] spacecraftPosition = scPos[0];
+	    double[] frustum1 = frus1[0];
+	    double[] frustum2 = frus2[0];
+	    double[] frustum3 = frus3[0];
+//	    double[] boresightDirection = new double[3];
+//	    double[] upVector = new double[3];
+	    PerspectiveImage image;
+	    vtkPolyData emptyPolyData;
+	    double offset =0.003;
+
+		boundary = new vtkPolyData();
+        boundary.SetPoints(new vtkPoints());
+        boundary.SetVerts(new vtkCellArray());
+
+        boundaryMapper = new vtkPolyDataMapper();
+        boundaryActor = new vtkActor();
+
+        emptyPolyData = new vtkPolyData();
+
+//        boresightDirection = image.getBoresightDirection();
+//        upVector = image.getUpVector();
+
+        initialize();
+
+        smallBodyModel.shiftPolyLineInNormalDirection(boundary, offset);
+//        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
+
+		boundary.DeepCopy(emptyPolyData);
+        vtkPoints points = boundary.GetPoints();
+        vtkCellArray verts = boundary.GetVerts();
+
+        vtkIdList idList = new vtkIdList();
+        idList.SetNumberOfIds(1);
+
+        vtksbCellLocator cellLocator = smallBodyModel.getCellLocator();
+
+        vtkGenericCell cell = new vtkGenericCell();
+
+        // Note it doesn't matter what image size we use, even
+        // if it's not the same size as the original image. Just
+        // needs to large enough so enough points get drawn.
+        final int IMAGE_WIDTH = 475;
+        final int IMAGE_HEIGHT = 475;
+
+        int count = 0;
+
+        double[] corner1 = {
+                spacecraftPosition[0] + frustum1[0],
+                spacecraftPosition[1] + frustum1[1],
+                spacecraftPosition[2] + frustum1[2]
+        };
+        double[] corner2 = {
+                spacecraftPosition[0] + frustum2[0],
+                spacecraftPosition[1] + frustum2[1],
+                spacecraftPosition[2] + frustum2[2]
+        };
+        double[] corner3 = {
+                spacecraftPosition[0] + frustum3[0],
+                spacecraftPosition[1] + frustum3[1],
+                spacecraftPosition[2] + frustum3[2]
+        };
+        double[] vec12 = {
+                corner2[0] - corner1[0],
+                corner2[1] - corner1[1],
+                corner2[2] - corner1[2]
+        };
+        double[] vec13 = {
+                corner3[0] - corner1[0],
+                corner3[1] - corner1[1],
+                corner3[2] - corner1[2]
+        };
+
+        //double horizScaleFactor = 2.0 * Math.tan( GeometryUtil.vsep(frustum1, frustum3) / 2.0 ) / IMAGE_HEIGHT;
+        //double vertScaleFactor = 2.0 * Math.tan( GeometryUtil.vsep(frustum1, frustum2) / 2.0 ) / IMAGE_WIDTH;
+
+        double scdist = MathUtil.vnorm(spacecraftPosition);
+
+        for (int i=0; i<IMAGE_HEIGHT; ++i)
+        {
+            // Compute the vector on the left of the row.
+            double fracHeight = ((double)i / (double)(IMAGE_HEIGHT-1));
+            double[] left = {
+                    corner1[0] + fracHeight*vec13[0],
+                    corner1[1] + fracHeight*vec13[1],
+                    corner1[2] + fracHeight*vec13[2]
+            };
+
+            for (int j=0; j<IMAGE_WIDTH; ++j)
+            {
+                if (j == 1 && i > 0 && i < IMAGE_HEIGHT-1)
+                {
+                    j = IMAGE_WIDTH-2;
+                    continue;
+                }
+
+                double fracWidth = ((double)j / (double)(IMAGE_WIDTH-1));
+                double[] vec = {
+                        left[0] + fracWidth*vec12[0],
+                        left[1] + fracWidth*vec12[1],
+                        left[2] + fracWidth*vec12[2]
+                };
+                vec[0] -= spacecraftPosition[0];
+                vec[1] -= spacecraftPosition[1];
+                vec[2] -= spacecraftPosition[2];
+                MathUtil.unorm(vec, vec);
+
+                double[] lookPt = {
+                        spacecraftPosition[0] + 2.0*scdist*vec[0],
+                        spacecraftPosition[1] + 2.0*scdist*vec[1],
+                        spacecraftPosition[2] + 2.0*scdist*vec[2]
+                };
+
+                double tol = 1e-6;
+                double[] t = new double[1];
+                double[] x = new double[3];
+                double[] pcoords = new double[3];
+                int[] subId = new int[1];
+                int[] cellId = new int[1];
+                int result = cellLocator.IntersectWithLine(spacecraftPosition, lookPt, tol, t, x, pcoords, subId, cellId, cell);
+
+                if (result > 0)
+                {
+                    double[] closestPoint = x;
+
+                    //double horizPixelScale = closestDist * horizScaleFactor;
+                    //double vertPixelScale = closestDist * vertScaleFactor;
+
+                    points.InsertNextPoint(closestPoint);
+                    idList.SetId(0, count);
+                    verts.InsertNextCell(idList);
+
+                    ++count;
+                }
+            }
+        }
+
+
+        PolyDataUtil.shiftPolyLineInNormalDirectionOfPolyData(
+                boundary,
+                smallBodyModel.getSmallBodyPolyData(),
+                smallBodyModel.getCellNormals(),
+                smallBodyModel.getCellLocator(),
+                3.0*smallBodyModel.getMinShiftAmount());
+
+        boundary.Modified();
+        boundaryMapper.SetInputData(boundary);
+
+        boundaryActor.SetMapper(boundaryMapper);
+
+        if (boundaryColor != null)
+        	boundaryActor.GetProperty().SetColor(boundaryColor.getRed()/255.0, boundaryColor.getGreen()/255.0, boundaryColor.getBlue()/255.0);
+        else
+        	boundaryActor.GetProperty().SetColor(1.0, 0.0, 0.0);
+        boundaryActor.GetProperty().SetPointSize(1.0);
+        boundaryActor.VisibilityOn();
+//        System.out.println("PerspectiveImageFootprint: createOriginalStyleBoundary: boundary actor is " + boundaryActor);
+//        return actor;
+	}
+
+	/**
+	 * @return the boundaryColor
+	 */
+	public Color getBoundaryColor()
+	{
+		return boundaryColor;
 	}
 }
