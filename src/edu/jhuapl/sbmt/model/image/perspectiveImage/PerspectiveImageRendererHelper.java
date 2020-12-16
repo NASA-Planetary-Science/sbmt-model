@@ -949,6 +949,7 @@ class PerspectiveImageRendererHelper
 
     vtkPolyData checkForExistingFootprint()
     {
+    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
         String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
         File file = null;
         try
