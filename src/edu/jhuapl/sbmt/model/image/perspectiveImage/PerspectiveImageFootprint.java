@@ -727,8 +727,6 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		}
 
 		shiftedFootprint[0].GetCellData().SetScalars(cellData);
-
-//		logger.log(Level.INFO, "Colors Updated");
 		return lut;
 	}
 
@@ -737,7 +735,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		if (footprintActor == null) getProps();
 		if (footprintActor.GetVisibility() == 0) return;
 
-		if (plateColoringName != null)
+		if (plateColoringName != null && !plateColoringName.equals(""))
 		{
 			updateColorFromPlate(plateColoringName);
 			footprintMapper.SetScalarModeToUseCellData();

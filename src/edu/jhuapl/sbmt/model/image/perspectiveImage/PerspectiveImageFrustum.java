@@ -20,11 +20,6 @@ public class PerspectiveImageFrustum
 {
 	vtkPolyData frustumPolyData;
 	private vtkActor frustumActor;
-	private vtkActor frustumActor2;
-	private vtkActor frustumActor3;
-	private vtkActor frustumActor4;
-	private vtkActor frustumActor5;
-	private vtkActor frustumActor6;
 	Frustum[] frusta = new Frustum[1];
 	private boolean showFrustum = false;
 	public double[] maxFrustumDepth;
@@ -57,22 +52,10 @@ public class PerspectiveImageFrustum
 		frusta = new Frustum[nslices];
 		frustumActor = new vtkActor();
 		frustumActor.VisibilityOff();
-		frustumActor2 = new vtkActor();
-		frustumActor2.VisibilityOff();
-		frustumActor3 = new vtkActor();
-		frustumActor3.VisibilityOff();
-		frustumActor4 = new vtkActor();
-		frustumActor4.VisibilityOff();
-		frustumActor5 = new vtkActor();
-		frustumActor5.VisibilityOff();
-		frustumActor6 = new vtkActor();
-		frustumActor6.VisibilityOff();
 	}
 
 	public PerspectiveImageFrustum(int numSlices, int currentSlice, int defaultSlice, boolean useDefaultFootprint, double diagonalLength)
 	{
-//		System.out.println("PerspectiveImageFrustum: PerspectiveImageFrustum: ***********************");
-
 		this.nslices = numSlices;
 		this.currentSlice = currentSlice;
 		this.diagonalLength = diagonalLength;
@@ -88,16 +71,6 @@ public class PerspectiveImageFrustum
 		frusta = new Frustum[1];
 		frustumActor = new vtkActor();
 		frustumActor.VisibilityOff();
-		frustumActor2 = new vtkActor();
-		frustumActor2.VisibilityOff();
-		frustumActor3 = new vtkActor();
-		frustumActor3.VisibilityOff();
-		frustumActor4 = new vtkActor();
-		frustumActor4.VisibilityOff();
-		frustumActor5 = new vtkActor();
-		frustumActor5.VisibilityOff();
-		frustumActor6 = new vtkActor();
-		frustumActor6.VisibilityOff();
 	}
 
 	public PerspectiveImageFrustum(int numSlices, int currentSlice, int defaultSlice, boolean useDefaultFootprint,
@@ -123,16 +96,6 @@ public class PerspectiveImageFrustum
 		frusta = new Frustum[1];
 		frustumActor = new vtkActor();
 		frustumActor.VisibilityOff();
-		frustumActor2 = new vtkActor();
-		frustumActor2.VisibilityOff();
-		frustumActor3 = new vtkActor();
-		frustumActor3.VisibilityOff();
-		frustumActor4 = new vtkActor();
-		frustumActor4.VisibilityOff();
-		frustumActor5 = new vtkActor();
-		frustumActor5.VisibilityOff();
-		frustumActor6 = new vtkActor();
-		frustumActor6.VisibilityOff();
 	}
 
 	public void updatePointing(PerspectiveImage image)
@@ -142,8 +105,6 @@ public class PerspectiveImageFrustum
 		this.frus2 = image.getFrustum2Adjusted();
 		this.frus3 = image.getFrustum3Adjusted();
 		this.frus4 = image.getFrustum4Adjusted();
-//		frustumActor2 = PolyDataUtil.renderFrustumPlanes(/*smallBodyModel.getSmallBodyPolyData(),*/ scPos[0], frus1[0], frus3[0], frus4[0], frus2[0]);
-
 	}
 
 	public void updatePointing(double[] scPos, double[] frus1, double[] frus2, double[] frus3, double[] frus4)
@@ -200,9 +161,6 @@ public class PerspectiveImageFrustum
 				origin[2] + frus4[currentSlice][2] * maxFrustumRayLength };
 
 
-//		System.out.println("PerspectiveImageFrustum: calculateFrustum: sc origin " + new Vector3D(origin));
-//		System.out.println("PerspectiveImageFrustum: calculateFrustum: upper left is " + new Vector3D(UL));
-
 		double minFrustumRayLength = MathUtil.vnorm(scPos[currentSlice])
 				- diagonalLength;
 		maxFrustumDepth[currentSlice] = maxFrustumRayLength; // a reasonable
@@ -242,15 +200,6 @@ public class PerspectiveImageFrustum
 		frusMapper.SetInputData(frustumPolyData);
 
 		frustumActor.SetMapper(frusMapper);
-
-//		frustumActor3 = PolyDataUtil.renderFrustumPlanes(scPos[0], frus1[0], frus3[0], frus4[0], frus2[0]);
-
-//		frustumActor2 = PolyDataUtil.renderFrustumPlane(origin, frus1[0], frus3[0], frus4[0], frus2[0], 0);
-//		frustumActor4 = PolyDataUtil.renderFrustumPlane(origin, frus1[0], frus3[0], frus4[0], frus2[0], 1);
-//		frustumActor5 = PolyDataUtil.renderFrustumPlane(origin, frus1[0], frus3[0], frus4[0], frus2[0], 2);
-//		frustumActor6 = PolyDataUtil.renderFrustumPlane(origin, frus1[0], frus3[0], frus4[0], frus2[0], 3);
-
-
 	}
 
 	void setMaxFrustumDepth(int slice, double value)
@@ -299,7 +248,6 @@ public class PerspectiveImageFrustum
 
 	void setShowFrustum(boolean b)
 	{
-		System.out.println("PerspectiveImageFrustum: setShowFrustum: show frustum " + b);
 		showFrustum = b;
 
 		if (showFrustum)
@@ -310,56 +258,16 @@ public class PerspectiveImageFrustum
 		{
 			frustumActor.VisibilityOff();
 		}
-
-//		image.firePropertyChange(Properties.MODEL_CHANGED, null, this);
 	}
 
 	List<vtkProp> getProps()
 	{
-//		if (frustumActor == null)
-//		{
-//			frustumActor = new vtkActor();
-
-			calculateFrustum();
-			vtkProperty frustumProperty = frustumActor.GetProperty();
-			frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
-			frustumProperty.SetLineWidth(2.0);
-//			frustumActor.VisibilityOn();
-//			frustumActor.VisibilityOff();
-
-			frustumActors.add(frustumActor);
-//		}
-		if (frustumActor2 != null)
-		{
-			frustumActor2.SetVisibility(1);
-			frustumActors.add(frustumActor2);
-		}
-		if (frustumActor3 != null)
-		{
-			frustumActor3.SetVisibility(1);
-			frustumActors.add(frustumActor3);
-		}
-
-		if (frustumActor4 != null)
-		{
-			frustumActor4.SetVisibility(1);
-			frustumActors.add(frustumActor4);
-		}
-
-		if (frustumActor5 != null)
-		{
-			frustumActor5.SetVisibility(1);
-			frustumActors.add(frustumActor5);
-		}
-
-		if (frustumActor6 != null)
-		{
-			frustumActor6.SetVisibility(1);
-			frustumActors.add(frustumActor6);
-		}
-
+		calculateFrustum();
+		vtkProperty frustumProperty = frustumActor.GetProperty();
+		frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
+		frustumProperty.SetLineWidth(2.0);
+		frustumActors.add(frustumActor);
 		return frustumActors;
-
 	}
 
 	public void setColor(Color color)
@@ -374,42 +282,12 @@ public class PerspectiveImageFrustum
 		return this.frustumColor;
 	}
 
-	public vtkActor getFrustumActor2()
-	{
-		return frustumActor2;
-	}
-
-	public vtkActor getFrustumActor3()
-	{
-		return frustumActor3;
-	}
-
-	public vtkActor getFrustumActor4()
-	{
-		return frustumActor4;
-	}
-
-	public vtkActor getFrustumActor5()
-	{
-		return frustumActor5;
-	}
-
-	public vtkActor getFrustumActor6()
-	{
-		return frustumActor6;
-	}
-
 	public vtkActor getFrustumActor()
 	{
-//		if (frustumActor != null)
-//			System.out.println("PerspectiveImageFrustum: getFrustumActor: frustum actor " + frustumActor.GetClassName());
-//		System.out.println("PerspectiveImageFrustum: getFrustumActor: scPos " + scPos[0] + " for frustum " + getClass().getName() + '@' + Integer.toHexString(hashCode()) + " " + instrumentName);
 		if (frustumActor == null && scPos[0] != null)
 		{
 			getProps();
 		}
-//		if (frustumActor != null)
-//			System.out.println("PerspectiveImageFrustum: getFrustumActor: frustum actor now " + frustumActor.GetClassName());
 
 		return frustumActor;
 	}
