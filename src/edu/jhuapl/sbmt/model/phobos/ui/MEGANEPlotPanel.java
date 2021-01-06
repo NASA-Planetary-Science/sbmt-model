@@ -6,6 +6,9 @@ import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -17,12 +20,15 @@ import org.apache.commons.math3.util.Pair;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.ValueMarker;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.time.FixedMillisecond;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
+import edu.jhuapl.sbmt.stateHistory.model.time.StateHistoryTimeModel;
 import edu.jhuapl.sbmt.stateHistory.rendering.PlannedDataProperties;
 import edu.jhuapl.sbmt.stateHistory.ui.DateTimeSpinner;
 
@@ -100,17 +106,20 @@ public class MEGANEPlotPanel extends JPanel implements PropertyChangeListener
 																	false,
 																	false, false);
 
-		XYSeries series = new XYSeries("TimeVsAltitude");
+		TimeSeries series = new TimeSeries("TimeVsAltitude");
+		Calendar cal = Calendar.getInstance();
 		for (Pair<Double, Double> pair : timeAltitudePairs)
 		{
-			series.add(pair.getFirst(), pair.getSecond());
+			Date dateForET = StateHistoryTimeModel.getDateForET(pair.getFirst());
+			cal.setTime(dateForET);
+            series.add(new FixedMillisecond(dateForET), pair.getSecond());
 		}
-		XYSeriesCollection dataset = new XYSeriesCollection(series);
-		timeVersusAltitude = ChartFactory.createXYLineChart("Time vs Altitude", "Time (sec)", "Altitude (m)", dataset, PlotOrientation.VERTICAL, false, false, false);
-
+		TimeSeriesCollection dataset = new TimeSeriesCollection(series);
+		timeVersusAltitude = ChartFactory.createTimeSeriesChart("Time vs Altitude", "Time (sec)", "Altitude (m)", dataset, /*PlotOrientation.VERTICAL,*/ false, false, false);
 
 		ChartPanel chart1 = new ChartPanel(timeVersusAltitude);
 		chart1.setBorder(BorderFactory.createTitledBorder("Time vs Altitude"));
+		((DateAxis)timeVersusAltitude.getXYPlot().getDomainAxis()).setDateFormatOverride(new SimpleDateFormat("dd-MM-yyyy-HH:mm:ss"));
 		add(chart1);
 		ChartPanel chart2 = new ChartPanel(timeBelowAltitudeHistogram);
 		chart2.setBorder(BorderFactory.createTitledBorder("Time Below Altitude"));

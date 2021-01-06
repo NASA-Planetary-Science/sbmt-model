@@ -15,7 +15,6 @@ import org.jfree.data.statistics.HistogramType;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.pointing.InstrumentPointing;
 import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
-import edu.jhuapl.sbmt.util.TimeUtil;
 
 import crucible.core.mechanics.providers.lockable.LockableEphemerisLinkEvaluationException;
 import crucible.core.mechanics.providers.lockable.LockableFrameLinkEvaluationException;
@@ -82,9 +81,9 @@ public class MEGANEDataModel
 			}
 			catch (LockableEphemerisLinkEvaluationException | LockableFrameLinkEvaluationException ex)
 			{
-				System.out.println("MEGANEDataModel: NO DATA getAltitudesForTimeWindowWithTimeStep: time is " + TimeUtil.et2str(time));
-
-				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: distance " + values[i-1].getSecond());
+//				System.out.println("MEGANEDataModel: NO DATA getAltitudesForTimeWindowWithTimeStep: time is " + TimeUtil.et2str(time));
+//
+//				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: distance " + values[i-1].getSecond());
 
 				values[i] = new Pair<Double, Double>(time, values[i-1].getSecond());
 			}

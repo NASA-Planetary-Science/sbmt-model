@@ -32,6 +32,7 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
+import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
 import edu.jhuapl.sbmt.stateHistory.model.liveColoring.ICalculatedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.liveColoring.IFootprintConfinedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.liveColoring.ITimeCalculatedPlateValues;
@@ -255,18 +256,18 @@ public class MEGANEController implements PropertyChangeListener
 	{
 		if (evt.getPropertyName().equals("SPICEPROVIDER"))
 		{
-//			Runnable runner = new Runnable()
-//			{
-//
-//				@Override
-//				public void run()
-//				{
-//					model.setPointingProvider((SpicePointingProvider)(evt.getNewValue()));
-//					plotPanel.createPlotsFromModel(model);
-//				}
-//			};
-//			Thread thread = new Thread(runner);
-//			thread.start();
+			Runnable runner = new Runnable()
+			{
+
+				@Override
+				public void run()
+				{
+					model.setPointingProvider((SpicePointingProvider)(evt.getNewValue()));
+					plotPanel.createPlotsFromModel(model);
+				}
+			};
+			Thread thread = new Thread(runner);
+			thread.start();
 		}
 
 	}
