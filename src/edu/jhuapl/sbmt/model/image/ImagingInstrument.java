@@ -83,7 +83,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 
     public ImagingInstrument clone()
     {
-        return new ImagingInstrument(spectralMode, searchQuery.clone(), type, searchImageSources.clone(), instrumentName, rotation, flip, fillValues);
+        return new ImagingInstrument(spectralMode, searchQuery.copy(), type, searchImageSources.clone(), instrumentName, rotation, flip, fillValues);
     }
 
     public ImageType getType()

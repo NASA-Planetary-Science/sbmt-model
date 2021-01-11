@@ -45,7 +45,7 @@ import crucible.crust.metadata.impl.SettableMetadata;
     }
 
     @Override
-    public OVIRSQuery clone()
+    public OVIRSQuery copy()
     {
         return getInstance();
     }
