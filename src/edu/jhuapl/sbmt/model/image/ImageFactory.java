@@ -200,9 +200,6 @@ public class ImageFactory
 
         Preconditions.checkArgument(imageType == key.getImageType());
 
-        ImageFlip flip = getFlip().apply(ImageFlip.of(key.getFlip()));
-        ImageRotation rotation = getRotation().apply(ImageRotation.of(key.getRotation()));
-
         try
         {
             Image result;
@@ -216,18 +213,6 @@ public class ImageFactory
             case LABEL:
             case LOCAL_PERSPECTIVE:
                 result = new BasicPerspectiveImage(key, smallBodyModel, loadPointingOnly) {
-
-                    @Override
-                    public String getFlip()
-                    {
-                        return flip.flip();
-                    }
-
-                    @Override
-                    public double getRotation()
-                    {
-                        return rotation.rotation();
-                    }
 
                     @Override
                     public int getCamera()
@@ -267,7 +252,7 @@ public class ImageFactory
                 break;
             case FALSE_COLOR:
                 Preconditions.checkArgument(key instanceof ColorImageKey, "Cannot create a false color image from a key of type " + key.getClass().getSimpleName());
-                result = new ColorImage((ColorImageKey) key, smallBodyModel, null);
+                result = new ColorImage((ColorImageKey<?>) key, smallBodyModel, null);
                 break;
             default:
                 throw new AssertionError();

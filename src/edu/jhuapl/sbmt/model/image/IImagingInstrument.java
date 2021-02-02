@@ -1,24 +1,28 @@
 package edu.jhuapl.sbmt.model.image;
 
+import edu.jhuapl.saavtk.util.FillDetector;
 import edu.jhuapl.sbmt.query.IQueryBase;
 
 import crucible.crust.metadata.api.Metadata;
 
 public interface IImagingInstrument
 {
-    public Metadata store();
+    Metadata store();
 
-    public ImageType getType();
+    ImageType getType();
 
-    public String getFlip();
+    String getFlip();
 
-    public double getRotation();
+    double getRotation();
 
-    public IQueryBase getSearchQuery();
+    IQueryBase getSearchQuery();
 
-    public ImageSource[] getSearchImageSources();
+    ImageSource[] getSearchImageSources();
 
-    public SpectralImageMode getSpectralMode();
+    SpectralImageMode getSpectralMode();
 
-    public Instrument getInstrumentName();
+    Instrument getInstrumentName();
+
+    FillDetector<Float> getFillDetector(Image image);
+
 }

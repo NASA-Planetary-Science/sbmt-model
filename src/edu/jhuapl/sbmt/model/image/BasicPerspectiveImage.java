@@ -20,12 +20,12 @@ import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
-public abstract class BasicPerspectiveImage extends PerspectiveImage
+public class BasicPerspectiveImage extends PerspectiveImage
 {
 
     private static final Map<String, ImmutableMap<String, String>> SUM_FILE_MAP = new HashMap<>();
 
-    protected BasicPerspectiveImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public BasicPerspectiveImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
@@ -81,12 +81,15 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
         ImageKeyInterface key = getKey();
         String result = null;
 
-        if (key.getSource() == ImageSource.SPICE)
+        ImageSource source = key.getSource();
+        if (source == ImageSource.SPICE || source == ImageSource.CORRECTED_SPICE)
         {
+            String infoFilesDirName = source == ImageSource.SPICE ? "infofiles" : "infofiles-corrected";
+
             File keyFile = new File(key.getName());
             File imagerDirectory = getImagerDirectory(keyFile);
             String pointingFileName = keyFile.getName() + ".INFO";
-            String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), "infofiles", pointingFileName);
+            String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), infoFilesDirName, pointingFileName);
             result = FileCache.getFileFromServer(pointingFilePath).getAbsolutePath();
         }
 
@@ -121,6 +124,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
     protected File getImagerDirectory(File imageFile)
     {
         File directory = imageFile.getParentFile();
+        if (imageFile.getAbsolutePath().contains(File.separator + "public" + File.separator) || imageFile.getAbsolutePath().contains(File.separator + "private" + File.separator)) directory = imageFile.getParentFile().getParentFile();
         Preconditions.checkNotNull(directory);
         File imagerDirectory = directory.getParentFile();
         Preconditions.checkNotNull(imagerDirectory);

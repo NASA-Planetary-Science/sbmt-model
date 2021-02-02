@@ -43,16 +43,16 @@ public class H2SpectraFactory
 			}
 
 			@Override
-			public IBasicSpectrumRenderer<NIRS3Spectrum> buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
+			public IBasicSpectrumRenderer<NIRS3Spectrum> buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel, boolean headless) throws IOException
 			{
-				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 
 			@Override
-			public IBasicSpectrumRenderer<NIRS3Spectrum> buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
+			public IBasicSpectrumRenderer<NIRS3Spectrum> buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean headless) throws IOException
 			{
 				NIRS3Spectrum spectrum = new NIRS3Spectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
-				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 		};
 		SbmtSpectrumModelFactory.registerModel("NIRS3", nirs3Spectra, smallBodyModel);

@@ -29,6 +29,7 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
+import edu.jhuapl.saavtk.util.UnauthorizedAccessException;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SbmtMultiMissionTool;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -36,7 +37,6 @@ import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.image.model.ImageKey;
 import edu.jhuapl.sbmt.model.bennu.imaging.OcamsFlightImage;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
-import edu.jhuapl.sbmt.tools.Authenticator;
 
 public class OffLimbPlaneCalculator
 {
@@ -62,17 +62,34 @@ public class OffLimbPlaneCalculator
 
 		// try to fetch the offlimb image data from the file cache first
 		String offLimbImageDataFileName = img.getPrerenderingFileNameBase() + "_offLimbImageData.vtk.gz";
-		if (FileCache.isFileGettable(offLimbImageDataFileName))
+		File file;
+		try
 		{
-			File file = FileCache.getFileFromServer(offLimbImageDataFileName);
-			vtkPolyDataReader reader = new vtkPolyDataReader();
+			file = FileCache.getFileFromServer(offLimbImageDataFileName);
+		}
+		catch (UnauthorizedAccessException e)
+		{
+		    // Report this but continue.
+		    e.printStackTrace();
+		    file = null;
+		}
+		catch (Exception e)
+		{
+		    // Ignore this one.
+		    file = null;
+		}
+
+		if (file != null)
+		{
+		    vtkPolyDataReader reader = new vtkPolyDataReader();
 //			reader.SetFileName(file.getPath().replaceFirst("\\.[^\\.]*$", ""));
-			reader.SetFileName(file.getAbsolutePath());
-			reader.Update();
-			vtkPolyData offLimbImageData = reader.GetOutput();
-			return offLimbImageData;
+		    reader.SetFileName(file.getAbsolutePath());
+		    reader.Update();
+		    vtkPolyData offLimbImageData = reader.GetOutput();
+		    return offLimbImageData;
 //			return assembleFinalPolydataAtDepth(img, offLimbFootprintDepth, offLimbImageData);
 		}
+
 		return null;
 //		// if it isn't in the cache, generate it, and store it
 //		generateOffLimbPlane(img);
@@ -222,7 +239,7 @@ public class OffLimbPlaneCalculator
 
         String offLimbImageDataFileName = img.getPrerenderingFileNameBase() + "_offLimbImageData.vtk.gz";
         saveToDisk(FileCache.instance().getFile(offLimbImageDataFileName).getPath());
-        FileCache.refreshStateInfo(offLimbImageDataFileName);
+//        FileCache.refreshStateInfo(offLimbImageDataFileName);
         makeActors(img);
 
     }
@@ -367,7 +384,7 @@ public class OffLimbPlaneCalculator
         SbmtMultiMissionTool.configureMission();
 
          // authentication
-        Authenticator.authenticate();
+        Configuration.authenticate();
         NativeLibraryLoader.loadVtkLibraries();
          // initialize view config
         SmallBodyViewConfig.initialize();

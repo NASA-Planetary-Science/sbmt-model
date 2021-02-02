@@ -104,8 +104,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     ///////////////////////
     // Pointing Properties
     ///////////////////////
-    private double rotation = 0.0;
-    private String flip = "None";
     private String infoFileFullPath;
     private String sumFileFullPath;
 
@@ -227,8 +225,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-        this.flip = key.getFlip();
-        this.rotation = key.getRotation();
 
         this.transposeFITSData = transposeData;
 
@@ -242,7 +238,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected void initialize() throws FitsException, IOException
     {
-        sw = new Stopwatch();
+        sw = Stopwatch.createUnstarted();
         sw.start();
 //        footprint[0] = new vtkPolyData();
 //        shiftedFootprint[0] = new vtkPolyData();
@@ -2266,6 +2262,28 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                             array2D[i][j] = arrayB[i][j] & 0xFF;
                         }
                 }
+                // WARNING: THIS IS A TOTAL HACK TO SUPPORT DART LUKE TEST IMAGES:
+                else if (data instanceof byte[][][])
+                {
+                    // DART LUKE images are color: 3-d slab with the 3rd
+                    // dimension being RGB, but the first test images are
+                    // monochrome. Thus, in order to process the images, making
+                    // this temporary hack.
+                    byte[][][] arrayB = (byte[][][]) data;
+
+                    // Override the default setup used for other 3-d images.
+                    fitsDepth = 1;
+                    fitsHeight = arrayB[0].length;
+                    fitsWidth = arrayB[0][0].length;
+
+                    array2D = new float[fitsHeight][fitsWidth];
+
+                    for (int i = 0; i < fitsHeight; ++i)
+                        for (int j = 0; j < fitsWidth; ++j)
+                        {
+                            array2D[i][j] = arrayB[0][i][j] & 0xFF;
+                        }
+                }
                 else
                 {
                     System.out.println("Data type not supported: " + data.getClass().getCanonicalName());
@@ -2541,9 +2559,11 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // look up one level.
         IImagingInstrument instrument = getKey().getInstrument();
         String topPath = instrument != null ? smallBodyModel.serverPath("", instrument.getInstrumentName()) : FileCache.instance().getFile(imageName).getParent();
-
+        if (instrument == null)
+        {
+        	topPath = topPath.split(".sbmt")[1];
+        }
         String result = SAFE_URL_PATHS.getString(topPath, "support", key.getSource().name(), FilenameUtils.getBaseName(imageName) + "_" + smallBodyModel.getModelResolution());
-
         return result;
     }
 
@@ -3402,16 +3422,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		return smallBodyModel.getModelName();
 	}
 
-    public double getRotation()
-    {
-        return rotation;
-    }
-
-    public String getFlip()
-    {
-        return flip;
-    }
-
     public SmallBodyModel getSmallBodyModel()
     {
         return smallBodyModel;
@@ -3845,21 +3855,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 	public vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
 	{
 		return rendererHelper.getImageWithDisplayedRange(range, offlimb);
-	}
-
-	private vtkPolyData checkForExistingFootprint()
-	{
-		return rendererHelper.checkForExistingFootprint();
-	}
-
-	private vtkPolyData generateBoundary()
-	{
-		return rendererHelper.generateBoundary();
-	}
-
-	private void computeCellNormals()
-	{
-		rendererHelper.computeCellNormals();
 	}
 
 	public double[] computeIlluminationAnglesAtPoint(double[] pt, double[] normal)

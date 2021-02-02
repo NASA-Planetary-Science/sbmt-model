@@ -9,6 +9,10 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
 import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSearchModel;
+import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSpectrum;
+import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSearchModel;
+import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
@@ -29,20 +33,30 @@ public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
             Renderer renderer, BasicSpectrumInstrument instrument, SpectraCollection<S> spectrumCollection)
     {
         setBorder(BorderFactory.createEmptyBorder());
-        //TODO I think these 2 blocks can be collapsed, since there is no difference here for OTES and OVIRS
+
+        BaseSpectrumSearchModel<S> model = new BaseSpectrumSearchModel<S>(modelManager, instrument);
+        JComponent component = new OREXSpectrumSearchController<S>(
+                smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
+                smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.hasHypertreeBasedSpectraSearch,
+                smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, null,
+                smallBodyConfig.hierarchicalSpectraSearchSpecification.clone(),
+                modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
+
+        addTab("Browse", component);
 
         if (instrument.getDisplayName().equals(SpectraTypeFactory.findSpectraTypeForDisplayName("OTES").getDisplayName())) {
 
+            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
+            {
+    			OTESSearchModel model2 = new OTESSearchModel(modelManager, instrument);
+    			JComponent component2 = new OREXSpectrumSearchController<OTESSpectrum>(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
+    					false, smallBodyConfig.hasHypertreeBasedSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, new String[] {"L2", "L3"},
+    					smallBodyConfig.hierarchicalSpectraSearchSpecification,
+    					modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model2).getPanel();
+    			addTab("Search", component2);
 
-            BaseSpectrumSearchModel<S> model = new BaseSpectrumSearchModel<S>(modelManager, instrument);
-            JComponent component = new OREXSpectrumSearchController<S>(
-                    smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-                    smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification.clone(),
-                    modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
+            }
 
-
-
-            addTab("Browse", component);
 //            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
 //            {
 //            	OREXSpectrumHypertreeSearchController controller =
@@ -54,11 +68,16 @@ public class OREXSpectrumTabbedPane<S extends BasicSpectrum> extends JTabbedPane
         }
         else if (instrument.getDisplayName().equals(SpectraTypeFactory.findSpectraTypeForDisplayName("OVIRS").getDisplayName())) {
 
-        	BaseSpectrumSearchModel<S> model = new BaseSpectrumSearchModel<S>(modelManager, instrument);
-            JComponent component = new OREXSpectrumSearchController<S>(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
-                    smallBodyConfig.hasHierarchicalSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, smallBodyConfig.hierarchicalSpectraSearchSpecification.clone(),
-                    modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model).getPanel();
-            addTab("Browse", component);
+            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
+            {
+    			OVIRSSearchModel model3 = new OVIRSSearchModel(modelManager, instrument);
+    			JComponent component3 = new OREXSpectrumSearchController<OVIRSSpectrum>(smallBodyConfig.imageSearchDefaultStartDate, smallBodyConfig.imageSearchDefaultEndDate,
+    					false, smallBodyConfig.hasHypertreeBasedSpectraSearch, smallBodyConfig.imageSearchDefaultMaxSpacecraftDistance, new String[] {"SA16l3escireff", "SA27l3csci", "SA29l3esciradf"},
+    					smallBodyConfig.hierarchicalSpectraSearchSpecification,
+    					modelManager, sbmtInfoWindowManager, pickManager, renderer, instrument, model3).getPanel();
+    			addTab("Search", component3);
+
+            }
 //            if (smallBodyConfig.hasHypertreeBasedSpectraSearch)
 //            {
 //            	OREXSpectrumHypertreeSearchController controller

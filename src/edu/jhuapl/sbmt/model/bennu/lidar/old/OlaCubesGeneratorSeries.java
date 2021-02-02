@@ -5,10 +5,10 @@ import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.lidar.TrackFileType;
 import edu.jhuapl.sbmt.lidar.old.LidarCubesGenerator;
 import edu.jhuapl.sbmt.lidar.old.LidarCubesGenerator.LidarDataType;
 import edu.jhuapl.sbmt.model.bennu.shapeModel.Bennu;
-import edu.jhuapl.sbmt.model.lidar.TrackFileType;
 
 /**
  * This program goes through all the OLA L2 data and divides the data

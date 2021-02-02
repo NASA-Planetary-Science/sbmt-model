@@ -54,16 +54,16 @@ public class OREXSpectraFactory
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel, boolean headless) throws IOException
 			{
-				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean headless) throws IOException
 			{
 				OTESSpectrum spectrum = new OTESSpectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
-				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 		};
 		SbmtSpectrumModelFactory.registerModel("OTES", otesSpectra, smallBodyModel);
@@ -89,16 +89,16 @@ public class OREXSpectraFactory
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel, boolean headless) throws IOException
 			{
-				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean headless) throws IOException
 			{
 				OVIRSSpectrum spectrum = new OVIRSSpectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
-				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 		};
 		SbmtSpectrumModelFactory.registerModel("OVIRS", ovirsSpectra, smallBodyModel);
