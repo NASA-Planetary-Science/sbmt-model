@@ -30,6 +30,7 @@ import javax.swing.Timer;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.format.ISODateTimeFormat;
@@ -65,7 +66,6 @@ import vtk.vtkWindowToImageFilter;
 import vtk.rendering.jogl.vtkJoglPanelComponent;
 
 import edu.jhuapl.saavtk.gui.render.Renderer;
-import edu.jhuapl.saavtk.gui.render.Renderer.LightingType;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
@@ -75,6 +75,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Preferences;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.view.light.LightUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.gui.time.version2.IStateHistoryPanel;
@@ -724,12 +725,11 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
             // toggle for lighting - Alex W
             if (timeFraction >= 0.0 && showLighting)
             {
-                renderer.setFixedLightDirection(sunDirection);
-                renderer.setLighting(LightingType.FIXEDLIGHT);
+                renderer.setLightCfgToFixedLightAtDirection(new Vector3D(sunDirection));
                 updateActorVisibility();
             }
             else
-                renderer.setLighting(LightingType.LIGHT_KIT);
+                LightUtil.switchToLightKit(renderer);
 
 
             double[] earthPosition = currentFlybyStateHistory.getEarthPosition();
