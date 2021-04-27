@@ -8,7 +8,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import edu.jhuapl.saavtk.util.FileCache;
@@ -20,12 +19,12 @@ import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
-public abstract class BasicPerspectiveImage extends PerspectiveImage
+public class BasicPerspectiveImage extends PerspectiveImage
 {
 
     private static final Map<String, ImmutableMap<String, String>> SUM_FILE_MAP = new HashMap<>();
 
-    protected BasicPerspectiveImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public BasicPerspectiveImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
@@ -81,12 +80,15 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
         ImageKeyInterface key = getKey();
         String result = null;
 
-        if (key.getSource() == ImageSource.SPICE)
+        ImageSource source = key.getSource();
+        if (source == ImageSource.SPICE || source == ImageSource.CORRECTED_SPICE)
         {
+            String infoFilesDirName = source == ImageSource.SPICE ? "infofiles" : "infofiles-corrected";
+
             File keyFile = new File(key.getName());
-            File imagerDirectory = getImagerDirectory(keyFile);
+            String imagerPath = getImagerPath(keyFile);
             String pointingFileName = keyFile.getName() + ".INFO";
-            String pointingFilePath = SafeURLPaths.instance().getString(imagerDirectory.getPath(), "infofiles", pointingFileName);
+            String pointingFilePath = SafeURLPaths.instance().getString(imagerPath, infoFilesDirName, pointingFileName);
             result = FileCache.getFileFromServer(pointingFilePath).getAbsolutePath();
         }
 
@@ -102,7 +104,7 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
         if (key.getSource() == ImageSource.GASKELL)
         {
             File keyFile = new File(getImageFileName(key));
-            String imagerDirectory = getImagerDirectory(keyFile).getPath();
+            String imagerDirectory = getImagerPath(keyFile);
             try
             {
                 String pointingFileName = getSumFileName(imagerDirectory, key);
@@ -118,13 +120,9 @@ public abstract class BasicPerspectiveImage extends PerspectiveImage
         return result;
     }
 
-    protected File getImagerDirectory(File imageFile)
+    protected String getImagerPath(File imageFile)
     {
-        File directory = imageFile.getParentFile();
-        Preconditions.checkNotNull(directory);
-        File imagerDirectory = directory.getParentFile();
-        Preconditions.checkNotNull(imagerDirectory);
-        return imagerDirectory;
+        return getKey().getInstrument().getSearchQuery().getRootPath();
     }
 
     protected String getSumFileName(String imagerDirectory, ImageKeyInterface key) throws IOException, ParseException
