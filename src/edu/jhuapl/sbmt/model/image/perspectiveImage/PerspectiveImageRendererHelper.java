@@ -41,6 +41,7 @@ import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.model.image.IImagingInstrument;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
@@ -533,7 +534,7 @@ class PerspectiveImageRendererHelper
 //        	System.out.println("PerspectiveImage: loadFootprint: generate footprint true");
             vtkPolyData tmp = null;
 
-            if (!footprintGenerated[currentSlice])
+            if (!footprintGenerated[currentSlice] || (existingFootprint == null))
             {
 //            	System.out.println("PerspectiveImage: loadFootprint: footprint not generated");
                 if (useDefaultFootprint())
@@ -559,7 +560,7 @@ class PerspectiveImageRendererHelper
                 }
                 else
                 {
-//                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
+                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
                     tmp = image.getSmallBodyModel().computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice], frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
                     if (tmp == null)
                         return;
@@ -949,7 +950,7 @@ class PerspectiveImageRendererHelper
 
     vtkPolyData checkForExistingFootprint()
     {
-    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
+//    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
         String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
         File file = null;
         try
@@ -958,6 +959,7 @@ class PerspectiveImageRendererHelper
         }
         catch (Exception e)
         {
+        	file = new File(SafeURLPaths.instance().getString(intersectionFileName));
         	return null;
         }
         if (file != null)
