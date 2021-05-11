@@ -560,7 +560,6 @@ class PerspectiveImageRendererHelper
                 }
                 else
                 {
-                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
                     tmp = image.getSmallBodyModel().computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice], frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
                     if (tmp == null)
                         return;
