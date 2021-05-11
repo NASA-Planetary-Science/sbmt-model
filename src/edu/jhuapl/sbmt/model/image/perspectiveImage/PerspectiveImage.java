@@ -2129,7 +2129,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         else
             imageFile = getKey().getName();
         if (imageFile.startsWith("file://"))
-            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        	imageFile = SafeURLPaths.instance().getString(imageFile.substring(imageFile.indexOf("file://") + 7));
+//            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
         if (getRawImage() == null)
             setRawImage(new vtkImageData());
 
@@ -2556,7 +2557,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         String topPath = instrument != null ? smallBodyModel.serverPath("", instrument.getInstrumentName()) : FileCache.instance().getFile(imageName).getParent();
         if (instrument == null)
         {
-        	topPath = topPath.split(FileCache.instance().getFile("").getParentFile().getParentFile().getAbsolutePath())[1];
+        	String cachePath = FileCache.instance().getFile("").getParentFile().getParentFile().getAbsolutePath().replace("\\", "\\\\");
+        	topPath = topPath.split(cachePath)[1];        
         }
         String result = SAFE_URL_PATHS.getString(topPath, "support", key.getSource().name(), FilenameUtils.getBaseName(imageName) + "_" + smallBodyModel.getModelResolution());
         return result;
