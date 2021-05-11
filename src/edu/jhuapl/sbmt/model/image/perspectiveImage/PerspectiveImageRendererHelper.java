@@ -959,7 +959,18 @@ class PerspectiveImageRendererHelper
         catch (Exception e)
         {
         	file = new File(SafeURLPaths.instance().getString(intersectionFileName));
-        	return null;
+        	if (file.exists())
+            {
+            	vtkPolyDataReader reader = new vtkPolyDataReader();
+                reader.SetFileName(file.getAbsolutePath());
+                reader.Update();
+                vtkPolyData footprint = reader.GetOutput();
+                return footprint;
+            }
+        	else
+        	{
+        		return null;
+        	}
         }
         if (file != null)
         {
