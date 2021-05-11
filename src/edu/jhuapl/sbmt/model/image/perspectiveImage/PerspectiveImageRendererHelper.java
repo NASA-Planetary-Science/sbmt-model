@@ -618,16 +618,21 @@ class PerspectiveImageRendererHelper
 
         shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
         PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], image.getOffset());
-        vtkPolyDataWriter writer = new vtkPolyDataWriter();
-        writer.SetInputData(footprint[0]);
-//        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
+
         String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
-        File file = FileCache.instance().getFile(intersectionFileName);
-//        System.out.println("PerspectiveImage: loadFootprint: saving to " + intersectionFileName);
-        writer.SetFileName(file.getPath());
+        saveToDisk(FileCache.instance().getFile(intersectionFileName).getPath(), footprint[0]);
+
+        setFootprintGenerated(true);
+    }
+
+    private void saveToDisk(String filename, vtkPolyData imagePolyData)
+    {
+        new File(filename).getParentFile().mkdirs();
+        vtkPolyDataWriter writer = new vtkPolyDataWriter();
+        writer.SetInputData(imagePolyData);
+        writer.SetFileName(new File(filename).toString());
         writer.SetFileTypeToBinary();
         writer.Write();
-        setFootprintGenerated(true);
     }
 
     vtkPolyData generateBoundary()
