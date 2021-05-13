@@ -2558,7 +2558,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         if (instrument == null)
         {
         	String cachePath = FileCache.instance().getFile("").getParentFile().getParentFile().getAbsolutePath().replace("\\", "\\\\");
-        	topPath = topPath.split(cachePath)[1];        
+        	topPath = topPath.split(cachePath)[1];
         }
         String result = SAFE_URL_PATHS.getString(topPath, "support", key.getSource().name(), FilenameUtils.getBaseName(imageName) + "_" + smallBodyModel.getModelResolution());
         return result;
@@ -2978,7 +2978,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         properties.put("Minimum Incidence", df.format(getMinIncidence()) + deg);
         properties.put("Maximum Incidence", df.format(getMaxIncidence()) + deg);
         properties.put("Minimum Emission", df.format(getMinEmission()) + deg);
-        properties.put("Maximum Emission", df.format(getMaxIncidence()) + deg);
+        properties.put("Maximum Emission", df.format(getMaxEmission()) + deg);
         properties.put("Minimum Phase", df.format(getMinPhase()) + deg);
         properties.put("Maximum Phase", df.format(getMaxPhase()) + deg);
         properties.put("Minimum Horizontal Pixel Scale", df.format(1000.0 * getMinimumHorizontalPixelScale()) + " meters/pixel");
