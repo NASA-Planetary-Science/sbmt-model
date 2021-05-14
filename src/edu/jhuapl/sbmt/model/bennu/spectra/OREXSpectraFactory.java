@@ -40,7 +40,9 @@ public class OREXSpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument) throws IOException
 			{
-				OTESSpectrum spectrum = new OTESSpectrum(!path.startsWith("bennu/shared/otes") ? "bennu/shared/otes/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+//				System.out.println(
+//						"OREXSpectraFactory.initializeModels(...).new SpectrumBuilder() {...}: buildSpectrum: path is " + path);
+				OTESSpectrum spectrum = new OTESSpectrum(!(path.startsWith("bennu/shared/otes") || path.startsWith("/bennu/shared/otes")) ? "bennu/shared/otes/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return spectrum;
 			}
 
@@ -48,7 +50,9 @@ public class OREXSpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument, String timeString) throws IOException
 			{
-				OTESSpectrum spectrum = new OTESSpectrum(!path.startsWith("bennu/shared/otes") ? "bennu/shared/otes/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+//				System.out.println(
+//						"OREXSpectraFactory.initializeModels(...).new SpectrumBuilder() {...}: buildSpectrum: path is " + path);
+				OTESSpectrum spectrum = new OTESSpectrum(!(path.startsWith("bennu/shared/otes") || path.startsWith("/bennu/shared/otes")) ? "bennu/shared/otes/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				spectrum.setDateTime(new DateTime(Long.parseLong(timeString), DateTimeZone.UTC));
 				return spectrum;
 			}
@@ -56,13 +60,17 @@ public class OREXSpectraFactory
 			@Override
 			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel, boolean headless) throws IOException
 			{
+//				System.out.println(
+//						"OREXSpectraFactory.initializeModels(...).new SpectrumBuilder() {...}: buildSpectrumRenderer: path is " + spectrum.getServerpath());
 				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 
 			@Override
 			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean headless) throws IOException
 			{
-				OTESSpectrum spectrum = new OTESSpectrum(!path.startsWith("bennu/shared/otes") ? "bennu/shared/otes/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+//				System.out.println(
+//						"OREXSpectraFactory.initializeModels(...).new SpectrumBuilder() {...}: buildSpectrumRenderer: path is " + path);
+				OTESSpectrum spectrum = new OTESSpectrum(!(path.startsWith("bennu/shared/otes") || path.startsWith("/bennu/shared/otes")) ? "bennu/shared/otes/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 		};
@@ -75,7 +83,7 @@ public class OREXSpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument) throws IOException
 			{
-				OVIRSSpectrum spectrum = new OVIRSSpectrum(!path.startsWith("bennu/shared/ovirs") ? "bennu/shared/ovirs/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+				OVIRSSpectrum spectrum = new OVIRSSpectrum(!(path.startsWith("bennu/shared/ovirs") || path.startsWith("/bennu/shared/ovirs")) ? "bennu/shared/ovirs/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return spectrum;
 			}
 
@@ -83,7 +91,7 @@ public class OREXSpectraFactory
 			public BasicSpectrum buildSpectrum(String path, ISmallBodyModel smallBodyModel,
 					BasicSpectrumInstrument instrument, String timeString) throws IOException
 			{
-				OVIRSSpectrum spectrum = new OVIRSSpectrum(!path.startsWith("bennu/shared/ovirs") ? "bennu/shared/ovirs/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+				OVIRSSpectrum spectrum = new OVIRSSpectrum(!(path.startsWith("bennu/shared/ovirs") || path.startsWith("/bennu/shared/ovirs")) ? "bennu/shared/ovirs/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				spectrum.setDateTime(new DateTime(Long.parseLong(timeString)));
 				return spectrum;
 			}
@@ -97,7 +105,7 @@ public class OREXSpectraFactory
 			@Override
 			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean headless) throws IOException
 			{
-				OVIRSSpectrum spectrum = new OVIRSSpectrum(!path.startsWith("bennu/shared/ovirs") ? "bennu/shared/ovirs/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
+				OVIRSSpectrum spectrum = new OVIRSSpectrum(!(path.startsWith("bennu/shared/ovirs") || path.startsWith("/bennu/shared/ovirs")) ? "bennu/shared/ovirs/" + path : path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), instrument);
 				return new AdvancedSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 		};
