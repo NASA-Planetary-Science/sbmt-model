@@ -2129,7 +2129,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         else
             imageFile = getKey().getName();
         if (imageFile.startsWith("file://"))
-            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
+        	imageFile = SafeURLPaths.instance().getString(imageFile.substring(imageFile.indexOf("file://") + 7));
+//            imageFile = imageFile.substring(imageFile.indexOf("file://") + 7);
         if (getRawImage() == null)
             setRawImage(new vtkImageData());
 
@@ -2552,16 +2553,12 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         String imageName = getKey().getName();
 
-        // TODO this needs work. The location will be in general different depending on
-        // whether the image is in the cache or a custom image.
-        // For now, check whether the instrument is defined. Cached images will have
-        // this, custom images will not. In the custom case, just
-        // look up one level.
         IImagingInstrument instrument = getKey().getInstrument();
         String topPath = instrument != null ? smallBodyModel.serverPath("", instrument.getInstrumentName()) : FileCache.instance().getFile(imageName).getParent();
         if (instrument == null)
         {
-        	topPath = topPath.split(".sbmt")[1];
+        	String cachePath = FileCache.instance().getFile("").getParentFile().getParentFile().getAbsolutePath().replace("\\", "\\\\");
+        	topPath = topPath.split(cachePath)[1];
         }
         String result = SAFE_URL_PATHS.getString(topPath, "support", key.getSource().name(), FilenameUtils.getBaseName(imageName) + "_" + smallBodyModel.getModelResolution());
         return result;
@@ -2981,7 +2978,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         properties.put("Minimum Incidence", df.format(getMinIncidence()) + deg);
         properties.put("Maximum Incidence", df.format(getMaxIncidence()) + deg);
         properties.put("Minimum Emission", df.format(getMinEmission()) + deg);
-        properties.put("Maximum Emission", df.format(getMaxIncidence()) + deg);
+        properties.put("Maximum Emission", df.format(getMaxEmission()) + deg);
         properties.put("Minimum Phase", df.format(getMinPhase()) + deg);
         properties.put("Maximum Phase", df.format(getMaxPhase()) + deg);
         properties.put("Minimum Horizontal Pixel Scale", df.format(1000.0 * getMinimumHorizontalPixelScale()) + " meters/pixel");

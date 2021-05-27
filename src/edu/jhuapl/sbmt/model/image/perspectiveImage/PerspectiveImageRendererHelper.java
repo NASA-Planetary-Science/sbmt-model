@@ -41,6 +41,7 @@ import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.model.image.IImagingInstrument;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
@@ -533,7 +534,7 @@ class PerspectiveImageRendererHelper
 //        	System.out.println("PerspectiveImage: loadFootprint: generate footprint true");
             vtkPolyData tmp = null;
 
-            if (!footprintGenerated[currentSlice])
+            if (!footprintGenerated[currentSlice] || (existingFootprint == null))
             {
 //            	System.out.println("PerspectiveImage: loadFootprint: footprint not generated");
                 if (useDefaultFootprint())
@@ -559,7 +560,6 @@ class PerspectiveImageRendererHelper
                 }
                 else
                 {
-//                	System.out.println("PerspectiveImage: loadFootprint: computing new intersection");
                     tmp = image.getSmallBodyModel().computeFrustumIntersection(spacecraftPositionAdjusted[currentSlice], frustum1Adjusted[currentSlice], frustum3Adjusted[currentSlice], frustum4Adjusted[currentSlice], frustum2Adjusted[currentSlice]);
                     if (tmp == null)
                         return;
@@ -618,16 +618,21 @@ class PerspectiveImageRendererHelper
 
         shiftedFootprint[0].DeepCopy(footprint[currentSlice]);
         PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], image.getOffset());
-        vtkPolyDataWriter writer = new vtkPolyDataWriter();
-        writer.SetInputData(footprint[0]);
-//        System.out.println("PerspectiveImage: loadFootprint: fit file full path " + getFitFileFullPath());
+
         String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
-        File file = FileCache.instance().getFile(intersectionFileName);
-//        System.out.println("PerspectiveImage: loadFootprint: saving to " + intersectionFileName);
-        writer.SetFileName(file.getPath());
+        saveToDisk(FileCache.instance().getFile(intersectionFileName).getPath(), footprint[0]);
+
+        setFootprintGenerated(true);
+    }
+
+    private void saveToDisk(String filename, vtkPolyData imagePolyData)
+    {
+        new File(filename).getParentFile().mkdirs();
+        vtkPolyDataWriter writer = new vtkPolyDataWriter();
+        writer.SetInputData(imagePolyData);
+        writer.SetFileName(new File(filename).toString());
         writer.SetFileTypeToBinary();
         writer.Write();
-        setFootprintGenerated(true);
     }
 
     vtkPolyData generateBoundary()
@@ -949,7 +954,7 @@ class PerspectiveImageRendererHelper
 
     vtkPolyData checkForExistingFootprint()
     {
-    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
+//    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
         String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk.gz";
         File file = null;
         try
@@ -958,7 +963,19 @@ class PerspectiveImageRendererHelper
         }
         catch (Exception e)
         {
-        	return null;
+        	file = new File(SafeURLPaths.instance().getString(intersectionFileName));
+        	if (file.exists())
+            {
+            	vtkPolyDataReader reader = new vtkPolyDataReader();
+                reader.SetFileName(file.getAbsolutePath());
+                reader.Update();
+                vtkPolyData footprint = reader.GetOutput();
+                return footprint;
+            }
+        	else
+        	{
+        		return null;
+        	}
         }
         if (file != null)
         {
