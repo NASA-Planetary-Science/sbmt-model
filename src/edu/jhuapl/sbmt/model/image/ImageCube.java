@@ -332,7 +332,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
 
     protected PerspectiveImage createImage(T key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
     {
-        ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES);
+        ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES).get(0);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);
         if (result == null)
             result = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, false);

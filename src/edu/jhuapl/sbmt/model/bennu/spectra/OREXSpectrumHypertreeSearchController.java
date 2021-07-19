@@ -46,8 +46,8 @@ public class OREXSpectrumHypertreeSearchController
 
         this.spectrumSearchModel = model;
 //        this.spectrumSearchModel.loadSearchSpecMetadata();
-        SpectraCollection spectrumCollection = (SpectraCollection)modelManager.getModel(spectrumSearchModel.getSpectrumCollectionModelName());
-        SpectrumBoundaryCollection boundaryCollection = (SpectrumBoundaryCollection)modelManager.getModel(spectrumSearchModel.getSpectrumBoundaryCollectionModelName());
+        SpectraCollection spectrumCollection = (SpectraCollection)modelManager.getModel(spectrumSearchModel.getSpectrumCollectionModelName()).get(0);
+        SpectrumBoundaryCollection boundaryCollection = (SpectrumBoundaryCollection)modelManager.getModel(spectrumSearchModel.getSpectrumBoundaryCollectionModelName()).get(0);
         this.spectrumResultsTableController = new SpectrumResultsTableController(instrument, spectrumCollection, modelManager, boundaryCollection, spectrumSearchModel, renderer, infoPanelManager);
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 

@@ -219,7 +219,7 @@ public class ColorImage extends Image implements PropertyChangeListener
 
     protected PerspectiveImage createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
     {
-        ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES);
+        ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES).get(0);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);
         if (result == null)
             result = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, false);
