@@ -211,7 +211,6 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		this.imageDepth = depth;
 		footprintGenerated[currentSlice] = false;
 		useDefaultFootprint = false;
-
 		if (staticFootprint)
 			generateBoundary();
 		else
@@ -291,8 +290,19 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		edgeExtracter.ManifoldEdgesOff();
 		edgeExtracter.ColoringOff();
 		edgeExtracter.Update();
-
 		boundary = new vtkPolyData();
+
+		if (null == smallBodyModel.computeFrustumIntersection(scPos[currentSlice], frus1[currentSlice], frus3[currentSlice], frus4[currentSlice], frus2[currentSlice]))
+		{
+			if (boundaryMapper != null)
+			{
+		        boundaryMapper.SetInputData(boundary);
+		        boundaryMapper.Update();
+		        boundaryActor.SetMapper(boundaryMapper);
+			}
+			return boundary;
+		}
+
 		vtkPolyData edgeExtracterOutput = edgeExtracter.GetOutput();
 		boundary.DeepCopy(edgeExtracterOutput);
 		if (boundaryMapper != null)
@@ -747,6 +757,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 					(double)color.getGreen()/255.0,
 					(double)color.getBlue()/255.0});
 		}
+		if (footprintMapper == null) return;
 		footprintMapper.Update();
 		footprintActor.Modified();
 
@@ -779,6 +790,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	public void setColor(Color color)
 	{
 		this.color = color;
+		setFootprintColor();
 		setBoundaryColor(color);
 	}
 

@@ -46,7 +46,7 @@ public final class OTESQuery extends SpectrumPhpQuery //DatabaseQueryBase //Fixe
     }
 
     @Override
-    public OTESQuery clone() {
+    public OTESQuery copy() {
         return getInstance();
     }
 
