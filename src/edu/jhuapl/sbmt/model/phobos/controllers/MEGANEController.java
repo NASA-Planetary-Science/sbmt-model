@@ -216,17 +216,17 @@ public class MEGANEController implements PropertyChangeListener
 //				Logger.getAnonymousLogger().log(Level.INFO, "Making coloring data");
 				ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
 //				Logger.getAnonymousLogger().log(Level.INFO, "Making Loadable");
-//				try
-//				{
-//					LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
-//
-//					loadableColoringData.save();
-//				}
-//				catch (IOException e)
-//				{
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+				try
+				{
+					LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
+
+					loadableColoringData.save();
+				}
+				catch (IOException e)
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				coloringDataManager.replaceCustom("Time Per Facet", coloringData);
 //				Logger.getAnonymousLogger().log(Level.INFO, "Ending in MEGANE");
 			}
