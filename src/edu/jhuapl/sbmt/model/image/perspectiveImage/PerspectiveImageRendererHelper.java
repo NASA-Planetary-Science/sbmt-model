@@ -5,7 +5,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.davidmoten.guavamini.Preconditions;
+import com.google.common.base.Preconditions;
 
 import vtk.vtkActor;
 import vtk.vtkCell;
