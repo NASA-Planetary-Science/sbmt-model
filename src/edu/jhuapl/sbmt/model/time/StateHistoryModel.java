@@ -598,7 +598,7 @@ public class StateHistoryModel extends AbstractModel implements PropertyChangeLi
         monolithBody.Update();
 
         String spacecraftFileName = "/edu/jhuapl/sbmt/data/cassini-9k.stl";
-        initializeSpacecraftBody(ConvertResourceToFile.convertResourceToRealFile(this, spacecraftFileName, Configuration.getApplicationDataDir()));
+        initializeSpacecraftBody(ConvertResourceToFile.convertResourceToRealFile(this.getClass(), spacecraftFileName, Configuration.getApplicationDataDir()));
 
         spacecraftFov = new vtkConeSource();
         spacecraftFov.SetDirection(0.0, 0.0, -1.0);
