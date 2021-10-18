@@ -15,8 +15,8 @@ public class OsirisImageInfoPanel extends ImageInfoPanel
     {
         super(image, imageCollection, imageBoundaryCollection, aStatusHandler);
         IntensityRange range=((OsirisImage)image).getDisplayedRange();
-        slider.setLowValue(range.min);
-        slider.setHighValue(range.max);
+//        slider.setLowValue(range.min);
+//        slider.setHighValue(range.max);
     }
 
 }

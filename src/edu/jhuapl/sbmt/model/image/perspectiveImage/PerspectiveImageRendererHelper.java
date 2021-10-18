@@ -181,6 +181,7 @@ class PerspectiveImageRendererHelper
         // Initialize the mask to black which masks out the image
         maskSource.SetDrawColor(0.0, 0.0, 0.0, 0.0);
         maskSource.FillBox(0, image.imageWidth - 1, 0, image.imageHeight - 1);
+        System.out.println("PerspectiveImageRendererHelper: setCurrentMask: image width height " + image.imageWidth + " " + image.imageHeight);
         // Create a square inside mask which passes through the image.
         maskSource.SetDrawColor(255.0, 255.0, 255.0, 255.0);
         maskSource.FillBox(leftMask, image.imageWidth - 1 - rightMask, bottomMask, image.imageHeight - 1 - topMask);
