@@ -9,6 +9,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -68,11 +69,11 @@ public abstract class HierarchicalSearchSpecification
         {
             // See if node has a child called path[i]
             @SuppressWarnings("unchecked")
-            Enumeration<DefaultMutableTreeNode> e = currNode.children();
+            Enumeration<TreeNode> e = currNode.children();
             boolean childFound = false;
             while(e.hasMoreElements())
             {
-                DefaultMutableTreeNode childNode = e.nextElement();
+                DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) e.nextElement();
                 if(childNode.getUserObject().equals(path[i]))
                 {
                     childFound = true;
@@ -120,11 +121,11 @@ public abstract class HierarchicalSearchSpecification
 
             // Get all leaves from the selected parent node
             @SuppressWarnings("unchecked")
-            Enumeration<DefaultMutableTreeNode> en = selectedParentNode.depthFirstEnumeration();
+            Enumeration<TreeNode> en = selectedParentNode.depthFirstEnumeration();
             while(en.hasMoreElements())
             {
                 // Information that we want is located at the leaf nodes
-                DefaultMutableTreeNode tempNode = en.nextElement();
+                DefaultMutableTreeNode tempNode = (DefaultMutableTreeNode) en.nextElement();
                 if(tempNode.isLeaf())
                 {
                     // Extract the saved object at the leaf node containing camera and filter checkbox numbers
@@ -242,10 +243,10 @@ public abstract class HierarchicalSearchSpecification
                     for (int index = 0; index < pathStrings.length; ++index)
                     {
                         @SuppressWarnings("unchecked")
-                        Enumeration<DefaultMutableTreeNode> children = currentNode.children();
+                        Enumeration<TreeNode> children = currentNode.children();
                         while (children.hasMoreElements())
                         {
-                            DefaultMutableTreeNode child = children.nextElement();
+                            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
                             if (child.getUserObject().equals(pathStrings[index]))
                             {
                                 nodes[index] = child;
