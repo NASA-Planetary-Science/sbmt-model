@@ -16,7 +16,6 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
 import edu.jhuapl.sbmt.gui.image.ui.custom.CustomImageImporterDialog.ProjectionType;
@@ -44,7 +43,7 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
             ImageKeyInterface key,
             SmallBodyModel smallBodyModel) throws IOException, FitsException
     {
-        PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, true), smallBodyModel);
+        PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtImageModelFactory.createImage(key, smallBodyModel, true), smallBodyModel);
         boundary.setBoundaryColor(initialColors[initialColorIndex++]);
         if (initialColorIndex >= initialColors.length)
             initialColorIndex = 0;

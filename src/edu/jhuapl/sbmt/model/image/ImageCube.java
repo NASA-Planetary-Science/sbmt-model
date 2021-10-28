@@ -26,7 +26,6 @@ import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.gui.image.model.ImageKey;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
@@ -335,7 +334,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
         ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES).get(0);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);
         if (result == null)
-            result = (PerspectiveImage)SbmtModelFactory.createImage(key, smallBodyModel, false);
+            result = (PerspectiveImage)SbmtImageModelFactory.createImage(key, smallBodyModel, false);
         return result;
     }
 

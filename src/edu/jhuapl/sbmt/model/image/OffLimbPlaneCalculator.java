@@ -389,7 +389,7 @@ public class OffLimbPlaneCalculator
          // initialize view config
         SmallBodyViewConfig.initialize();
     	SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(body, type);
-    	SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config);
+    	SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config).get(0);
     	ImageKeyInterface key = new ImageKey("https://sbmt.jhuapl.edu/sbmt/prod/data/bennu/altwg-spc-v20190121/polycam/images/ocams20181108t042907s071_pol_iofl2pan_53003.fits", ImageSource.GASKELL);
     	OcamsFlightImage image = OcamsFlightImage.of(key, smallBodyModel, false);
     	String outputDir = ".";

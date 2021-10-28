@@ -16,7 +16,6 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
@@ -37,7 +36,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 
     protected Image createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel) throws FitsException, IOException
     {
-        return SbmtModelFactory.createImage(key, smallBodyModel, false);
+        return SbmtImageModelFactory.createImage(key, smallBodyModel, false);
     }
 
     private boolean containsKey(ImageKeyInterface key)
