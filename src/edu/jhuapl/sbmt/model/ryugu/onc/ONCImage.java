@@ -44,7 +44,7 @@ public class ONCImage extends PerspectiveImage
     }
 
     @Override
-    protected int[] getMaskSizes()
+    public int[] getMaskSizes()
     {
     	// Don't mask anything.
         return new int[]{0, 0, 0, 0};

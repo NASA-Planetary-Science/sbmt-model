@@ -140,8 +140,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     protected int fitFileImageExtension = 0; // Default is to use the primary FITS image.
 
-    float[] minValue = new float[1];
-    float[] maxValue = new float[1];
+    public float[] minValue = new float[1];
+    public float[] maxValue = new float[1];
     private boolean loadPointingOnly;
     private final boolean transposeFITSData;
     Stopwatch sw;
@@ -231,7 +231,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.backplanesHelper = new PerspectiveImageBackplanesHelper(this);
         this.imageOffsetCalculator = new PerspectiveImageOffsetCalculator(this);
         this.offlimbPlaneHelper = new PerspectiveImageOfflimbPlaneHelper(this);
-        this.rendererHelper = new PerspectiveImageRendererHelper(this);
+        this.rendererHelper = new PerspectiveImageRendererHelper(this, modelManager);
 
         initialize();
     }
@@ -477,7 +477,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      *
      * @return
      */
-    abstract protected int[] getMaskSizes();
+    public abstract int[] getMaskSizes();
 
     ///////////////////////////
     // Pointing methods
@@ -1084,7 +1084,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     }
 
-    void saveImageInfo()
+    public void saveImageInfo()
     {
         String[] infoFileNames = getInfoFilesFullPath();
         String sumFileName = this.getSumfileFullPath();
@@ -3443,7 +3443,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             return super.getImageName();
     }
 
-	void firePropertyChange(String propertyName, Object oldValue, Object newValue)
+	public void firePropertyChange(String propertyName, Object oldValue, Object newValue)
 	{
 		this.pcs.firePropertyChange(propertyName, oldValue, newValue);
 	}

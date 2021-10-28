@@ -212,7 +212,7 @@ public class LEISAJupiterImage extends PerspectiveImage
     }
 
     @Override
-    protected int[] getMaskSizes()
+    public int[] getMaskSizes()
     {
         return new int[]{0, 0, 0, 0};
     }

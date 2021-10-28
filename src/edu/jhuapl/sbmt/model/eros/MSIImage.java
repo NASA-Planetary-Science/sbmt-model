@@ -85,7 +85,7 @@ public class MSIImage extends PerspectiveImage
     }
 
     @Override
-    protected int[] getMaskSizes()
+    public int[] getMaskSizes()
     {
         return new int[]{TOP_MASK, RIGHT_MASK, BOTTOM_MASK, LEFT_MASK};
     }

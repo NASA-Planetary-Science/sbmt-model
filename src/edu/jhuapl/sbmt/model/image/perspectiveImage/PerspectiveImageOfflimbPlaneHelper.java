@@ -17,7 +17,7 @@ import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.model.image.OffLimbPlaneCalculator;
 
-class PerspectiveImageOfflimbPlaneHelper
+public class PerspectiveImageOfflimbPlaneHelper
 {
 	PerspectiveImage image;
     /*
@@ -213,7 +213,7 @@ class PerspectiveImageOfflimbPlaneHelper
         return offLimbBoundaryColor;
     }
 
-    IntensityRange getOffLimbDisplayedRange()
+    public IntensityRange getOffLimbDisplayedRange()
     {
         if (offLimbDisplayedRange == null)
         {

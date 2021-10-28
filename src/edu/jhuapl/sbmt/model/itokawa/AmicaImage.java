@@ -424,7 +424,7 @@ public class AmicaImage extends PerspectiveImage
     }
 
     @Override
-    protected int[] getMaskSizes()
+    public int[] getMaskSizes()
     {
         String filename = getFitFileFullPath();
 
