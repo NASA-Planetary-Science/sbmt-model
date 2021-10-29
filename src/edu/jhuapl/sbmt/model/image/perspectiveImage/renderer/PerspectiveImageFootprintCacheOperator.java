@@ -4,6 +4,7 @@ import java.io.File;
 
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataReader;
+import vtk.vtkPolyDataWriter;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
@@ -16,7 +17,7 @@ public class PerspectiveImageFootprintCacheOperator
 		// TODO Auto-generated constructor stub
 	}
 
-    vtkPolyData checkForExistingFootprint(String preRenderingFilenameBase)
+    public vtkPolyData[] checkForExistingFootprint(String preRenderingFilenameBase)
     {
 //    	if (getFootprintGenerated()[image.getCurrentSlice()] == false) return null;
         String intersectionFileName = preRenderingFilenameBase + "_frustumIntersection.vtk.gz";
@@ -34,7 +35,7 @@ public class PerspectiveImageFootprintCacheOperator
                 reader.SetFileName(file.getAbsolutePath());
                 reader.Update();
                 vtkPolyData footprint = reader.GetOutput();
-                return footprint;
+                return new vtkPolyData[] { footprint };
             }
         	else
         	{
@@ -47,9 +48,19 @@ public class PerspectiveImageFootprintCacheOperator
             reader.SetFileName(file.getAbsolutePath());
             reader.Update();
             vtkPolyData footprint = reader.GetOutput();
-            return footprint;
+            return new vtkPolyData[] { footprint };
         }
         return null;
+    }
+
+    public void saveToDisk(String filename, vtkPolyData imagePolyData)
+    {
+        new File(filename).getParentFile().mkdirs();
+        vtkPolyDataWriter writer = new vtkPolyDataWriter();
+        writer.SetInputData(imagePolyData);
+        writer.SetFileName(new File(filename).toString());
+        writer.SetFileTypeToBinary();
+        writer.Write();
     }
 
 }

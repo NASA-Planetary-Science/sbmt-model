@@ -14,7 +14,6 @@ import vtk.vtkActor;
 import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.model.AbstractModel;
-import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.ImageCube.ImageCubeKey;
@@ -25,7 +24,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
 {
     private SmallBodyModel smallBodyModel;
 
-    private ModelManager modelManager;
+    private ImageCollection imageCollection;
 
     private HashMap<ImageCube, List<vtkProp>> imageToActorsMap = new HashMap<ImageCube, List<vtkProp>>();
 
@@ -33,17 +32,17 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
 
     private Vector<ImageCube> loadedImages;
 
-    public ImageCubeCollection(SmallBodyModel smallBodyModel, ModelManager modelManager)
+    public ImageCubeCollection(SmallBodyModel smallBodyModel, ImageCollection images)
     {
         this.smallBodyModel = smallBodyModel;
-        this.modelManager = modelManager;
+        this.imageCollection = images;
         this.loadedImages = new Vector<ImageCube>();
     }
 
     protected ImageCube createImage(ImageCubeKey key,
             SmallBodyModel smallBodyModel) throws FitsException, IOException, ImageCube.NoOverlapException
     {
-        return new ImageCube(key, smallBodyModel, modelManager);
+        return new ImageCube(key, smallBodyModel, imageCollection);
     }
 
     private boolean containsKey(ImageCubeKey key)
@@ -193,10 +192,10 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
 
     }
 
-	public void setModelManager(ModelManager modelManager)
-	{
-		this.modelManager = modelManager;
-	}
+//	public void setModelManager(ModelManager modelManager)
+//	{
+//		this.modelManager = modelManager;
+//	}
 
 //    public void setShowFrustums(boolean b)
 //    {

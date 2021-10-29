@@ -16,7 +16,7 @@ public class PerspectiveImageMaskingOperator
 		this.image = image;
 	}
 
-    void initializeMaskingAfterLoad()
+    public vtkImageCanvasSource2D initializeMaskingAfterLoad()
     {
     	int[] masking = image.getMaskSizes();
         int topMask = masking[0];
@@ -38,15 +38,7 @@ public class PerspectiveImageMaskingOperator
         maskSource.SetDrawColor(255.0, 255.0, 255.0, 255.0);
         maskSource.FillBox(leftMask, image.getImageWidth() - 1 - rightMask, bottomMask, image.getImageHeight() - 1 - topMask);
         maskSource.Update();
-
-//        for (int k = 0; k < image.getImageDepth(); k++)
-//        {
-//            footprint[k] = new vtkPolyData();
-//        }
-
-//        shiftedFootprint[0] = new vtkPolyData();
-//        textureCoords = new vtkFloatArray();
-//        normalsFilter = new vtkPolyDataNormals();
+        return maskSource;
     }
 
     public void setCurrentMask(int[] masking)
@@ -64,16 +56,24 @@ public class PerspectiveImageMaskingOperator
         maskSource.Update();
 
         image.firePropertyChange(Properties.MODEL_CHANGED, null, this);
-        setDisplayedImageRange(null);
+//        setDisplayedImageRange(null);
 
         for (int i = 0; i < masking.length; ++i)
             currentMask[i] = masking[i];
     }
 
-    int[] getCurrentMask()
+    public int[] getCurrentMask()
     {
         return currentMask.clone();
     }
+
+	/**
+	 * @return the maskSource
+	 */
+	public vtkImageCanvasSource2D getMaskSource()
+	{
+		return maskSource;
+	}
 
 //    public void propertyChange(PropertyChangeEvent evt)
 //    {

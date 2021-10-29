@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.image.perspectiveImage.renderer;
 
 import com.github.davidmoten.guavamini.Preconditions;
 
+import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageData;
 import vtk.vtkImageMapToColors;
 import vtk.vtkImageMask;
@@ -18,13 +19,16 @@ public class PerspectiveImageIntensityOperator
 	// Always use accessors to use this field -- even within this class!
 	private IntensityRange[] displayedRange = null;
 	PerspectiveImage image;
+	vtkImageData rawImage;
+	private vtkImageData displayedImage;
 
 	public PerspectiveImageIntensityOperator(PerspectiveImage image)
 	{
 		this.image = image;
+		this.rawImage = image.getRawImage();
 	}
 
-	vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
+	public vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb, vtkImageCanvasSource2D maskSource)
 	{
 		int currentSlice = image.getCurrentSlice();
 		float minValue = image.getMinValue();
@@ -107,7 +111,7 @@ public class PerspectiveImageIntensityOperator
 	 * @param slice
 	 *            the number of the slice whose displayed range to return.
 	 */
-	IntensityRange getDisplayedRange(int slice)
+	public IntensityRange getDisplayedRange(int slice)
 	{
 		int nslices = image.getImageDepth();
 
@@ -133,7 +137,7 @@ public class PerspectiveImageIntensityOperator
 	 * @param range
 	 *            the new displayed range of the image. If null is passed,
 	 */
-	void setDisplayedImageRange(IntensityRange range)
+	public void setDisplayedImageRange(IntensityRange range, vtkImageCanvasSource2D maskSource)
 	{
 		int currentSlice = image.getCurrentSlice();
 		if (rawImage != null)
@@ -156,7 +160,7 @@ public class PerspectiveImageIntensityOperator
 
 			if (rawImage != null)
 			{
-				vtkImageData img = getImageWithDisplayedRange(range, false);
+				vtkImageData img = getImageWithDisplayedRange(range, false, maskSource);
 				if (displayedImage == null)
 					displayedImage = new vtkImageData();
 				displayedImage.DeepCopy(img);
@@ -166,7 +170,7 @@ public class PerspectiveImageIntensityOperator
 		image.firePropertyChange(Properties.MODEL_CHANGED, null, this);
 	}
 
-	IntensityRange getDisplayedRange()
+	public IntensityRange getDisplayedRange()
 	{
 		return getDisplayedRange(image.getCurrentSlice());
 	}

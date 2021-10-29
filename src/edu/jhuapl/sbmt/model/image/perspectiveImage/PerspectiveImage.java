@@ -37,7 +37,6 @@ import vtk.vtkProp;
 import vtk.vtkTexture;
 
 import edu.jhuapl.saavtk.model.FileType;
-import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.DateTimeUtil;
 import edu.jhuapl.saavtk.util.FileCache;
@@ -54,6 +53,7 @@ import edu.jhuapl.sbmt.model.image.IImagingInstrument;
 import edu.jhuapl.sbmt.model.image.Image;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.renderer.PerspectiveImageRendererHelper2;
 import edu.jhuapl.sbmt.util.BackPlanesPDS4XML;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
@@ -129,7 +129,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     private int imageDepth = 1;
     int numBackplanes = BackplaneInfo.values().length;
 
-    private ModelManager modelManager;
+//    private ModelManager modelManager;
     private String pngFileFullPath; // The actual path of the PNG image stored on the local disk (after downloading
                                     // from the server)
     private String fitFileFullPath; // The actual path of the FITS image stored on the local disk (after downloading
@@ -149,7 +149,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     PerspectiveImageBackplanesHelper backplanesHelper;
     PerspectiveImageOffsetCalculator imageOffsetCalculator;
     PerspectiveImageOfflimbPlaneHelper offlimbPlaneHelper;
-    PerspectiveImageRendererHelper rendererHelper;
+    PerspectiveImageRendererHelper2 rendererHelper;
 
 
     public PerspectiveImage( //
@@ -158,7 +158,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean loadPointingOnly, //
             boolean transposeData) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
+        this(key, smallBodyModel, loadPointingOnly, 0, transposeData);
     }
 
     public PerspectiveImage( //
@@ -166,7 +166,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             SmallBodyModel smallBodyModel, //
             boolean loadPointingOnly) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, null, loadPointingOnly, 0, true);
+        this(key, smallBodyModel, loadPointingOnly, 0, true);
     }
 
     public PerspectiveImage( //
@@ -175,37 +175,37 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean loadPointingOnly, //
             int currentSlice) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, null, loadPointingOnly, currentSlice, true);
+        this(key, smallBodyModel, loadPointingOnly, currentSlice, true);
     }
 
-    /**
-     * If loadPointingOnly is true then only pointing information about this image
-     * will be downloaded/loaded. The image itself will not be loaded. Used by
-     * ImageBoundary to get pointing info.
-     */
-    public PerspectiveImage( //
-            ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
-            ModelManager modelManager, //
-            boolean loadPointingOnly) throws FitsException, IOException //
-    {
-        this(key, smallBodyModel, modelManager, loadPointingOnly, 0, true);
-    }
+//    /**
+//     * If loadPointingOnly is true then only pointing information about this image
+//     * will be downloaded/loaded. The image itself will not be loaded. Used by
+//     * ImageBoundary to get pointing info.
+//     */
+//    public PerspectiveImage( //
+//            ImageKeyInterface key, //
+//            SmallBodyModel smallBodyModel, //
+//            ModelManager modelManager, //
+//            boolean loadPointingOnly) throws FitsException, IOException //
+//    {
+//        this(key, smallBodyModel, modelManager, loadPointingOnly, 0, true);
+//    }
 
-    /**
-     * If loadPointingOnly is true then only pointing information about this
-     * image will be downloaded/loaded. The image itself will not be loaded.
-     * Used by ImageBoundary to get pointing info.
-     */
-    public PerspectiveImage( //
-            ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
-            ModelManager modelManager, //
-            boolean loadPointingOnly, //
-            int currentSlice) throws FitsException, IOException //
-    {
-        this(key, smallBodyModel, modelManager, loadPointingOnly, currentSlice, true);
-    }
+//    /**
+//     * If loadPointingOnly is true then only pointing information about this
+//     * image will be downloaded/loaded. The image itself will not be loaded.
+//     * Used by ImageBoundary to get pointing info.
+//     */
+//    public PerspectiveImage( //
+//            ImageKeyInterface key, //
+//            SmallBodyModel smallBodyModel, //
+//            ModelManager modelManager, //
+//            boolean loadPointingOnly, //
+//            int currentSlice) throws FitsException, IOException //
+//    {
+//        this(key, smallBodyModel, modelManager, loadPointingOnly, currentSlice, true);
+//    }
 
   /**
      * If loadPointingOnly is true then only pointing information about this image
@@ -215,7 +215,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     protected PerspectiveImage( //
             ImageKeyInterface key, //
             SmallBodyModel smallBodyModel, //
-            ModelManager modelManager, //
+//            ModelManager modelManager, //
             boolean loadPointingOnly, //
             int currentSlice, //
             boolean transposeData) throws FitsException, IOException //
@@ -223,7 +223,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         super(key);
         this.currentSlice = currentSlice;
         this.smallBodyModel = smallBodyModel;
-        this.modelManager = modelManager;
+//        this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
 
         this.transposeFITSData = transposeData;
@@ -231,7 +231,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.backplanesHelper = new PerspectiveImageBackplanesHelper(this);
         this.imageOffsetCalculator = new PerspectiveImageOffsetCalculator(this);
         this.offlimbPlaneHelper = new PerspectiveImageOfflimbPlaneHelper(this);
-        this.rendererHelper = new PerspectiveImageRendererHelper(this, modelManager);
+        this.rendererHelper = new PerspectiveImageRendererHelper2(this, modelManager);
 
         initialize();
     }
@@ -292,8 +292,8 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             imageOffsetCalculator.updateFrameAdjustments();
         }
 
-        rendererHelper.maxFrustumDepth = new double[imageDepth];
-        rendererHelper.minFrustumDepth = new double[imageDepth];
+//        rendererHelper.maxFrustumDepth = new double[imageDepth];
+//        rendererHelper.minFrustumDepth = new double[imageDepth];
     }
 
     private void initSpacecraftStateVariables()
@@ -2462,10 +2462,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         // write image to obj triangles w/ texture map based on displayed image
         Path footprintFilePath = Paths.get(filePath);
         String headerString = "start time " + getStartTime() + " end time " + getStopTime();
-        ObjUtil.writePolyDataToObj(rendererHelper.shiftedFootprint[0], getDisplayedImage(), footprintFilePath, headerString);
+        ObjUtil.writePolyDataToObj(rendererHelper.getShiftedFootprint(), getDisplayedImage(), footprintFilePath, headerString);
         // write footprint boundary to obj lines
         vtkFeatureEdges edgeFilter = new vtkFeatureEdges();
-        edgeFilter.SetInputData(rendererHelper.shiftedFootprint[0]);
+        edgeFilter.SetInputData(rendererHelper.getShiftedFootprint());
         edgeFilter.Update();
         Path basedir = Paths.get(filePath).getParent();
         String filename = Paths.get(filePath).getFileName().toString();
@@ -2478,7 +2478,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         double[] upVector = new double[3];
         getCameraOrientation(spacecraftPosition, focalPoint, upVector);
         String frustumFileHeader = "Camera position=" + new Vector3D(spacecraftPosition) + " Camera focal point=" + new Vector3D(focalPoint) + " Camera up vector=" + new Vector3D(upVector);
-        ObjUtil.writePolyDataToObj(rendererHelper.frustumPolyData, frustumFilePath, frustumFileHeader);
+        ObjUtil.writePolyDataToObj(rendererHelper.getFrustumRendererOperator().getFrustumPolyData(), frustumFilePath, frustumFileHeader);
     }
 
     protected void loadImageCalibrationData(Fits f) throws FitsException, IOException
@@ -2940,7 +2940,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public LinkedHashMap<String, String> getProperties() throws IOException
     {
         LinkedHashMap<String, String> properties = new LinkedHashMap<String, String>();
-        if (rendererHelper.getFootprint() == null || rendererHelper.getFootprint(currentSlice) == null)
+        if (rendererHelper.getFootprint() == null || rendererHelper.getFootprintRendererOperator().getFootprint(currentSlice) == null)
             return properties;
 
         if (getMaxPhase() < getMinPhase())
@@ -3429,10 +3429,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         return numBackplanes;
     }
 
-    protected ModelManager getModelManager()
-    {
-        return modelManager;
-    }
+//    protected ModelManager getModelManager()
+//    {
+//        return modelManager;
+//    }
 
     @Override
     public String getImageName()
@@ -3463,7 +3463,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		return backplanesHelper;
 	}
 
-	public PerspectiveImageRendererHelper getRendererHelper()
+	public PerspectiveImageRendererHelper2 getRendererHelper()
 	{
 		return rendererHelper;
 	}
@@ -3659,7 +3659,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public void calculateFrustum()
 	{
-		rendererHelper.calculateFrustum();
+		rendererHelper.getFrustumRendererOperator().calculateFrustum();
 	}
 
 
@@ -3671,7 +3671,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public void loadFootprint()
 	{
-		rendererHelper.loadFootprint();
+		rendererHelper.getFootprintRendererOperator().loadFootprint();
 	}
 
 	public boolean useDefaultFootprint()
@@ -3706,17 +3706,17 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public double getMaxFrustumDepth(int slice)
 	{
-		return rendererHelper.getMaxFrustumDepth(slice);
+		return rendererHelper.getFrustumRendererOperator().getMaxFrustumDepth(slice);
 	}
 
 	public double getMinFrustumDepth(int slice)
 	{
-		return rendererHelper.getMinFrustumDepth(slice);
+		return rendererHelper.getFrustumRendererOperator().getMinFrustumDepth(slice);
 	}
 
 	public void setDisplayedImageRange(IntensityRange range)
 	{
-		rendererHelper.setDisplayedImageRange(range);
+		rendererHelper.getIntensityOperator().setDisplayedImageRange(range, rendererHelper.getMaskingOperator().getMaskSource());
 	}
 
 	public vtkImageData getRawImage()
@@ -3746,52 +3746,52 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public double getMinIncidence()
 	{
-		return rendererHelper.getMinIncidence();
+		return rendererHelper.getIlluminationOperator().getMinIncidence();
 	}
 
 	public double getMaxIncidence()
 	{
-		return rendererHelper.getMaxIncidence();
+		return rendererHelper.getIlluminationOperator().getMaxIncidence();
 	}
 
 	public double getMinEmission()
 	{
-		return rendererHelper.getMinEmission();
+		return rendererHelper.getIlluminationOperator().getMinEmission();
 	}
 
 	public double getMaxEmission()
 	{
-		return rendererHelper.getMaxEmission();
+		return rendererHelper.getIlluminationOperator().getMaxEmission();
 	}
 
 	public double getMinPhase()
 	{
-		return rendererHelper.getMinPhase();
+		return rendererHelper.getIlluminationOperator().getMinPhase();
 	}
 
 	public double getMaxPhase()
 	{
-		return rendererHelper.getMaxPhase();
+		return rendererHelper.getIlluminationOperator().getMaxPhase();
 	}
 
 	public IntensityRange getDisplayedRange()
 	{
-		return rendererHelper.getDisplayedRange();
+		return rendererHelper.getIntensityOperator().getDisplayedRange();
 	}
 
 	public IntensityRange getDisplayedRange(int slice)
 	{
-		return rendererHelper.getDisplayedRange(slice);
+		return rendererHelper.getIntensityOperator().getDisplayedRange(slice);
 	}
 
-	public vtkPolyData getFootprint(int defaultSlice)
+	public vtkPolyData getFootprint(int index)
 	{
-		return rendererHelper.getFootprint(defaultSlice);
+		return rendererHelper.getFootprintRendererOperator().getFootprint(index);
 	}
 
 	public Frustum getFrustum(int slice)
 	{
-		return rendererHelper.getFrustum(slice);
+		return rendererHelper.getFrustumRendererOperator().getFrustum(slice);
 	}
 
 	public Frustum getFrustum()
@@ -3806,42 +3806,42 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public void setMaxFrustumDepth(int slice, double value)
 	{
-		rendererHelper.setMaxFrustumDepth(slice, value);
+		rendererHelper.getFrustumRendererOperator().setMaxFrustumDepth(slice, value);
 	}
 
 	public void setMinFrustumDepth(int slice, double value)
 	{
-		rendererHelper.setMinFrustumDepth(slice, value);
+		rendererHelper.getFrustumRendererOperator().setMinFrustumDepth(slice, value);
 	}
 
 	public double getMinimumHorizontalPixelScale()
 	{
-		return rendererHelper.minHorizontalPixelScale;
+		return rendererHelper.getPixelScaleOperator().minHorizontalPixelScale;
 	}
 
 	public double getMaximumHorizontalPixelScale()
 	{
-		return rendererHelper.maxHorizontalPixelScale;
+		return rendererHelper.getPixelScaleOperator().maxHorizontalPixelScale;
 	}
 
 	public double getMeanHorizontalPixelScale()
 	{
-		return rendererHelper.meanHorizontalPixelScale;
+		return rendererHelper.getPixelScaleOperator().meanHorizontalPixelScale;
 	}
 
 	public double getMinimumVerticalPixelScale()
 	{
-		return rendererHelper.minVerticalPixelScale;
+		return rendererHelper.getPixelScaleOperator().minVerticalPixelScale;
 	}
 
 	public double getMaximumVerticalPixelScale()
 	{
-		return rendererHelper.maxVerticalPixelScale;
+		return rendererHelper.getPixelScaleOperator().maxVerticalPixelScale;
 	}
 
 	public double getMeanVerticalPixelScale()
 	{
-		return rendererHelper.meanVerticalPixelScale;
+		return rendererHelper.getPixelScaleOperator().meanVerticalPixelScale;
 	}
 
 	public static void setGenerateFootprint(boolean b)
@@ -3851,22 +3851,22 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb)
 	{
-		return rendererHelper.getImageWithDisplayedRange(range, offlimb);
+		return rendererHelper.getIntensityOperator().getImageWithDisplayedRange(range, offlimb, rendererHelper.getMaskingOperator().getMaskSource());
 	}
 
 	public double[] computeIlluminationAnglesAtPoint(double[] pt, double[] normal)
 	{
-		return rendererHelper.computeIlluminationAnglesAtPoint(pt, normal);
+		return rendererHelper.getIlluminationOperator().computeIlluminationAnglesAtPoint(pt, normal);
 	}
 
 	public void computeIlluminationAngles()
 	{
-		rendererHelper.computeIlluminationAngles();
+		rendererHelper.getIlluminationOperator().computeIlluminationAngles();
 	}
 
 	public void computePixelScale()
 	{
-		rendererHelper.computePixelScale();
+		rendererHelper.getPixelScaleOperator().computePixelScale(this);
 	}
 
 	public double getOpacity()
@@ -3886,7 +3886,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public int[] getCurrentMask()
 	{
-		return rendererHelper.getCurrentMask();
+		return rendererHelper.getMaskingOperator().getCurrentMask();
 	}
 
 	protected void processRawImage(vtkImageData rawImage)
@@ -3909,19 +3909,19 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 		return rendererHelper.getFootprintGenerated();
 	}
 
-	public void setFootprintGenerated(boolean footprintGenerated)
-	{
-		rendererHelper.setFootprintGenerated(footprintGenerated);
-	}
-
-	public void setFootprintGenerated(boolean footprintGenerated, int slice)
-	{
-		rendererHelper.setFootprintGenerated(footprintGenerated, slice);
-	}
+//	public void setFootprintGenerated(boolean footprintGenerated)
+//	{
+//		rendererHelper.setFootprintGenerated(footprintGenerated);
+//	}
+//
+//	public void setFootprintGenerated(boolean footprintGenerated, int slice)
+//	{
+//		rendererHelper.setFootprintGenerated(footprintGenerated, slice);
+//	}
 
 	public boolean isNormalsGenerated()
 	{
-		return rendererHelper.isNormalsGenerated();
+		return rendererHelper.getIlluminationOperator().isNormalsGenerated();
 	}
 
 	public static boolean isGenerateFootprint()
@@ -3931,7 +3931,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
 	public void setNormalsGenerated(boolean normalsGenerated)
 	{
-		rendererHelper.setNormalsGenerated(normalsGenerated);
+		rendererHelper.getIlluminationOperator().setNormalsGenerated(normalsGenerated);
 	}
 
 	public double getSurfaceArea()

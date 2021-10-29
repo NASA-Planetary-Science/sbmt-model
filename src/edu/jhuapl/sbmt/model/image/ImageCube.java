@@ -18,8 +18,6 @@ import vtk.vtkProp;
 import vtk.vtkTexture;
 import vtk.vtksbCellLocator;
 
-import edu.jhuapl.saavtk.model.ModelManager;
-import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.IntensityRange;
@@ -240,9 +238,12 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
     protected String initializeEnviFileFullPath() {return null; }
     protected String initializePngFileFullPath() { return null; }
 
-    public ImageCube(ImageCubeKey<T> key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException, NoOverlapException
+    private ImageCollection imageCollection;
+
+    public ImageCube(ImageCubeKey<T> key, SmallBodyModel smallBodyModel, ImageCollection images) throws FitsException, IOException, NoOverlapException
     {
-        super(key, smallBodyModel, modelManager, false);
+        super(key, smallBodyModel, false);
+        this.imageCollection = images;
     }
 
     protected vtkImageData loadRawImage() throws FitsException, IOException
@@ -264,7 +265,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
         imageSlices = new ArrayList<Integer>();
         for (T key : imageCubeKey.imageKeys)
         {
-            PerspectiveImage image = createImage(key, getSmallBodyModel(), getModelManager());
+            PerspectiveImage image = createImage(key, getSmallBodyModel(), imageCollection);
             images.add(image);
             imageSlices.add(0); // twupy1: Hardcoded image slice to 0 since image cubes are always made from single slice images.  This was causing problems otherwise.
             if (key.equals(imageCubeKey.firstImageKey))
@@ -329,9 +330,9 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
 //        return colorImage;
     }
 
-    protected PerspectiveImage createImage(T key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
+    protected PerspectiveImage createImage(T key, SmallBodyModel smallBodyModel, ImageCollection images) throws FitsException, IOException
     {
-        ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES).get(0);
+//        ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES).get(0);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);
         if (result == null)
             result = (PerspectiveImage)SbmtImageModelFactory.createImage(key, smallBodyModel, false);
