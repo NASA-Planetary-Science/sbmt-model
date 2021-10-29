@@ -37,7 +37,7 @@ public class SbmtImageModelFactory
 
 	static public Image createImage(
             ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
+            List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
 

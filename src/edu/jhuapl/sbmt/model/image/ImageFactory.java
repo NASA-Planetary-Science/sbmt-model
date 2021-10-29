@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.image;
 
 import java.io.File;
+import java.util.List;
 
 import com.google.common.base.Preconditions;
 
@@ -193,7 +194,7 @@ public class ImageFactory
      *             match this factory's {@link ImageType}
      * @throws NullPointerException if any arguments are null
      */
-    public Image createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws ImageCreationException
+    public Image createImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel, boolean loadPointingOnly) throws ImageCreationException
     {
         Preconditions.checkNotNull(key);
         Preconditions.checkNotNull(smallBodyModel);

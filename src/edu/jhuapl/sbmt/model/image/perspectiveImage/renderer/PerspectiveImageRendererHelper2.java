@@ -16,8 +16,6 @@ import vtk.vtkProp;
 import vtk.vtkProperty;
 import vtk.vtkTexture;
 
-import edu.jhuapl.saavtk.model.ModelManager;
-import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.util.FillDetector;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
@@ -77,10 +75,11 @@ public class PerspectiveImageRendererHelper2
 //    private ModelManager modelManager;
     private List<SmallBodyModel> smallBodyModels;
 
-	public PerspectiveImageRendererHelper2(PerspectiveImage image, ModelManager modelManager)
+	public PerspectiveImageRendererHelper2(PerspectiveImage image, List<SmallBodyModel> smallBodyModels)
 	{
 		this.image = image;
-		smallBodyModels = modelManager.getModel(ModelNames.SMALL_BODY).stream().map(body -> { return (SmallBodyModel)body; }).toList();
+		this.smallBodyModels = smallBodyModels;
+//		smallBodyModels = modelManager.getModel(ModelNames.SMALL_BODY).stream().map(body -> { return (SmallBodyModel)body; }).toList();
 
 		footprintCacheOperator = new PerspectiveImageFootprintCacheOperator();
 		illuminationOperator = new PerspectiveImageIlluminationOperator(image);
@@ -106,24 +105,29 @@ public class PerspectiveImageRendererHelper2
     {
         if (footprintActor == null)
         {
-            footprintRendererOperator.loadFootprint();
-
+        	System.out.println("PerspectiveImageRendererHelper2: getProps: loading footprint");
+//            footprintRendererOperator.loadFootprint();
+            loadFootprint();
             imageTexture = new vtkTexture();
             imageTexture.InterpolateOn();
             imageTexture.RepeatOff();
             imageTexture.EdgeClampOn();
             imageTexture.SetInputData(getDisplayedImage());
+            for (int i=0; i<smallBodyModels.size(); i++)
+            {
 
-            vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
-            footprintMapper.SetInputData(shiftedFootprint[0]);
-            footprintMapper.Update();
-            footprintActor = new vtkActor();
-            footprintActor.SetMapper(footprintMapper);
-            footprintActor.SetTexture(imageTexture);
-            vtkProperty footprintProperty = footprintActor.GetProperty();
-            footprintProperty.LightingOff();
 
-            footprintActors.add(footprintActor);
+	            vtkPolyDataMapper footprintMapper = new vtkPolyDataMapper();
+	            footprintMapper.SetInputData(shiftedFootprint[i]);
+	            footprintMapper.Update();
+	            vtkActor footprintActor = new vtkActor();
+	            footprintActor.SetMapper(footprintMapper);
+	            footprintActor.SetTexture(imageTexture);
+	            vtkProperty footprintProperty = footprintActor.GetProperty();
+	            footprintProperty.LightingOff();
+
+	            footprintActors.add(footprintActor);
+            }
         }
 
         if (frustumActor == null)
@@ -146,6 +150,7 @@ public class PerspectiveImageRendererHelper2
 
         return footprintActors;
     }
+
 
     public void propertyChange(PropertyChangeEvent evt)
     {
@@ -211,6 +216,7 @@ public class PerspectiveImageRendererHelper2
         vtkPolyData[] existingFootprints = footprintCacheOperator.checkForExistingFootprint(image.getPrerenderingFileNameBase());
         if (existingFootprints != null)
         {
+        	System.out.println("PerspectiveImageRendererHelper2: loadFootprint: exists");
         	int i=0;
         	for (vtkPolyData existingFootprint : existingFootprints)
         	{
@@ -224,12 +230,16 @@ public class PerspectiveImageRendererHelper2
 	            shiftedFootprint[0].DeepCopy(footprint[i++]);
 	            PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[0], image.getOffset());
         	}
-            return;
         }
         else
         {
+        	System.out.println("PerspectiveImageRendererHelper2: loadFootprint: loading renderer operator footprint");
         	footprintRendererOperator.loadFootprint();
+        	shiftedFootprint = footprintRendererOperator.getShiftedFootprint();
+        	System.out.println("PerspectiveImageRendererHelper2: loadFootprint: number of footprints " + shiftedFootprint.length);
         }
+        System.out.println("PerspectiveImageRendererHelper2: loadFootprint: setting current mask");
+        setCurrentMask(image.getCurrentMask());
     }
 
     //**********************
@@ -290,12 +300,14 @@ public class PerspectiveImageRendererHelper2
         shiftedFootprint[0] = new vtkPolyData();
         textureCoords = new vtkFloatArray();
         normalsFilter = new vtkPolyDataNormals();
+        displayedImage = intensityOperator.getDisplayedImage();
     }
 
     public void setCurrentMask(int[] masking)
     {
     	maskingOperator.setCurrentMask(masking);
     	intensityOperator.setDisplayedImageRange(null, maskSource);
+    	displayedImage = intensityOperator.getDisplayedImage();
     }
 
 	//**********************

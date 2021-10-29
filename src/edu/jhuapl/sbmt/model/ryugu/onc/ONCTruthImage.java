@@ -3,6 +3,7 @@ package edu.jhuapl.sbmt.model.ryugu.onc;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import vtk.vtkImageData;
 import vtk.vtkProp;
@@ -16,7 +17,7 @@ import nom.tam.fits.FitsException;
 public class ONCTruthImage extends ONCImage
 {
 
-    public ONCTruthImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public ONCTruthImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.mathilde;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -13,7 +14,7 @@ import nom.tam.fits.FitsException;
 public class MSIMathildeImage extends MSIImage
 {
     public MSIMathildeImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
+    		List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

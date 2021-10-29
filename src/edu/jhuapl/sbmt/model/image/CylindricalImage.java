@@ -72,7 +72,7 @@ public class CylindricalImage extends Image
     private float maxValue;
     private IntensityRange displayedRange = new IntensityRange(1,0);
     private String imageName = "";
-
+    private List<SmallBodyModel> smallBodyModels;
 
     /**
      * For a cylindrical image, the name field of key must be as follows depending on key.source:
@@ -85,10 +85,11 @@ public class CylindricalImage extends Image
      * @param key
      * @param smallBodyModel
      */
-    public CylindricalImage(CustomCylindricalImageKey key, SmallBodyModel smallBodyModel)
+    public CylindricalImage(CustomCylindricalImageKey key, List<SmallBodyModel> smallBodyModels)
     {
         super(key);
-        this.smallBodyModel = smallBodyModel;
+        this.smallBodyModels = smallBodyModels;
+        this.smallBodyModel = smallBodyModels.get(0);
 
         footprint = new vtkPolyData();
         shiftedFootprint = new vtkPolyData();

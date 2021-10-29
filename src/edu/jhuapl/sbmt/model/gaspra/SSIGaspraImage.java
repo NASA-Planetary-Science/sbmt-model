@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.gaspra;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import vtk.vtkImageData;
 
@@ -15,7 +16,7 @@ import nom.tam.fits.FitsException;
 
 public class SSIGaspraImage extends PerspectiveImage
 {
-    public SSIGaspraImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public SSIGaspraImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {

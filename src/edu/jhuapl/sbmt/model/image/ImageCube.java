@@ -239,10 +239,12 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
     protected String initializePngFileFullPath() { return null; }
 
     private ImageCollection imageCollection;
+    private List<SmallBodyModel> smallBodyModels;
 
-    public ImageCube(ImageCubeKey<T> key, SmallBodyModel smallBodyModel, ImageCollection images) throws FitsException, IOException, NoOverlapException
+    public ImageCube(ImageCubeKey<T> key, List<SmallBodyModel> smallBodyModels, ImageCollection images) throws FitsException, IOException, NoOverlapException
     {
-        super(key, smallBodyModel, false);
+        super(key, smallBodyModels, false);
+        this.smallBodyModels = smallBodyModels;
         this.imageCollection = images;
     }
 
@@ -265,7 +267,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
         imageSlices = new ArrayList<Integer>();
         for (T key : imageCubeKey.imageKeys)
         {
-            PerspectiveImage image = createImage(key, getSmallBodyModel(), imageCollection);
+            PerspectiveImage image = createImage(key, smallBodyModels, imageCollection);
             images.add(image);
             imageSlices.add(0); // twupy1: Hardcoded image slice to 0 since image cubes are always made from single slice images.  This was causing problems otherwise.
             if (key.equals(imageCubeKey.firstImageKey))
@@ -330,7 +332,7 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
 //        return colorImage;
     }
 
-    protected PerspectiveImage createImage(T key, SmallBodyModel smallBodyModel, ImageCollection images) throws FitsException, IOException
+    protected PerspectiveImage createImage(T key, List<SmallBodyModel> smallBodyModel, ImageCollection images) throws FitsException, IOException
     {
 //        ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES).get(0);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);

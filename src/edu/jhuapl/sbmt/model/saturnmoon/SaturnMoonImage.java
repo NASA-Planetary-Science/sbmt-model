@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.saturnmoon;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import vtk.vtkImageData;
 
@@ -15,7 +16,7 @@ import nom.tam.fits.FitsException;
 public class SaturnMoonImage extends PerspectiveImage
 {
     public SaturnMoonImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
+    		List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

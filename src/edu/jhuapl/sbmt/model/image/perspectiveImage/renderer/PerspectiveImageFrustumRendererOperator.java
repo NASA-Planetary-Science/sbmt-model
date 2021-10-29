@@ -25,6 +25,7 @@ public class PerspectiveImageFrustumRendererOperator
 		this.image = image;
 		maxFrustumDepth = new double[image.getImageDepth()];
 		minFrustumDepth = new double[image.getImageDepth()];
+		frustumActor = new vtkActor();
 	}
 
 	// **********************

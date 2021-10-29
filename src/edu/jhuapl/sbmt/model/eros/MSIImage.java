@@ -52,7 +52,7 @@ public class MSIImage extends PerspectiveImage
     private static final String xmlTemplate = "edu/jhuapl/sbmt/model/eros/msiXmlTemplate.xml";
 
     public MSIImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
+    		List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

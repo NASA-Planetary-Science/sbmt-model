@@ -24,19 +24,25 @@ import nom.tam.fits.FitsException;
 public class ImageCollection extends AbstractModel implements PropertyChangeListener
 {
     private SmallBodyModel smallBodyModel;
+    private List<SmallBodyModel> smallBodyModels;
 
     private HashMap<Image, List<vtkProp>> imageToActorsMap = new HashMap<Image, List<vtkProp>>();
 
     private HashMap<vtkProp, Image> actorToImageMap = new HashMap<vtkProp, Image>();
 
-    public ImageCollection(SmallBodyModel smallBodyModel)
+//    private ModelManager modelManager;
+
+    public ImageCollection(List<SmallBodyModel> smallBodyModels)
     {
-        this.smallBodyModel = smallBodyModel;
+        this.smallBodyModels = smallBodyModels;
+        this.smallBodyModel = smallBodyModels.get(0);
+//        this.modelManager = modelManager;
     }
 
-    protected Image createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel) throws FitsException, IOException
+    protected Image createImage(ImageKeyInterface key) throws FitsException, IOException
     {
-        return SbmtImageModelFactory.createImage(key, smallBodyModel, false);
+//    	List<SmallBodyModel> smallBodyModels = modelManager.getModel(ModelNames.SMALL_BODY).stream().map(body -> { return (SmallBodyModel)body; }).toList();
+        return SbmtImageModelFactory.createImage(key, smallBodyModels, false);
     }
 
     private boolean containsKey(ImageKeyInterface key)
@@ -75,26 +81,29 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 
         Stopwatch sw = Stopwatch.createUnstarted();
         sw.start();
-        Image image = createImage(key, smallBodyModel);
+        Image image = createImage(key);
 //        System.out.println("ImageCollection: addImage: created image in " + sw.elapsedMillis() + " ms");
 
-        smallBodyModel.addPropertyChangeListener(image);
-        image.addPropertyChangeListener(this);
-//        System.out.println("ImageCollection: addImage: putting image in imageToActorsMap " + sw.elapsedMillis() + " ms");
+        for (SmallBodyModel smallBodyModel : smallBodyModels)
+        {
+	        smallBodyModel.addPropertyChangeListener(image);
+	        image.addPropertyChangeListener(this);
+	//        System.out.println("ImageCollection: addImage: putting image in imageToActorsMap " + sw.elapsedMillis() + " ms");
 
-        imageToActorsMap.put(image, new ArrayList<vtkProp>());
-//        System.out.println("ImageCollection: addImage: getting props " + sw.elapsedMillis() + " ms");
+	        imageToActorsMap.put(image, new ArrayList<vtkProp>());
+	//        System.out.println("ImageCollection: addImage: getting props " + sw.elapsedMillis() + " ms");
 
-        List<vtkProp> imagePieces = image.getProps();
-//        System.out.println("ImageCollection: addImage: building actor to image map " + sw.elapsedMillis() + " ms");
+	        List<vtkProp> imagePieces = image.getProps();
+	//        System.out.println("ImageCollection: addImage: building actor to image map " + sw.elapsedMillis() + " ms");
 
-        imageToActorsMap.get(image).addAll(imagePieces);
-//        System.out.println("ImageCollection: addImage: building image to actor map " + sw.elapsedMillis() + " ms");
+	        imageToActorsMap.get(image).addAll(imagePieces);
+	//        System.out.println("ImageCollection: addImage: building image to actor map " + sw.elapsedMillis() + " ms");
 
-        for (vtkProp act : imagePieces)
-            actorToImageMap.put(act, image);
+	        for (vtkProp act : imagePieces)
+	            actorToImageMap.put(act, image);
+        }
 //        System.out.println("ImageCollection: addImage: firing listener " + sw.elapsedMillis() + " ms");
-        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
+//        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
 //        System.out.println("ImageCollection: addImage: fired listener " + sw.elapsedMillis() + " ms");
 
     }

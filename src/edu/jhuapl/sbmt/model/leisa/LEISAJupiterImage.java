@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.leisa;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import vtk.vtkImageData;
 
@@ -36,7 +37,7 @@ public class LEISAJupiterImage extends PerspectiveImage
         return newKey;
     }
 
-    public LEISAJupiterImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public LEISAJupiterImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {

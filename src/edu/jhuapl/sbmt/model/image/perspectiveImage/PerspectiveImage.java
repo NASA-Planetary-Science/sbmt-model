@@ -154,28 +154,28 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
 
     public PerspectiveImage( //
             ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
+            List<SmallBodyModel> smallBodyModels, //
             boolean loadPointingOnly, //
             boolean transposeData) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, loadPointingOnly, 0, transposeData);
+        this(key, smallBodyModels, loadPointingOnly, 0, transposeData);
     }
 
     public PerspectiveImage( //
             ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
+            List<SmallBodyModel> smallBodyModels, //
             boolean loadPointingOnly) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, loadPointingOnly, 0, true);
+        this(key, smallBodyModels, loadPointingOnly, 0, true);
     }
 
     public PerspectiveImage( //
             ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
+            List<SmallBodyModel> smallBodyModels, //
             boolean loadPointingOnly, //
             int currentSlice) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, loadPointingOnly, currentSlice, true);
+        this(key, smallBodyModels, loadPointingOnly, currentSlice, true);
     }
 
 //    /**
@@ -214,7 +214,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
      */
     protected PerspectiveImage( //
             ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
+            List<SmallBodyModel> smallBodyModels, //
 //            ModelManager modelManager, //
             boolean loadPointingOnly, //
             int currentSlice, //
@@ -222,7 +222,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     {
         super(key);
         this.currentSlice = currentSlice;
-        this.smallBodyModel = smallBodyModel;
+        this.smallBodyModel = smallBodyModels.get(0);
 //        this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
 
@@ -231,7 +231,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
         this.backplanesHelper = new PerspectiveImageBackplanesHelper(this);
         this.imageOffsetCalculator = new PerspectiveImageOffsetCalculator(this);
         this.offlimbPlaneHelper = new PerspectiveImageOfflimbPlaneHelper(this);
-        this.rendererHelper = new PerspectiveImageRendererHelper2(this, modelManager);
+        this.rendererHelper = new PerspectiveImageRendererHelper2(this, smallBodyModels);
 
         initialize();
     }

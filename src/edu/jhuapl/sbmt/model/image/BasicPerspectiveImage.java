@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
@@ -24,7 +25,7 @@ public class BasicPerspectiveImage extends PerspectiveImage
 
     private static final Map<String, ImmutableMap<String, String>> SUM_FILE_MAP = new HashMap<>();
 
-    public BasicPerspectiveImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public BasicPerspectiveImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

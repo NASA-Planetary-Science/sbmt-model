@@ -25,11 +25,12 @@ public class PerspectiveImageIntensityOperator
 	public PerspectiveImageIntensityOperator(PerspectiveImage image)
 	{
 		this.image = image;
-		this.rawImage = image.getRawImage();
+
 	}
 
 	public vtkImageData getImageWithDisplayedRange(IntensityRange range, boolean offlimb, vtkImageCanvasSource2D maskSource)
 	{
+		this.rawImage = image.getRawImage();
 		int currentSlice = image.getCurrentSlice();
 		float minValue = image.getMinValue();
 		float maxValue = image.getMaxValue();
@@ -173,6 +174,14 @@ public class PerspectiveImageIntensityOperator
 	public IntensityRange getDisplayedRange()
 	{
 		return getDisplayedRange(image.getCurrentSlice());
+	}
+
+	/**
+	 * @return the displayedImage
+	 */
+	public vtkImageData getDisplayedImage()
+	{
+		return displayedImage;
 	}
 
 //	public void propertyChange(PropertyChangeEvent evt)

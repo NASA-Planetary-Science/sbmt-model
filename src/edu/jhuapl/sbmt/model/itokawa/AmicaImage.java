@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import vtk.vtkImageConstantPad;
 import vtk.vtkImageData;
@@ -33,7 +34,7 @@ public class AmicaImage extends PerspectiveImage
     //private static final int IMAGE_HEIGHT = 1024;
 
     public AmicaImage(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
+    		List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

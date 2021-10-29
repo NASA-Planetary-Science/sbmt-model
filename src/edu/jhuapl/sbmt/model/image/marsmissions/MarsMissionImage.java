@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.image.marsmissions;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
@@ -16,7 +17,7 @@ import nom.tam.fits.FitsException;
 
 public class MarsMissionImage extends BasicPerspectiveImage
 {
-    public static PerspectiveImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
+    public static PerspectiveImage of(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
         String filename = new File(key.getOriginalName()).getName();
 
@@ -211,7 +212,7 @@ public class MarsMissionImage extends BasicPerspectiveImage
         return result;
     }
 
-    protected static MarsMissionImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly, int camera, String cameraName) throws FitsException, IOException
+    protected static MarsMissionImage of(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel, boolean loadPointingOnly, int camera, String cameraName) throws FitsException, IOException
     {
         return new MarsMissionImage(key, smallBodyModel, loadPointingOnly) {
             @Override
@@ -228,7 +229,7 @@ public class MarsMissionImage extends BasicPerspectiveImage
         };
     }
 
-    protected MarsMissionImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
+    protected MarsMissionImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
     }

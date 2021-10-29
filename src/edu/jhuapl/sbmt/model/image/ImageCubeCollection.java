@@ -31,18 +31,19 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     private HashMap<vtkProp, ImageCube> actorToImageMap = new HashMap<vtkProp, ImageCube>();
 
     private Vector<ImageCube> loadedImages;
+    List<SmallBodyModel> smallBodyModels;
 
-    public ImageCubeCollection(SmallBodyModel smallBodyModel, ImageCollection images)
+    public ImageCubeCollection(List<SmallBodyModel> smallBodyModel, ImageCollection images)
     {
-        this.smallBodyModel = smallBodyModel;
+    	this.smallBodyModels = smallBodyModel;
+        this.smallBodyModel = smallBodyModels.get(0);
         this.imageCollection = images;
         this.loadedImages = new Vector<ImageCube>();
     }
 
-    protected ImageCube createImage(ImageCubeKey key,
-            SmallBodyModel smallBodyModel) throws FitsException, IOException, ImageCube.NoOverlapException
+    protected ImageCube createImage(ImageCubeKey key) throws FitsException, IOException, ImageCube.NoOverlapException
     {
-        return new ImageCube(key, smallBodyModel, imageCollection);
+        return new ImageCube(key, smallBodyModels, imageCollection);
     }
 
     private boolean containsKey(ImageCubeKey key)
@@ -72,7 +73,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
         if (containsKey(key))
             return;
 
-        ImageCube image = createImage(key, smallBodyModel);
+        ImageCube image = createImage(key);
         if (loadedImages.contains(image))
         {
         	loadedImages.remove(image);

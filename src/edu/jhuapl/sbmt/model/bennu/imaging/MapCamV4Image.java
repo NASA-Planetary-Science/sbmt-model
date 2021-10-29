@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu.imaging;
 
 import java.io.IOException;
+import java.util.List;
 
 import vtk.vtkImageData;
 
@@ -13,7 +14,7 @@ import nom.tam.fits.FitsException;
 public class MapCamV4Image extends MapCamImage
 {
     public MapCamV4Image(ImageKeyInterface key,
-            SmallBodyModel smallBodyModel,
+    		List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

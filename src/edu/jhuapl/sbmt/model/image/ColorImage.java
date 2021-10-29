@@ -152,15 +152,15 @@ public class ColorImage extends Image implements PropertyChangeListener
         return new File(colorKey.redImageKey.getName()).getName();
     }
 
-    public ColorImage(ColorImageKey key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException, NoOverlapException
+    public ColorImage(ColorImageKey key, List<SmallBodyModel> smallBodyModels, ModelManager modelManager) throws FitsException, IOException, NoOverlapException
     {
         super(new ImageKey("FalseColorImage", ImageSource.FALSE_COLOR));
         this.colorKey = key;
-        this.smallBodyModel = smallBodyModel;
+        this.smallBodyModel = smallBodyModels.get(0);
 
-        redImage = createImage(colorKey.redImageKey, smallBodyModel, modelManager);
-        greenImage = createImage(colorKey.greenImageKey, smallBodyModel, modelManager);
-        blueImage = createImage(colorKey.blueImageKey, smallBodyModel, modelManager);
+        redImage = createImage(colorKey.redImageKey, smallBodyModels, modelManager);
+        greenImage = createImage(colorKey.greenImageKey, smallBodyModels, modelManager);
+        blueImage = createImage(colorKey.blueImageKey, smallBodyModels, modelManager);
 
         redImageSlice = colorKey.redImageKey.getSlice();
         greenImageSlice = colorKey.greenImageKey.getSlice();
@@ -216,7 +216,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         return displayedImage; // colorImage;
     }
 
-    protected PerspectiveImage createImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, ModelManager modelManager) throws FitsException, IOException
+    protected PerspectiveImage createImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel, ModelManager modelManager) throws FitsException, IOException
     {
         ImageCollection images = (ImageCollection)modelManager.getModel(ModelNames.IMAGES).get(0);
         PerspectiveImage result = (PerspectiveImage)images.getImage(key);

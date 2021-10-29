@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.image;
 
 import java.awt.Color;
 import java.io.File;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
@@ -391,7 +392,7 @@ public class OffLimbPlaneCalculator
     	SmallBodyViewConfig config = SmallBodyViewConfig.getSmallBodyConfig(body, type);
     	SmallBodyModel smallBodyModel = SbmtModelFactory.createSmallBodyModel(config).get(0);
     	ImageKeyInterface key = new ImageKey("https://sbmt.jhuapl.edu/sbmt/prod/data/bennu/altwg-spc-v20190121/polycam/images/ocams20181108t042907s071_pol_iofl2pan_53003.fits", ImageSource.GASKELL);
-    	OcamsFlightImage image = OcamsFlightImage.of(key, smallBodyModel, false);
+    	OcamsFlightImage image = OcamsFlightImage.of(key, List.of(smallBodyModel), false);
     	String outputDir = ".";
     	String filename = outputDir +  File.separator  + FilenameUtils.getBaseName(image.getImageFileFullPath()) + "_" + 1 + "_offLimbImageData.vtk";
     	File file = new File(filename);

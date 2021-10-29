@@ -165,6 +165,7 @@ public class PerspectiveImageOfflimbPlaneHelper
         if (offLimbTexture == null)
         { // if offlimbtexture is null, initialize it.
             vtkImageData imageData = new vtkImageData();
+            System.out.println("PerspectiveImageOfflimbPlaneHelper: getOffLimbTexture: displayed image " + image.getDisplayedImage());
             imageData.DeepCopy(image.getDisplayedImage());
             offLimbTexture = new vtkTexture();
             offLimbTexture.SetInputData(imageData);

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -26,7 +27,7 @@ import nom.tam.fits.FitsException;
 public class ONCImage extends PerspectiveImage
 {
 
-    public ONCImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public ONCImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

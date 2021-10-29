@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.bennu.imaging;
 
 import java.io.IOException;
+import java.util.List;
 
 import vtk.vtkImageData;
 
@@ -12,7 +13,7 @@ import nom.tam.fits.FitsException;
 
 public class PolyCamEarthImage extends PolyCamImage
 {
-    public PolyCamEarthImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public PolyCamEarthImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.mvic;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import vtk.vtkImageData;
 
@@ -36,7 +37,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         return bandNames[getCurrentSlice()];
     }
 
-    public MVICQuadJupiterImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+    public MVICQuadJupiterImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {

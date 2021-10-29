@@ -33,17 +33,19 @@ public class PerspectiveImageBoundaryCollection extends AbstractModel implements
             Color.GREEN.darker(), Color.MAGENTA, Color.CYAN.darker(), Color.BLUE,
             Color.GRAY, Color.DARK_GRAY, Color.BLACK};
     private int initialColorIndex = 0;
+    private List<SmallBodyModel> smallBodyModels;
 
-    public PerspectiveImageBoundaryCollection(SmallBodyModel smallBodyModel)
+    public PerspectiveImageBoundaryCollection(List<SmallBodyModel> smallBodyModels)
     {
-        this.smallBodyModel = smallBodyModel;
+        this.smallBodyModels = smallBodyModels;
+        this.smallBodyModel = smallBodyModels.get(0);
     }
 
     protected PerspectiveImageBoundary createBoundary(
             ImageKeyInterface key,
             SmallBodyModel smallBodyModel) throws IOException, FitsException
     {
-        PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtImageModelFactory.createImage(key, smallBodyModel, true), smallBodyModel);
+        PerspectiveImageBoundary boundary = new PerspectiveImageBoundary((PerspectiveImage)SbmtImageModelFactory.createImage(key, smallBodyModels, true), smallBodyModel);
         boundary.setBoundaryColor(initialColors[initialColorIndex++]);
         if (initialColorIndex >= initialColors.length)
             initialColorIndex = 0;

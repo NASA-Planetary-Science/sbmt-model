@@ -27,6 +27,15 @@ public class PerspectiveImageFootprintRendererOperator
 		this.image = image;
 		this.smallBodies = smallBodies;
 		this.footprintCacheOperator = footprintCacheOperator;
+		footprint = new vtkPolyData[smallBodies.size()];
+        shiftedFootprint = new vtkPolyData[smallBodies.size()];
+        footprintGenerated = new boolean[smallBodies.size()];
+        for (int i=0; i<smallBodies.size(); i++)
+        {
+        	footprint[i] = new vtkPolyData();
+        	shiftedFootprint[i] = new vtkPolyData();
+        	footprintGenerated[i] = false;
+        }
 	}
 
 	// **********************
@@ -74,9 +83,12 @@ public class PerspectiveImageFootprintRendererOperator
 			shiftedFootprint[i].DeepCopy(footprint[i]);
 			PolyDataUtil.shiftPolyDataInNormalDirection(shiftedFootprint[i], image.getOffset());
 
-			String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
-			footprintCacheOperator.saveToDisk(FileCache.instance().getFile(intersectionFileName).getPath(),
-					footprint[0]);
+			if (image.getSmallBodyModel().getModelResolution() > 3)
+			{
+				String intersectionFileName = image.getPrerenderingFileNameBase() + "_frustumIntersection.vtk";
+				footprintCacheOperator.saveToDisk(FileCache.instance().getFile(intersectionFileName).getPath(),
+						footprint[0]);
+			}
 		}
 		setFootprintGenerated(true);
 	}
@@ -127,5 +139,21 @@ public class PerspectiveImageFootprintRendererOperator
 	public vtkPolyData getFootprint(int index)
 	{
 		return footprint[index];
+	}
+
+	/**
+	 * @return the footprint
+	 */
+	public vtkPolyData[] getFootprint()
+	{
+		return footprint;
+	}
+
+	/**
+	 * @return the shiftedFootprint
+	 */
+	public vtkPolyData[] getShiftedFootprint()
+	{
+		return shiftedFootprint;
 	}
 }

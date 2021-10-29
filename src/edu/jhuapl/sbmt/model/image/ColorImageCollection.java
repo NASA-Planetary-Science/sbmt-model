@@ -25,7 +25,7 @@ import nom.tam.fits.FitsException;
 public class ColorImageCollection extends AbstractModel implements PropertyChangeListener
 {
     private SmallBodyModel smallBodyModel;
-
+    private List<SmallBodyModel> smallBodyModels;
     private ModelManager modelManager;
 
     private HashMap<ColorImage, List<vtkProp>> imageToActorsMap = new HashMap<ColorImage, List<vtkProp>>();
@@ -35,16 +35,16 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
     private Vector<ColorImage> loadedImages;
     private Vector<ColorImageKey> loadedImageKeys;
 
-    public ColorImageCollection(SmallBodyModel smallBodyModel, ModelManager modelManager)
+    public ColorImageCollection(List<SmallBodyModel> smallBodyModels, ModelManager modelManager)
     {
-        this.smallBodyModel = smallBodyModel;
+        this.smallBodyModel = smallBodyModels.get(0);
         this.modelManager = modelManager;
         this.loadedImages = new Vector<ColorImage>();
         this.loadedImageKeys = new Vector<ColorImageKey>();
     }
 
     protected ColorImage createImage(ColorImageKey key,
-            SmallBodyModel smallBodyModel) throws FitsException, IOException, NoOverlapException
+    		List<SmallBodyModel> smallBodyModel) throws FitsException, IOException, NoOverlapException
     {
         return new ColorImage(key, smallBodyModel, modelManager);
     }
@@ -81,7 +81,7 @@ public class ColorImageCollection extends AbstractModel implements PropertyChang
         if (containsKey(key))
             return;
 
-        ColorImage image = createImage(key, smallBodyModel);
+        ColorImage image = createImage(key, smallBodyModels);
         if (!loadedImageKeys.contains(key))
         {
             loadedImageKeys.add(key);
