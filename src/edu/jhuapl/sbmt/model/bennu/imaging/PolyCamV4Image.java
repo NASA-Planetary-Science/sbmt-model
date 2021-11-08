@@ -7,7 +7,7 @@ import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
+import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
 
 import nom.tam.fits.FitsException;
 

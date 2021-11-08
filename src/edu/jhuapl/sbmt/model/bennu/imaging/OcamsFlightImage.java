@@ -10,10 +10,10 @@ import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
-import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
+import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
+import edu.jhuapl.sbmt.image.common.ImageType;
+import edu.jhuapl.sbmt.image.types.perspectiveImage.BasicPerspectiveImage;
 import edu.jhuapl.sbmt.model.image.ImageSource;
-import edu.jhuapl.sbmt.model.image.ImageType;
 
 import nom.tam.fits.FitsException;
 

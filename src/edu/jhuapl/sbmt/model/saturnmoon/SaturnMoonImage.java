@@ -8,8 +8,8 @@ import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
-import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
+import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
