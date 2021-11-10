@@ -33,6 +33,7 @@ public class PerspectiveImageFrustum
 	int defaultSlice;
     private String instrumentName;
     private Color frustumColor;
+    private boolean hasIntercept = false;
 
 	public PerspectiveImageFrustum(PerspectiveImage image)
 	{
@@ -306,6 +307,16 @@ public class PerspectiveImageFrustum
 	public void setInstrumentName(String instrumentName)
 	{
 		this.instrumentName = instrumentName;
+	}
+
+	public boolean hasIntercept()
+	{
+		return hasIntercept;
+	}
+
+	public void setHasIntercept(boolean intercept)
+	{
+		this.hasIntercept = intercept;
 	}
 
 }

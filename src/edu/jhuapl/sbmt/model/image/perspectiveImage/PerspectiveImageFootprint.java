@@ -85,6 +85,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
     private boolean staticFootprintSet = false;
     private vtkActor frustumActor;
     private Color boundaryColor;
+    private boolean hasIntercept = false;
 
 	PerspectiveImageFootprint(PerspectiveImage image)
 	{
@@ -1039,4 +1040,15 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	{
 		return boundaryColor;
 	}
+
+	public boolean hasIntercept()
+	{
+		return hasIntercept;
+	}
+
+	public void setHasIntercept(boolean intercept)
+	{
+		this.hasIntercept = intercept;
+	}
+
 }
