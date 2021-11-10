@@ -15,8 +15,9 @@ public class BasicImagingInstrument extends ImagingInstrument
         ImageType type = configuration.get(ImagingInstrumentConfiguration.IMAGE_TYPE);
         ImageSource[] searchImageSources = configuration.get(ImagingInstrumentConfiguration.IMAGE_SOURCE);
         Instrument instrument = configuration.get(ImagingInstrumentConfiguration.INSTRUMENT);
+        Boolean isTranspose = configuration.get(ImagingInstrumentConfiguration.TRANSPOSE);
 
-        return new ImagingInstrument(spectralMode, searchQuery, type, searchImageSources, instrument);
+        return new ImagingInstrument(spectralMode, searchQuery, type, searchImageSources, instrument, 0., "None", null, isTranspose != null ? isTranspose.booleanValue() : true);
     }
 
 //  protected BasicImagingInstrument(SpectralMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrument)

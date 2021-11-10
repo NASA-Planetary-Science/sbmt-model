@@ -25,4 +25,6 @@ public interface IImagingInstrument
 
     FillDetector<Float> getFillDetector(Image image);
 
+    boolean isTranspose();
+
 }

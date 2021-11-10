@@ -106,7 +106,7 @@ public class NISSpectrum extends BasicSpectrum
             String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf(File.separator));
             return File.separator + "NIS" + File.separator + "/infofiles" + spectrumPath + File.separator + FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO";
         }
-    }
+    } 
 
     public String getSpectrumPathOnServer()
     {

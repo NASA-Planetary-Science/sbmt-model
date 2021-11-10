@@ -28,15 +28,16 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
     private double rotation;
     private String flip;
     private Set<Float> fillValues;
+    private boolean isTranspose;
 
 
     public ImagingInstrument()
     {
-        this(SpectralImageMode.MONO, null, null, null, null, 0.0, "None", null);
+        this(SpectralImageMode.MONO, null, null, null, null, 0.0, "None", null, true);
     }
     public ImagingInstrument(double rotation, String flip)
     {
-        this(SpectralImageMode.MONO, null, ImageType.GENERIC_IMAGE, null, null, rotation, flip, null);
+        this(SpectralImageMode.MONO, null, ImageType.GENERIC_IMAGE, null, null, rotation, flip, null, true);
     }
 
 //    public ImagingInstrument(ImageType type, Instrument instrumentName)
@@ -51,15 +52,20 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 
     public ImagingInstrument(SpectralImageMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName)
     {
-        this(spectralMode, searchQuery, type, searchImageSources, instrumentName, 0.0, "None", null);
+        this(spectralMode, searchQuery, type, searchImageSources, instrumentName, 0.0, "None", null, true);
     }
 
     public ImagingInstrument(SpectralImageMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName, double rotation, String flip)
     {
-        this(spectralMode, searchQuery, type, searchImageSources, instrumentName, rotation, flip, null);
+        this(spectralMode, searchQuery, type, searchImageSources, instrumentName, rotation, flip, null, true);
     }
 
     public ImagingInstrument(SpectralImageMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName, double rotation, String flip, Collection<Float> fillValues)
+    {
+        this(spectralMode, searchQuery, type, searchImageSources, instrumentName, rotation, flip, fillValues, true);
+    }
+
+    public ImagingInstrument(SpectralImageMode spectralMode, QueryBase searchQuery, ImageType type, ImageSource[] searchImageSources, Instrument instrumentName, double rotation, String flip, Collection<Float> fillValues, boolean isTranspose)
     {
         this.spectralMode = spectralMode;
         this.searchQuery = searchQuery;
@@ -69,6 +75,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
         this.rotation = rotation;
         this.flip = flip;
         this.fillValues = fillValues != null ? new LinkedHashSet<>(fillValues) : null;
+        this.isTranspose = isTranspose;
     }
 
 //    c.imagingInstruments = new ImagingInstrument[] {
@@ -83,7 +90,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 
     public ImagingInstrument clone()
     {
-        return new ImagingInstrument(spectralMode, searchQuery.copy(), type, searchImageSources.clone(), instrumentName, rotation, flip, fillValues);
+        return new ImagingInstrument(spectralMode, searchQuery.copy(), type, searchImageSources.clone(), instrumentName, rotation, flip, fillValues, isTranspose);
     }
 
     public ImageType getType()
@@ -113,6 +120,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
     Key<String> flipKey = Key.of("flip");
     Key<Double> rotationKey = Key.of("rotation");
     Key<Set<Float>> fillValuesKey = Key.of("fillValues");
+    Key<Boolean> isTransposeKey = Key.of("isTranspose");
 
     @Override
     public void retrieve(Metadata source)
@@ -137,12 +145,15 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
         flip = read(flipKey, source);
         rotation = read(rotationKey, source);
         fillValues = read(fillValuesKey, source);
+
+        Boolean isTranspose = read(isTransposeKey, source);
+        this.isTranspose = isTranspose != null ? isTranspose.booleanValue() : true;
     }
 
     @Override
     public Metadata store()
     {
-        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 1));
+        SettableMetadata configMetadata = SettableMetadata.of(Version.of(1, 2));
         writeEnum(spectralModeKey, spectralMode, configMetadata);
         // Do not use, e.g., GenericPhpQuery.class.getSimpleName() method because if the class
         // gets renamed this would start writing something different that could not be read
@@ -170,6 +181,7 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
         write(flipKey, flip, configMetadata);
         write(rotationKey, rotation, configMetadata);
         write(fillValuesKey, fillValues, configMetadata);
+        write(isTransposeKey, isTranspose, configMetadata);
         return configMetadata;
     }
 
@@ -243,6 +255,12 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 	}
 
 	@Override
+	public boolean isTranspose()
+	{
+	    return isTranspose;
+	}
+
+	@Override
 	public int hashCode()
 	{
 		final int prime = 31;
@@ -270,9 +288,9 @@ public class ImagingInstrument implements MetadataManager, IImagingInstrument
 			System.err.println("ImagingInstrument: equals: obj is null");
 			return false;
 		}
-		if (getClass() != obj.getClass())
+		if (!(obj instanceof ImagingInstrument))
 		{
-			System.err.println("ImagingInstrument: equals: classes don't match " + getClass() + " " + obj.getClass());
+			System.err.println("ImagingInstrument: equals: obj type is not ImagingInstrument: " + obj.getClass());
 			return false;
 		}
 		ImagingInstrument other = (ImagingInstrument) obj;
