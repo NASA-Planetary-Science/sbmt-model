@@ -9,8 +9,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
 import javax.swing.SpinnerDateModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -32,6 +34,7 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
+import edu.jhuapl.sbmt.model.phobos.ui.MEGANESearchPanel;
 import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.ICalculatedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.IFootprintConfinedPlateValues;
@@ -43,14 +46,39 @@ import edu.jhuapl.sbmt.stateHistory.model.time.TimeWindow;
 public class MEGANEController implements PropertyChangeListener
 {
 	private MEGANEPlotPanel plotPanel;
+	private MEGANESearchPanel searchPanel;
 	private MEGANEDataModel model;
 	private CustomizableColoringDataManager coloringDataManager;
 	private SmallBodyModel smallBodyModel;
+	private JTabbedPane tabbedPane;
 
 	public MEGANEController(SmallBodyModel smallBodyModel)
 	{
 		this.smallBodyModel = smallBodyModel;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
+
+		setupPanel();
+		initializeCalculatedPlateColorings();
+	}
+
+	private void setupPanel()
+	{
+		setupSearchPanel();
+		setupPlotPanel();
+		tabbedPane = new JTabbedPane();
+		tabbedPane.add("Search", searchPanel);
+		tabbedPane.add("Plots", plotPanel);
+
+	}
+
+	private void setupSearchPanel()
+	{
+		searchPanel = new MEGANESearchPanel();
+	}
+
+	private void setupPlotPanel()
+	{
+
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss.SSS");
 		Date startDate = null;
 		Date stopDate = null;
@@ -79,14 +107,7 @@ public class MEGANEController implements PropertyChangeListener
 			{
 				ValueAxis timeVersusAltitudeXAxis = plotPanel.getTimeVersusAltitude().getXYPlot().getDomainAxis();
 				plotPanel.getTimeVersusAltitude().getXYPlot().getDomainAxis().setRange(model.getTDBForDate((Date)plotPanel.getStartTimeSpinner().getModel().getValue()), timeVersusAltitudeXAxis.getUpperBound());
-
-//				ValueAxis altitudeHistogramXAxis = plotPanel.getTimeVersusAltitude().getXYPlot().getDomainAxis();
-//				plotPanel.getTimeVersusAltitude().getXYPlot().getDomainAxis().setRange(model.getTDBForDate((Date)plotPanel.getStartTimeSpinner().getModel().getValue()), timeVersusAltitudeXAxis.getUpperBound());
-
-
 			}
-
-
 		});
 
 
@@ -97,7 +118,6 @@ public class MEGANEController implements PropertyChangeListener
 
         plotPanel.getStopTimeSpinner().addChangeListener(new ChangeListener()
 		{
-
 			@Override
 			public void stateChanged(ChangeEvent e)
 			{
@@ -106,7 +126,6 @@ public class MEGANEController implements PropertyChangeListener
 			}
 		});
 
-        initializeCalculatedPlateColorings();
 
 	}
 
@@ -129,18 +148,12 @@ public class MEGANEController implements PropertyChangeListener
 			{
 				Preconditions.checkArgument(values.GetNumberOfComponents() != 0);
 				Preconditions.checkArgument(values.GetNumberOfTuples() != 0);
-//				System.out.println(
-//						"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: facet coloring " + facetColoring);
 				if (facetColoring == null) return values;
 				if (footprint.isVisible() == false) return values;
 				for (FacetColoringData coloringData : footprint.getFacetColoringDataForFootprint())
 				{
 					int index = coloringData.getCellId();
-//					System.out.println(
-//							"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: index " + index);
 					double valueToCalculate = values.GetValue(index) + 1;
-//					System.out.println(
-//							"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: getPlateValuesForTime: indx " + index + " value to calc " + valueToCalculate);
 					values.SetValue(index, valueToCalculate);
 				}
 				return values;
@@ -150,8 +163,6 @@ public class MEGANEController implements PropertyChangeListener
 			public void setFacetColoringDataForFootprint(PerspectiveImageFootprint footprint)
 			{
 				this.footprint = footprint;
-//				System.out.println(
-//						"MEGANEController.initializeCalculatedPlateColorings().new IFootprintConfinedPlateValues() {...}: setFacetColoringDataForFootprint: updating footprint " + footprint);
 				facetColoring = footprint.getFacetColoringDataForFootprint();
 			}
 
@@ -174,10 +185,8 @@ public class MEGANEController implements PropertyChangeListener
 		timePerIndexCalculator.getValues().FillComponent(0, 0);
 		vtkFloatArray timePerFacetArray = timePerIndexCalculator.getValues();
 		IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(timePerFacetArray);
-//		System.out.println("MEGANEController: initializeCalculatedPlateColorings: adding time per facet coloring, num entries " + indexableTuple.size());
 		ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
 		LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
-//		System.out.println("MEGANEController: initializeCalculatedPlateColorings: loadable coloring data " + loadableColoringData);
 		try
 		{
 			loadableColoringData.save();
@@ -209,13 +218,9 @@ public class MEGANEController implements PropertyChangeListener
 			@Override
 			public void timeChanged(double et)
 			{
-//				Logger.getAnonymousLogger().log(Level.INFO, "Starting in MEGANE");
 				vtkFloatArray valuesAtTime = ((ITimeCalculatedPlateValues)timePerIndexCalculator).getPlateValuesForTime(et);
-//				Logger.getAnonymousLogger().log(Level.INFO, "Making INdexabletuple");
 				IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(valuesAtTime);
-//				Logger.getAnonymousLogger().log(Level.INFO, "Making coloring data");
 				ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
-//				Logger.getAnonymousLogger().log(Level.INFO, "Making Loadable");
 				try
 				{
 					LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
@@ -228,7 +233,6 @@ public class MEGANEController implements PropertyChangeListener
 					e.printStackTrace();
 				}
 				coloringDataManager.replaceCustom("Time Per Facet", coloringData);
-//				Logger.getAnonymousLogger().log(Level.INFO, "Ending in MEGANE");
 			}
 
 			@Override
@@ -245,7 +249,8 @@ public class MEGANEController implements PropertyChangeListener
 	public JPanel getPanel()
 	{
 		JPanel panel = new JPanel();
-		panel.add(plotPanel);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		panel.add(tabbedPane);
 
 		return panel;
 

@@ -84,7 +84,6 @@ public class MEGANEDataModel
 //				System.out.println("MEGANEDataModel: NO DATA getAltitudesForTimeWindowWithTimeStep: time is " + TimeUtil.et2str(time));
 //
 //				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: distance " + values[i-1].getSecond());
-
 				values[i] = new Pair<Double, Double>(time, values[i-1].getSecond());
 			}
 		}
