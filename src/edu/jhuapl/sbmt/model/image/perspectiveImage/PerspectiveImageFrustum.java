@@ -247,11 +247,16 @@ public class PerspectiveImageFrustum
 		return frusta[sliceToUse];
 	}
 
-	void setShowFrustum(boolean b)
+	public boolean isShowFrustum()
+	{
+		return showFrustum;
+	}
+
+	public void setShowFrustum(boolean b)
 	{
 		showFrustum = b;
 
-		if (showFrustum)
+		if (showFrustum && hasIntercept)
 		{
 			frustumActor.VisibilityOn();
 		}
@@ -317,6 +322,14 @@ public class PerspectiveImageFrustum
 	public void setHasIntercept(boolean intercept)
 	{
 		this.hasIntercept = intercept;
+		if (showFrustum && hasIntercept)
+		{
+			frustumActor.VisibilityOn();
+		}
+		else
+		{
+			frustumActor.VisibilityOff();
+		}
 	}
 
 }
