@@ -33,7 +33,7 @@ public class PerspectiveImageFrustum
 	int defaultSlice;
     private String instrumentName;
     private Color frustumColor;
-    private boolean hasIntercept = false;
+    private boolean hasIntercept = true;
 
 	public PerspectiveImageFrustum(PerspectiveImage image)
 	{
