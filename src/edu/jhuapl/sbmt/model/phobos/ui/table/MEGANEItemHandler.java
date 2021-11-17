@@ -1,11 +1,10 @@
 package edu.jhuapl.sbmt.model.phobos.ui.table;
 
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import java.text.DecimalFormat;
 
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
+import edu.jhuapl.sbmt.util.TimeUtil;
 
 import glum.gui.panel.itemList.BasicItemHandler;
 import glum.gui.panel.itemList.query.QueryComposer;
@@ -24,15 +23,24 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 	@Override
 	public Object getColumnValue(MEGANEFootprint footprint, MEGANEColumnLookup aEnum)
 	{
-		//TODO: Switch to using an index so the get all items doesn't take so long to look up
+		DecimalFormat formatter = new DecimalFormat("##.####");
 		switch (aEnum)
 		{
 			case Map:
 				return meganeCollection.isFootprintMapped(footprint);
 			case TimeWindow:
-				DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
-				fmt.withZone(DateTimeZone.UTC);
-				return fmt.print(footprint.getDateTime());
+				return TimeUtil.et2str(footprint.getDateTime());
+//				DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
+//				fmt.withZone(DateTimeZone.UTC);
+//				return fmt.print(footprint.getDateTime());
+			case Latitude:
+				return formatter.format(Math.toDegrees(footprint.getLatDegrees()));
+			case Longitude:
+				return formatter.format(Math.toDegrees(footprint.getLonDegrees()));
+			case Altitude:
+				return formatter.format(footprint.getAltKm());
+			case NormalizedAlt:
+				return formatter.format(footprint.getNormalizedAlt());
 			default:
 				break;
 		}

@@ -35,11 +35,12 @@ public class MEGANEResultsTableView extends JPanel
 	public MEGANEResultsTableView(MEGANECollection collection)
 	{
 		this.meganeCollection = collection;
+		init();
 	}
 
 	private JButton loadFootprintsListButton;
     private JButton removeFootprintButton;
-    private JButton showBoundariesButton;
+//    private JButton showBoundariesButton;
     private JButton showFootprintButton;
     private JButton saveFootprintsListButton;
     private JButton saveSelectedFootprintsListButton;
@@ -79,7 +80,7 @@ public class MEGANEResultsTableView extends JPanel
     public void setup()
     {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(new TitledBorder(null, "Available Histories", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        setBorder(new TitledBorder(null, "Available Spectra", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         JPanel panel_4 = new JPanel();
         add(panel_4);
         panel_4.setLayout(new BoxLayout(panel_4, BoxLayout.X_AXIS));
@@ -105,7 +106,7 @@ public class MEGANEResultsTableView extends JPanel
 
         panel_1.add(showFootprintButton);
 
-        panel_1.add(showBoundariesButton);
+//        panel_1.add(showBoundariesButton);
 
         panel_1.add(removeFootprintButton);
 
@@ -168,14 +169,22 @@ public class MEGANEResultsTableView extends JPanel
 		// Table Content
 		QueryComposer<MEGANEColumnLookup> tmpComposer = new QueryComposer<>();
 		tmpComposer.addAttribute(MEGANEColumnLookup.Map, Boolean.class, "Map", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.TimeWindow, Double.class, "UTC Time Window", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.TimeWindow, Double.class, "UTC", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.Latitude, Double.class, "Latitude (deg)", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.Longitude, Double.class, "Longitude (deg)", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.Altitude, Double.class, "Altitude (km)", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.NormalizedAlt, Double.class, "Normalized Altitude", null);
 
 		EphemerisTimeRenderer tmpTimeRenderer = new EphemerisTimeRenderer(false);
 		tmpComposer.setEditor(MEGANEColumnLookup.Map, new BooleanCellEditor());
 		tmpComposer.setRenderer(MEGANEColumnLookup.Map, new BooleanCellRenderer());
 
 
-		tmpComposer.getItem(MEGANEColumnLookup.TimeWindow).defaultSize *= 4;
+		tmpComposer.getItem(MEGANEColumnLookup.TimeWindow).defaultSize *= 7;
+//		tmpComposer.getItem(MEGANEColumnLookup.Latitude).defaultSize *= 1.5;
+//		tmpComposer.getItem(MEGANEColumnLookup.Longitude).defaultSize *= 1.5;
+//		tmpComposer.getItem(MEGANEColumnLookup.Altitude).defaultSize *= 1.5;
+//		tmpComposer.getItem(MEGANEColumnLookup.NormalizedAlt).defaultSize *= 1.5;
 
 		MEGANEItemHandler meganeItemHandler = new MEGANEItemHandler(meganeCollection, tmpComposer);
 		ItemProcessor<MEGANEFootprint> tmpIP = meganeCollection;
@@ -220,10 +229,10 @@ public class MEGANEResultsTableView extends JPanel
         return loadFootprintsListButton;
     }
 
-    public JButton getShowBoundariesButton()
-    {
-        return showBoundariesButton;
-    }
+//    public JButton getShowBoundariesButton()
+//    {
+//        return showBoundariesButton;
+//    }
 
     public JButton getShowFootprintButton()
     {

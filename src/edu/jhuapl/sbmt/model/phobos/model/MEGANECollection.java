@@ -10,10 +10,22 @@ import edu.jhuapl.saavtk.model.SaavtkItemManager;
 
 public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> implements PropertyChangeListener
 {
+	private List<MEGANEFootprint> footprints;
 
 	public MEGANECollection()
 	{
-		// TODO Auto-generated constructor stub
+
+	}
+
+	public MEGANECollection(List<MEGANEFootprint> footprints)
+	{
+		this.footprints = footprints;
+	}
+
+	public void setFootprints(List<MEGANEFootprint> footprints)
+	{
+		this.footprints = footprints;
+		setAllItems(footprints);
 	}
 
 	@Override
