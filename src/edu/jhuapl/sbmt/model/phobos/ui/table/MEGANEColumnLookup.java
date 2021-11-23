@@ -7,5 +7,6 @@ public enum MEGANEColumnLookup
 	Latitude,
 	Longitude,
 	Altitude,
-	NormalizedAlt
+	NormalizedAlt,
+	Status;
 }

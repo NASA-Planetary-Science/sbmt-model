@@ -30,9 +30,6 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 				return meganeCollection.isFootprintMapped(footprint);
 			case TimeWindow:
 				return TimeUtil.et2str(footprint.getDateTime());
-//				DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
-//				fmt.withZone(DateTimeZone.UTC);
-//				return fmt.print(footprint.getDateTime());
 			case Latitude:
 				return formatter.format(Math.toDegrees(footprint.getLatDegrees()));
 			case Longitude:
@@ -41,6 +38,8 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 				return formatter.format(footprint.getAltKm());
 			case NormalizedAlt:
 				return formatter.format(footprint.getNormalizedAlt());
+			case Status:
+				return meganeCollection.getStatus(footprint);
 			default:
 				break;
 		}
@@ -53,23 +52,7 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 	{
 		if (aEnum == MEGANEColumnLookup.Map)
 		{
-//			if (!spectrumCollection.isSpectrumMapped(spec))
-//				try
-//				{
-//					spectrumCollection.addSpectrum(spec, spec.isCustomSpectra);
-//				}
-//				catch (SpectrumIOException e)
-//				{
-//					JOptionPane.showMessageDialog(JOptionPane.getFrameForComponent(null),
-//		                     e.getCause().getMessage(),
-//		                     "Error",
-//		                     JOptionPane.ERROR_MESSAGE);
-//				}
-//			else
-//			{
-//				boundaryCollection.removeBoundary(spec);
-//				spectrumCollection.removeSpectrum(spec);
-//			}
+			meganeCollection.setFootprintMapped(footprint, (Boolean)aValue);
 		}
 		else
 			throw new UnsupportedOperationException("Column is not supported. Enum: " + aEnum);

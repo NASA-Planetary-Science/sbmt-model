@@ -30,24 +30,40 @@ import org.jfree.chart.axis.ValueAxis;
 
 import com.beust.jcommander.internal.Lists;
 import com.github.davidmoten.guavamini.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import vtk.vtkFloatArray;
+import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.gui.dialog.CustomFileChooser;
+import edu.jhuapl.saavtk.model.ModelManager;
+import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringDataFactory;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
 import edu.jhuapl.saavtk.model.plateColoring.CustomizableColoringDataManager;
 import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.LoadableColoringData;
+import edu.jhuapl.saavtk.model.structure.AbstractEllipsePolygonModel;
+import edu.jhuapl.saavtk.model.structure.CircleModel;
+import edu.jhuapl.saavtk.model.structure.EllipseModel;
+import edu.jhuapl.saavtk.model.structure.PlateUtil;
+import edu.jhuapl.saavtk.model.structure.PolygonModel;
+import edu.jhuapl.saavtk.pick.PickManager;
+import edu.jhuapl.saavtk.pick.PickManager.PickMode;
+import edu.jhuapl.saavtk.structure.Ellipse;
+import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
+import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANESearchPanel;
+import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANEStructureCollection;
 import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.ICalculatedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.IFootprintConfinedPlateValues;
@@ -57,6 +73,9 @@ import edu.jhuapl.sbmt.stateHistory.model.time.StateHistoryTimeModelChangedListe
 import edu.jhuapl.sbmt.stateHistory.model.time.TimeWindow;
 
 import crucible.crust.logging.SimpleLogger;
+import glum.item.ItemEventType;
+import glum.task.SilentTask;
+import glum.task.Task;
 
 public class MEGANEController implements PropertyChangeListener
 {
@@ -68,12 +87,46 @@ public class MEGANEController implements PropertyChangeListener
 	private JTabbedPane tabbedPane;
 	private MEGANECollection collection;
 	private MEGANEDatabaseConnection dbConnection;
+	private MEGANEStructureCollection structureCollection;
+	private PolygonModel polygons;
+	private CircleModel circles;
+	private EllipseModel ellipses;
+	private AbstractEllipsePolygonModel selectionModel;
+	private PickManager pickManager;
 
-	public MEGANEController(MEGANECollection collection, SmallBodyModel smallBodyModel)
+	public MEGANEController(MEGANECollection collection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
 	{
 		this.smallBodyModel = smallBodyModel;
 		this.collection = collection;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
+		this.pickManager = pickManager;
+
+		polygons = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
+		circles = (CircleModel)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
+		ellipses = (EllipseModel)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
+        selectionModel = (AbstractEllipsePolygonModel)modelManager.getModel(ModelNames.CIRCLE_SELECTION);
+
+
+		this.structureCollection = new MEGANEStructureCollection(polygons, circles, ellipses);
+
+		collection.addListener((aSource, aEventType) -> {
+
+			if (aEventType != ItemEventType.ItemsSelected) return;
+			updateButtonState();
+
+		});
+
+		collection.addPropertyChangeListener(new PropertyChangeListener()
+		{
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				if (evt.getPropertyName().equals(Properties.MODEL_CHANGED))
+					updateButtonState();
+			}
+		});
+
 		setupPanel();
 		initializeCalculatedPlateColorings();
 	}
@@ -90,7 +143,7 @@ public class MEGANEController implements PropertyChangeListener
 
 	private void setupSearchPanel()
 	{
-		searchPanel = new MEGANESearchPanel(collection);
+		searchPanel = new MEGANESearchPanel(collection, structureCollection);
 		searchPanel.getDatabaseLoadButton().addActionListener(e -> {
 			File file = CustomFileChooser.showOpenDialog(searchPanel, "Choose Database");
 			this.dbConnection = new MEGANEDatabaseConnection(file.getAbsolutePath());
@@ -99,6 +152,8 @@ public class MEGANEController implements PropertyChangeListener
 			{
 				List<MEGANEFootprint> footprints = this.dbConnection.getFootprints();
 				collection.setFootprints(footprints);
+				System.out.println("MEGANEController: setupSearchPanel: number of footprints " + footprints.size());
+				searchPanel.getTableView().getResultsLabel().setText(footprints.size() + " Results");
 			}
 			catch (SQLException e1)
 			{
@@ -106,6 +161,91 @@ public class MEGANEController implements PropertyChangeListener
 				e1.printStackTrace();
 			}
 			searchPanel.getDatabaseNameLabel().setText(file.getName());
+		});
+
+		searchPanel.getTableView().getLoadSpectrumButton().addActionListener(e -> {
+
+		});
+
+		searchPanel.getTableView().getSaveSpectrumButton().addActionListener(e -> {
+
+		});
+
+		searchPanel.getTableView().getShowSpectrumButton().addActionListener(e -> {
+			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
+			if (selectedFootprints.size() == 0) return;
+			for (MEGANEFootprint fp : selectedFootprints)
+			{
+				collection.setFootprintMapped(fp, true);
+			}
+			updateButtonState();
+		});
+
+		searchPanel.getTableView().getHideSpectrumButton().addActionListener(e -> {
+			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
+			if (selectedFootprints.size() == 0) return;
+			for (MEGANEFootprint fp : selectedFootprints)
+			{
+				collection.setFootprintMapped(fp, false);
+			}
+			updateButtonState();
+		});
+
+		searchPanel.getFilterPanel().getSearchCirclePanel().getSelectRegionButton().addActionListener(e -> {
+
+			if (searchPanel.getFilterPanel().getSearchCirclePanel().getSelectRegionButton().isSelected())
+	            pickManager.setPickMode(PickMode.CIRCLE_SELECTION);
+	        else
+	            pickManager.setPickMode(PickMode.DEFAULT);
+		});
+
+		searchPanel.getFilterPanel().getSearchCirclePanel().getClearRegionButton().addActionListener(e -> {
+
+	        selectionModel.removeAllStructures();
+		});
+
+		searchPanel.getFilterPanel().getSearchCirclePanel().getSubmitButton().addActionListener(e -> {
+
+			if (selectionModel.getNumItems() == 0) return;
+			Ellipse region = selectionModel.getItem(0);
+			Task tmpTask = new SilentTask();
+			vtkPolyData structureFacetInformation = PlateUtil.formUnifiedStructurePolyData(tmpTask, selectionModel, List.of(region));
+
+			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
+
+			try
+			{
+				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
+				collection.setFootprints(filteredFootprints);
+				System.out.println("MEGANEController: setupSearchPanel: number of filtered footprints from search circle " + filteredFootprints.size());
+			}
+			catch (SQLException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+
+		searchPanel.getFilterPanel().getSearchStructurePanel().getSubmitButton().addActionListener(e -> {
+
+			vtkPolyData structureFacetInformation = structureCollection.getStructureFacetInformation();
+			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
+
+			for (Integer cellID : cellIdList)
+			{
+				System.out.println("MEGANEController: setupSearchPanel: cellID " + cellID);
+			}
+
+			try
+			{
+				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
+				collection.setFootprints(filteredFootprints);
+			}
+			catch (SQLException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 	}
 
@@ -160,6 +300,19 @@ public class MEGANEController implements PropertyChangeListener
 		});
 
 
+	}
+
+	private void updateButtonState()
+	{
+		ImmutableSet<MEGANEFootprint> selectedItems = collection.getSelectedItems();
+		searchPanel.getTableView().getSaveSpectrumButton().setEnabled(selectedItems.size() >= 1);
+		boolean allMapped = true;
+		for (MEGANEFootprint footprint : selectedItems)
+		{
+			if (footprint.isMapped() == false) allMapped = false;
+		}
+		searchPanel.getTableView().getHideSpectrumButton().setEnabled((selectedItems.size() > 0) && allMapped);
+		searchPanel.getTableView().getShowSpectrumButton().setEnabled((selectedItems.size() > 0) && !allMapped);
 	}
 
 	private void initializeCalculatedPlateColorings()
@@ -331,7 +484,6 @@ public class MEGANEController implements PropertyChangeListener
 				logger.log(Level.WARNING, e.getLocalizedMessage());
 				e.printStackTrace();
 			}
-//			executeSQL("PRAGMA foreign_keys = ON");
 		}
 
 		public List<MEGANEFootprint> getFootprints() throws SQLException
@@ -354,18 +506,90 @@ public class MEGANEController implements PropertyChangeListener
 	            for (int i = 0; i < 5; ++i)
 	            {
 	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-
 	                nextRow.add((Double)o);
-
-	                //System.out.print(o.toString() + " ");
 	            }
 
-	            footprints.add(new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4)));
+	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
+	            footprint.setFacets(getFacets(footprint.getDateTime()));
+	            footprints.add(footprint);
 
 	            //System.out.println(" ");
 	        }
 
 	        return footprints;
+		}
+
+		public List<MEGANEFootprint> getFootprintsForFacets(ImmutableList<Integer> cellIds) throws SQLException
+		{
+			List<MEGANEFootprint> footprints = Lists.newArrayList();
+
+			Statement st = null;
+	        ResultSet rs = null;
+	        Object o = null;
+	        String expression = "SELECT * FROM observingGeometry ORDER BY tdb";
+
+	        st = database.createStatement();         // statement objects can be reused with
+
+	        // repeated calls to execute but we
+	        // choose to make a new one each time
+	        rs = st.executeQuery(expression);    // run the query
+
+	        for (; rs.next(); )
+	        {
+	            List<Double> nextRow = new ArrayList<Double>();
+	            for (int i = 0; i < 5; ++i)
+	            {
+	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
+	                nextRow.add((Double)o);
+	            }
+
+	            List<MEGANEFootprintFacet> facets = getFacets(nextRow.get(0));
+	            List<Integer> facetIds = facets.stream().map(facet -> facet.getFacetID()).toList();
+	            List<Integer> facetCopy = Lists.newArrayList(facetIds);
+	            boolean overlappingFacets = facetCopy.retainAll(cellIds);
+	            if (overlappingFacets == true && facetCopy.size() == 0) continue;
+
+
+	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
+	            footprint.setFacets(getFacets(footprint.getDateTime()));
+	            footprints.add(footprint);
+	        }
+
+
+			return footprints;
+		}
+
+		public List<MEGANEFootprintFacet> getFacets(double time) throws SQLException
+		{
+			List<MEGANEFootprintFacet> facets = Lists.newArrayList();
+
+			Statement st = null;
+	        ResultSet rs = null;
+	        Object o = null;
+	        String expression = "SELECT * FROM facetObs WHERE tdb=" + time + " ORDER BY id";
+
+	        st = database.createStatement();         // statement objects can be reused with
+
+	        // repeated calls to execute but we
+	        // choose to make a new one each time
+	        rs = st.executeQuery(expression);    // run the query
+
+	        for (; rs.next(); )
+	        {
+	            List<Object> nextRow = new ArrayList<Object>();
+	            for (int i = 0; i < 5; ++i)
+	            {
+	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
+	                nextRow.add(o);
+	            }
+
+	            if ((Double)nextRow.get(3) < 0) continue;
+	            MEGANEFootprintFacet facet = new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(3), (Double)nextRow.get(4));
+	            facets.add(facet);
+	        }
+
+
+			return facets;
 		}
 
 		private void executeSQL(String sql) {

@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
+import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANEStructureCollection;
 import edu.jhuapl.sbmt.model.phobos.ui.table.MEGANEResultsTableView;
 
 public class MEGANESearchPanel extends JPanel
@@ -14,13 +15,15 @@ public class MEGANESearchPanel extends JPanel
 	private JButton databaseLoadButton;
 	private JLabel databaseNameLabel;
 	private MEGANEResultsTableView tableView;
+	private MEGANEFootprintFilterPanel filterPanel;
 
-	public MEGANESearchPanel(MEGANECollection collection)
+	public MEGANESearchPanel(MEGANECollection collection, MEGANEStructureCollection structureCollection)
 	{
 		databaseLoadButton = new JButton("Load Database");
 		databaseNameLabel = new JLabel();
 		tableView = new MEGANEResultsTableView(collection);
 		tableView.setup();
+		this.filterPanel = new MEGANEFootprintFilterPanel(structureCollection);
 		initGUI();
 	}
 
@@ -33,6 +36,7 @@ public class MEGANESearchPanel extends JPanel
 		buttonPanel.add(Box.createHorizontalGlue());
 		buttonPanel.add(databaseNameLabel);
 		add(buttonPanel);
+		add(filterPanel);
 		add(tableView);
 	}
 
@@ -45,5 +49,21 @@ public class MEGANESearchPanel extends JPanel
 	public JLabel getDatabaseNameLabel()
 	{
 		return databaseNameLabel;
+	}
+
+	/**
+	 * @return the tableView
+	 */
+	public MEGANEResultsTableView getTableView()
+	{
+		return tableView;
+	}
+
+	/**
+	 * @return the filterPanel
+	 */
+	public MEGANEFootprintFilterPanel getFilterPanel()
+	{
+		return filterPanel;
 	}
 }
