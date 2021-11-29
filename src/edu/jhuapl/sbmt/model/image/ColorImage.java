@@ -428,6 +428,7 @@ public class ColorImage extends Image implements PropertyChangeListener
         }
 
         colorImage.Modified();
+
     }
 
     @Override
