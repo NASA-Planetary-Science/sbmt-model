@@ -143,7 +143,6 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     float[] minValue = new float[1];
     float[] maxValue = new float[1];
     private boolean loadPointingOnly;
-    private final boolean transposeFITSData;
     Stopwatch sw;
 
     PerspectiveImageBackplanesHelper backplanesHelper;
@@ -155,18 +154,9 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
     public PerspectiveImage( //
             ImageKeyInterface key, //
             SmallBodyModel smallBodyModel, //
-            boolean loadPointingOnly, //
-            boolean transposeData) throws FitsException, IOException //
-    {
-        this(key, smallBodyModel, null, loadPointingOnly, 0, transposeData);
-    }
-
-    public PerspectiveImage( //
-            ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
             boolean loadPointingOnly) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, null, loadPointingOnly, 0, true);
+        this(key, smallBodyModel, null, loadPointingOnly, 0);
     }
 
     public PerspectiveImage( //
@@ -175,7 +165,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             boolean loadPointingOnly, //
             int currentSlice) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, null, loadPointingOnly, currentSlice, true);
+        this(key, smallBodyModel, null, loadPointingOnly, currentSlice);
     }
 
     /**
@@ -189,22 +179,7 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             ModelManager modelManager, //
             boolean loadPointingOnly) throws FitsException, IOException //
     {
-        this(key, smallBodyModel, modelManager, loadPointingOnly, 0, true);
-    }
-
-    /**
-     * If loadPointingOnly is true then only pointing information about this
-     * image will be downloaded/loaded. The image itself will not be loaded.
-     * Used by ImageBoundary to get pointing info.
-     */
-    public PerspectiveImage( //
-            ImageKeyInterface key, //
-            SmallBodyModel smallBodyModel, //
-            ModelManager modelManager, //
-            boolean loadPointingOnly, //
-            int currentSlice) throws FitsException, IOException //
-    {
-        this(key, smallBodyModel, modelManager, loadPointingOnly, currentSlice, true);
+        this(key, smallBodyModel, modelManager, loadPointingOnly, 0);
     }
 
   /**
@@ -217,16 +192,13 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
             SmallBodyModel smallBodyModel, //
             ModelManager modelManager, //
             boolean loadPointingOnly, //
-            int currentSlice, //
-            boolean transposeData) throws FitsException, IOException //
+            int currentSlice) throws FitsException, IOException //
     {
         super(key);
         this.currentSlice = currentSlice;
         this.smallBodyModel = smallBodyModel;
         this.modelManager = modelManager;
         this.loadPointingOnly = loadPointingOnly;
-
-        this.transposeFITSData = transposeData;
 
         this.backplanesHelper = new PerspectiveImageBackplanesHelper(this);
         this.imageOffsetCalculator = new PerspectiveImageOffsetCalculator(this);
@@ -2365,7 +2337,10 @@ abstract public class PerspectiveImage extends Image implements PropertyChangeLi
                 }
             }
         }
-        setRawImage(createRawImage(fitsHeight, fitsWidth, fitsDepth, transposeFITSData, array2D, array3D));
+        IImagingInstrument instrument = key.getInstrument();
+        boolean isTranspose = instrument != null ? instrument.isTranspose() : true;
+
+        setRawImage(createRawImage(fitsHeight, fitsWidth, fitsDepth, isTranspose, array2D, array3D));
     }
 
     protected void loadEnviFile()

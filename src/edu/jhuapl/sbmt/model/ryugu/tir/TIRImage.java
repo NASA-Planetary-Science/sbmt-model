@@ -24,7 +24,7 @@ public class TIRImage extends PerspectiveImage
 
     public TIRImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
-        super(key, smallBodyModel, loadPointingOnly, false);
+        super(key, smallBodyModel, loadPointingOnly);
     }
 
     @Override
