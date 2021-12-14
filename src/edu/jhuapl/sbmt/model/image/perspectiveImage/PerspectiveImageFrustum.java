@@ -33,6 +33,7 @@ public class PerspectiveImageFrustum
 	int defaultSlice;
     private String instrumentName;
     private Color frustumColor;
+    private boolean hasIntercept = true;
 
 	public PerspectiveImageFrustum(PerspectiveImage image)
 	{
@@ -246,11 +247,16 @@ public class PerspectiveImageFrustum
 		return frusta[sliceToUse];
 	}
 
-	void setShowFrustum(boolean b)
+	public boolean isShowFrustum()
+	{
+		return showFrustum;
+	}
+
+	public void setShowFrustum(boolean b)
 	{
 		showFrustum = b;
 
-		if (showFrustum)
+		if (showFrustum && hasIntercept)
 		{
 			frustumActor.VisibilityOn();
 		}
@@ -306,6 +312,24 @@ public class PerspectiveImageFrustum
 	public void setInstrumentName(String instrumentName)
 	{
 		this.instrumentName = instrumentName;
+	}
+
+	public boolean hasIntercept()
+	{
+		return hasIntercept;
+	}
+
+	public void setHasIntercept(boolean intercept)
+	{
+		this.hasIntercept = intercept;
+		if (showFrustum && hasIntercept)
+		{
+			frustumActor.VisibilityOn();
+		}
+		else
+		{
+			frustumActor.VisibilityOff();
+		}
 	}
 
 }
