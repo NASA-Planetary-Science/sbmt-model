@@ -181,7 +181,6 @@ class PerspectiveImageRendererHelper
         // Initialize the mask to black which masks out the image
         maskSource.SetDrawColor(0.0, 0.0, 0.0, 0.0);
         maskSource.FillBox(0, image.imageWidth - 1, 0, image.imageHeight - 1);
-        System.out.println("PerspectiveImageRendererHelper: setCurrentMask: image width height " + image.imageWidth + " " + image.imageHeight);
         // Create a square inside mask which passes through the image.
         maskSource.SetDrawColor(255.0, 255.0, 255.0, 255.0);
         maskSource.FillBox(leftMask, image.imageWidth - 1 - rightMask, bottomMask, image.imageHeight - 1 - topMask);
@@ -512,6 +511,11 @@ class PerspectiveImageRendererHelper
     	double[][] frustum2Adjusted = image.getFrustum2Adjusted();
     	double[][] frustum3Adjusted = image.getFrustum3Adjusted();
     	double[][] frustum4Adjusted = image.getFrustum4Adjusted();
+//    	System.out.println("PerspectiveImageRendererHelper: loadFootprint: spacecraftPos adjusted " + new Vector3D(spacecraftPositionAdjusted[0]));
+//    	System.out.println("PerspectiveImageRendererHelper: loadFootprint: frus1 adjusted " + new Vector3D(frustum1Adjusted[0]));
+//    	System.out.println("PerspectiveImageRendererHelper: loadFootprint: frus2 adjusted " + new Vector3D(frustum2Adjusted[0]));
+//    	System.out.println("PerspectiveImageRendererHelper: loadFootprint: frus3 adjusted " + new Vector3D(frustum3Adjusted[0]));
+//    	System.out.println("PerspectiveImageRendererHelper: loadFootprint: frus4 adjusted " + new Vector3D(frustum4Adjusted[0]));
         vtkPolyData existingFootprint = checkForExistingFootprint();
         if (existingFootprint != null)
         {
@@ -581,7 +585,8 @@ class PerspectiveImageRendererHelper
 
                 footprintGenerated[currentSlice] = true;
             }
-//            System.out.println("PerspectiveImage: loadFootprint: footprint generated");
+//            System.out.println("PerspectiveImage: loadFootprint: footprint generated, setting texture coords "+  image.getImageWidth() + " " + image.getImageHeight());
+//            System.out.println("PerspectiveImageRendererHelper: loadFootprint: frustum " + getFrustum());
             vtkPointData pointData = footprint[currentSlice].GetPointData();
             pointData.SetTCoords(textureCoords);
             PolyDataUtil.generateTextureCoordinates(getFrustum(), image.getImageWidth(), image.getImageHeight(), footprint[currentSlice]);
@@ -711,6 +716,7 @@ class PerspectiveImageRendererHelper
      */
     void setDisplayedImageRange(IntensityRange range)
     {
+//    	System.out.println("PerspectiveImageRendererHelper: setDisplayedImageRange: ");
     	int currentSlice = image.currentSlice;
         if (rawImage != null)
         {
@@ -826,6 +832,7 @@ class PerspectiveImageRendererHelper
      */
     IntensityRange getDisplayedRange(int slice)
     {
+//    	System.out.println("PerspectiveImageRendererHelper: getDisplayedRange: ");
         int nslices = image.getImageDepth();
 
         Preconditions.checkArgument(slice < nslices);
@@ -861,6 +868,7 @@ class PerspectiveImageRendererHelper
     {
         if (footprintActor == null)
         {
+//        	System.out.println("PerspectiveImageRendererHelper: getProps: loading footprint actor");
             loadFootprint();
 
             imageTexture = new vtkTexture();
@@ -883,6 +891,7 @@ class PerspectiveImageRendererHelper
 
         if (frustumActor == null)
         {
+//        	System.out.println("PerspectiveImageRendererHelper: getProps: loading frustum actor");
             frustumActor = new vtkActor();
 
             calculateFrustum();
@@ -1053,6 +1062,7 @@ class PerspectiveImageRendererHelper
 
     void initializeMaskingAfterLoad()
     {
+//    	System.out.println("PerspectiveImageRendererHelper: initializeMaskingAfterLoad: ");
     	int[] masking = image.getMaskSizes();
         int topMask = masking[0];
         int rightMask = masking[1];
@@ -1061,6 +1071,7 @@ class PerspectiveImageRendererHelper
         for (int i = 0; i < masking.length; ++i)
             currentMask[i] = masking[i];
 
+//        System.out.println("PerspectiveImageRendererHelper: initializeMaskingAfterLoad: masking top " + topMask + " r: " + rightMask + " b: " + bottomMask + " l: " + leftMask);
         maskSource = new vtkImageCanvasSource2D();
         maskSource.SetScalarTypeToUnsignedChar();
         maskSource.SetNumberOfScalarComponents(1);

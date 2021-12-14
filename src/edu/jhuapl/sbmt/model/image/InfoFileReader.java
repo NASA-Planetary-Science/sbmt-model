@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 import edu.jhuapl.saavtk.util.MathUtil;
 
 
-public class InfoFileReader extends BasicFileReader
+public class InfoFileReader extends BasicFileReader implements PointingFileReader
 {
     public static final float DEFAULT_PDS_NA = -1.e32f;
     public static final String FRUSTUM1 = "FRUSTUM1";
@@ -28,6 +28,8 @@ public class InfoFileReader extends BasicFileReader
     public static final String TARGET_ROTATION = "TARGET_ROTATION";
     public static final String TARGET_ZOOM_FACTOR = "TARGET_ZOOM_FACTOR";
     public static final String APPLY_ADJUSTMENTS = "APPLY_ADJUSTMENTS";
+    public static final String DISPLAY_RANGE = "DISPLAY_RANGE";
+    public static final String OFFLIMB_DISPLAY_RANGE = "OFFLIMB_DISPLAY_RANGE";
 
     public static final String SUMFILENAMES = "SumfileNames";
     public static final String INFOFILENAMES = "InfofileNames";
@@ -269,82 +271,98 @@ public class InfoFileReader extends BasicFileReader
         }
     }
 
-    public boolean isPad()
+    @Override
+	public boolean isPad()
     {
         return pad;
     }
 
-    public String getStartTime()
+    @Override
+	public String getStartTime()
     {
         return startTime;
     }
 
-    public String getStopTime()
+    @Override
+	public String getStopTime()
     {
         return stopTime;
     }
 
-    public double[] getSpacecraftPosition()
+    @Override
+	public double[] getSpacecraftPosition()
     {
         return spacecraftPosition;
     }
 
-    public double[] getSunPosition()
+    @Override
+	public double[] getSunPosition()
     {
         return sunPosition;
     }
 
-    public double[] getFrustum1()
+    @Override
+	public double[] getFrustum1()
     {
         return frustum1;
     }
 
-    public double[] getFrustum2()
+    @Override
+	public double[] getFrustum2()
     {
         return frustum2;
     }
 
-    public double[] getFrustum3()
+    @Override
+	public double[] getFrustum3()
     {
         return frustum3;
     }
 
-    public double[] getFrustum4()
+    @Override
+	public double[] getFrustum4()
     {
         return frustum4;
     }
 
-    public double[] getBoresightDirection()
+    @Override
+	public double[] getBoresightDirection()
     {
         return boresightDirection;
     }
 
-    public double[] getUpVector()
+    @Override
+	public double[] getUpVector()
     {
         return upVector;
     }
 
-    public double[] getTargetPixelCoordinates()
+    @Override
+	public double[] getTargetPixelCoordinates()
     {
         return targetPixelCoordinates;
     }
 
-    public boolean isApplyFrameAdjustments()
+    @Override
+	public boolean isApplyFrameAdjustments()
     {
         return applyFrameAdjustments;
     }
 
-    public double getRotationOffset()
+    @Override
+	public double getRotationOffset()
     {
         return rotationOffset;
     }
 
-    public double getZoomFactor()
+    @Override
+	public double getZoomFactor()
     {
         return zoomFactor;
     }
 
-    public float getPds_na()
+    @Override
+	public float getPds_na()
     {
         return pds_na;
     }

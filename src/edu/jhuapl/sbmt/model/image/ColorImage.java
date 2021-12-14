@@ -17,6 +17,7 @@ import vtk.vtkImageMask;
 import vtk.vtkLookupTable;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
+import vtk.vtkPolyDataWriter;
 import vtk.vtkProp;
 import vtk.vtkProperty;
 import vtk.vtkTexture;
@@ -452,6 +453,12 @@ public class ColorImage extends Image implements PropertyChangeListener
             footprintActor.SetTexture(imageTexture);
             vtkProperty footprintProperty = footprintActor.GetProperty();
             footprintProperty.LightingOff();
+
+            vtkPolyDataWriter imageWriter = new vtkPolyDataWriter();
+            imageWriter.SetInputData(shiftedFootprint);
+            imageWriter.SetFileName("/Users/steelrj1/Desktop/colorImageSample.vtk");
+            imageWriter.SetFileTypeToBinary();
+            imageWriter.Write();
 
             footprintActors.add(footprintActor);
         }

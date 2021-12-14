@@ -523,12 +523,11 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
                 {
                     for (int k=0; k<nimages; ++k)
                     {
-
                         double[] uv = new double[2];
 
                         Frustum frustum = frustums.get(k);
                         float[][] pixels = pixelData[k];
-                        double value = 0.0;
+                        double value = 1.0;
 
                         if (k == firstImageIndex)
                         {
@@ -544,7 +543,6 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
                                     uv[1],
                                     uv[0]);
                         }
-
                         if (value < mins[k])
                             value = mins[k];
                         if (value > maxes[k])
