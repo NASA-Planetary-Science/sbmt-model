@@ -68,7 +68,6 @@ public class MEGANEFootprintRenderer
         allColoringData = getFootprintColoringData();	//this will use information from the footprint
 //        logger.info("Removed cells");
 		updateColorFromPlate();
-		logger.info("Updated color");
 	}
 
 	private vtkLookupTable updateColorFromPlate()

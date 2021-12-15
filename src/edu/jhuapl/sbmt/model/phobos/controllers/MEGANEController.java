@@ -152,7 +152,6 @@ public class MEGANEController implements PropertyChangeListener
 			{
 				List<MEGANEFootprint> footprints = this.dbConnection.getFootprints();
 				collection.setFootprints(footprints);
-				System.out.println("MEGANEController: setupSearchPanel: number of footprints " + footprints.size());
 				searchPanel.getTableView().getResultsLabel().setText(footprints.size() + " Results");
 			}
 			catch (SQLException e1)
@@ -217,7 +216,6 @@ public class MEGANEController implements PropertyChangeListener
 			{
 				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
 				collection.setFootprints(filteredFootprints);
-				System.out.println("MEGANEController: setupSearchPanel: number of filtered footprints from search circle " + filteredFootprints.size());
 			}
 			catch (SQLException e1)
 			{
@@ -230,11 +228,6 @@ public class MEGANEController implements PropertyChangeListener
 
 			vtkPolyData structureFacetInformation = structureCollection.getStructureFacetInformation();
 			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
-
-			for (Integer cellID : cellIdList)
-			{
-				System.out.println("MEGANEController: setupSearchPanel: cellID " + cellID);
-			}
 
 			try
 			{
@@ -479,7 +472,7 @@ public class MEGANEController implements PropertyChangeListener
 
 			try {
 				database = DriverManager.getConnection("jdbc:sqlite:" + dbName);
-				logger.log(Level.INFO, String.format("Opened %s", dbName));
+//				logger.log(Level.INFO, String.format("Opened %s", dbName));
 			} catch (SQLException e) {
 				logger.log(Level.WARNING, e.getLocalizedMessage());
 				e.printStackTrace();
