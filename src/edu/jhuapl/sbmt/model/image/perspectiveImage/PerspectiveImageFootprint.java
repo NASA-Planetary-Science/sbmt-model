@@ -1050,7 +1050,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	public void setShowFootprint(boolean b)
 	{
 		showFootprint = b;
-
+		isVisible = b;
 		if (showFootprint && hasIntercept)
 		{
 			footprintActor.VisibilityOn();
