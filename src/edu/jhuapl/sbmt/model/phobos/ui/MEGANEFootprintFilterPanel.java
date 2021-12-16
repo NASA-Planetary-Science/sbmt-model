@@ -8,6 +8,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.sbmt.model.phobos.ui.regionSearch.MEGANESearchRegionPanel;
 import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANESearchStructurePanel;
 import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANEStructureCollection;
@@ -18,9 +19,11 @@ public class MEGANEFootprintFilterPanel extends JPanel
 	private MEGANESearchStructurePanel searchStructurePanel;
 	private MEGANESearchRegionPanel searchCirclePanel;
 	private MEGANEStructureCollection structureCollection;
+	private ModelManager modelManager;
 
-	public MEGANEFootprintFilterPanel(MEGANEStructureCollection structureCollection)
+	public MEGANEFootprintFilterPanel(MEGANEStructureCollection structureCollection, ModelManager modelManager)
 	{
+		this.modelManager = modelManager;
 		this.structureCollection = structureCollection;
 		initGUI();
 	}
@@ -30,7 +33,7 @@ public class MEGANEFootprintFilterPanel extends JPanel
 		filterTypes = new JComboBox<FilterTypes>(FilterTypes.values());
 		setBorder(BorderFactory.createTitledBorder("Filter Footprints"));
 		JPanel cardPanel = new JPanel(new CardLayout());
-		searchCirclePanel = new MEGANESearchRegionPanel();
+		searchCirclePanel = new MEGANESearchRegionPanel(modelManager);
 		searchStructurePanel = new MEGANESearchStructurePanel(structureCollection);
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));

@@ -93,11 +93,13 @@ public class MEGANEController implements PropertyChangeListener
 	private EllipseModel ellipses;
 	private AbstractEllipsePolygonModel selectionModel;
 	private PickManager pickManager;
+	private ModelManager modelManager;
 
 	public MEGANEController(MEGANECollection collection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
 	{
 		this.smallBodyModel = smallBodyModel;
 		this.collection = collection;
+		this.modelManager = modelManager;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		this.pickManager = pickManager;
 
@@ -143,7 +145,7 @@ public class MEGANEController implements PropertyChangeListener
 
 	private void setupSearchPanel()
 	{
-		searchPanel = new MEGANESearchPanel(collection, structureCollection);
+		searchPanel = new MEGANESearchPanel(collection, structureCollection, modelManager);
 		searchPanel.getDatabaseLoadButton().addActionListener(e -> {
 			File file = CustomFileChooser.showOpenDialog(searchPanel, "Choose Database");
 			this.dbConnection = new MEGANEDatabaseConnection(file.getAbsolutePath());

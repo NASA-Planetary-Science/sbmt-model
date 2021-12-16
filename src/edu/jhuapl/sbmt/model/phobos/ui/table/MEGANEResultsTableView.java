@@ -100,7 +100,7 @@ public class MEGANEResultsTableView extends JPanel
         panel_4.add(horizontalGlue);
 
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setPreferredSize(new java.awt.Dimension(150, 750));
+        scrollPane.setPreferredSize(new java.awt.Dimension(150, 550));
         add(scrollPane);
 
         scrollPane.setViewportView(resultList);
