@@ -6,9 +6,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
-import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANEStructureCollection;
+import edu.jhuapl.sbmt.model.phobos.model.MEGANESearchModel;
 import edu.jhuapl.sbmt.model.phobos.ui.table.MEGANEResultsTableView;
 
 public class MEGANESearchPanel extends JPanel
@@ -18,13 +17,14 @@ public class MEGANESearchPanel extends JPanel
 	private MEGANEResultsTableView tableView;
 	private MEGANEFootprintFilterPanel filterPanel;
 
-	public MEGANESearchPanel(MEGANECollection collection, MEGANEStructureCollection structureCollection, ModelManager modelManager)
+	public MEGANESearchPanel(MEGANECollection collection, MEGANESearchModel searchModel)
 	{
 		databaseLoadButton = new JButton("Load Database");
 		databaseNameLabel = new JLabel();
 		tableView = new MEGANEResultsTableView(collection);
 		tableView.setup();
-		this.filterPanel = new MEGANEFootprintFilterPanel(structureCollection, modelManager);
+		this.filterPanel = new MEGANEFootprintFilterPanel();
+		filterPanel.getFilterTables().setup(searchModel.getNumericFilterModel(), searchModel.getNonNumericFilterModel(), searchModel.getTimeWindowModel());
 		initGUI();
 	}
 

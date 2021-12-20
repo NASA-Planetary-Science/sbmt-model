@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -23,6 +24,8 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerDateModel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -34,7 +37,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import vtk.vtkFloatArray;
-import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.gui.dialog.CustomFileChooser;
 import edu.jhuapl.saavtk.model.ModelManager;
@@ -45,14 +47,12 @@ import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
 import edu.jhuapl.saavtk.model.plateColoring.CustomizableColoringDataManager;
 import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.LoadableColoringData;
-import edu.jhuapl.saavtk.model.structure.AbstractEllipsePolygonModel;
 import edu.jhuapl.saavtk.model.structure.CircleModel;
 import edu.jhuapl.saavtk.model.structure.EllipseModel;
-import edu.jhuapl.saavtk.model.structure.PlateUtil;
 import edu.jhuapl.saavtk.model.structure.PolygonModel;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.pick.PickManager.PickMode;
-import edu.jhuapl.saavtk.structure.Ellipse;
+import edu.jhuapl.saavtk.structure.Structure;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
@@ -61,10 +61,13 @@ import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
+import edu.jhuapl.sbmt.model.phobos.model.MEGANESearchModel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANESearchPanel;
 import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANEStructureCollection;
 import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
+import edu.jhuapl.sbmt.query.filter.model.DynamicFilterValues;
+import edu.jhuapl.sbmt.query.filter.model.FilterType;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.ICalculatedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.IFootprintConfinedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.ITimeCalculatedPlateValues;
@@ -74,8 +77,6 @@ import edu.jhuapl.sbmt.stateHistory.model.time.TimeWindow;
 
 import crucible.crust.logging.SimpleLogger;
 import glum.item.ItemEventType;
-import glum.task.SilentTask;
-import glum.task.Task;
 
 public class MEGANEController implements PropertyChangeListener
 {
@@ -88,12 +89,9 @@ public class MEGANEController implements PropertyChangeListener
 	private MEGANECollection collection;
 	private MEGANEDatabaseConnection dbConnection;
 	private MEGANEStructureCollection structureCollection;
-	private PolygonModel polygons;
-	private CircleModel circles;
-	private EllipseModel ellipses;
-	private AbstractEllipsePolygonModel selectionModel;
 	private PickManager pickManager;
 	private ModelManager modelManager;
+	private MEGANESearchModel searchModel;
 
 	public MEGANEController(MEGANECollection collection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
 	{
@@ -102,14 +100,29 @@ public class MEGANEController implements PropertyChangeListener
 		this.modelManager = modelManager;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		this.pickManager = pickManager;
-
-		polygons = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
-		circles = (CircleModel)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
-		ellipses = (EllipseModel)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
-        selectionModel = (AbstractEllipsePolygonModel)modelManager.getModel(ModelNames.CIRCLE_SELECTION);
+		this.searchModel = new MEGANESearchModel(modelManager, smallBodyModel, dbConnection);
 
 
-		this.structureCollection = new MEGANEStructureCollection(polygons, circles, ellipses);
+		DynamicFilterValues<Structure> dynamicValues = new DynamicFilterValues<Structure>()
+		{
+			@Override
+			public ArrayList<Structure> getCurrentValues()
+			{
+				PolygonModel polygonModel = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
+				CircleModel circleModel = (CircleModel)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
+				EllipseModel ellipseModel = (EllipseModel)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
+
+				ArrayList<Structure> structures = new ArrayList<Structure>();
+				structures.addAll(polygonModel.getAllItems());
+				structures.addAll(circleModel.getAllItems());
+				structures.addAll(ellipseModel.getAllItems());
+				Structure[] structuresArray = new Structure[structures.size()];
+				structures.toArray(structuresArray);
+				return structures;
+			}
+		};
+
+		FilterType.provideDynamic("Structures", Structure.class, dynamicValues, "Structure");
 
 		collection.addListener((aSource, aEventType) -> {
 
@@ -131,6 +144,31 @@ public class MEGANEController implements PropertyChangeListener
 
 		setupPanel();
 		initializeCalculatedPlateColorings();
+		searchPanel.addAncestorListener(new AncestorListener()
+		{
+
+			@Override
+			public void ancestorRemoved(AncestorEvent event)
+			{
+				searchModel.getNonNumericFilterModel().setSelectedItems(List.of());
+				searchModel.getNumericFilterModel().setSelectedItems(List.of());
+				searchModel.getTimeWindowModel().setSelectedItems(List.of());
+			}
+
+			@Override
+			public void ancestorMoved(AncestorEvent event)
+			{
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void ancestorAdded(AncestorEvent event)
+			{
+				// TODO Auto-generated method stub
+
+			}
+		});
 	}
 
 	private void setupPanel()
@@ -145,10 +183,11 @@ public class MEGANEController implements PropertyChangeListener
 
 	private void setupSearchPanel()
 	{
-		searchPanel = new MEGANESearchPanel(collection, structureCollection, modelManager);
+		searchPanel = new MEGANESearchPanel(collection, searchModel);	//TODO fix the use of the model here
 		searchPanel.getDatabaseLoadButton().addActionListener(e -> {
 			File file = CustomFileChooser.showOpenDialog(searchPanel, "Choose Database");
 			this.dbConnection = new MEGANEDatabaseConnection(file.getAbsolutePath());
+			searchModel.setDbConnection(dbConnection);
 			this.dbConnection.openDatabase();
 			try
 			{
@@ -192,56 +231,73 @@ public class MEGANEController implements PropertyChangeListener
 			updateButtonState();
 		});
 
-		searchPanel.getFilterPanel().getSearchCirclePanel().getSelectRegionButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getSelectRegionButton().addActionListener(e -> {
 
-			if (searchPanel.getFilterPanel().getSearchCirclePanel().getSelectRegionButton().isSelected())
+			if (searchPanel.getFilterPanel().getSelectRegionButton().isSelected())
 	            pickManager.setPickMode(PickMode.CIRCLE_SELECTION);
 	        else
 	            pickManager.setPickMode(PickMode.DEFAULT);
 		});
 
-		searchPanel.getFilterPanel().getSearchCirclePanel().getClearRegionButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getClearRegionButton().addActionListener(e -> {
 
-	        selectionModel.removeAllStructures();
+	        searchModel.removeRegion();
 		});
 
-		searchPanel.getFilterPanel().getSearchCirclePanel().getSubmitButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getSubmitButton().addActionListener(e -> {
 
-			if (selectionModel.getNumItems() == 0) return;
-			Ellipse region = selectionModel.getItem(0);
-			Task tmpTask = new SilentTask();
-			vtkPolyData structureFacetInformation = PlateUtil.formUnifiedStructurePolyData(tmpTask, selectionModel, List.of(region));
-
-			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
-
-			try
-			{
-				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
-				collection.setFootprints(filteredFootprints);
-			}
-			catch (SQLException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			collection.setFootprints(searchModel.performSearch());
 		});
 
-		searchPanel.getFilterPanel().getSearchStructurePanel().getSubmitButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getFilterTables().getAddButton().addActionListener(e -> {
 
-			vtkPolyData structureFacetInformation = structureCollection.getStructureFacetInformation();
-			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
+			try {
+				FilterType selectedItem = (FilterType)searchPanel.getFilterPanel().getFilterTables().getFilterCombo().getSelectedItem();
+				FilterType filter = FilterType.createInstance(selectedItem.name());
+				if (filter.getType() == Double.class )
+					searchModel.getNumericFilterModel().addFilter(filter);
+				else if (filter.getType() == LocalDateTime.class)
+					searchModel.getTimeWindowModel().addFilter(filter);
+				else
+					searchModel.getNonNumericFilterModel().addFilter(filter);
+			}
+			catch (CloneNotSupportedException cnse)
+			{
+				cnse.printStackTrace();
+			}
 
-			try
-			{
-				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
-				collection.setFootprints(filteredFootprints);
-			}
-			catch (SQLException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
 		});
+
+//		searchPanel.getFilterPanel().getFilterTables().getFilterCombo().addActionListener(e -> {
+//
+//
+//
+//		});
+
+		searchPanel.getFilterPanel().getFilterTables().getRemoveFilterButton().addActionListener(e -> {
+
+			searchModel.getNumericFilterModel().removeItems(searchModel.getNumericFilterModel().getSelectedItems());
+			searchModel.getNonNumericFilterModel().removeItems(searchModel.getNonNumericFilterModel().getSelectedItems());
+			searchModel.getTimeWindowModel().removeItems(searchModel.getTimeWindowModel().getSelectedItems());
+
+		});
+
+//		searchPanel.getFilterPanel().getSearchStructurePanel().getSubmitButton().addActionListener(e -> {
+//
+//			vtkPolyData structureFacetInformation = structureCollection.getStructureFacetInformation();
+//			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
+//
+//			try
+//			{
+//				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
+//				collection.setFootprints(filteredFootprints);
+//			}
+//			catch (SQLException e1)
+//			{
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//		});
 	}
 
 	private void setupPlotPanel()

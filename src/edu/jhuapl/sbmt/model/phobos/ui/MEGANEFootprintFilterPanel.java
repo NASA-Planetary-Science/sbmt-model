@@ -1,101 +1,82 @@
 package edu.jhuapl.sbmt.model.phobos.ui;
 
-import java.awt.CardLayout;
+import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
+import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 
-import edu.jhuapl.saavtk.model.ModelManager;
-import edu.jhuapl.sbmt.model.phobos.ui.regionSearch.MEGANESearchRegionPanel;
-import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANESearchStructurePanel;
-import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANEStructureCollection;
+import edu.jhuapl.sbmt.query.filter.ui.table.NumericFilterTableView;
 
 public class MEGANEFootprintFilterPanel extends JPanel
 {
-	private JComboBox<FilterTypes> filterTypes;
-	private MEGANESearchStructurePanel searchStructurePanel;
-	private MEGANESearchRegionPanel searchCirclePanel;
-	private MEGANEStructureCollection structureCollection;
-	private ModelManager modelManager;
+	private JToggleButton selectRegionButton;
+	private JButton clearRegionButton;
+	private JButton submitButton;
+	private NumericFilterTableView filterTables;
 
-	public MEGANEFootprintFilterPanel(MEGANEStructureCollection structureCollection, ModelManager modelManager)
+	public MEGANEFootprintFilterPanel()
 	{
-		this.modelManager = modelManager;
-		this.structureCollection = structureCollection;
 		initGUI();
 	}
 
 	private void initGUI()
 	{
-		filterTypes = new JComboBox<FilterTypes>(FilterTypes.values());
 		setBorder(BorderFactory.createTitledBorder("Filter Footprints"));
-		JPanel cardPanel = new JPanel(new CardLayout());
-		searchCirclePanel = new MEGANESearchRegionPanel(modelManager);
-		searchStructurePanel = new MEGANESearchStructurePanel(structureCollection);
-
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-		JPanel filterPanel = new JPanel();
-		filterPanel.setLayout(new BoxLayout(filterPanel, BoxLayout.X_AXIS));
-		filterPanel.add(new JLabel("By:"));
-		filterPanel.add(filterTypes);
-		add(filterPanel);
+		selectRegionButton = new JToggleButton("Select Region");
+        clearRegionButton = new JButton("Clear Region");
+        submitButton = new JButton("Search");
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        filterTables = new NumericFilterTableView();
+//        filterTables.setup(searchModel.getNumericFilterModel(), searchModel.getNonNumericFilterModel(), searchModel.getTimeWindowModel());
+        add(filterTables);
 
-		cardPanel.add(searchCirclePanel, FilterTypes.CIRCLE.getFullName());
-		cardPanel.add(searchStructurePanel, FilterTypes.STRUCTURE.getFullName());
-		add(cardPanel);
-
-		filterTypes.addItemListener(e -> {
-			CardLayout cl = (CardLayout)(cardPanel.getLayout());
-			cl.show(cardPanel, ((FilterTypes)e.getItem()).getFullName());
-			if (((FilterTypes)e.getItem()).getFullName().equals(FilterTypes.STRUCTURE.getFullName()))
-			{
-				structureCollection.updateItems();
-//				searchStructurePanel.updateStructuresList();
-			}
-			cardPanel.repaint();
-		});
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+        buttonPanel.add(selectRegionButton);
+        buttonPanel.add(clearRegionButton);
+        buttonPanel.add(submitButton);
+        add(Box.createVerticalGlue());
+        add(buttonPanel);
+        setPreferredSize(new Dimension(400, 400));
 	}
 
 	/**
-	 * @return the searchStructurePanel
+	 * @return the selectRegionButton
 	 */
-	public MEGANESearchStructurePanel getSearchStructurePanel()
+	public JToggleButton getSelectRegionButton()
 	{
-		return searchStructurePanel;
+		return selectRegionButton;
 	}
 
 	/**
-	 * @return the searchCirclePanel
+	 * @return the clearRegionButton
 	 */
-	public MEGANESearchRegionPanel getSearchCirclePanel()
+	public JButton getClearRegionButton()
 	{
-		return searchCirclePanel;
+		return clearRegionButton;
 	}
+
+	/**
+	 * @return the submitButton
+	 */
+	public JButton getSubmitButton()
+	{
+		return submitButton;
+	}
+
+	/**
+	 * @return the filterTables
+	 */
+	public NumericFilterTableView getFilterTables()
+	{
+		return filterTables;
+	}
+
 }
 
-enum FilterTypes {
-
-	CIRCLE("Region and Attributes"),
-	STRUCTURE("Structure");
-
-	private String name;
-
-	private FilterTypes(String name)
-	{
-		this.name = name;
-	}
-
-	public String getFullName()
-	{
-		return name;
-	}
-
-	public String toString()
-	{
-		return name;
-	}
-}
