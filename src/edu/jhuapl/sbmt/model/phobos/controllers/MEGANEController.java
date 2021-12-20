@@ -246,7 +246,15 @@ public class MEGANEController implements PropertyChangeListener
 
 		searchPanel.getFilterPanel().getSubmitButton().addActionListener(e -> {
 
-			collection.setFootprints(searchModel.performSearch());
+			try
+			{
+				collection.setFootprints(searchModel.performSearch());
+			}
+			catch (SQLException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 
 		searchPanel.getFilterPanel().getFilterTables().getAddButton().addActionListener(e -> {
@@ -550,6 +558,39 @@ public class MEGANEController implements PropertyChangeListener
 	        // repeated calls to execute but we
 	        // choose to make a new one each time
 	        rs = st.executeQuery(expression);    // run the query
+	        for (; rs.next(); )
+	        {
+	        	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprints: processing row");
+	            List<Double> nextRow = new ArrayList<Double>();
+	            for (int i = 0; i < 5; ++i)
+	            {
+	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
+	                nextRow.add((Double)o);
+	            }
+
+	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
+	            footprint.setFacets(getFacets(footprint.getDateTime()));
+	            footprints.add(footprint);
+
+	            //System.out.println(" ");
+	        }
+
+	        return footprints;
+		}
+
+		public List<MEGANEFootprint> getFootprintsForSQLParameters(String sqlString) throws SQLException
+		{
+			List<MEGANEFootprint> footprints = Lists.newArrayList();
+			Statement st = null;
+	        ResultSet rs = null;
+	        Object o = null;
+	        String expression = "SELECT * FROM observingGeometry WHERE " + sqlString + " ORDER BY tdb";
+
+	        st = database.createStatement();         // statement objects can be reused with
+
+	        // repeated calls to execute but we
+	        // choose to make a new one each time
+	        rs = st.executeQuery(expression);    // run the query
 
 	        for (; rs.next(); )
 	        {
@@ -600,6 +641,52 @@ public class MEGANEController implements PropertyChangeListener
 	            boolean overlappingFacets = facetCopy.retainAll(cellIds);
 	            if (overlappingFacets == true && facetCopy.size() == 0) continue;
 
+
+	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
+	            footprint.setFacets(getFacets(footprint.getDateTime()));
+	            footprints.add(footprint);
+	        }
+
+
+			return footprints;
+		}
+
+		public List<MEGANEFootprint> getFootprintsForFacets(ImmutableList<Integer> cellIds, String sqlString) throws SQLException
+		{
+			List<MEGANEFootprint> footprints = Lists.newArrayList();
+
+			Statement st = null;
+	        ResultSet rs = null;
+	        Object o = null;
+	        String expression = "";
+	        if (!sqlString.isEmpty())
+	        	expression = "SELECT * FROM observingGeometry WHERE " + sqlString + " ORDER BY tdb";
+	        else
+	        	expression = "SELECT * FROM observingGeometry ORDER BY tdb";
+
+	        st = database.createStatement();         // statement objects can be reused with
+
+	        // repeated calls to execute but we
+	        // choose to make a new one each time
+	        rs = st.executeQuery(expression);    // run the query
+
+	        for (; rs.next(); )
+	        {
+	            List<Double> nextRow = new ArrayList<Double>();
+	            for (int i = 0; i < 5; ++i)
+	            {
+	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
+	                nextRow.add((Double)o);
+	            }
+
+	            if (!cellIds.isEmpty())
+	            {
+		            List<MEGANEFootprintFacet> facets = getFacets(nextRow.get(0));
+		            List<Integer> facetIds = facets.stream().map(facet -> facet.getFacetID()).toList();
+		            List<Integer> facetCopy = Lists.newArrayList(facetIds);
+		            boolean overlappingFacets = facetCopy.retainAll(cellIds);
+		            if (overlappingFacets == true && facetCopy.size() == 0) continue;
+	            }
 
 	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
 	            footprint.setFacets(getFacets(footprint.getDateTime()));
