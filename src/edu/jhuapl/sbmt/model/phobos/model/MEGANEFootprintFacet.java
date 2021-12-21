@@ -7,6 +7,7 @@ public class MEGANEFootprintFacet
 	private double cosE;
 	private double projectedArea;
 	private double range;
+	private double integrationTime;
 
 	/**
 	 * @param time
@@ -15,13 +16,14 @@ public class MEGANEFootprintFacet
 	 * @param projectedArea
 	 * @param range
 	 */
-	public MEGANEFootprintFacet(double time, double facetID, double cosE, double projectedArea, double range)
+	public MEGANEFootprintFacet(double time, double facetID, double integrationTime, double cosE, double projectedArea, double range)
 	{
 		this.time = time;
 		this.facetID = (int)facetID;
 		this.cosE = cosE;
 		this.projectedArea = projectedArea;
 		this.range = range;
+		this.integrationTime = integrationTime;
 	}
 
 	/**

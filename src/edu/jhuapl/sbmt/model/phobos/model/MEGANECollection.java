@@ -2,6 +2,7 @@ package edu.jhuapl.sbmt.model.phobos.model;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import vtk.vtkProp;
 import edu.jhuapl.saavtk.model.SaavtkItemManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEController.MEGANEDatabaseConnection;
 import edu.jhuapl.sbmt.model.phobos.render.MEGANEFootprintRenderer;
 
 import crucible.crust.logging.SimpleLogger;
@@ -23,6 +25,7 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 	private List<MEGANEFootprint> footprints;
 	private SmallBodyModel smallBodyModel;
 	private HashMap<MEGANEFootprint, MEGANEFootprintRenderer> footprintRenderers;
+	private MEGANEDatabaseConnection dbConnection;
 	private SimpleLogger logger = SimpleLogger.getInstance();
 
 	public MEGANECollection(SmallBodyModel smallBodyModel)
@@ -86,6 +89,19 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 				public void run()
 				{
 					footprint.setStatus("Loading...");
+					if (footprint.getFacets() == null /*||  footprint.getCellIDs().isEmpty()*/)
+					{
+						try
+						{
+							System.out.println("MEGANECollection: setFootprintMapped: getting facets");
+							footprint.setFacets(dbConnection.getFacets(footprint.getDateTime(), 180.0));
+						}
+						catch (SQLException e1)
+						{
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
 					MEGANEFootprintRenderer renderer = new MEGANEFootprintRenderer(footprint, smallBodyModel, MEGANECollection.this.pcs);
 					footprintRenderers.put(footprint, renderer);
 					renderer.getProps().SetVisibility(isMapped ? 1 : 0);
@@ -117,6 +133,14 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 	public String getStatus(MEGANEFootprint footprint)
 	{
 		return footprint.getStatus();
+	}
+
+	/**
+	 * @param dbConnection the dbConnection to set
+	 */
+	public void setDbConnection(MEGANEDatabaseConnection dbConnection)
+	{
+		this.dbConnection = dbConnection;
 	}
 
 }

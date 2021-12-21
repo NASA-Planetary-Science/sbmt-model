@@ -95,24 +95,24 @@ public class MEGANESearchModel
 		return tmpPolyData;
 	}
 
-	private List<MEGANEFootprint> getFootprintsForPlates(ImmutableList<Integer> cellIdList)
-	{
-		try
-		{
-			List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
-			return filteredFootprints;
-		}
-		catch (SQLException e1)
-		{
-
-			e1.printStackTrace();
-			return Lists.newArrayList();
-		}
-	}
+//	private List<MEGANEFootprint> getFootprintsForPlates(ImmutableList<Integer> cellIdList)
+//	{
+//		try
+//		{
+//			List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
+//			return filteredFootprints;
+//		}
+//		catch (SQLException e1)
+//		{
+//
+//			e1.printStackTrace();
+//			return Lists.newArrayList();
+//		}
+//	}
 
 	private List<MEGANEFootprint> search(List<Structure> structures, String sqlString) throws SQLException
 	{
-		return dbConnection.getFootprintsForFacets(generateStructureIndices(structures), getSearchString());
+		return dbConnection.getFootprintsForFacets2(generateStructureIndices(structures), getSearchString());
 	}
 
 //	private List<MEGANEFootprint> searchNonStructureParameters(String sqlString) throws SQLException
@@ -144,22 +144,22 @@ public class MEGANESearchModel
 //		return allFootprints;
 	}
 
-	private List<MEGANEFootprint> generateStructureFootprints(List<Structure> structureFilters)
-	{
-		List<MEGANEFootprint> allFootprints = Lists.newArrayList();
-		for (Structure structure : structureFilters)
-		{
-//			Structure structure = (Structure)filter.getSelectedRangeValue();
-			StructureManager refManager = null;
-			if (structure instanceof Polygon) refManager = polygonModel;
-			else if (structure instanceof Ellipse) refManager = ellipseModel;
-			vtkPolyData structureFacetInformation = getStructureFacetInformation(structure, refManager);
-			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
-
-			allFootprints.addAll(getFootprintsForPlates(cellIdList));
-		}
-		return allFootprints;
-	}
+//	private List<MEGANEFootprint> generateStructureFootprints(List<Structure> structureFilters)
+//	{
+//		List<MEGANEFootprint> allFootprints = Lists.newArrayList();
+//		for (Structure structure : structureFilters)
+//		{
+////			Structure structure = (Structure)filter.getSelectedRangeValue();
+//			StructureManager refManager = null;
+//			if (structure instanceof Polygon) refManager = polygonModel;
+//			else if (structure instanceof Ellipse) refManager = ellipseModel;
+//			vtkPolyData structureFacetInformation = getStructureFacetInformation(structure, refManager);
+//			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
+//
+//			allFootprints.addAll(getFootprintsForPlates(cellIdList));
+//		}
+//		return allFootprints;
+//	}
 
 	public String getSearchString()
 	{
@@ -167,7 +167,7 @@ public class MEGANESearchModel
 		System.out.println("MEGANESearchModel: getSearchString: time window sql " + timeWindowModel.getSQLQueryString());
 		String queryString = "";
 		if (numericFilterModel.getSQLQueryString().isEmpty()) queryString += numericFilterModel.getSQLQueryString();
-		if (!numericFilterModel.getSQLQueryString().isEmpty() &&  !timeWindowModel.getSQLQueryString().isEmpty()) queryString += "&" + timeWindowModel.getSQLQueryString();
+		if (!numericFilterModel.getSQLQueryString().isEmpty() &&  !timeWindowModel.getSQLQueryString().isEmpty()) queryString += " AND " + timeWindowModel.getSQLQueryString();
 		else if (numericFilterModel.getSQLQueryString().isEmpty() && !timeWindowModel.getSQLQueryString().isEmpty()) queryString = timeWindowModel.getSQLQueryString();
 		System.out.println("MEGANESearchModel: getSearchString: returning sqlString " + queryString);
 		return queryString;
