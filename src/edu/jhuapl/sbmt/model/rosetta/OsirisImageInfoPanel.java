@@ -10,10 +10,11 @@ import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImageBoundaryColl
 public class OsirisImageInfoPanel extends ImageInfoPanel
 {
 
-    public OsirisImageInfoPanel(Image image, ImageCollection imageCollection,
-            PerspectiveImageBoundaryCollection imageBoundaryCollection, LegacyStatusHandler aStatusHandler)
+    public OsirisImageInfoPanel(Image image, ImageCollection imageCollection, PerspectiveImageBoundaryCollection boundaryCollection,
+    							LegacyStatusHandler aStatusHandler)
     {
-        super(image, imageCollection, imageBoundaryCollection, aStatusHandler);
+
+        super(image, imageCollection, boundaryCollection, aStatusHandler);
         IntensityRange range=((OsirisImage)image).getDisplayedRange();
         slider.setLowValue(range.min);
         slider.setHighValue(range.max);
