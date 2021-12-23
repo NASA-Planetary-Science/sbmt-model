@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.image;
 
+import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -380,6 +381,29 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
 
     public void outputToOBJ(String filename)
     {
+    }
+
+    protected Color boundaryColor = Color.red;
+    protected boolean boundaryVisible = false;
+
+    public void setBoundaryColor(Color color)
+    {
+    	this.boundaryColor = color;
+    }
+
+    public Color getBoundaryColor()
+    {
+    	return boundaryColor;
+    }
+
+    public void setBoundaryVisibility(boolean isVisible)
+    {
+    	this.boundaryVisible = isVisible;
+    }
+
+    public boolean isBoundaryVisible()
+    {
+    	return boundaryVisible;
     }
 
 }

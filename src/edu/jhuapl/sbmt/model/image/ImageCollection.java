@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.image;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -77,6 +78,8 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
         Stopwatch sw = Stopwatch.createUnstarted();
         sw.start();
         Image image = createImage(key, smallBodyModel);
+
+        image.setBoundaryColor(new Color((int)(Math.random() * 0x1000000)));
 //        System.out.println("ImageCollection: addImage: created image in " + sw.elapsedMillis() + " ms");
 
         smallBodyModel.addPropertyChangeListener(image);
