@@ -9,7 +9,7 @@ import java.util.Vector;
 
 import javax.swing.SwingUtilities;
 
-import com.github.davidmoten.guavamini.Lists;
+import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.ImmutableList;
 
 import vtk.vtkActor;
