@@ -138,7 +138,7 @@ public class OffLimbPlaneCalculator
 //        int szMax=Math.max(resolution[0], resolution[1]);
         int szW=resolution[0];//szMax;//(int)(aspect*szMax);
         int szH=resolution[1];//szMax;
-
+        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: res is " + res);
         // Step (2): Shoot rays from the camera position toward each macro-pixel & record which ones don't hit the body (these will comprise the off-limb geometry)
 
         // (2a) determine ray-cast depth; currently implemented as camera-to-origin distance plus body bounding-box diagonal length -- that way rays will always extend from the camera position past the entire body
@@ -169,7 +169,6 @@ public class OffLimbPlaneCalculator
     		return;
     	}
     	this.currentDepth = offLimbFootprintDepth;
-
     	//pull from cache didn't work; build it in memory instead
 
         // (2c) use a vtkImageCanvasSource2D to represent the macro-pixels, with an unsigned char color type "true = (0, 0, 0) = ray hits surface" and "false = (255, 255, 255) = ray misses surface"... img might seem backwards but 0-values can be thought of as forming the "shadow" of the body against the sky as viewed by the camera
@@ -234,8 +233,6 @@ public class OffLimbPlaneCalculator
             pt=scPos.add(upRot.applyTo(lookRot.applyTo(pt)));               // transform from (s,t) coordinates into the implied 3D direction vector, with origin at the camera's position in space; depth along the boresight was enforced on the previous line
             imagePolyData.GetPoints().SetPoint(i, pt.toArray());        // overwrite the old (pixel-coordinate) point with the new (3D cartesian) point
         }
-
-
 
         String offLimbImageDataFileName = img.getPrerenderingFileNameBase() + "_offLimbImageData.vtk.gz";
         saveToDisk(FileCache.instance().getFile(offLimbImageDataFileName).getPath());
