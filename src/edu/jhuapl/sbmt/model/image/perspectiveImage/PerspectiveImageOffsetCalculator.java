@@ -167,7 +167,6 @@ class PerspectiveImageOffsetCalculator
         for (int slice = 0; slice < nslices; slice++)
         {
             double[][] surfacePoint = new double[nslices][3];
-
             for (int i = 0; i < 3; i++)
             {
             	surfacePoint[currentSlice][i] = image.getSpacecraftPositionOriginal()[currentSlice][i] + image.getBoresightDirectionOriginal()[currentSlice][i];

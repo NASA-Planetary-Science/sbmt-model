@@ -26,12 +26,13 @@ public class InfoFileWriter extends BasicFileWriter
     public static final String TARGET_ROTATION = "TARGET_ROTATION";
     public static final String TARGET_ZOOM_FACTOR = "TARGET_ZOOM_FACTOR";
     public static final String APPLY_ADJUSTMENTS = "APPLY_ADJUSTMENTS";
+    private boolean adjusted;
 
-
-	public InfoFileWriter(String filename, PointingFileReader pointing)
+	public InfoFileWriter(String filename, PointingFileReader pointing, boolean adjusted)
 	{
 		super(filename);
 		this.pointing = pointing;
+		this.adjusted = adjusted;
 	}
 
 	@Override
@@ -40,8 +41,8 @@ public class InfoFileWriter extends BasicFileWriter
 		FileOutputStream fs = null;
 
 		// save out info file to cache with ".adjusted" appended to the name
-		boolean flatten = true;
-		String suffix = flatten ? "" : ".adjusted";
+//		boolean flatten = true;
+		String suffix = adjusted? ".adjusted" : "";
 		try
 		{
 			fs = new FileOutputStream(filename + suffix);
@@ -114,11 +115,5 @@ public class InfoFileWriter extends BasicFileWriter
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-
-
-
-
 	}
-
 }
