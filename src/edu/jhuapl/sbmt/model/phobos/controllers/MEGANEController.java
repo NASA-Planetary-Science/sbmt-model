@@ -707,7 +707,7 @@ public class MEGANEController implements PropertyChangeListener
 	        String expression;
 	        if (!sqlString.isEmpty())
 	        {
-	        	sqlString += " AND tdb IN " + timeValues;
+//	        	sqlString += " AND tdb IN " + timeValues;
 	        	expression = "SELECT * FROM observingGeometry WHERE " + sqlString + " ORDER BY tdb";
 	        }
 	        else
@@ -716,7 +716,7 @@ public class MEGANEController implements PropertyChangeListener
 	        }
 
 	        st = database.createStatement();         // statement objects can be reused with
-
+	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: expression is " + expression);
 	        // repeated calls to execute but we
 	        // choose to make a new one each time
 	        rs = st.executeQuery(expression);    // run the query

@@ -25,6 +25,7 @@ import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEController.MEGANEDatabaseConnection;
 import edu.jhuapl.sbmt.query.filter.model.FilterModel;
 import edu.jhuapl.sbmt.query.filter.model.FilterType;
+import edu.jhuapl.sbmt.query.filter.model.TimeWindowFilterModel;
 
 import glum.task.SilentTask;
 import glum.task.Task;
@@ -52,7 +53,7 @@ public class MEGANESearchModel
 
 		this.numericFilterModel = new FilterModel();
 		this.nonNumericFilterModel = new FilterModel();
-		this.timeWindowModel = new FilterModel();
+		this.timeWindowModel = new TimeWindowFilterModel();
 	}
 
 	public void removeRegion()
