@@ -88,6 +88,16 @@ public class MEGANEFootprint
 		return cellIDs;
 	}
 
+	public double getSummedValue()
+	{
+		double total = 0;
+		for (MEGANEFootprintFacet facet : facets)
+		{
+			total += facet.getComputedValue();
+		}
+		return total;
+	}
+
 	/**
 	 * @return the mapped
 	 */

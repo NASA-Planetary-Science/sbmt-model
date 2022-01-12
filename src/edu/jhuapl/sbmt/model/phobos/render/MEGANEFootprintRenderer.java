@@ -18,6 +18,7 @@ import vtk.vtkLookupTable;
 import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
+import vtk.vtkStringArray;
 import vtk.vtkUnsignedCharArray;
 
 import edu.jhuapl.saavtk.colormap.Colormap;
@@ -48,6 +49,9 @@ public class MEGANEFootprintRenderer
 	private double minValue = Double.MAX_VALUE, maxValue = Double.MIN_VALUE;
 	private PropertyChangeSupport pcs;
 	private int i=0;
+	private vtkStringArray idArray;
+    private vtkStringArray stringArray;
+    private vtkLookupTable lut;
 
 	public MEGANEFootprintRenderer(MEGANEFootprint footprint, SmallBodyModel smallBodyModel, PropertyChangeSupport pcs)
 	{
@@ -58,15 +62,10 @@ public class MEGANEFootprintRenderer
 		this.pcs = pcs;
 		smallBodyPolyData.DeepCopy(smallBodyModel.getSmallBodyPolyData());
 		logger.setLogFormat("%1$tF %1$tT.%1$tL %4$-7s %2$s %5$s%6$s%n");
-//		vtkIdTypeArray ids = new vtkIdTypeArray();
-//		for (int i=0; i<footprint.getCellIDs().size(); i++)
-//			ids.InsertNextValue(footprint.getCellIDs().get(i));
-//		logger.info("Removing cells");
 		PolyDataRemoveSelectedCells removeCells = new PolyDataRemoveSelectedCells();
 		removeCells.setIndicesToRemove(footprint.getCellIDs());
 		footprintPolyData = removeCells.apply(smallBodyPolyData);
         allColoringData = getFootprintColoringData();	//this will use information from the footprint
-//        logger.info("Removed cells");
 		updateColorFromPlate();
 	}
 
@@ -78,14 +77,11 @@ public class MEGANEFootprintRenderer
 		FacetColoringData[] plateDataInsidePolydata = getColoringDataForFootprint();	//contains coloring data for each cell in this footprint
 		Colormap colormap = Colormaps.getNewInstanceOfBuiltInColormap(Colormaps.getDefaultColormapName());
 		ColoringData globalColoringData = allColoringData.get(0);
-
-		double[] range = globalColoringData.getDefaultRange();
 		colormap.setRangeMin(minValue);
 		colormap.setRangeMax(maxValue);
 		colormap.setNumberOfLevels(32);
-
 		//create and setup the LUT
-		vtkLookupTable lut = new vtkLookupTable();
+		lut = new vtkLookupTable();
 		lut.SetIndexedLookup(1);
         lut.SetNumberOfTableValues(plateDataInsidePolydata.length);
         lut.Build();
@@ -93,6 +89,8 @@ public class MEGANEFootprintRenderer
         //now populated the LUT using the coloring in the FacetColoringData
 
 //        logger.info("Processing facets");
+        idArray = new vtkStringArray();
+        stringArray = new vtkStringArray();
 		for (FacetColoringData coloringData : plateDataInsidePolydata)	//for each facet in the set of facets...
 		{
 			SwingUtilities.invokeLater(new Runnable()
@@ -100,6 +98,7 @@ public class MEGANEFootprintRenderer
 				@Override
 				public void run()
 				{
+					if (!(i%100 == 0)) return;
 					double percentage = (double)i/(double)plateDataInsidePolydata.length*100;
 					footprint.setStatus("LD: " + formatter.format(percentage) + "%");
 					MEGANEFootprintRenderer.this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
@@ -120,9 +119,11 @@ public class MEGANEFootprintRenderer
 			}
 			Color c = colormap.getColor(coloringValuesFor[0]);
 			lut.SetTableValue(i, new double[] {((double)c.getRed())/255.0, ((double)c.getGreen())/255.0, ((double)c.getBlue())/255.0});
-			lut.SetAnnotation("" + i++, ""+ coloringData.getCellId());
+//			lut.SetAnnotation("" + i++, ""+ coloringData.getCellId());
+			stringArray.InsertNextValue(""+ coloringData.getCellId());
+			idArray.InsertNextValue("" + i++);
 		}
-//		logger.info("Processed facets");
+		lut.SetAnnotations(idArray, stringArray);
 		SwingUtilities.invokeLater(() -> {
 			footprint.setStatus("Loaded");
 			MEGANEFootprintRenderer.this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
@@ -190,7 +191,7 @@ public class MEGANEFootprintRenderer
 			if (facets.size() == 1)
 			{
 				MEGANEFootprintFacet facet = facets.get(0);
-				double value = facet.getProjectedArea()/Math.pow(facet.getRange(), 2);
+				double value = facet.getComputedValue();
 				minValue = Math.min(minValue, value);
 				maxValue = Math.max(maxValue, value);
 				footprintValues.InsertValue(cellId, value);

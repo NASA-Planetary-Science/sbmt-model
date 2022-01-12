@@ -44,23 +44,6 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 	public void setFootprints(List<MEGANEFootprint> footprints)
 	{
 		this.footprints = footprints;
-//		for (MEGANEFootprint footprint : footprints)
-//		{
-//			if (footprintRenderers.get(footprint) == null)
-//			{
-//				Thread thread = new Thread(new Runnable()
-//				{
-//
-//					@Override
-//					public void run()
-//					{
-//						footprintRenderers.put(footprint, new MEGANEFootprintRenderer(footprint, smallBodyModel, MEGANECollection.this.pcs));
-//						footprint.setStatus("Loaded");
-//					}
-//				});
-//				thread.start();
-//			}
-//		}
 		setAllItems(footprints);
 	}
 
@@ -93,8 +76,7 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 					{
 						try
 						{
-							System.out.println("MEGANECollection: setFootprintMapped: getting facets");
-							footprint.setFacets(dbConnection.getFacets(footprint.getDateTime(), 180.0));
+							footprint.setFacets(dbConnection.getFacets(footprint.getDateTime()));
 						}
 						catch (SQLException e1)
 						{

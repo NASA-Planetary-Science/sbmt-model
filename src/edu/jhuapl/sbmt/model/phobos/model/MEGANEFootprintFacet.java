@@ -66,4 +66,9 @@ public class MEGANEFootprintFacet
 		return range;
 	}
 
+	public double getComputedValue()
+	{
+		return getProjectedArea()/Math.pow(getRange(), 2);
+	}
+
 }
