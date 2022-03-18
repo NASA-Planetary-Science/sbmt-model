@@ -8,6 +8,12 @@ public class MEGANEFootprintFacet
 	private double projectedArea;
 	private double range;
 	private double integrationTime;
+	private double computedValue = 0;
+
+	public  MEGANEFootprintFacet(double facetID)
+	{
+		this.facetID = (int)facetID;
+	}
 
 	/**
 	 * @param time
@@ -24,6 +30,8 @@ public class MEGANEFootprintFacet
 		this.projectedArea = projectedArea;
 		this.range = range;
 		this.integrationTime = integrationTime;
+		if (getRange() != 0)
+			computedValue = getProjectedArea()/Math.pow(getRange(), 2);
 	}
 
 	/**
@@ -68,7 +76,12 @@ public class MEGANEFootprintFacet
 
 	public double getComputedValue()
 	{
-		return getProjectedArea()/Math.pow(getRange(), 2);
+		return computedValue;
+	}
+
+	public void addToComputedValue(double newValue)
+	{
+		this.computedValue += newValue;
 	}
 
 }

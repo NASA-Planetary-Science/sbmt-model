@@ -19,8 +19,8 @@ import javax.swing.border.TitledBorder;
 
 import edu.jhuapl.saavtk.gui.util.IconUtil;
 import edu.jhuapl.saavtk.gui.util.ToolTipUtil;
-import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
-import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
+import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
+import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
 
 import glum.gui.GuiUtil;
 import glum.gui.misc.BooleanCellEditor;
@@ -31,7 +31,7 @@ import glum.gui.panel.itemList.ItemProcessor;
 import glum.gui.panel.itemList.query.QueryComposer;
 import glum.item.ItemManagerUtil;
 
-public class MEGANEResultsTableView extends JPanel
+public class CumulativeMEGANEFootprintTableView extends JPanel
 {
 
 	/**
@@ -49,10 +49,6 @@ public class MEGANEResultsTableView extends JPanel
 	 */
 	private JButton showSpectrumButton;
 
-	private JButton addSpectraButton;
-
-
-
 	/**
 	 * JButton to save spectra to file
 	 */
@@ -63,12 +59,12 @@ public class MEGANEResultsTableView extends JPanel
 
     //for table
     private JButton selectAllB, selectInvertB, selectNoneB;
-    private MEGANECollection meganeCollection;
-    private ItemListPanel<MEGANEFootprint> meganeILP;
-    private ItemHandler<MEGANEFootprint> meganeItemHandler;
+    private CumulativeMEGANECollection meganeCollection;
+    private ItemListPanel<CumulativeMEGANEFootprint> meganeILP;
+    private ItemHandler<CumulativeMEGANEFootprint> meganeItemHandler;
 
 
-	public MEGANEResultsTableView(MEGANECollection collection)
+	public CumulativeMEGANEFootprintTableView(CumulativeMEGANECollection collection)
 	{
 		this.meganeCollection = collection;
 		collection.addPropertyChangeListener(new PropertyChangeListener()
@@ -77,6 +73,7 @@ public class MEGANEResultsTableView extends JPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				resultsLabel.setText(collection.getAllItems().size() + " Results");
 				resultList.repaint();
 			}
 		});
@@ -93,7 +90,7 @@ public class MEGANEResultsTableView extends JPanel
     public void setup()
     {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setBorder(new TitledBorder(null, "Available Spectra", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        setBorder(new TitledBorder(null, "Cumulative Footprints", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         JPanel panel_4 = new JPanel();
         add(panel_4);
         panel_4.setLayout(new BoxLayout(panel_4, BoxLayout.X_AXIS));
@@ -120,7 +117,7 @@ public class MEGANEResultsTableView extends JPanel
 			{
 				Object source = e.getSource();
 
-				List<MEGANEFootprint> tmpL = meganeCollection.getSelectedItems().asList();
+				List<CumulativeMEGANEFootprint> tmpL = meganeCollection.getSelectedItems().asList();
 				if (source == selectAllB)
 					ItemManagerUtil.selectAll(meganeCollection);
 				else if (source == selectNoneB)
@@ -149,12 +146,6 @@ public class MEGANEResultsTableView extends JPanel
 		hideSpectrumButton.setToolTipText(ToolTipUtil.getItemHide());
 		hideSpectrumButton.setEnabled(false);
 
-		addSpectraButton = GuiUtil.formButton(listener, "Add");
-		addSpectraButton.setToolTipText("Combine Footprints");
-		addSpectraButton.setEnabled(false);
-
-
-
 		selectInvertB = GuiUtil.formButton(listener, IconUtil.getSelectInvert());
 		selectInvertB.setToolTipText(ToolTipUtil.getSelectInvert());
 
@@ -166,40 +157,34 @@ public class MEGANEResultsTableView extends JPanel
 
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-//		titleL = new JLabel("Spectra: ---");
-//		buttonPanel.add(titleL, "growx,span,split");
 		buttonPanel.add(loadSpectrumButton);
 		buttonPanel.add(saveSpectrumButton);
 		buttonPanel.add(Box.createHorizontalGlue());
 		buttonPanel.add(showSpectrumButton);
 		buttonPanel.add(hideSpectrumButton);
 		buttonPanel.add(Box.createHorizontalGlue());
-		buttonPanel.add(addSpectraButton);
-		buttonPanel.add(Box.createHorizontalGlue());
-
 		buttonPanel.add(selectInvertB, "w 24!,h 24!");
 		buttonPanel.add(selectNoneB, "w 24!,h 24!");
 		buttonPanel.add(selectAllB, "w 24!,h 24!,wrap 2");
 		add(buttonPanel);
 
 		// Table Content
-		QueryComposer<MEGANEColumnLookup> tmpComposer = new QueryComposer<>();
-		tmpComposer.addAttribute(MEGANEColumnLookup.Map, Boolean.class, "Map", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.Status, String.class, "Status", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.TimeWindow, Double.class, "UTC", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.Latitude, Double.class, "Latitude (deg)", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.Longitude, Double.class, "Longitude (deg)", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.Altitude, Double.class, "Altitude (km)", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.NormalizedAlt, Double.class, "Normalized Altitude", null);
+		QueryComposer<CumulativeMEGANEFootprintColumnLookup> tmpComposer = new QueryComposer<>();
+		tmpComposer.addAttribute(CumulativeMEGANEFootprintColumnLookup.Map, Boolean.class, "Map", null);
+		tmpComposer.addAttribute(CumulativeMEGANEFootprintColumnLookup.Status, String.class, "Status", null);
+//		tmpComposer.addAttribute(MEGANEColumnLookup.TimeWindow, Double.class, "UTC", null);
+//		tmpComposer.addAttribute(MEGANEColumnLookup.Latitude, Double.class, "Latitude (deg)", null);
+//		tmpComposer.addAttribute(MEGANEColumnLookup.Longitude, Double.class, "Longitude (deg)", null);
+//		tmpComposer.addAttribute(MEGANEColumnLookup.Altitude, Double.class, "Altitude (km)", null);
+//		tmpComposer.addAttribute(MEGANEColumnLookup.NormalizedAlt, Double.class, "Normalized Altitude", null);
 
-		tmpComposer.setEditor(MEGANEColumnLookup.Map, new BooleanCellEditor());
-		tmpComposer.setRenderer(MEGANEColumnLookup.Map, new BooleanCellRenderer());
+		tmpComposer.setEditor(CumulativeMEGANEFootprintColumnLookup.Map, new BooleanCellEditor());
+		tmpComposer.setRenderer(CumulativeMEGANEFootprintColumnLookup.Map, new BooleanCellRenderer());
 
-		tmpComposer.getItem(MEGANEColumnLookup.Status).defaultSize *= 2;
-		tmpComposer.getItem(MEGANEColumnLookup.TimeWindow).defaultSize *= 7;
+		tmpComposer.getItem(CumulativeMEGANEFootprintColumnLookup.Status).defaultSize *= 3;
 
-		MEGANEItemHandler meganeItemHandler = new MEGANEItemHandler(meganeCollection, tmpComposer);
-		ItemProcessor<MEGANEFootprint> tmpIP = meganeCollection;
+		CumulativeMEGANEFootprintItemHandler meganeItemHandler = new CumulativeMEGANEFootprintItemHandler(meganeCollection, tmpComposer);
+		ItemProcessor<CumulativeMEGANEFootprint> tmpIP = meganeCollection;
 		meganeILP = new ItemListPanel<>(meganeItemHandler, tmpIP, true);
 		meganeILP.setSortingEnabled(true);
 		JTable spectrumTable = meganeILP.getTable();
@@ -224,7 +209,7 @@ public class MEGANEResultsTableView extends JPanel
         this.resultsLabel = resultsLabel;
     }
 
-	public ItemHandler<MEGANEFootprint> getMEGANETableHandler()
+	public ItemHandler<CumulativeMEGANEFootprint> getMEGANETableHandler()
 	{
 		return meganeItemHandler;
 	}
@@ -236,7 +221,6 @@ public class MEGANEResultsTableView extends JPanel
 	{
 		return loadSpectrumButton;
 	}
-
 
 	/**
 	 * @return the hideSpectrumButton
@@ -255,7 +239,6 @@ public class MEGANEResultsTableView extends JPanel
 		return showSpectrumButton;
 	}
 
-
 	/**
 	 * @return the saveSpectrumButton
 	 */
@@ -263,14 +246,4 @@ public class MEGANEResultsTableView extends JPanel
 	{
 		return saveSpectrumButton;
 	}
-
-	/**
-	 * @return the addSpectrumButton
-	 */
-	public JButton getAddSpectrumButton()
-	{
-		return addSpectraButton;
-	}
-
-
 }

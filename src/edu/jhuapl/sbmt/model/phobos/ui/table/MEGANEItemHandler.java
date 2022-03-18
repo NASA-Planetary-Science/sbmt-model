@@ -31,9 +31,9 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 			case TimeWindow:
 				return TimeUtil.et2str(footprint.getDateTime());
 			case Latitude:
-				return formatter.format(Math.toDegrees(footprint.getLatDegrees()));
+				return formatter.format(Math.toDegrees(footprint.getLatRadians()));
 			case Longitude:
-				return formatter.format(Math.toDegrees(footprint.getLonDegrees()));
+				return formatter.format(Math.toDegrees(footprint.getLonRadians()));
 			case Altitude:
 				return formatter.format(footprint.getAltKm());
 			case NormalizedAlt:

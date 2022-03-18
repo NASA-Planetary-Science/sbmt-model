@@ -49,6 +49,7 @@ public class MEGANESearchModel
 	private AbstractEllipsePolygonModel selectionModel;
 	private HashMap<String, List<String>> parameterTableMap = new HashMap<String, List<String>>();
 	private String queryString = "";
+	private HashMap<String, List<String>> metadata = new HashMap<String, List<String>>();
 
 	public MEGANESearchModel(ModelManager modelManager, SmallBodyModel smallBodyModel, MEGANEDatabaseConnection dbConnection)
 	{
@@ -75,12 +76,23 @@ public class MEGANESearchModel
 	{
 		List<MEGANEFootprint> footprints = Lists.newArrayList();
 		List<Structure> structuresToSearch = getStructuresToSearch();
+		List<String> structuresMetadata = structuresToSearch.stream().map(struct -> { return struct.getName(); } ).toList();
+		metadata.put(" Structs ", structuresMetadata);
 		if (selectionModel.getNumItems() != 0)
 		{
 			Ellipse region = selectionModel.getItem(0);
 			structuresToSearch.add(region);
+			metadata.put(" Region ", List.of(region.toString()));
+		}
+		for (FilterType type : numericFilterModel.getAllItems())
+		{
+			metadata.put(" " + type.toString(), List.of(""+type.getRangeMin() + "-"+type.getRangeMax()));
 		}
 		footprints.addAll(search(structuresToSearch));
+
+		//save search metadata to model
+//		metadata.putAll(parameterTableMap);
+
 		return footprints;
 //		if (structuresToSearch.isEmpty() && !getSearchString().isEmpty())
 //			footprints.addAll(searchNonStructureParameters(getSearchString()));
@@ -223,16 +235,16 @@ public class MEGANESearchModel
 		{
 			String element = queryElementsIterator.next();
 			List<String> matchingQuery = actualQueries.stream().filter(query -> query.contains(element)).toList();
+//			metadata.put(element, matchingQuery);
+
 			for (String str : matchingQuery)
 			{
-//				matchingQuery.ifPresent(item -> {
-					if (!queryString.isEmpty()) queryString += " AND ";
-					queryString += str;
-	//				if (queryElementsIterator.hasNext()) queryString += " AND ";
-//				});
+				if (!queryString.isEmpty()) queryString += " AND ";
+				queryString += str;
 			}
 
 		}
+		metadata.put(" Facet Constraints", List.of(queryString));
 //		System.out.println("MEGANESearchModel: getFacetObsSearchString: Facet obs string " + queryString);
 		return queryString;
 
@@ -258,14 +270,13 @@ public class MEGANESearchModel
 			List<String> matchingQuery = actualQueries.stream().filter(query -> query.contains(element)).toList();
 			for (String str : matchingQuery)
 			{
-//				matchingQuery.ifPresent(item -> {
-					if (!queryString.isEmpty()) queryString += " OR ";
-					queryString += "(" + str + ")";
-	//				if (queryElementsIterator.hasNext()) queryString += " AND ";
-//				});
+				if (!queryString.isEmpty()) queryString += " OR ";
+				queryString += "(" + str + ")";
 			}
-		}
 
+
+		}
+		metadata.put(" Observing Constraints", List.of(queryString));
 //		List<String> actualTimeQueries = timeWindowModel.getSQLQueryString();
 //		Iterator<String> queryElementsIterator2 = queryElements.iterator();
 //		queryElementsIterator2 = queryElements.iterator();
@@ -327,6 +338,14 @@ public class MEGANESearchModel
 	public FilterModel getTimeWindowModel()
 	{
 		return timeWindowModel;
+	}
+
+	/**
+	 * @return the metadata
+	 */
+	public HashMap<String, List<String>> getMetadata()
+	{
+		return metadata;
 	}
 
 }

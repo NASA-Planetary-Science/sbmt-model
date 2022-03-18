@@ -6,12 +6,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import javax.swing.SwingUtilities;
 
@@ -37,43 +35,50 @@ import edu.jhuapl.sbmt.model.phobos.render.MEGANEFootprintRenderer;
 import crucible.crust.logging.SimpleLogger;
 import glum.item.ItemEventType;
 
-public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> implements PropertyChangeListener
+public class CumulativeMEGANECollection extends SaavtkItemManager<CumulativeMEGANEFootprint> implements PropertyChangeListener
 {
-	private List<MEGANEFootprint> footprints;
+	private List<CumulativeMEGANEFootprint> cumulativeFootprints;
 	private SmallBodyModel smallBodyModel;
-	private HashMap<MEGANEFootprint, MEGANEFootprintRenderer> footprintRenderers;
+	private HashMap<CumulativeMEGANEFootprint, MEGANEFootprintRenderer> cumulativeFootprintRenderers;
 	private MEGANEDatabaseConnection dbConnection;
 	private SimpleLogger logger = SimpleLogger.getInstance();
-	private Map<MEGANEFootprint, MEGANEFootprintRenderProperties> propM;
 	private Renderer renderer;
+	private Map<CumulativeMEGANEFootprint, MEGANEFootprintRenderProperties> propM;
 
-	public MEGANECollection(SmallBodyModel smallBodyModel)
+
+	public CumulativeMEGANECollection(SmallBodyModel smallBodyModel)
 	{
 		logger.setLogFormat("%1$tF %1$tT.%1$tL %4$-7s %2$s %5$s%6$s%n");
 		this.smallBodyModel = smallBodyModel;
-		this.footprintRenderers = new HashMap<MEGANEFootprint, MEGANEFootprintRenderer>();
-		propM = new HashMap<>();
+		this.cumulativeFootprints = Lists.newArrayList();
+		this.cumulativeFootprintRenderers = new HashMap<CumulativeMEGANEFootprint, MEGANEFootprintRenderer>();
 	}
 
-	public MEGANECollection(List<MEGANEFootprint> footprints, SmallBodyModel smallBodyModel)
+	public CumulativeMEGANECollection(List<CumulativeMEGANEFootprint> footprints, SmallBodyModel smallBodyModel)
 	{
 		this(smallBodyModel);
-		this.footprints = footprints;
+		this.cumulativeFootprints = footprints;
 	}
 
-	public void setFootprints(List<MEGANEFootprint> footprints)
+	public void setFootprints(List<CumulativeMEGANEFootprint> footprints)
 	{
-		this.footprints = footprints;
+		this.cumulativeFootprints = footprints;
 		setAllItems(footprints);
 	}
 
+	public void addCumulativeFootprint(CumulativeMEGANEFootprint footprint)
+	{
+		cumulativeFootprints.add(footprint);
+		setAllItems(cumulativeFootprints);
+	}
+
 	@Override
-	public void setAllItems(Collection<MEGANEFootprint> aItemC)
+	public void setAllItems(Collection<CumulativeMEGANEFootprint> aItemC)
 	{
 		// Clear relevant state vars
 		propM = new HashMap<>();
 		// Setup the initial props for all the items
-		for (MEGANEFootprint aItem : aItemC)
+		for (CumulativeMEGANEFootprint aItem : aItemC)
 		{
 			MEGANEFootprintRenderProperties tmpProp = new MEGANEFootprintRenderProperties();
 			tmpProp.isVisible = false;
@@ -86,19 +91,19 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 	public synchronized List<vtkProp> getProps()
 	{
 		List<vtkProp> props = Lists.newArrayList();
-		if (footprints == null) return props;
-		for (MEGANEFootprintRenderer renderer : footprintRenderers.values())
+		if (cumulativeFootprints == null) return props;
+		for (MEGANEFootprintRenderer renderer : cumulativeFootprintRenderers.values())
 		{
 			props.add(renderer.getProps());
 		}
 		return props;
 	}
 
-	public void setFootprintMapped(MEGANEFootprint footprint, boolean isMapped)
+	public void setFootprintMapped(CumulativeMEGANEFootprint footprint, boolean isMapped)
 	{
 		footprint.setMapped(isMapped);
 		propM.get(footprint).isVisible = isMapped;
-		if (footprintRenderers.get(footprint) == null)
+		if (cumulativeFootprintRenderers.get(footprint) == null)
 		{
 			Thread thread = new Thread(new Runnable()
 			{
@@ -107,36 +112,15 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 				public void run()
 				{
 					footprint.setStatus("Loading...");
-					if (footprint.getFacets() == null /*||  footprint.getCellIDs().isEmpty()*/)
-					{
-						try
-						{
-							footprint.setFacets(dbConnection.getFacets(footprint.getDateTime(), new Function<String, Void>()
-							{
-
-								@Override
-								public Void apply(String t)
-								{
-									SwingUtilities.invokeLater(() -> {footprint.setStatus(t);});
-
-									return null;
-								}
-							}));
-						}
-						catch (SQLException e1)
-						{
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-					MEGANEFootprintRenderer renderer = new MEGANEFootprintRenderer(footprint, smallBodyModel, MEGANECollection.this.pcs);
-					footprintRenderers.put(footprint, renderer);
+					MEGANEFootprintRenderer renderer = new MEGANEFootprintRenderer(footprint, smallBodyModel, CumulativeMEGANECollection.this.pcs);
+					cumulativeFootprintRenderers.put(footprint, renderer);
 					renderer.getProps().SetVisibility(isMapped ? 1 : 0);
 					footprint.setStatus("Loaded");
 					SwingUtilities.invokeLater( () -> {
 						renderer.shiftFootprint();
 						pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
 						notifyListeners(footprint, ItemEventType.ItemsMutated);
+
 					});
 				}
 			});
@@ -175,9 +159,19 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 		this.dbConnection = dbConnection;
 	}
 
+	public void setRenderer(Renderer renderer)
+	{
+		this.renderer = renderer;
+	}
+
+	public Renderer getRender()
+	{
+		return renderer;
+	}
+
 	public void saveSelectedToFile(File file, HashMap<String, List<String>> metadata) throws IOException
 	{
-		ImmutableSet<MEGANEFootprint> selectedFootprints = getSelectedItems();
+		ImmutableSet<CumulativeMEGANEFootprint> selectedFootprints = getSelectedItems();
 		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 		writer.write("## Saved Footprints file.  Search parameters:");
 		writer.newLine();
@@ -199,7 +193,7 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 	public void installGroupColorProviders(GroupColorProvider aSrcGCP)
 	{
 		int tmpIdx = -1;
-		for (MEGANEFootprint aItem : getAllItems())
+		for (CumulativeMEGANEFootprint aItem : getAllItems())
 		{
 			tmpIdx++;
 
@@ -245,9 +239,9 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 	/**
 	 * @param segment
 	 */
-	public void refreshColoring(MEGANEFootprint segment)
+	public void refreshColoring(CumulativeMEGANEFootprint segment)
 	{
-		MEGANEFootprintRenderer renderer = footprintRenderers.get(segment);
+		MEGANEFootprintRenderer renderer = cumulativeFootprintRenderers.get(segment);
 		if (renderer == null)
 			return;
 		MEGANEFootprintRenderProperties tmpProp = propM.get(segment);
@@ -269,45 +263,4 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 		}
 		return new VtkFeatureAttr(dataArray);
 	}
-
-	/**
-	 * @return the renderer
-	 */
-	public Renderer getRenderer()
-	{
-		return renderer;
-	}
-
-	public void setRenderer(Renderer renderer)
-	{
-		this.renderer = renderer;
-	}
-
-//	public boolean hasCustomColor(MEGANEFootprint footprint)
-//	{
-//		return propM.get(footprint).customCP != null;
-//	}
-//
-//	public void clearCustomColor(Collection<MEGANEFootprint> footprints)
-//	{
-//		for (MEGANEFootprint footprint : footprints)
-//		{
-//			propM.get(footprint).customCP = null;
-//			propM.get(footprint).activeCP = propM.get(footprint).lastActive;
-//			refreshColoring(footprint);
-//		}
-//	}
-//	//coloring
-//	public void installCustomColorProvider(Collection<MEGANEFootprint> aItemC, ColorProvider colorProvider)
-//	{
-//		for (MEGANEFootprint aItem : aItemC)
-//		{
-//			MEGANEFootprintRenderProperties tmpProp = propM.get(aItem);
-//			tmpProp.lastActive = tmpProp.activeCP;
-//			tmpProp.customCP = colorProvider;
-//			tmpProp.activeCP = colorProvider;
-//			propM.put(aItem, tmpProp);
-//			refreshColoring(aItem);
-//		}
-//	}
 }

@@ -1,24 +1,25 @@
 package edu.jhuapl.sbmt.model.phobos.model;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
 
 public class MEGANEFootprint
 {
 	private double dateTime;
-	private double latDegrees;
-	private double lonDegrees;
+	private double latRadians;
+	private double lonRadians;
 	private double altKm;
 	private double normalizedAlt;
-	private List<MEGANEFootprintFacet> facets;
+	protected List<MEGANEFootprintFacet> facets;
 	private boolean mapped;
 	private String status;
 
 	public MEGANEFootprint(double dateTime, double latDegrees, double lonDegrees, double altKm, double normalizedAlt)
 	{
 		this.dateTime = dateTime;
-		this.latDegrees = latDegrees;
-		this.lonDegrees = lonDegrees;
+		this.latRadians = latDegrees;
+		this.lonRadians = lonDegrees;
 		this.altKm = altKm;
 		this.normalizedAlt = normalizedAlt;
 		this.status = "Unloaded";
@@ -32,17 +33,17 @@ public class MEGANEFootprint
 	/**
 	 * @return the latDegrees
 	 */
-	public double getLatDegrees()
+	public double getLatRadians()
 	{
-		return latDegrees;
+		return latRadians;
 	}
 
 	/**
 	 * @return the lonDegrees
 	 */
-	public double getLonDegrees()
+	public double getLonRadians()
 	{
-		return lonDegrees;
+		return lonRadians;
 	}
 
 	/**
@@ -98,6 +99,14 @@ public class MEGANEFootprint
 		return total;
 	}
 
+	public double getComputedValueAtFacet(Integer index)
+	{
+		double value = 0;
+		Optional<MEGANEFootprintFacet> match = facets.stream().filter(facet ->  facet.getFacetID() == index ).findFirst();
+		if (match.isPresent()) value = match.get().getComputedValue();
+		return value;
+	}
+
 	/**
 	 * @return the mapped
 	 */
@@ -128,5 +137,18 @@ public class MEGANEFootprint
 	public void setStatus(String status)
 	{
 		this.status = status;
+	}
+
+	public String toCSV()
+	{
+		return String.format("%s, %s, %s, %s, %s",
+				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt);
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.format("MEGANEFootprint [dateTime=%s, latDegrees=%s, lonDegrees=%s, altKm=%s, normalizedAlt=%s]",
+				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt);
 	}
 }

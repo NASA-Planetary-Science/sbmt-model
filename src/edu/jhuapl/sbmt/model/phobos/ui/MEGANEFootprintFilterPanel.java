@@ -33,7 +33,6 @@ public class MEGANEFootprintFilterPanel extends JPanel
         submitButton = new JButton("Search");
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         filterTables = new NumericFilterTableView();
-//        filterTables.setup(searchModel.getNumericFilterModel(), searchModel.getNonNumericFilterModel(), searchModel.getTimeWindowModel());
         add(filterTables);
 
         JPanel buttonPanel = new JPanel();
@@ -44,6 +43,16 @@ public class MEGANEFootprintFilterPanel extends JPanel
         add(Box.createVerticalGlue());
         add(buttonPanel);
         setPreferredSize(new Dimension(400, 400));
+	}
+
+	@Override
+	public void setEnabled(boolean enabled)
+	{
+		filterTables.setEnabled(enabled);
+		submitButton.setEnabled(enabled);
+		clearRegionButton.setEnabled(enabled);
+		selectRegionButton.setEnabled(enabled);
+		super.setEnabled(enabled);
 	}
 
 	/**

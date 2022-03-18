@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.phobos.controllers;
 
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -16,17 +17,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import javax.swing.BoxLayout;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerDateModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
@@ -61,6 +66,8 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
+import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
+import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
@@ -91,16 +98,20 @@ public class MEGANEController implements PropertyChangeListener
 	private SmallBodyModel smallBodyModel;
 	private JTabbedPane tabbedPane;
 	private MEGANECollection collection;
+	private CumulativeMEGANECollection cumulativeCollection;
 	private MEGANEDatabaseConnection dbConnection;
 //	private MEGANEStructureCollection structureCollection;
 	private PickManager pickManager;
 //	private ModelManager modelManager;
 	private MEGANESearchModel searchModel;
+//	private HashMap<String, String> searchMetadata;
+	private MEGANEFootprintColoringOptionsController coloringController;
 
-	public MEGANEController(MEGANECollection collection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
+	public MEGANEController(MEGANECollection collection, CumulativeMEGANECollection cumulativeCollection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
 	{
 		this.smallBodyModel = smallBodyModel;
 		this.collection = collection;
+		this.cumulativeCollection = cumulativeCollection;
 //		this.modelManager = modelManager;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		this.pickManager = pickManager;
@@ -159,7 +170,7 @@ public class MEGANEController implements PropertyChangeListener
 		try
 		{
 			integrationTimeFilter = FilterType.createInstance("Integration Time");
-			integrationTimeFilter.setSelectedRangeValue("180.0");
+			integrationTimeFilter.setSelectedRangeValue("60.0");
 			integrationTimeFilter.setEnabled(true);
 			searchModel.getNonNumericFilterModel().addFilter(integrationTimeFilter);
 
@@ -185,6 +196,7 @@ public class MEGANEController implements PropertyChangeListener
 
 			if (aEventType != ItemEventType.ItemsSelected) return;
 			updateButtonState();
+			searchPanel.setEnabled(collection.getAllItems().size() > 0);
 
 		});
 
@@ -240,10 +252,13 @@ public class MEGANEController implements PropertyChangeListener
 
 	private void setupSearchPanel()
 	{
-		searchPanel = new MEGANESearchPanel(collection, searchModel);	//TODO fix the use of the model here
+		searchPanel = new MEGANESearchPanel(collection, cumulativeCollection, searchModel);	//TODO fix the use of the model here
+		searchPanel.setEnabled(false);
 		searchPanel.getDatabaseLoadButton().addActionListener(e -> {
 			File file = CustomFileChooser.showOpenDialog(searchPanel, "Choose Database");
 			this.dbConnection = new MEGANEDatabaseConnection(file.getAbsolutePath());
+			searchPanel.setEnabled(true);
+
 			searchModel.setDbConnection(dbConnection);
 			collection.setDbConnection(dbConnection);
 			this.dbConnection.openDatabase();
@@ -267,6 +282,44 @@ public class MEGANEController implements PropertyChangeListener
 
 		searchPanel.getTableView().getSaveSpectrumButton().addActionListener(e -> {
 
+			File filename = CustomFileChooser.showSaveDialog(plotPanel, "Save to...");
+			try
+			{
+				HashMap<String, List<String>> metadata = searchModel.getMetadata();
+				for (String key : metadata.keySet())
+				{
+					System.out.println("MEGANEController: setupSearchPanel: metadata " + key + " = " + metadata.get(key));
+				}
+				collection.saveSelectedToFile(filename, metadata);
+			}
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+
+		});
+
+		searchPanel.getTableView().getAddSpectrumButton().addActionListener(e -> {
+
+			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
+			if (selectedFootprints.size() == 0) return;
+			CumulativeMEGANEFootprint cumulativeFootprint = new CumulativeMEGANEFootprint(selectedFootprints.asList());
+			cumulativeCollection.addCumulativeFootprint(cumulativeFootprint);
+			updateButtonState();
+
+		});
+
+		searchPanel.getUpdateColorsButton().addActionListener(e -> {
+
+			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
+			if (selectedFootprints.size() == 0) return;
+			if (coloringController == null)
+				coloringController = new MEGANEFootprintColoringOptionsController(collection, cumulativeCollection);
+			JFrame frame = new JFrame("Adjust Color");
+			frame.getContentPane().add(coloringController.getView());
+			frame.setSize(new Dimension(300, 400));
+			frame.setVisible(true);
 		});
 
 		searchPanel.getTableView().getShowSpectrumButton().addActionListener(e -> {
@@ -278,7 +331,16 @@ public class MEGANEController implements PropertyChangeListener
 				{
 					try
 					{
-						fp.setFacets(dbConnection.getFacets(fp.getDateTime()));
+						fp.setFacets(dbConnection.getFacets(fp.getDateTime(), new Function<String, Void>()
+						{
+
+							@Override
+							public Void apply(String t)
+							{
+								SwingUtilities.invokeLater(() -> {fp.setStatus(t);});
+								return null;
+							}
+						}));
 					}
 					catch (SQLException e1)
 					{
@@ -443,6 +505,8 @@ public class MEGANEController implements PropertyChangeListener
 		}
 		searchPanel.getTableView().getHideSpectrumButton().setEnabled((selectedItems.size() > 0) && allMapped);
 		searchPanel.getTableView().getShowSpectrumButton().setEnabled((selectedItems.size() > 0) && !allMapped);
+		searchPanel.getTableView().getAddSpectrumButton().setEnabled(selectedItems.size() > 0);
+		searchPanel.getUpdateColorsButton().setEnabled(((selectedItems.size() > 0) && allMapped) || (cumulativeCollection.getAllItems().size() > 0));
 	}
 
 	private void initializeCalculatedPlateColorings()
@@ -655,7 +719,7 @@ public class MEGANEController implements PropertyChangeListener
 	        ResultSet rs = null;
 	        Object o = null;
 	        String expression = "SELECT * FROM observingGeometry WHERE " + sqlString + " ORDER BY tdb";
-	        double integrationTime = 180.0;
+//	        double integrationTime = 180.0;
 
 	        st = database.createStatement();         // statement objects can be reused with
 
@@ -790,6 +854,7 @@ public class MEGANEController implements PropertyChangeListener
 	        // choose to make a new one each time
 	        rs = st.executeQuery(expression);    // run the query
 	        Pair<Double, Double> currentSignalRange = searchModel.getCurrentSignalContributionRange();
+//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: current signal range " + currentSignalRange);
 	        for (; rs.next(); )
 	        {
 	            List<Double> nextRow = new ArrayList<Double>();
@@ -812,10 +877,19 @@ public class MEGANEController implements PropertyChangeListener
 //	            }
 	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
 //	            footprint.setFacets(facets);
-
+//	            System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: cellIds size " + cellIds.size());
 	            if (currentSignalRange != null && cellIds.size() > 0)
 	            {
-	            	footprint.setFacets(getFacets(footprint.getDateTime()));
+	            	footprint.setFacets(getFacets(footprint.getDateTime(), new Function<String, Void>()
+					{
+
+						@Override
+						public Void apply(String t)
+						{
+							SwingUtilities.invokeLater(() -> {footprint.setStatus(t);});
+							return null;
+						}
+					}));
 	            	double low = currentSignalRange.getLeft();
 	            	double high = currentSignalRange.getRight();
 	            	double totalContribution = footprint.getSummedValue();
@@ -826,7 +900,7 @@ public class MEGANEController implements PropertyChangeListener
 	            	}
 //	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: in structure sum " + inStructureSum + " and total sum " + totalContribution);
 	            	double signalCont = (inStructureSum*100/totalContribution);
-	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: signal contribution " + signalCont);
+//	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: signal contribution " + signalCont);
 	            	if (signalCont >= low && signalCont <= high)
 	            		footprints.add(footprint);
 	            }
@@ -891,10 +965,10 @@ public class MEGANEController implements PropertyChangeListener
 //			return footprints;
 //		}
 
-		public List<MEGANEFootprintFacet> getFacets(double time) throws SQLException
+		public List<MEGANEFootprintFacet> getFacets(double time, Function<String, Void> statusUpdater) throws SQLException
 		{
 			List<MEGANEFootprintFacet> facets = Lists.newArrayList();
-
+			statusUpdater.apply("Getting facets");
 			Statement st = null;
 	        ResultSet rs = null;
 	        Object o = null;
@@ -907,11 +981,12 @@ public class MEGANEController implements PropertyChangeListener
 //	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFacets: expression " + expression);
 
 	        st = database.createStatement();         // statement objects can be reused with
-
+	        statusUpdater.apply("Querying..");
 	        // repeated calls to execute but we
 	        // choose to make a new one each time
 	        rs = st.executeQuery(expression);    // run the query
-
+	        int index = 1;
+	        statusUpdater.apply("Indexing");
 	        for (; rs.next(); )
 	        {
 	            List<Object> nextRow = new ArrayList<Object>();
@@ -920,11 +995,11 @@ public class MEGANEController implements PropertyChangeListener
 	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
 	                nextRow.add(o);
 	            }
-
+	            statusUpdater.apply("Idx " + index++ + rs.getFetchSize());
 	            MEGANEFootprintFacet facet = new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(5), (Double)nextRow.get(6), (Double)nextRow.get(7));
 	            facets.add(facet);
 	        }
-	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFacets: number of facets " + facets.size());
+//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFacets: number of facets " + facets.size());
 
 			return facets;
 		}
