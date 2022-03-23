@@ -3,6 +3,7 @@ package edu.jhuapl.sbmt.model.phobos.ui.color;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Optional;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -11,6 +12,9 @@ import edu.jhuapl.saavtk.color.gui.EditGroupColorPanel;
 import edu.jhuapl.saavtk.color.gui.SimplePanel;
 import edu.jhuapl.saavtk.color.painter.ColorBarPainter;
 import edu.jhuapl.saavtk.color.provider.GroupColorProvider;
+import edu.jhuapl.saavtk.color.table.ColorTable;
+import edu.jhuapl.saavtk.color.table.ColorTableUtil;
+import edu.jhuapl.saavtk.colormap.Colormaps;
 import edu.jhuapl.saavtk.feature.FeatureType;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
@@ -37,7 +41,7 @@ public class MEGANEFootprintColorConfigPanel extends JPanel implements ActionLis
 	private MEGANEFootprintColorBarPanel colorMapPanel;
 	private CardPanel<EditGroupColorPanel> colorPanel;
 	private GComboBox<MEGANEFootprintColorMode> colorModeBox;
-
+	private ColorBarPainter tmpCBP;
 	private MEGANECollection rendererManager;
 
 	/**
@@ -54,7 +58,12 @@ public class MEGANEFootprintColorConfigPanel extends JPanel implements ActionLis
 		add(tmpL);
 		add(colorModeBox, "pushx,wrap");
 
-		ColorBarPainter tmpCBP = new ColorBarPainter(rendererManager.getRenderer());
+		Optional<ColorTable> defaultColoring = ColorTableUtil.getSystemColorTableList().stream().filter(color -> color.getName().equals(Colormaps.getDefaultColormapName())).findFirst();
+		if (defaultColoring.isPresent())
+			ColorTableUtil.setSystemColorTableDefault(defaultColoring.get());
+
+		tmpCBP = new ColorBarPainter(rendererManager.getRenderer());
+
 		colorMapPanel = new MEGANEFootprintColorBarPanel(this, rendererManager, cumulativeCollection, tmpCBP);
 		colorPanel = new CardPanel<>();
 		colorPanel.addCard(MEGANEFootprintColorMode.Simple, new SimplePanel(this, "Footprint", new Color(0.0f, 1.0f, 1.0f)));
@@ -90,6 +99,18 @@ public class MEGANEFootprintColorConfigPanel extends JPanel implements ActionLis
 			colorPanel.getActiveCard().activate(true);
 		};
 		GuiExeUtil.executeOnceWhenShowing(this, tmpRunnable);
+	}
+
+	public void showColorBar(boolean showColorBar)
+	{
+		if (showColorBar)
+		{
+			rendererManager.getRenderer().addVtkPropProvider(tmpCBP);
+		}
+		else
+		{
+			rendererManager.getRenderer().delVtkPropProvider(tmpCBP);
+		}
 	}
 
 	/**

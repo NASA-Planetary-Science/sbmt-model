@@ -6,6 +6,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 
@@ -17,6 +18,7 @@ public class MEGANEFootprintFilterPanel extends JPanel
 	private JButton clearRegionButton;
 	private JButton submitButton;
 	private NumericFilterTableView filterTables;
+	private JLabel status;
 
 	public MEGANEFootprintFilterPanel()
 	{
@@ -31,6 +33,7 @@ public class MEGANEFootprintFilterPanel extends JPanel
 		selectRegionButton = new JToggleButton("Select Region");
         clearRegionButton = new JButton("Clear Region");
         submitButton = new JButton("Search");
+        status = new JLabel("");
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         filterTables = new NumericFilterTableView();
         add(filterTables);
@@ -40,6 +43,7 @@ public class MEGANEFootprintFilterPanel extends JPanel
         buttonPanel.add(selectRegionButton);
         buttonPanel.add(clearRegionButton);
         buttonPanel.add(submitButton);
+        buttonPanel.add(status);
         add(Box.createVerticalGlue());
         add(buttonPanel);
         setPreferredSize(new Dimension(400, 400));
@@ -53,6 +57,11 @@ public class MEGANEFootprintFilterPanel extends JPanel
 		clearRegionButton.setEnabled(enabled);
 		selectRegionButton.setEnabled(enabled);
 		super.setEnabled(enabled);
+	}
+
+	public void setStatus(String statusText)
+	{
+		this.status.setText(statusText);
 	}
 
 	/**

@@ -33,7 +33,6 @@ public class MEGANEFootprintColoringOptionsController implements ActionListener
 		this.rendererManager = rendererManager;
 		this.cumulativeCollection = cumulativeCollection;
 		this.colorConfigPanel = new MEGANEFootprintColorConfigPanel(this, rendererManager, cumulativeCollection);
-		System.out.println("MEGANEFootprintColoringOptionsController: MEGANEFootprintColoringOptionsController: color config panel " + colorConfigPanel);
 		colorConfigPanel.setBorder(BorderFactory.createTitledBorder("Footprint Coloring"));
 	}
 
@@ -57,5 +56,10 @@ public class MEGANEFootprintColoringOptionsController implements ActionListener
 	public void setEnabled(boolean enabled)
 	{
 		this.colorConfigPanel.setEnabled(enabled);
+	}
+
+	public void showColorBar(boolean showColorBar)
+	{
+		colorConfigPanel.showColorBar(showColorBar);
 	}
 }

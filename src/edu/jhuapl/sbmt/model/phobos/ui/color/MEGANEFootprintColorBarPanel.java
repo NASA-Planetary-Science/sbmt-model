@@ -91,11 +91,11 @@ public class MEGANEFootprintColorBarPanel extends ColorBarPanel
 		// Update the color bar
 		updateColorBar();
 
-		// Update the renderer to reflect the ColorBarPainter
-		if (aIsActive == true)
-			refRenderer.addVtkPropProvider(colorBar);
-		else
-			refRenderer.delVtkPropProvider(colorBar);
+//		// Update the renderer to reflect the ColorBarPainter
+//		if (aIsActive == true)
+//			refRenderer.addVtkPropProvider(colorBar);
+//		else
+//			refRenderer.delVtkPropProvider(colorBar);
 	}
 
 	@Override
@@ -109,7 +109,6 @@ public class MEGANEFootprintColorBarPanel extends ColorBarPanel
 	public void handleItemEvent(Object aSource, ItemEventType aEventType)
 	{
 		// Update our default range
-		System.out.println("MEGANEFootprintColorBarPanel: handleItemEvent: handling item event " + aEventType.toString());
 		if (aEventType == ItemEventType.ItemsChanged /*|| aEventType == ItemEventType.ItemsMutated*/)
 		{
 			updateDefaultRange();
@@ -199,7 +198,6 @@ public class MEGANEFootprintColorBarPanel extends ColorBarPanel
 			return aFullRange;
 
 		Range<Double> tmpRangeZ = Range.closed(tmpFA.getMinVal(), tmpFA.getMaxVal());
-		System.out.println("MEGANEFootprintColorBarPanel: updateRange: range is " + tmpRangeZ);
 		// Grow fullRangeZ to include the specified lidar data
 		if (aFullRange == null)
 			aFullRange = tmpRangeZ;
@@ -219,7 +217,6 @@ public class MEGANEFootprintColorBarPanel extends ColorBarPanel
 			return aFullRange;
 
 		Range<Double> tmpRangeZ = Range.closed(tmpFA.getMinVal(), tmpFA.getMaxVal());
-		System.out.println("MEGANEFootprintColorBarPanel: updateCompositeRange: range is " + tmpRangeZ);
 		// Grow fullRangeZ to include the specified lidar data
 		if (aFullRange == null)
 			aFullRange = tmpRangeZ;

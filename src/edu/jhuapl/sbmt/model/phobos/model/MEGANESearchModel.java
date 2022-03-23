@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -72,7 +73,7 @@ public class MEGANESearchModel
 		selectionModel.removeAllStructures();
 	}
 
-	public List<MEGANEFootprint> performSearch() throws SQLException
+	public List<MEGANEFootprint> performSearch(Function<String, Void> statusUpdater) throws SQLException
 	{
 		List<MEGANEFootprint> footprints = Lists.newArrayList();
 		List<Structure> structuresToSearch = getStructuresToSearch();
@@ -88,7 +89,7 @@ public class MEGANESearchModel
 		{
 			metadata.put(" " + type.toString(), List.of(""+type.getRangeMin() + "-"+type.getRangeMax()));
 		}
-		footprints.addAll(search(structuresToSearch));
+		footprints.addAll(search(structuresToSearch, statusUpdater));
 
 		//save search metadata to model
 //		metadata.putAll(parameterTableMap);
@@ -133,9 +134,9 @@ public class MEGANESearchModel
 //		}
 //	}
 
-	private List<MEGANEFootprint> search(List<Structure> structures) throws SQLException
+	private List<MEGANEFootprint> search(List<Structure> structures, Function<String, Void> statusUpdater) throws SQLException
 	{
-		return dbConnection.getFootprintsForFacets2(generateStructureIndices(structures), getFacetObsSearchString(), getObservingGeometrySearchString());
+		return dbConnection.getFootprintsForFacets2(generateStructureIndices(structures), getFacetObsSearchString(), getObservingGeometrySearchString(), statusUpdater);
 	}
 
 //	private List<MEGANEFootprint> searchNonStructureParameters(String sqlString) throws SQLException
@@ -212,7 +213,6 @@ public class MEGANESearchModel
 		Optional<String> range = numericFilterModel.getSQLQueryString().stream().filter(item -> item.contains("signal")).findFirst();
 		if (range.isPresent())
 		{
-			System.out.println("MEGANESearchModel: getCurrentSignalContributionRange: range " + range.get());
 			String parts[] = range.get().split(" ");
 			Double lowValue = Double.parseDouble(parts[2]);
 			Double highValue = Double.parseDouble(parts[4]);

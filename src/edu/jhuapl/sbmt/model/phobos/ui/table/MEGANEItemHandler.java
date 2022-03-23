@@ -29,7 +29,8 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 			case Map:
 				return meganeCollection.isFootprintMapped(footprint);
 			case TimeWindow:
-				return TimeUtil.et2str(footprint.getDateTime());
+				String timeString = TimeUtil.et2str(footprint.getDateTime());
+				return timeString.substring(0, timeString.lastIndexOf("."));
 			case Latitude:
 				return formatter.format(Math.toDegrees(footprint.getLatRadians()));
 			case Longitude:
@@ -38,6 +39,9 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 				return formatter.format(footprint.getAltKm());
 			case NormalizedAlt:
 				return formatter.format(footprint.getNormalizedAlt());
+			case Signal:
+				if (footprint.getSignalContribution() == -1) return "N/A";
+				else return formatter.format(footprint.getSignalContribution());
 			case Status:
 				return meganeCollection.getStatus(footprint);
 			default:

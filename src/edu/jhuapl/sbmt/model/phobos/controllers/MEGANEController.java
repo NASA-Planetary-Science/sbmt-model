@@ -116,7 +116,7 @@ public class MEGANEController implements PropertyChangeListener
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		this.pickManager = pickManager;
 		this.searchModel = new MEGANESearchModel(modelManager, smallBodyModel, dbConnection);
-
+		coloringController = new MEGANEFootprintColoringOptionsController(collection, cumulativeCollection);
 
 		DynamicFilterValues<Structure> dynamicValues = new DynamicFilterValues<Structure>()
 		{
@@ -194,10 +194,24 @@ public class MEGANEController implements PropertyChangeListener
 
 		collection.addListener((aSource, aEventType) -> {
 
-			if (aEventType != ItemEventType.ItemsSelected) return;
-			updateButtonState();
-			searchPanel.setEnabled(collection.getAllItems().size() > 0);
-
+			if (aEventType == ItemEventType.ItemsSelected)
+			{
+				updateButtonState();
+				searchPanel.setEnabled(collection.getAllItems().size() > 0);
+			}
+			else if (aEventType == ItemEventType.ItemsMutated)
+			{
+				boolean oneMapped = false;
+				for (MEGANEFootprint footprint : collection.getAllItems())
+				{
+					if (footprint.isMapped() == true)
+					{
+						oneMapped = true;
+						break;
+					}
+				}
+				coloringController.showColorBar(oneMapped);
+			}
 		});
 
 		collection.addPropertyChangeListener(new PropertyChangeListener()
@@ -314,8 +328,8 @@ public class MEGANEController implements PropertyChangeListener
 
 			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
 			if (selectedFootprints.size() == 0) return;
-			if (coloringController == null)
-				coloringController = new MEGANEFootprintColoringOptionsController(collection, cumulativeCollection);
+//			if (coloringController == null)
+//				coloringController = new MEGANEFootprintColoringOptionsController(collection, cumulativeCollection);
 			JFrame frame = new JFrame("Adjust Color");
 			frame.getContentPane().add(coloringController.getView());
 			frame.setSize(new Dimension(300, 400));
@@ -378,16 +392,36 @@ public class MEGANEController implements PropertyChangeListener
 
 		searchPanel.getFilterPanel().getSubmitButton().addActionListener(e -> {
 
-			try
+			Thread thread = new Thread(new Runnable()
 			{
-				collection.setFootprints(searchModel.performSearch());
-				searchPanel.getTableView().getResultsLabel().setText(collection.getNumItems() + " Results");
-			}
-			catch (SQLException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+
+				@Override
+				public void run()
+				{
+					try
+					{
+						collection.setFootprints(searchModel.performSearch(new Function<String, Void>()
+						{
+
+							@Override
+							public Void apply(String t)
+							{
+								SwingUtilities.invokeLater(() -> {searchPanel.setStatus(t);});
+								return null;
+							}
+						}));
+						searchPanel.getTableView().getResultsLabel().setText(collection.getNumItems() + " Results");
+					}
+					catch (SQLException e1)
+					{
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+				}
+			});
+			thread.start();
+
 		});
 
 		searchPanel.getFilterPanel().getFilterTables().getAddButton().addActionListener(e -> {
@@ -661,6 +695,7 @@ public class MEGANEController implements PropertyChangeListener
 		private Connection database;
 		private final String dbName;
 		private SimpleLogger logger;
+		private int index = 1;
 
 		public MEGANEDatabaseConnection(String dbName) {
 			this.dbName = dbName;
@@ -787,7 +822,7 @@ public class MEGANEController implements PropertyChangeListener
 //			return footprints;
 //		}
 
-		public List<MEGANEFootprint> getFootprintsForFacets2(ImmutableList<Integer> cellIds, String facetObsString, String obsGeomString) throws SQLException
+		public List<MEGANEFootprint> getFootprintsForFacets2(ImmutableList<Integer> cellIds, String facetObsString, String obsGeomString, Function<String, Void> statusUpdater) throws SQLException
 		{
 			//find the matching facets ids and get their times, so the footprints can be fetched
 			List<MEGANEFootprint> footprints = Lists.newArrayList();
@@ -811,11 +846,12 @@ public class MEGANEController implements PropertyChangeListener
 	        	facetExpression += " AND id IN " + cellIDValues;
 	        }
 
-	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: facet obs string " + facetExpression);
+//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: facet obs string " + facetExpression);
 	        st = database.createStatement();         // statement objects can be reused with
 
 	        // repeated calls to execute but we
 	        // choose to make a new one each time
+	        SwingUtilities.invokeLater(() -> { statusUpdater.apply("Running query...");});
 	        rs = st.executeQuery(facetExpression);    // run the query
 
 	        HashSet<Double> times = new HashSet<Double>();
@@ -855,8 +891,10 @@ public class MEGANEController implements PropertyChangeListener
 	        rs = st.executeQuery(expression);    // run the query
 	        Pair<Double, Double> currentSignalRange = searchModel.getCurrentSignalContributionRange();
 //	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: current signal range " + currentSignalRange);
+	        index = 1;
 	        for (; rs.next(); )
 	        {
+	        	SwingUtilities.invokeLater(() -> { statusUpdater.apply("Processing row " + index++ + "...");});
 	            List<Double> nextRow = new ArrayList<Double>();
 	            for (int i = 0; i < 5; ++i)
 	            {
@@ -890,6 +928,7 @@ public class MEGANEController implements PropertyChangeListener
 							return null;
 						}
 					}));
+	            	SwingUtilities.invokeLater(() -> {footprint.setStatus("Unloaded");});
 	            	double low = currentSignalRange.getLeft();
 	            	double high = currentSignalRange.getRight();
 	            	double totalContribution = footprint.getSummedValue();
@@ -900,6 +939,7 @@ public class MEGANEController implements PropertyChangeListener
 	            	}
 //	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: in structure sum " + inStructureSum + " and total sum " + totalContribution);
 	            	double signalCont = (inStructureSum*100/totalContribution);
+	            	footprint.setSignalContribution(signalCont);
 //	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: signal contribution " + signalCont);
 	            	if (signalCont >= low && signalCont <= high)
 	            		footprints.add(footprint);
@@ -987,19 +1027,20 @@ public class MEGANEController implements PropertyChangeListener
 	        rs = st.executeQuery(expression);    // run the query
 	        int index = 1;
 	        statusUpdater.apply("Indexing");
+	        List<Object> nextRow;
 	        for (; rs.next(); )
 	        {
-	            List<Object> nextRow = new ArrayList<Object>();
+	            nextRow = new ArrayList<Object>();
 	            for (int i = 0; i < 8; ++i)
 	            {
 	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
 	                nextRow.add(o);
 	            }
 	            statusUpdater.apply("Idx " + index++ + rs.getFetchSize());
-	            MEGANEFootprintFacet facet = new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(5), (Double)nextRow.get(6), (Double)nextRow.get(7));
-	            facets.add(facet);
+//	            MEGANEFootprintFacet facet = new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(5), (Double)nextRow.get(6), (Double)nextRow.get(7));
+	            facets.add(new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(5), (Double)nextRow.get(6), (Double)nextRow.get(7)));
 	        }
-//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFacets: number of facets " + facets.size());
+	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFacets: number of facets " + facets.size());
 
 			return facets;
 		}

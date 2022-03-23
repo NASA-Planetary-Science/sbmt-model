@@ -105,4 +105,9 @@ public class MEGANESearchPanel extends JPanel
 	{
 		return updateColorsButton;
 	}
+
+	public void setStatus(String statusText)
+	{
+		filterPanel.setStatus(statusText);
+	}
 }

@@ -187,16 +187,17 @@ public class MEGANEResultsTableView extends JPanel
 		tmpComposer.addAttribute(MEGANEColumnLookup.Map, Boolean.class, "Map", null);
 		tmpComposer.addAttribute(MEGANEColumnLookup.Status, String.class, "Status", null);
 		tmpComposer.addAttribute(MEGANEColumnLookup.TimeWindow, Double.class, "UTC", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.Latitude, Double.class, "Latitude (deg)", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.Longitude, Double.class, "Longitude (deg)", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.Altitude, Double.class, "Altitude (km)", null);
-		tmpComposer.addAttribute(MEGANEColumnLookup.NormalizedAlt, Double.class, "Normalized Altitude", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.Latitude, Double.class, "Lat. (deg)", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.Longitude, Double.class, "Long. (deg)", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.Altitude, Double.class, "Alt. (km)", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.NormalizedAlt, Double.class, "Norm. Alt.", null);
+		tmpComposer.addAttribute(MEGANEColumnLookup.Signal, Double.class, "Signal Cont. (%)", null);
 
 		tmpComposer.setEditor(MEGANEColumnLookup.Map, new BooleanCellEditor());
 		tmpComposer.setRenderer(MEGANEColumnLookup.Map, new BooleanCellRenderer());
 
 		tmpComposer.getItem(MEGANEColumnLookup.Status).defaultSize *= 2;
-		tmpComposer.getItem(MEGANEColumnLookup.TimeWindow).defaultSize *= 7;
+		tmpComposer.getItem(MEGANEColumnLookup.TimeWindow).defaultSize *= 5;
 
 		MEGANEItemHandler meganeItemHandler = new MEGANEItemHandler(meganeCollection, tmpComposer);
 		ItemProcessor<MEGANEFootprint> tmpIP = meganeCollection;

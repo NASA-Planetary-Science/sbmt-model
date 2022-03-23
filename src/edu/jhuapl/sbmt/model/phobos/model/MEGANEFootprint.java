@@ -14,6 +14,7 @@ public class MEGANEFootprint
 	protected List<MEGANEFootprintFacet> facets;
 	private boolean mapped;
 	private String status;
+	private double signalContribution = -1;
 
 	public MEGANEFootprint(double dateTime, double latDegrees, double lonDegrees, double altKm, double normalizedAlt)
 	{
@@ -97,6 +98,16 @@ public class MEGANEFootprint
 			total += facet.getComputedValue();
 		}
 		return total;
+	}
+
+	public void setSignalContribution(double contribution)
+	{
+		this.signalContribution = contribution;
+	}
+
+	public double getSignalContribution()
+	{
+		return signalContribution;
 	}
 
 	public double getComputedValueAtFacet(Integer index)

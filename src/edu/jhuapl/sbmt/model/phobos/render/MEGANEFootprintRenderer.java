@@ -83,7 +83,6 @@ public class MEGANEFootprintRenderer
 			plateDataInsidePolydata = getColoringDataForFootprint();	//contains coloring data for each cell in this footprint
 		colormap = Colormaps.getNewInstanceOfBuiltInColormap(Colormaps.getDefaultColormapName());
 		ColoringData globalColoringData = allColoringData.get(0);
-		System.out.println("MEGANEFootprintRenderer: updateColorFromPlate: min max " + minValue + " " + maxValue);
 		colormap.setRangeMin(minValue);
 		colormap.setRangeMax(maxValue);
 //		colormap.setRangeMax(1.0E-3);
