@@ -8,5 +8,6 @@ public enum CumulativeMEGANEFootprintColumnLookup
 //	Longitude,
 //	Altitude,
 //	NormalizedAlt,
-	Status;
+	Status,
+	OriginalTimes;
 }

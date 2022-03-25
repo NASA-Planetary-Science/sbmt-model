@@ -12,8 +12,6 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTES;
-import edu.jhuapl.sbmt.model.bennu.spectra.otes.io.OTESSpectrumReader;
 import edu.jhuapl.sbmt.model.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
@@ -94,7 +92,7 @@ public class MEGANESpectrum extends BasicSpectrum
         super(filename, instrument, isCustom);
         extension = FilenameUtils.getExtension(serverpath.toString());
         this.specIO = specIO;
-        instrumentMetadata = specIO.getInstrumentMetadata("OTES");
+        instrumentMetadata = specIO.getInstrumentMetadata("NIRS3");
         this.boundingBoxDiagonalLength = boundingBoxDiagonalLength;
         double dx = MathUtil.vnorm(spacecraftPosition) + boundingBoxDiagonalLength; //smallBodyModel.getBoundingBoxDiagonalLength();
         toSunVectorLength=dx;
@@ -276,29 +274,29 @@ public class MEGANESpectrum extends BasicSpectrum
 
     public void readSpectrumFromFile()
     {
-    	OTESSpectrumReader reader = null;
-        if (!isCustomSpectra)
-        {
-            spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
-            reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
-        }
-        else
-        {
-            reader=new OTESSpectrumReader(getLocalSpectrumFilePathOnServer(), getNumberOfBands());
-        }
-        reader.read();
-
-        spectrum=reader.getData();
-        xData = reader.getXAxis();
-        time = reader.getSclk();
+//    	OTESSpectrumReader reader = null;
+//        if (!isCustomSpectra)
+//        {
+//            spectrumFile=FileCache.getFileFromServer(getSpectrumPathOnServer());
+//            reader=new OTESSpectrumReader(spectrumFile.getAbsolutePath(), getNumberOfBands());
+//        }
+//        else
+//        {
+//            reader=new OTESSpectrumReader(getLocalSpectrumFilePathOnServer(), getNumberOfBands());
+//        }
+//        reader.read();
+//
+//        spectrum=reader.getData();
+//        xData = reader.getXAxis();
+//        time = reader.getSclk();
     }
 
     @Override
     public int getNumberOfBands()
     {
-        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
-            return OTES.bandCentersLength;
-        else
+//        if (FilenameUtils.getExtension(serverpath.toString()).equals("spect"))
+//            return OTES.bandCentersLength;
+//        else
             return 208;
     }
 

@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.phobos.ui;
 
+import java.awt.Color;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -27,7 +29,8 @@ public class MEGANESearchPanel extends JPanel
 	public MEGANESearchPanel(MEGANECollection collection, CumulativeMEGANECollection cumulativeCollection, MEGANESearchModel searchModel)
 	{
 		databaseLoadButton = new JButton("Load Database");
-		databaseNameLabel = new JLabel();
+		databaseNameLabel = new JLabel("Please load a database to view");
+		databaseNameLabel.setForeground(Color.red);
 		updateColorsButton = GuiUtil.formButton(null, "Plot Colors");
 		updateColorsButton.setToolTipText("Adjust Coloring");
 		updateColorsButton.setEnabled(false);

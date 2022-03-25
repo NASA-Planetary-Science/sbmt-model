@@ -10,7 +10,5 @@ package edu.jhuapl.sbmt.model.phobos.ui.color;
 public enum MEGANEFootprintColorMode
 {
 	ColorMap,
-	Simple,
-
-
+	Simple
 }

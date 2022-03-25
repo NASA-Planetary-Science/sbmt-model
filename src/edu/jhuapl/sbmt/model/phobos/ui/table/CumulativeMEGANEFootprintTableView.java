@@ -172,6 +172,7 @@ public class CumulativeMEGANEFootprintTableView extends JPanel
 		QueryComposer<CumulativeMEGANEFootprintColumnLookup> tmpComposer = new QueryComposer<>();
 		tmpComposer.addAttribute(CumulativeMEGANEFootprintColumnLookup.Map, Boolean.class, "Map", null);
 		tmpComposer.addAttribute(CumulativeMEGANEFootprintColumnLookup.Status, String.class, "Status", null);
+		tmpComposer.addAttribute(CumulativeMEGANEFootprintColumnLookup.OriginalTimes, String.class, "Original Footprint Times", null);
 //		tmpComposer.addAttribute(MEGANEColumnLookup.TimeWindow, Double.class, "UTC", null);
 //		tmpComposer.addAttribute(MEGANEColumnLookup.Latitude, Double.class, "Latitude (deg)", null);
 //		tmpComposer.addAttribute(MEGANEColumnLookup.Longitude, Double.class, "Longitude (deg)", null);
@@ -182,6 +183,7 @@ public class CumulativeMEGANEFootprintTableView extends JPanel
 		tmpComposer.setRenderer(CumulativeMEGANEFootprintColumnLookup.Map, new BooleanCellRenderer());
 
 		tmpComposer.getItem(CumulativeMEGANEFootprintColumnLookup.Status).defaultSize *= 3;
+		tmpComposer.getItem(CumulativeMEGANEFootprintColumnLookup.OriginalTimes).defaultSize *= 4;
 
 		CumulativeMEGANEFootprintItemHandler meganeItemHandler = new CumulativeMEGANEFootprintItemHandler(meganeCollection, tmpComposer);
 		ItemProcessor<CumulativeMEGANEFootprint> tmpIP = meganeCollection;

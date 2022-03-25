@@ -95,7 +95,6 @@ public class MEGANEFootprintRenderer
 
         //now populated the LUT using the coloring in the FacetColoringData
 
-//        logger.info("Processing facets for coloring " + coloringPlateName + " and colormap " + colormap.getName());
         idArray = new vtkStringArray();
         stringArray = new vtkStringArray();
 		for (FacetColoringData coloringData : plateDataInsidePolydata)	//for each facet in the set of facets...
@@ -112,8 +111,6 @@ public class MEGANEFootprintRenderer
 				}
 			});
 
-
-//			logger.info("Processing " + i);
 			double[] coloringValuesFor = null;
 			try
 			{
@@ -124,10 +121,7 @@ public class MEGANEFootprintRenderer
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			Color c = colormap.getColor(coloringValuesFor[0]);
 			Color c = getColorForValue(coloringValuesFor[0]);
-//			if (i==0)
-//				System.out.println("MEGANEFootprintRenderer: updateColorFromPlate: color is " + c + " for value " + coloringValuesFor[0]);
 			lut.SetTableValue(i, new double[] {((double)c.getRed())/255.0, ((double)c.getGreen())/255.0, ((double)c.getBlue())/255.0});
 //			lut.SetAnnotation("" + i++, ""+ coloringData.getCellId());
 			stringArray.InsertNextValue(""+ coloringData.getCellId());
@@ -140,13 +134,11 @@ public class MEGANEFootprintRenderer
 		});
 
 		Vector<Integer> cellIds = footprint.getCellIDs();
-//		logger.info("Number of cells ids " + cellIds.size());
 		vtkUnsignedCharArray cellData = new vtkUnsignedCharArray();
 		cellData.SetNumberOfComponents(4);
 		for (Integer cellId : cellIds)
 		{
 			double[] colorArray = lut.GetColor(cellIds.indexOf(cellId));
-//			System.out.println("MEGANEFootprintRenderer: updateColorFromPlate: color array " + new Vector3D(colorArray) + " for cell id " + cellId);
 			cellData.InsertNextTuple4(colorArray[0]*255, colorArray[1]*255, colorArray[2]*255, 255);	//this needs to be the color for the cell
 		}
 
@@ -161,19 +153,13 @@ public class MEGANEFootprintRenderer
 	 */
 	private Color getColorForValue(double value)
 	{
-//		double time = trajectory.getStartTime() + index*trajectory.getTimeStep();
 		if (gcp == null)
 		{
-//			if (coloringFunction == null) return trajectoryColor;
-//			double valueAtTime = coloringFunction.apply(trajectory, time);
 			Color color = colormap.getColor(value);
 			return color;
 		}
 		else
 		{
-//			FeatureType featureType = gcp.getFeatureType();
-//			FeatureAttr tmpFA = collection.getFeatureAttrFor(footprint, featureType);
-//			if (tmpFA == null) return gcp.getColor(0.0, 1.0, 0.7);
 			return gcp.getColor(minValue, maxValue, value);
 		}
 	}

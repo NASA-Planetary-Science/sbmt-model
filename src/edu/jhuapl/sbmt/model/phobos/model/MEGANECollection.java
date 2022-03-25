@@ -31,7 +31,7 @@ import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.SaavtkItemManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEController.MEGANEDatabaseConnection;
+import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEDatabaseConnection;
 import edu.jhuapl.sbmt.model.phobos.render.MEGANEFootprintRenderer;
 
 import crucible.crust.logging.SimpleLogger;
@@ -107,7 +107,7 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 				public void run()
 				{
 					footprint.setStatus("Loading...");
-					if (footprint.getFacets() == null /*||  footprint.getCellIDs().isEmpty()*/)
+					if (footprint.getFacets() == null)
 					{
 						try
 						{
@@ -186,7 +186,7 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 			writer.write("##" + key + " = " + metadata.get(key));
 			writer.newLine();
 		}
-		writer.write("Date (ET), Center Lat (deg), Center Lon (deg), Altitude (km), Normalized Altitude");
+		writer.write("## Date (ET), Center Lat (deg), Center Lon (deg), Altitude (km), Normalized Altitude, Signal Contribution");
 		writer.newLine();
 		for (MEGANEFootprint footprint : selectedFootprints)
 		{

@@ -51,8 +51,6 @@ public class MEGANEResultsTableView extends JPanel
 
 	private JButton addSpectraButton;
 
-
-
 	/**
 	 * JButton to save spectra to file
 	 */
@@ -166,8 +164,7 @@ public class MEGANEResultsTableView extends JPanel
 
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-//		titleL = new JLabel("Spectra: ---");
-//		buttonPanel.add(titleL, "growx,span,split");
+
 		buttonPanel.add(loadSpectrumButton);
 		buttonPanel.add(saveSpectrumButton);
 		buttonPanel.add(Box.createHorizontalGlue());
@@ -205,7 +202,6 @@ public class MEGANEResultsTableView extends JPanel
 		meganeILP.setSortingEnabled(true);
 		JTable spectrumTable = meganeILP.getTable();
 		spectrumTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//		spectrumTable.addMouseListener(new SpectrumTablePopupListener<>(spectrumCollection, boundaryCollection, spectrumPopupMenu, spectrumTable));
 
 		return spectrumTable;
     }
@@ -238,7 +234,6 @@ public class MEGANEResultsTableView extends JPanel
 		return loadSpectrumButton;
 	}
 
-
 	/**
 	 * @return the hideSpectrumButton
 	 */
@@ -247,7 +242,6 @@ public class MEGANEResultsTableView extends JPanel
 		return hideSpectrumButton;
 	}
 
-
 	/**
 	 * @return the showSpectrumButton
 	 */
@@ -255,7 +249,6 @@ public class MEGANEResultsTableView extends JPanel
 	{
 		return showSpectrumButton;
 	}
-
 
 	/**
 	 * @return the saveSpectrumButton
@@ -272,6 +265,4 @@ public class MEGANEResultsTableView extends JPanel
 	{
 		return addSpectraButton;
 	}
-
-
 }

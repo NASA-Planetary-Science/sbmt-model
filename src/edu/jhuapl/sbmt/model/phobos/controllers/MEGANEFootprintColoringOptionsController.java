@@ -12,7 +12,7 @@ import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.ui.color.MEGANEFootprintColorConfigPanel;
 
 /**
- * Controller that governs the coloring views in the State History tab
+ * Controller that governs the coloring footprints in the MEGANE tab
  * @author steelrj1
  *
  */

@@ -69,28 +69,12 @@ public class MEGANEFootprintColorConfigPanel extends JPanel implements ActionLis
 		colorPanel.addCard(MEGANEFootprintColorMode.Simple, new SimplePanel(this, "Footprint", new Color(0.0f, 1.0f, 1.0f)));
 
 		colorPanel.addCard(MEGANEFootprintColorMode.ColorMap, colorMapPanel);
-
-//		if (rendererManager.getSelectedItems().size() == 1)
-//		{
-//			ColorProvider colorProvider = rendererManager.getColorProviderForFootprint(rendererManager.getSelectedItems().asList().get(0));
-//			if (colorProvider instanceof SimpleColorProvider || (colorProvider instanceof ConstColorProvider))
-//				setActiveMode(MEGANEFootprintColorMode.Simple);
-//			else
-//			{
-//				setActiveMode(MEGANEFootprintColorMode.ColorMap);
-//				colorMapPanel.setFeatureType(colorProvider.getFeatureType());
-//			}
-//		}
-
 		rendererManager.addListener((aSource, aEventType) -> {
-
 			colorMapPanel.handleItemEvent(aSource, aEventType);
 		});
 
 		cumulativeCollection.addListener((aSource, aEventType) -> {
-
 			colorMapPanel.handleItemEvent(aSource, aEventType);
-
 		});
 
 		add(colorPanel, "growx,span,w 50::,wrap 0");

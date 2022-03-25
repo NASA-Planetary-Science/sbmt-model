@@ -1,15 +1,14 @@
 package edu.jhuapl.sbmt.model.phobos.controllers;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -18,12 +17,10 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.logging.Level;
+import java.util.stream.Stream;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -37,12 +34,12 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jfree.chart.axis.ValueAxis;
 
 import com.beust.jcommander.internal.Lists;
 import com.github.davidmoten.guavamini.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import vtk.vtkFloatArray;
@@ -71,7 +68,6 @@ import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
-import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANESearchModel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANESearchPanel;
@@ -86,7 +82,6 @@ import edu.jhuapl.sbmt.stateHistory.model.liveColoring.LiveColorableManager;
 import edu.jhuapl.sbmt.stateHistory.model.time.StateHistoryTimeModelChangedListener;
 import edu.jhuapl.sbmt.stateHistory.model.time.TimeWindow;
 
-import crucible.crust.logging.SimpleLogger;
 import glum.item.ItemEventType;
 
 public class MEGANEController implements PropertyChangeListener
@@ -100,11 +95,8 @@ public class MEGANEController implements PropertyChangeListener
 	private MEGANECollection collection;
 	private CumulativeMEGANECollection cumulativeCollection;
 	private MEGANEDatabaseConnection dbConnection;
-//	private MEGANEStructureCollection structureCollection;
 	private PickManager pickManager;
-//	private ModelManager modelManager;
 	private MEGANESearchModel searchModel;
-//	private HashMap<String, String> searchMetadata;
 	private MEGANEFootprintColoringOptionsController coloringController;
 
 	public MEGANEController(MEGANECollection collection, CumulativeMEGANECollection cumulativeCollection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
@@ -112,7 +104,6 @@ public class MEGANEController implements PropertyChangeListener
 		this.smallBodyModel = smallBodyModel;
 		this.collection = collection;
 		this.cumulativeCollection = cumulativeCollection;
-//		this.modelManager = modelManager;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		this.pickManager = pickManager;
 		this.searchModel = new MEGANESearchModel(modelManager, smallBodyModel, dbConnection);
@@ -141,8 +132,6 @@ public class MEGANEController implements PropertyChangeListener
 
 		FilterType.create("Incidence Angle", Optional.of(FilterTypeUnit.DEGREES), Double.class, Pair.of(0.0, 180.0), "incidence", true);
 		FilterType.create("Emission Angle",  Optional.of(FilterTypeUnit.DEGREES), Double.class, Pair.of(0.0, 180.0), "emission", true);
-//		FilterType.create("Phase Angle",  Optional.of(FilterTypeUnit.DEGREES), Double.class, Pair.of(0.0, 180.0), "Phase");
-//		FilterType.create("Image Resolution",  Optional.of(FilterTypeUnit.METERS_PER_PIXEL), Double.class, Pair.of(0.0, 50.0), "resolution");
 		FilterType.create("SC Distance",  Optional.of(FilterTypeUnit.KM), Double.class, Pair.of(0.0, 1000.0), "range", true);
 //		FilterType.create("SC Altitude",  Optional.of(FilterTypeUnit.KM), Double.class, Pair.of(0.0, 1000.0), "altitude");
 //		FilterType.create("Limb", String.class, new String[] {"with only", "without only", "with or without"}, "limbType");
@@ -214,6 +203,23 @@ public class MEGANEController implements PropertyChangeListener
 			}
 		});
 
+		cumulativeCollection.addListener((aSource, aEventType) -> {
+
+			if (aEventType == ItemEventType.ItemsMutated)
+			{
+				boolean oneMapped = false;
+				for (CumulativeMEGANEFootprint footprint : cumulativeCollection.getAllItems())
+				{
+					if (footprint.isMapped() == true)
+					{
+						oneMapped = true;
+						break;
+					}
+				}
+				coloringController.showColorBar(oneMapped);
+			}
+		});
+
 		collection.addPropertyChangeListener(new PropertyChangeListener()
 		{
 
@@ -270,7 +276,7 @@ public class MEGANEController implements PropertyChangeListener
 		searchPanel.setEnabled(false);
 		searchPanel.getDatabaseLoadButton().addActionListener(e -> {
 			File file = CustomFileChooser.showOpenDialog(searchPanel, "Choose Database");
-			this.dbConnection = new MEGANEDatabaseConnection(file.getAbsolutePath());
+			this.dbConnection = new MEGANEDatabaseConnection(this, file.getAbsolutePath());
 			searchPanel.setEnabled(true);
 
 			searchModel.setDbConnection(dbConnection);
@@ -288,22 +294,40 @@ public class MEGANEController implements PropertyChangeListener
 				e1.printStackTrace();
 			}
 			searchPanel.getDatabaseNameLabel().setText(file.getName());
+			searchPanel.getDatabaseNameLabel().setForeground(Color.black);
 		});
 
 		searchPanel.getTableView().getLoadSpectrumButton().addActionListener(e -> {
-
+			File fileToOpen = CustomFileChooser.showOpenDialog(plotPanel, "Load CSV file...");
+			if (fileToOpen == null) return;
+			try
+			{
+				BufferedReader reader = new BufferedReader(new FileReader(fileToOpen));
+				Stream<String> lines = reader.lines();
+				List<MEGANEFootprint> fprints = Lists.newArrayList();
+				for (String line : lines.toList())
+				{
+					if (line.startsWith("#")) continue;
+					MEGANEFootprint footprint = new MEGANEFootprint(line);
+					fprints.add(footprint);
+				}
+				collection.setFootprints(fprints);
+				reader.close();
+			}
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 
 		searchPanel.getTableView().getSaveSpectrumButton().addActionListener(e -> {
 
 			File filename = CustomFileChooser.showSaveDialog(plotPanel, "Save to...");
+			if (FilenameUtils.getExtension(filename.getAbsolutePath()).equals("")) filename = new File(filename + ".csv");
 			try
 			{
 				HashMap<String, List<String>> metadata = searchModel.getMetadata();
-				for (String key : metadata.keySet())
-				{
-					System.out.println("MEGANEController: setupSearchPanel: metadata " + key + " = " + metadata.get(key));
-				}
 				collection.saveSelectedToFile(filename, metadata);
 			}
 			catch (IOException e1)
@@ -311,7 +335,6 @@ public class MEGANEController implements PropertyChangeListener
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
 		});
 
 		searchPanel.getTableView().getAddSpectrumButton().addActionListener(e -> {
@@ -321,15 +344,12 @@ public class MEGANEController implements PropertyChangeListener
 			CumulativeMEGANEFootprint cumulativeFootprint = new CumulativeMEGANEFootprint(selectedFootprints.asList());
 			cumulativeCollection.addCumulativeFootprint(cumulativeFootprint);
 			updateButtonState();
-
 		});
 
 		searchPanel.getUpdateColorsButton().addActionListener(e -> {
 
 			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
 			if (selectedFootprints.size() == 0) return;
-//			if (coloringController == null)
-//				coloringController = new MEGANEFootprintColoringOptionsController(collection, cumulativeCollection);
 			JFrame frame = new JFrame("Adjust Color");
 			frame.getContentPane().add(coloringController.getView());
 			frame.setSize(new Dimension(300, 400));
@@ -443,12 +463,6 @@ public class MEGANEController implements PropertyChangeListener
 
 		});
 
-//		searchPanel.getFilterPanel().getFilterTables().getFilterCombo().addActionListener(e -> {
-//
-//
-//
-//		});
-
 		searchPanel.getFilterPanel().getFilterTables().getRemoveFilterButton().addActionListener(e -> {
 
 			searchModel.getNumericFilterModel().removeItems(searchModel.getNumericFilterModel().getSelectedItems());
@@ -456,23 +470,6 @@ public class MEGANEController implements PropertyChangeListener
 			searchModel.getTimeWindowModel().removeItems(searchModel.getTimeWindowModel().getSelectedItems());
 
 		});
-
-//		searchPanel.getFilterPanel().getSearchStructurePanel().getSubmitButton().addActionListener(e -> {
-//
-//			vtkPolyData structureFacetInformation = structureCollection.getStructureFacetInformation();
-//			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
-//
-//			try
-//			{
-//				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
-//				collection.setFootprints(filteredFootprints);
-//			}
-//			catch (SQLException e1)
-//			{
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-//		});
 	}
 
 	private void setupPlotPanel()
@@ -524,8 +521,6 @@ public class MEGANEController implements PropertyChangeListener
 				plotPanel.getTimeVersusAltitude().getXYPlot().getDomainAxis().setRange(timeVersusAltitudeXAxis.getLowerBound(), model.getTDBForDate((Date)plotPanel.getStopTimeSpinner().getModel().getValue()));
 			}
 		});
-
-
 	}
 
 	private void updateButtonState()
@@ -658,8 +653,6 @@ public class MEGANEController implements PropertyChangeListener
 		});
 	}
 
-
-
 	public JPanel getPanel()
 	{
 		JPanel panel = new JPanel();
@@ -667,7 +660,6 @@ public class MEGANEController implements PropertyChangeListener
 		panel.add(tabbedPane);
 
 		return panel;
-
 	}
 
 	@Override
@@ -691,373 +683,11 @@ public class MEGANEController implements PropertyChangeListener
 
 	}
 
-	public class MEGANEDatabaseConnection {
-		private Connection database;
-		private final String dbName;
-		private SimpleLogger logger;
-		private int index = 1;
-
-		public MEGANEDatabaseConnection(String dbName) {
-			this.dbName = dbName;
-			logger = SimpleLogger.getInstance();
-		}
-
-		public void openDatabase() {
-			if (database != null)
-				return;
-
-			try {
-				database = DriverManager.getConnection("jdbc:sqlite:" + dbName);
-//				logger.log(Level.INFO, String.format("Opened %s", dbName));
-			} catch (SQLException e) {
-				logger.log(Level.WARNING, e.getLocalizedMessage());
-				e.printStackTrace();
-			}
-		}
-
-		public List<MEGANEFootprint> getFootprints() throws SQLException
-		{
-			List<MEGANEFootprint> footprints = Lists.newArrayList();
-			Statement st = null;
-	        ResultSet rs = null;
-	        Object o = null;
-	        String expression = "SELECT * FROM observingGeometry ORDER BY tdb";
-//	        double integrationTime = 180.0;
-
-	        st = database.createStatement();         // statement objects can be reused with
-
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        rs = st.executeQuery(expression);    // run the query
-	        for (; rs.next(); )
-	        {
-	            List<Double> nextRow = new ArrayList<Double>();
-	            for (int i = 0; i < 5; ++i)
-	            {
-	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-	                nextRow.add((Double)o);
-	            }
-
-	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
-//	            footprint.setFacets(getFacets(footprint.getDateTime(), integrationTime));
-	            footprints.add(footprint);
-	            //System.out.println(" ");
-	        }
-
-	        return footprints;
-		}
-
-		public List<MEGANEFootprint> getFootprintsForSQLParameters(String sqlString) throws SQLException
-		{
-			List<MEGANEFootprint> footprints = Lists.newArrayList();
-			Statement st = null;
-	        ResultSet rs = null;
-	        Object o = null;
-	        String expression = "SELECT * FROM observingGeometry WHERE " + sqlString + " ORDER BY tdb";
-//	        double integrationTime = 180.0;
-
-	        st = database.createStatement();         // statement objects can be reused with
-
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        rs = st.executeQuery(expression);    // run the query
-
-	        for (; rs.next(); )
-	        {
-	            List<Double> nextRow = new ArrayList<Double>();
-	            for (int i = 0; i < 5; ++i)
-	            {
-	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-	                nextRow.add((Double)o);
-	            }
-
-	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
-//	            footprint.setFacets(getFacets(footprint.getDateTime(), integrationTime));
-	            footprints.add(footprint);
-
-	            //System.out.println(" ");
-	        }
-
-	        return footprints;
-		}
-
-//		public List<MEGANEFootprint> getFootprintsForFacets(ImmutableList<Integer> cellIds, double integrationTime) throws SQLException
-//		{
-//			List<MEGANEFootprint> footprints = Lists.newArrayList();
-//
-//			Statement st = null;
-//	        ResultSet rs = null;
-//	        Object o = null;
-//	        String expression = "SELECT * FROM observingGeometry ORDER BY tdb";
-//
-//	        st = database.createStatement();         // statement objects can be reused with
-//
-//	        // repeated calls to execute but we
-//	        // choose to make a new one each time
-//	        rs = st.executeQuery(expression);    // run the query
-//
-//	        for (; rs.next(); )
-//	        {
-//	            List<Double> nextRow = new ArrayList<Double>();
-//	            for (int i = 0; i < 5; ++i)
-//	            {
-//	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-//	                nextRow.add((Double)o);
-//	            }
-//
-//	            System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets: getting facets in cellIDs/double");
-//	            List<MEGANEFootprintFacet> facets = getFacets(nextRow.get(0), integrationTime);
-//	            List<Integer> facetIds = facets.stream().map(facet -> facet.getFacetID()).toList();
-//	            List<Integer> facetCopy = Lists.newArrayList(facetIds);
-//	            boolean overlappingFacets = facetCopy.retainAll(cellIds);
-//	            if (overlappingFacets == true && facetCopy.size() == 0) continue;
-//
-//
-//	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
-////	            footprint.setFacets(getFacets(footprint.getDateTime(), integrationTime));
-//	            footprints.add(footprint);
-//	        }
-//
-//
-//			return footprints;
-//		}
-
-		public List<MEGANEFootprint> getFootprintsForFacets2(ImmutableList<Integer> cellIds, String facetObsString, String obsGeomString, Function<String, Void> statusUpdater) throws SQLException
-		{
-			//find the matching facets ids and get their times, so the footprints can be fetched
-			List<MEGANEFootprint> footprints = Lists.newArrayList();
-//			double integrationTime = 180.0;
-			Statement st = null;
-	        ResultSet rs = null;
-	        Object o = null;
-			String cellIDValues = "(";
-			for (int i=0; i<cellIds.size(); i++)
-			{
-				cellIDValues += cellIds.get(i);
-				if (i+1 < cellIds.size()) cellIDValues += ",";
-			}
-			cellIDValues += ")";
-//	        String facetExpression = "SELECT tdb FROM facetObs WHERE integrationTime=" + integrationTime;
-			String facetExpression = "SELECT tdb FROM facetObs WHERE ";
-	        if (!facetObsString.isEmpty()) facetExpression += facetObsString;
-
-	        if (cellIds.size() != 0)
-	        {
-	        	facetExpression += " AND id IN " + cellIDValues;
-	        }
-
-//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: facet obs string " + facetExpression);
-	        st = database.createStatement();         // statement objects can be reused with
-
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        SwingUtilities.invokeLater(() -> { statusUpdater.apply("Running query...");});
-	        rs = st.executeQuery(facetExpression);    // run the query
-
-	        HashSet<Double> times = new HashSet<Double>();
-	        String timeValues = "(";
-	        for (; rs.next(); )
-	        {
-	        	times.add((Double)rs.getObject(1));
-	        }
-//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: number of times fetched " + times.size());
-	        Iterator<Double> iterator = times.iterator();
-//	        for (int i=0; i<times.size(); i++)
-	        while (iterator.hasNext())
-			{
-				timeValues += iterator.next();
-				if(iterator.hasNext()) timeValues += ",";
-			}
-	        timeValues += ")";
-	        String expression;
-	        if (!obsGeomString.isEmpty())
-	        {
-//	        	sqlString += " AND tdb IN " + timeValues;
-//	        	if (obsGeomString.contains("tdb"))
-//	        		expression = "SELECT * FROM observingGeometry WHERE " + obsGeomString + " ORDER BY tdb";
-////	        	expression = "SELECT * FROM observingGeometry WHERE tdb IN " + timeValues + " AND " + obsGeomString + " ORDER BY tdb";
-//	        	else
-	        		expression = "SELECT * FROM observingGeometry WHERE tdb IN " + timeValues + " AND (" + obsGeomString + ") ORDER BY tdb";
-	        }
-	        else
-	        {
-	        	expression = "SELECT * FROM observingGeometry WHERE tdb IN " + timeValues + " ORDER BY tdb";
-	        }
-
-	        st = database.createStatement();         // statement objects can be reused with
-//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: obs geom expression is " + expression);
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        rs = st.executeQuery(expression);    // run the query
-	        Pair<Double, Double> currentSignalRange = searchModel.getCurrentSignalContributionRange();
-//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: current signal range " + currentSignalRange);
-	        index = 1;
-	        for (; rs.next(); )
-	        {
-	        	SwingUtilities.invokeLater(() -> { statusUpdater.apply("Processing row " + index++ + "...");});
-	            List<Double> nextRow = new ArrayList<Double>();
-	            for (int i = 0; i < 5; ++i)
-	            {
-	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-	                nextRow.add((Double)o);
-	            }
-
-//	            List<MEGANEFootprintFacet> facets = Lists.newArrayList();
-//	            if (!cellIds.isEmpty())
-//	            {
-//	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: getting facts cellsIDS/sqlString time " + nextRow.get(0));
-//		            facets = getFacets(nextRow.get(0), integrationTime);
-//		            if (facets.size() == 0) continue;
-//		            List<Integer> facetIds = facets.stream().map(facet -> facet.getFacetID()).toList();
-//		            List<Integer> facetCopy = Lists.newArrayList(facetIds);
-//		            boolean overlappingFacets = facetCopy.retainAll(cellIds);
-//		            if (overlappingFacets == true && facetCopy.size() == 0) continue;
-//	            }
-	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
-//	            footprint.setFacets(facets);
-//	            System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: cellIds size " + cellIds.size());
-	            if (currentSignalRange != null && cellIds.size() > 0)
-	            {
-	            	footprint.setFacets(getFacets(footprint.getDateTime(), new Function<String, Void>()
-					{
-
-						@Override
-						public Void apply(String t)
-						{
-							SwingUtilities.invokeLater(() -> {footprint.setStatus(t);});
-							return null;
-						}
-					}));
-	            	SwingUtilities.invokeLater(() -> {footprint.setStatus("Unloaded");});
-	            	double low = currentSignalRange.getLeft();
-	            	double high = currentSignalRange.getRight();
-	            	double totalContribution = footprint.getSummedValue();
-	            	double inStructureSum = 0;
-	            	for (MEGANEFootprintFacet facet : footprint.getFacets())
-	            	{
-	            		if(cellIds.contains(facet.getFacetID())) inStructureSum += facet.getComputedValue();
-	            	}
-//	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: in structure sum " + inStructureSum + " and total sum " + totalContribution);
-	            	double signalCont = (inStructureSum*100/totalContribution);
-	            	footprint.setSignalContribution(signalCont);
-//	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets2: signal contribution " + signalCont);
-	            	if (signalCont >= low && signalCont <= high)
-	            		footprints.add(footprint);
-	            }
-	            else
-	            	footprints.add(footprint);
-//	            if (facets.size() != 0) break;
-	        }
-
-
-	        return footprints;
-		}
-
-//		public List<MEGANEFootprint> getFootprintsForFacets(ImmutableList<Integer> cellIds, String sqlString) throws SQLException
-//		{
-//			System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets: getting footprint for facets");
-//			List<MEGANEFootprint> footprints = Lists.newArrayList();
-//
-//			Statement st = null;
-//	        ResultSet rs = null;
-//	        Object o = null;
-//	        String expression = "";
-//	        if (!sqlString.isEmpty())
-//	        	expression = "SELECT * FROM observingGeometry WHERE " + sqlString + " ORDER BY tdb";
-//	        else
-//	        	expression = "SELECT * FROM observingGeometry ORDER BY tdb";
-//	        double integrationTime = 180.0;
-//	        st = database.createStatement();         // statement objects can be reused with
-//
-//	        // repeated calls to execute but we
-//	        // choose to make a new one each time
-//	        rs = st.executeQuery(expression);    // run the query
-//
-//	        for (; rs.next(); )
-//	        {
-//	            List<Double> nextRow = new ArrayList<Double>();
-//	            for (int i = 0; i < 5; ++i)
-//	            {
-//	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-//	                nextRow.add((Double)o);
-//	            }
-//
-//	            List<MEGANEFootprintFacet> facets = Lists.newArrayList();
-//	            if (!cellIds.isEmpty())
-//	            {
-//	            	System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets: getting facts cellsIDS/sqlString time " + nextRow.get(0));
-//		            facets = getFacets(nextRow.get(0), integrationTime);
-//		            if (facets.size() == 0) continue;
-//		            List<Integer> facetIds = facets.stream().map(facet -> facet.getFacetID()).toList();
-//		            List<Integer> facetCopy = Lists.newArrayList(facetIds);
-//		            boolean overlappingFacets = facetCopy.retainAll(cellIds);
-//		            if (overlappingFacets == true && facetCopy.size() == 0) continue;
-//	            }
-//	            System.out.println("MEGANEController.MEGANEDatabaseConnection: getFootprintsForFacets: creating footprint");
-//	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
-//	            footprint.setFacets(facets);
-////	            footprint.setFacets(getFacets(footprint.getDateTime(), integrationTime));
-//	            footprints.add(footprint);
-////	            if (facets.size() != 0) break;
-//	        }
-//
-//
-//			return footprints;
-//		}
-
-		public List<MEGANEFootprintFacet> getFacets(double time, Function<String, Void> statusUpdater) throws SQLException
-		{
-			List<MEGANEFootprintFacet> facets = Lists.newArrayList();
-			statusUpdater.apply("Getting facets");
-			Statement st = null;
-	        ResultSet rs = null;
-	        Object o = null;
-	        String expression = "SELECT * FROM facetObs WHERE tdb=" + time + " ORDER BY id";
-////	        String expression = "SELECT * FROM facetObs WHERE tdb=" + time + " AND integrationTime=" + integrationTime + " ORDER BY id";
-	        String intTime = searchModel.getCurrentIntegrationTime();
-	        if (!intTime.isEmpty())
-	        	expression = "SELECT * FROM facetObs WHERE tdb=" + time + " AND " + intTime + " ORDER BY id";
-
-//	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFacets: expression " + expression);
-
-	        st = database.createStatement();         // statement objects can be reused with
-	        statusUpdater.apply("Querying..");
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        rs = st.executeQuery(expression);    // run the query
-	        int index = 1;
-	        statusUpdater.apply("Indexing");
-	        List<Object> nextRow;
-	        for (; rs.next(); )
-	        {
-	            nextRow = new ArrayList<Object>();
-	            for (int i = 0; i < 8; ++i)
-	            {
-	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-	                nextRow.add(o);
-	            }
-	            statusUpdater.apply("Idx " + index++ + rs.getFetchSize());
-//	            MEGANEFootprintFacet facet = new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(5), (Double)nextRow.get(6), (Double)nextRow.get(7));
-	            facets.add(new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(5), (Double)nextRow.get(6), (Double)nextRow.get(7)));
-	        }
-	        System.out.println("MEGANEController.MEGANEDatabaseConnection: getFacets: number of facets " + facets.size());
-
-			return facets;
-		}
-
-		private void executeSQL(String sql) {
-			if (!sql.trim().endsWith(";"))
-				sql = String.format("%s;", sql.trim());
-			logger.log(Level.FINE, sql);
-			try (Statement stmt = database.createStatement()) {
-				stmt.execute(sql);
-			} catch (SQLException e) {
-				logger.log(Level.SEVERE, "Cannot execute query " + sql);
-				logger.log(Level.SEVERE, e.getLocalizedMessage());
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
+	/**
+	 * @return the searchModel
+	 */
+	public MEGANESearchModel getSearchModel()
+	{
+		return searchModel;
 	}
-
 }

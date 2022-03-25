@@ -1,6 +1,7 @@
 package edu.jhuapl.sbmt.model.phobos.model;
 
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ import edu.jhuapl.saavtk.structure.Polygon;
 import edu.jhuapl.saavtk.structure.Structure;
 import edu.jhuapl.saavtk.structure.StructureManager;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEController.MEGANEDatabaseConnection;
+import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEDatabaseConnection;
 import edu.jhuapl.sbmt.query.filter.model.FilterModel;
 import edu.jhuapl.sbmt.query.filter.model.FilterType;
 import edu.jhuapl.sbmt.query.filter.model.RangeFilterModel;
@@ -44,9 +45,9 @@ public class MEGANESearchModel
 	EllipseModel ellipseModel;
 	SmallBodyModel smallBodyModel;
 	MEGANEDatabaseConnection dbConnection;
-	FilterModel numericFilterModel;
-	FilterModel nonNumericFilterModel;
-	FilterModel timeWindowModel;
+	FilterModel<Double> numericFilterModel;
+	FilterModel<Object> nonNumericFilterModel;
+	FilterModel<LocalDateTime> timeWindowModel;
 	private AbstractEllipsePolygonModel selectionModel;
 	private HashMap<String, List<String>> parameterTableMap = new HashMap<String, List<String>>();
 	private String queryString = "";
@@ -90,26 +91,7 @@ public class MEGANESearchModel
 			metadata.put(" " + type.toString(), List.of(""+type.getRangeMin() + "-"+type.getRangeMax()));
 		}
 		footprints.addAll(search(structuresToSearch, statusUpdater));
-
-		//save search metadata to model
-//		metadata.putAll(parameterTableMap);
-
 		return footprints;
-//		if (structuresToSearch.isEmpty() && !getSearchString().isEmpty())
-//			footprints.addAll(searchNonStructureParameters(getSearchString()));
-//		else if (getSearchString().isEmpty() && !structuresToSearch.isEmpty())
-//			footprints.addAll(generateStructureFootprints(structuresToSearch));
-//		else	//combined search
-//			footprints.addAll(searchAllParameters(structuresToSearch, getSearchString()));
-
-//		 List<MEGANEFootprint> footprints = getStructureFacetInformation(region, selectionModel);
-
-//		Task tmpTask = new SilentTask();
-//		vtkPolyData structureFacetInformation = PlateUtil.formUnifiedStructurePolyData(tmpTask, selectionModel, List.of(region));
-//		vtkPolyData structureFacetInformation = getStructureFacetInformation(region, selectionModel);
-//		ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
-////
-//		return getFootprintsForPlates(cellIdList);
 	}
 
 	private vtkPolyData getStructureFacetInformation(Structure structure, StructureManager refManager)
@@ -119,82 +101,26 @@ public class MEGANESearchModel
 		return tmpPolyData;
 	}
 
-//	private List<MEGANEFootprint> getFootprintsForPlates(ImmutableList<Integer> cellIdList)
-//	{
-//		try
-//		{
-//			List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
-//			return filteredFootprints;
-//		}
-//		catch (SQLException e1)
-//		{
-//
-//			e1.printStackTrace();
-//			return Lists.newArrayList();
-//		}
-//	}
-
 	private List<MEGANEFootprint> search(List<Structure> structures, Function<String, Void> statusUpdater) throws SQLException
 	{
 		return dbConnection.getFootprintsForFacets2(generateStructureIndices(structures), getFacetObsSearchString(), getObservingGeometrySearchString(), statusUpdater);
 	}
 
-//	private List<MEGANEFootprint> searchNonStructureParameters(String sqlString) throws SQLException
-//	{
-//		return dbConnection.getFootprintsForSQLParameters(sqlString);
-//	}
-//
-//	private List<MEGANEFootprint> searchAllParameters(ImmutableList<Integer> cellIdList, String sqlString) throws SQLException
-//	{
-//		return dbConnection.getFootprintsForFacets(cellIdList, getSearchString());
-//	}
-
 	private ImmutableList<Integer> generateStructureIndices(List<Structure> structureFilters)
 	{
-//		Pair<Double, Double> currentSignalRange = getCurrentSignalContributionRange();
 		List<MEGANEFootprint> allFootprints = Lists.newArrayList();
 		HashSet<Integer> indices = new HashSet<Integer>();
 		for (Structure structure : structureFilters)
 		{
-//			Structure structure = (Structure)filter.getSelectedRangeValue();
 			StructureManager refManager = null;
 			if (structure instanceof Polygon) refManager = polygonModel;
 			else if (structure instanceof Ellipse) refManager = ellipseModel;
 			vtkPolyData structureFacetInformation = getStructureFacetInformation(structure, refManager);
 			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
 			indices.addAll(cellIdList);
-//			allFootprints.addAll(getFootprintsForPlates(cellIdList));
 		}
 		return ImmutableList.copyOf(indices);
-//		return allFootprints;
 	}
-
-//	private List<MEGANEFootprint> generateStructureFootprints(List<Structure> structureFilters)
-//	{
-//		List<MEGANEFootprint> allFootprints = Lists.newArrayList();
-//		for (Structure structure : structureFilters)
-//		{
-////			Structure structure = (Structure)filter.getSelectedRangeValue();
-//			StructureManager refManager = null;
-//			if (structure instanceof Polygon) refManager = polygonModel;
-//			else if (structure instanceof Ellipse) refManager = ellipseModel;
-//			vtkPolyData structureFacetInformation = getStructureFacetInformation(structure, refManager);
-//			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
-//
-//			allFootprints.addAll(getFootprintsForPlates(cellIdList));
-//		}
-//		return allFootprints;
-//	}
-
-//	public String getSearchString()
-//	{
-////		List<String> searchElements = List.of(getFacetObsSearchString(), getObservingGeometrySearchString());
-//		String facet = getFacetObsSearchString();
-//		String obs = getObservingGeometrySearchString();
-//		String join = !facet.isEmpty() && !obs.isEmpty() ? " AND " : "";
-//		return facet + join + obs;
-//
-//	}
 
 	public String getCurrentIntegrationTime()
 	{
@@ -223,8 +149,6 @@ public class MEGANESearchModel
 
 	private String getFacetObsSearchString()
 	{
-//		System.out.println("MEGANESearchModel: getSearchString: numeric filter model sql " + numericFilterModel.getSQLQueryString());
-//		System.out.println("MEGANESearchModel: getSearchString: time window sql " + timeWindowModel.getSQLQueryString());
 		queryString = "";
 		List<String> queryElements = parameterTableMap.get("FacetObs");
 		List<String> actualQueries = numericFilterModel.getSQLQueryString();
@@ -235,7 +159,6 @@ public class MEGANESearchModel
 		{
 			String element = queryElementsIterator.next();
 			List<String> matchingQuery = actualQueries.stream().filter(query -> query.contains(element)).toList();
-//			metadata.put(element, matchingQuery);
 
 			for (String str : matchingQuery)
 			{
@@ -245,15 +168,7 @@ public class MEGANESearchModel
 
 		}
 		metadata.put(" Facet Constraints", List.of(queryString));
-//		System.out.println("MEGANESearchModel: getFacetObsSearchString: Facet obs string " + queryString);
 		return queryString;
-
-
-//		if (!numericFilterModel.getSQLQueryString().isEmpty()) queryString += numericFilterModel.getSQLQueryString();
-//		if (!numericFilterModel.getSQLQueryString().isEmpty() &&  !timeWindowModel.getSQLQueryString().isEmpty()) queryString += " AND " + timeWindowModel.getSQLQueryString();
-//		else if (numericFilterModel.getSQLQueryString().isEmpty() && !timeWindowModel.getSQLQueryString().isEmpty()) queryString = timeWindowModel.getSQLQueryString();
-//		System.out.println("MEGANESearchModel: getSearchString: returning sqlString " + queryString);
-//		return queryString;
 	}
 
 	private String getObservingGeometrySearchString()
@@ -273,32 +188,14 @@ public class MEGANESearchModel
 				if (!queryString.isEmpty()) queryString += " OR ";
 				queryString += "(" + str + ")";
 			}
-
-
 		}
 		metadata.put(" Observing Constraints", List.of(queryString));
-//		List<String> actualTimeQueries = timeWindowModel.getSQLQueryString();
-//		Iterator<String> queryElementsIterator2 = queryElements.iterator();
-//		queryElementsIterator2 = queryElements.iterator();
-//		while (queryElementsIterator.hasNext())
-//		{
-//			String element = queryElementsIterator2.next();
-//			List<String> matchingQuery = actualTimeQueries.stream().filter(query -> query.contains(element)).toList();
-//			for (String str : matchingQuery)
-//			{
-//				if (!queryString.isEmpty()) queryString += " OR ";
-//				queryString += str;
-//			}
-//		}
-
-//		System.out.println("MEGANESearchModel: getFacetObsSearchString: Obs Geometry string " + queryString);
-
 		return queryString;
 	}
 
 	public List<Structure> getStructuresToSearch()
 	{
-		List<FilterType> structureFilters = nonNumericFilterModel.getAllItems().stream().filter(filter -> filter.getType() == Structure.class).toList();
+		List<FilterType<Object>> structureFilters = nonNumericFilterModel.getAllItems().stream().filter(filter -> filter.getType().getSimpleName().equals("Structure")).toList();
 		List<Structure> structures = Lists.newArrayList();
 		for (FilterType filter : structureFilters)
 		{
@@ -335,7 +232,7 @@ public class MEGANESearchModel
 	/**
 	 * @return the timeWindowModel
 	 */
-	public FilterModel getTimeWindowModel()
+	public FilterModel<LocalDateTime> getTimeWindowModel()
 	{
 		return timeWindowModel;
 	}

@@ -29,7 +29,7 @@ import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.SaavtkItemManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEController.MEGANEDatabaseConnection;
+import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEDatabaseConnection;
 import edu.jhuapl.sbmt.model.phobos.render.MEGANEFootprintRenderer;
 
 import crucible.crust.logging.SimpleLogger;

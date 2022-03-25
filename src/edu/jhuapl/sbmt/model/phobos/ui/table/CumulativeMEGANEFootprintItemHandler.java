@@ -27,8 +27,8 @@ public class CumulativeMEGANEFootprintItemHandler extends BasicItemHandler<Cumul
 		{
 			case Map:
 				return meganeCollection.isFootprintMapped(footprint);
-//			case TimeWindow:
-//				return TimeUtil.et2str(footprint.getDateTime());
+			case OriginalTimes:
+				return footprint.getOriginalIndices();
 //			case Latitude:
 //				return formatter.format(Math.toDegrees(footprint.getLatDegrees()));
 //			case Longitude:

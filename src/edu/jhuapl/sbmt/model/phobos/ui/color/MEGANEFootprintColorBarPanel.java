@@ -90,12 +90,6 @@ public class MEGANEFootprintColorBarPanel extends ColorBarPanel
 
 		// Update the color bar
 		updateColorBar();
-
-//		// Update the renderer to reflect the ColorBarPainter
-//		if (aIsActive == true)
-//			refRenderer.addVtkPropProvider(colorBar);
-//		else
-//			refRenderer.delVtkPropProvider(colorBar);
 	}
 
 	@Override
@@ -223,5 +217,4 @@ public class MEGANEFootprintColorBarPanel extends ColorBarPanel
 		aFullRange = aFullRange.span(tmpRangeZ);
 		return aFullRange;
 	}
-
 }

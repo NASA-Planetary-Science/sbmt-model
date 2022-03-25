@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
 
+import edu.jhuapl.sbmt.util.TimeUtil;
+
 public class MEGANEFootprint
 {
 	private double dateTime;
@@ -26,9 +28,27 @@ public class MEGANEFootprint
 		this.status = "Unloaded";
 	}
 
+	public MEGANEFootprint(String line)
+	{
+		String[] parts = line.split(",");
+		this.dateTime = Double.parseDouble(parts[0]);
+		this.latRadians = Double.parseDouble(parts[1]);
+		this.lonRadians = Double.parseDouble(parts[2]);
+		this.altKm = Double.parseDouble(parts[3]);
+		this.normalizedAlt = Double.parseDouble(parts[4]);
+		this.signalContribution = Double.parseDouble(parts[5]);
+		this.status = "Unloaded";
+	}
+
 	public double getDateTime()
 	{
 		return dateTime;
+	}
+
+	public String getDateTimeString()
+	{
+		String timeString = TimeUtil.et2str(dateTime);
+		return timeString.substring(0, timeString.lastIndexOf("."));
 	}
 
 	/**
@@ -152,14 +172,14 @@ public class MEGANEFootprint
 
 	public String toCSV()
 	{
-		return String.format("%s, %s, %s, %s, %s",
-				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt);
+		return String.format("%s, %s, %s, %s, %s, %s",
+				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt, signalContribution);
 	}
 
 	@Override
 	public String toString()
 	{
-		return String.format("MEGANEFootprint [dateTime=%s, latDegrees=%s, lonDegrees=%s, altKm=%s, normalizedAlt=%s]",
-				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt);
+		return String.format("MEGANEFootprint [dateTime=%s, latDegrees=%s, lonDegrees=%s, altKm=%s, normalizedAlt=%s, signalContribution=%s]",
+				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt, signalContribution);
 	}
 }

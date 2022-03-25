@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
-import edu.jhuapl.sbmt.util.TimeUtil;
 
 import glum.gui.panel.itemList.BasicItemHandler;
 import glum.gui.panel.itemList.query.QueryComposer;
@@ -29,8 +28,7 @@ public class MEGANEItemHandler extends BasicItemHandler<MEGANEFootprint, MEGANEC
 			case Map:
 				return meganeCollection.isFootprintMapped(footprint);
 			case TimeWindow:
-				String timeString = TimeUtil.et2str(footprint.getDateTime());
-				return timeString.substring(0, timeString.lastIndexOf("."));
+				return footprint.getDateTimeString();
 			case Latitude:
 				return formatter.format(Math.toDegrees(footprint.getLatRadians()));
 			case Longitude:

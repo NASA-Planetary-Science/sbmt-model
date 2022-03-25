@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import com.beust.jcommander.internal.Lists;
 
@@ -35,6 +36,19 @@ public class CumulativeMEGANEFootprint extends MEGANEFootprint
 	public void setIndex(int index)
 	{
 		this.index = index;
+	}
+
+	/**
+	 * @return the index
+	 */
+	public int getIndex()
+	{
+		return index;
+	}
+
+	public String getOriginalIndices()
+	{
+		return this.footprints.stream().map(fp -> fp.getDateTimeString()).collect(Collectors.joining(","));
 	}
 
 	private void calculateCumulativeFootprint()
