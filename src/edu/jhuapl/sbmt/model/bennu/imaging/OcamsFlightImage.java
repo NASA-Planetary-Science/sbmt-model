@@ -3,29 +3,28 @@ package edu.jhuapl.sbmt.model.bennu.imaging;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.List;
 
 import vtk.vtkImageData;
 import vtk.vtkProp;
 
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.common.ImageType;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.BasicPerspectiveImage;
+import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
+import edu.jhuapl.sbmt.model.image.ImageType;
 
 import nom.tam.fits.FitsException;
 
 public class OcamsFlightImage extends BasicPerspectiveImage
 {
-    public static OcamsFlightImage of(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
+    public static OcamsFlightImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         return new OcamsFlightImage(key, smallBodyModel, loadPointingOnly);
     }
 
-    protected OcamsFlightImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
+    protected OcamsFlightImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

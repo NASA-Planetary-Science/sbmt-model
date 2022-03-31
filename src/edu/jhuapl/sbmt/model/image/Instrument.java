@@ -34,6 +34,9 @@ public enum Instrument
     DRACO("DRACO"),
     LUKE("LUKE"),
     LEIA("LEIA"),
+    ITS("ITS"),
+    HRI("HRI"),
+    MRI("MRI"),
     ;
 
     final private String str;

@@ -2,20 +2,19 @@ package edu.jhuapl.sbmt.model.bennu.imaging;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
 public class MapCamImage extends PerspectiveImage
 {
     public MapCamImage(ImageKeyInterface key,
-    		List<SmallBodyModel> smallBodyModel,
+            SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

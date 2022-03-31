@@ -478,7 +478,7 @@ public class OREXSpectrumHypertreeSearchParametersController
 					String spectraDatasourceName = dataSourceName; //model.getSpectraHypertreeSourceName();
 
 					SpectraSearchDataCollection spectraModel = (SpectraSearchDataCollection) modelManager
-							.getModel(ModelNames.SPECTRA_HYPERTREE_SEARCH).get(0);
+							.getModel(ModelNames.SPECTRA_HYPERTREE_SEARCH);
 					String spectraDatasourcePath = spectraModel.getSpectraDataSourceMap().get(spectraDatasourceName);
 
 					spectraModel.addDatasourceSkeleton(spectraDatasourceName, spectraDatasourcePath);
@@ -491,8 +491,8 @@ public class OREXSpectrumHypertreeSearchParametersController
 					double selectionRegionRadius = 0.0;
 
 					AbstractEllipsePolygonModel selectionModel = (AbstractEllipsePolygonModel) modelManager
-							.getModel(ModelNames.CIRCLE_SELECTION).get(0);
-					SmallBodyModel smallBodyModel = (SmallBodyModel) modelManager.getModel(ModelNames.SMALL_BODY).get(0);
+							.getModel(ModelNames.CIRCLE_SELECTION);
+					SmallBodyModel smallBodyModel = (SmallBodyModel) modelManager.getModel(ModelNames.SMALL_BODY);
 					Ellipse region = null;
 					vtkPolyData interiorPoly = new vtkPolyData();
 
@@ -667,7 +667,7 @@ public class OREXSpectrumHypertreeSearchParametersController
 
     public void clearRegionButtonActionPerformed(ActionEvent evt)
     {
-        AbstractEllipsePolygonModel selectionModel = (AbstractEllipsePolygonModel)modelManager.getModel(ModelNames.CIRCLE_SELECTION).get(0);
+        AbstractEllipsePolygonModel selectionModel = (AbstractEllipsePolygonModel)modelManager.getModel(ModelNames.CIRCLE_SELECTION);
         selectionModel.removeAllStructures();
     }
 

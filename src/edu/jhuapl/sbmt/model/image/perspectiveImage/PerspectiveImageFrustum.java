@@ -15,7 +15,6 @@ import vtk.vtkProperty;
 
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
 
 public class PerspectiveImageFrustum
 {

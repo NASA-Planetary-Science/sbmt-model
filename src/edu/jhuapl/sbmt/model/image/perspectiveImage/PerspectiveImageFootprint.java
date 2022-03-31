@@ -39,8 +39,7 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 import edu.jhuapl.sbmt.stateHistory.rendering.planning.PlannedDataActor;
 

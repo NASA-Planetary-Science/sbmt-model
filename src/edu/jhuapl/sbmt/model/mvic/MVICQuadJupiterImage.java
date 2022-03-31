@@ -2,7 +2,6 @@ package edu.jhuapl.sbmt.model.mvic;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import vtk.vtkImageData;
 
@@ -10,9 +9,9 @@ import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.core.keys.ImageKey;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
@@ -37,7 +36,7 @@ public class MVICQuadJupiterImage extends PerspectiveImage
         return bandNames[getCurrentSlice()];
     }
 
-    public MVICQuadJupiterImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel,
+    public MVICQuadJupiterImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException,
             IOException
     {

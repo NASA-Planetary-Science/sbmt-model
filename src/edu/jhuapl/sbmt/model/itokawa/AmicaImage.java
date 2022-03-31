@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import vtk.vtkImageConstantPad;
 import vtk.vtkImageData;
@@ -20,9 +19,9 @@ import vtk.vtkImageTranslateExtent;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
@@ -34,7 +33,7 @@ public class AmicaImage extends PerspectiveImage
     //private static final int IMAGE_HEIGHT = 1024;
 
     public AmicaImage(ImageKeyInterface key,
-    		List<SmallBodyModel> smallBodyModel,
+    		SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

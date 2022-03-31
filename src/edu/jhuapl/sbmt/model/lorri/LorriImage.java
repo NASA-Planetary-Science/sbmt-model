@@ -2,15 +2,14 @@ package edu.jhuapl.sbmt.model.lorri;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.BasicPerspectiveImage;
+import edu.jhuapl.sbmt.model.image.BasicPerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
 
 import nom.tam.fits.FitsException;
@@ -18,7 +17,7 @@ import nom.tam.fits.FitsException;
 public class LorriImage extends BasicPerspectiveImage
 {
     public LorriImage(ImageKeyInterface key,
-    		List<SmallBodyModel> smallBodyModel,
+            SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);

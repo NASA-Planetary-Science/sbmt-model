@@ -215,7 +215,7 @@ public class BoundedObjectHyperTreeGenerator
             System.err.println("No support for body named " + bodyName);
             return;
         }
-        SmallBodyModel body = SbmtModelFactory.createSmallBodyModel(config).get(0);
+        SmallBodyModel body = SbmtModelFactory.createSmallBodyModel(config);
         BoundingBox bodyBBox = body.getBoundingBox();
 
 

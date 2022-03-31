@@ -8,7 +8,7 @@ import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.sbmt.client.BodyViewConfig;
-import edu.jhuapl.sbmt.image.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSearchModel;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSpectrum;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSearchModel;

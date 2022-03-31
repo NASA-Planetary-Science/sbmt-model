@@ -2,15 +2,14 @@ package edu.jhuapl.sbmt.model.ryugu.tir;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import vtk.vtkImageData;
 
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
 
@@ -23,7 +22,7 @@ public class TIRImage extends PerspectiveImage
     public static final int RESAMPLED_IMAGE_WIDTH = 344;
     public static final int RESAMPLED_IMAGE_HEIGHT = 260;
 
-    public TIRImage(ImageKeyInterface key, List<SmallBodyModel> smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
+    public TIRImage(ImageKeyInterface key, SmallBodyModel smallBodyModel, boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
     }

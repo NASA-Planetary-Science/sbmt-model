@@ -1,9 +1,10 @@
 package edu.jhuapl.sbmt.model.phobos;
 
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -22,19 +23,31 @@ import crucible.crust.metadata.api.MetadataManager;
 import crucible.crust.metadata.api.Version;
 import crucible.crust.metadata.impl.SettableMetadata;
 
-public abstract class HierarchicalSearchSpecification
+public class HierarchicalSearchSpecification
 {
+    private static final Key<String> TREE_ROOT_NAME = Key.of("treeRoot");
+    private static final Key<Map<String, List<Integer>>> CAMERA_MAP_KEY = Key.of("cameraMap");
     private static final Key<List<String[]>> TREE_PATH_KEY = Key.of("selectionTree");
 
-    private final TreeModel treeModel;
+    private TreeModel treeModel;
     private final Map<List<Object>, CameraInfo> cameraMap;
     private TreeSelectionModel selectionModel;
+
+    /**
+     * This constructor is for use when initializing from metadata. 
+     */
+    public HierarchicalSearchSpecification()
+    {
+        this.treeModel = null;
+        this.cameraMap = new LinkedHashMap<>();
+        this.selectionModel = null;
+    }
 
     public HierarchicalSearchSpecification(String rootName)
     {
         // Create a tree model with just the root
         this.treeModel = new DefaultTreeModel(createTreeNode(rootName));
-        this.cameraMap = new HashMap<>();
+        this.cameraMap = new LinkedHashMap<>();
         this.selectionModel = null;
     }
 
@@ -42,6 +55,11 @@ public abstract class HierarchicalSearchSpecification
     public TreeModel getTreeModel()
     {
         return treeModel;
+    }
+
+    public void setTreeModel(TreeModel treeModel)
+    {
+        this.treeModel = treeModel;
     }
 
     public void setSelectionModel(TreeSelectionModel selectionModel)
@@ -68,7 +86,6 @@ public abstract class HierarchicalSearchSpecification
         for(int i=0; i<path.length-1; i++)
         {
             // See if node has a child called path[i]
-            @SuppressWarnings("unchecked")
             Enumeration<TreeNode> e = currNode.children();
             boolean childFound = false;
             while(e.hasMoreElements())
@@ -120,7 +137,6 @@ public abstract class HierarchicalSearchSpecification
             DefaultMutableTreeNode selectedParentNode = (DefaultMutableTreeNode)tp.getLastPathComponent();
 
             // Get all leaves from the selected parent node
-            @SuppressWarnings("unchecked")
             Enumeration<TreeNode> en = selectedParentNode.depthFirstEnumeration();
             while(en.hasMoreElements())
             {
@@ -166,6 +182,11 @@ public abstract class HierarchicalSearchSpecification
             return filterCheckbox;
         }
 
+        @Override
+        public String toString()
+        {
+            return "Camera " + cameraCheckbox + ", filter " + filterCheckbox;
+    }
     }
 
     public class Selection
@@ -207,6 +228,27 @@ public abstract class HierarchicalSearchSpecification
                 Preconditions.checkState(selectionModel != null, "Set selection model prior to storing tree search metadata");
 
                 SettableMetadata result = SettableMetadata.of(Version.of(1, 0));
+
+                result.put(TREE_ROOT_NAME, treeModel.getRoot().toString());
+
+                Map<String, List<Integer>> mdCameraMap = new LinkedHashMap<>();
+                for (Entry<List<Object>, CameraInfo> entry : cameraMap.entrySet())
+                {
+                    StringBuilder sb = new StringBuilder();
+                    String delim = "";
+                    for (Object s : entry.getKey())
+                    {
+                      sb.append(delim);
+                      sb.append(s);
+                      delim = ", ";
+                    }
+                    String key = sb.toString();
+                    CameraInfo cam = entry.getValue();
+                    ImmutableList<Integer> cameraInfo = ImmutableList.of(cam.getCameraCheckbox(), cam.getFilterCheckbox());
+                    mdCameraMap.put(key, cameraInfo);
+                }
+                result.put(CAMERA_MAP_KEY, mdCameraMap);
+
                 ImmutableList.Builder<String[]> builder = ImmutableList.builder();
 
                 TreePath[] treePaths = selectionModel.getSelectionPaths();
@@ -229,8 +271,30 @@ public abstract class HierarchicalSearchSpecification
             @Override
             public void retrieve(Metadata source)
             {
-                Preconditions.checkState(selectionModel != null, "Set selection model prior to retrieving tree search metadata");
+                String rootName = source.get(TREE_ROOT_NAME);
+                if (rootName != null)
+                {
+                    treeModel = new DefaultTreeModel(createTreeNode(rootName));
+                }
 
+                cameraMap.clear();
+                Map<String, List<Integer>> mdCameraMap = source.get(CAMERA_MAP_KEY);
+                for (Entry<String, List<Integer>> entry : mdCameraMap.entrySet())
+                {
+                    ImmutableList.Builder<Object> b = ImmutableList.builder();
+                    for (String s : entry.getKey().split(", "))
+                    {
+                        b.add(s);
+                    }
+                    ImmutableList<Object> key = b.build();
+
+                    List<Integer> mdCamInfo = entry.getValue();
+                    CameraInfo cam = new CameraInfo(mdCamInfo.get(0), mdCamInfo.get(1));
+                    cameraMap.put(key, cam);
+                }
+
+                if (selectionModel != null)
+                {
                 List<String[]> pathStringList = source.get(TREE_PATH_KEY);
                 TreePath[] treePaths = new TreePath[pathStringList.size()];
 
@@ -242,7 +306,6 @@ public abstract class HierarchicalSearchSpecification
                     nodes[0] = currentNode;
                     for (int index = 0; index < pathStrings.length; ++index)
                     {
-                        @SuppressWarnings("unchecked")
                         Enumeration<TreeNode> children = currentNode.children();
                         while (children.hasMoreElements())
                         {
@@ -258,6 +321,7 @@ public abstract class HierarchicalSearchSpecification
                     treePaths[treeIndex] = new TreePath(nodes);
                 }
                 selectionModel.setSelectionPaths(treePaths);
+            }
             }
         };
     }

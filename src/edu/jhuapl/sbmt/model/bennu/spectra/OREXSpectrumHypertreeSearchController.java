@@ -9,7 +9,7 @@ import javax.swing.event.AncestorListener;
 import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
-import edu.jhuapl.sbmt.image.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumColoringController;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumResultsTableController;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
@@ -46,8 +46,8 @@ public class OREXSpectrumHypertreeSearchController
 
         this.spectrumSearchModel = model;
 //        this.spectrumSearchModel.loadSearchSpecMetadata();
-        SpectraCollection spectrumCollection = (SpectraCollection)modelManager.getModel(spectrumSearchModel.getSpectrumCollectionModelName()).get(0);
-        SpectrumBoundaryCollection boundaryCollection = (SpectrumBoundaryCollection)modelManager.getModel(spectrumSearchModel.getSpectrumBoundaryCollectionModelName()).get(0);
+        SpectraCollection spectrumCollection = (SpectraCollection)modelManager.getModel(spectrumSearchModel.getSpectrumCollectionModelName());
+        SpectrumBoundaryCollection boundaryCollection = (SpectrumBoundaryCollection)modelManager.getModel(spectrumSearchModel.getSpectrumBoundaryCollectionModelName());
         this.spectrumResultsTableController = new SpectrumResultsTableController(instrument, spectrumCollection, modelManager, boundaryCollection, spectrumSearchModel, renderer, infoPanelManager);
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 

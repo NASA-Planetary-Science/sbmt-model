@@ -20,9 +20,9 @@ import vtk.vtkImageReslice;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.image.common.ImageKeyInterface;
-import edu.jhuapl.sbmt.image.types.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.image.ImageSource;
+import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 import edu.jhuapl.sbmt.util.BackPlanesXml;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
@@ -52,7 +52,7 @@ public class MSIImage extends PerspectiveImage
     private static final String xmlTemplate = "edu/jhuapl/sbmt/model/eros/msiXmlTemplate.xml";
 
     public MSIImage(ImageKeyInterface key,
-    		List<SmallBodyModel> smallBodyModel,
+            SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
         super(key, smallBodyModel, loadPointingOnly);
