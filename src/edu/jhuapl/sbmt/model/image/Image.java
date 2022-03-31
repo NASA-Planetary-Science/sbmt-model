@@ -382,7 +382,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     {
     	this.showFrustum = showFrustum;
     }
-    
+
     public int[] getCurrentMask()
     {
         return new int[] {0, 0, 0, 0};
@@ -413,6 +413,7 @@ public abstract class Image extends AbstractModel implements PropertyChangeListe
     public void setBoundaryVisibility(boolean isVisible)
     {
     	this.boundaryVisible = isVisible;
+    	this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, this);
     }
 
     public boolean isBoundaryVisible()

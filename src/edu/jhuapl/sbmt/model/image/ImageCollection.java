@@ -1,5 +1,6 @@
 package edu.jhuapl.sbmt.model.image;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -114,6 +115,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 //        sw.start();
         Image image = createImage(key);
 //        System.out.println("ImageCollection: addImage: created image in " + sw.elapsedMillis() + " ms");
+        image.setBoundaryColor(new Color((int)(Math.random() * 0x1000000)));
 
         for (SmallBodyModel smallBodyModel : smallBodyModels)
         {
@@ -134,7 +136,7 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
 	            actorToImageMap.put(act, image);
         }
 //        System.out.println("ImageCollection: addImage: firing listener " + sw.elapsedMillis() + " ms");
-//        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
+        this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, image);
 //        System.out.println("ImageCollection: addImage: fired listener " + sw.elapsedMillis() + " ms");
 
     }
