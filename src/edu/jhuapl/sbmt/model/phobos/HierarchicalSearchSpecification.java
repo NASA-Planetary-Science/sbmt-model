@@ -295,33 +295,33 @@ public class HierarchicalSearchSpecification
 
                 if (selectionModel != null)
                 {
-                List<String[]> pathStringList = source.get(TREE_PATH_KEY);
-                TreePath[] treePaths = new TreePath[pathStringList.size()];
+                	List<String[]> pathStringList = source.get(TREE_PATH_KEY);
+                    TreePath[] treePaths = new TreePath[pathStringList.size()];
 
-                for (int treeIndex = 0; treeIndex < pathStringList.size(); ++treeIndex)
-                {
-                    String[] pathStrings = pathStringList.get(treeIndex);
-                    DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[pathStrings.length];
-                    DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) treeModel.getRoot();
-                    nodes[0] = currentNode;
-                    for (int index = 0; index < pathStrings.length; ++index)
+                    for (int treeIndex = 0; treeIndex < pathStringList.size(); ++treeIndex)
                     {
-                        Enumeration<TreeNode> children = currentNode.children();
-                        while (children.hasMoreElements())
+                        String[] pathStrings = pathStringList.get(treeIndex);
+                        DefaultMutableTreeNode[] nodes = new DefaultMutableTreeNode[pathStrings.length];
+                        DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) treeModel.getRoot();
+                        nodes[0] = currentNode;
+                        for (int index = 0; index < pathStrings.length; ++index)
                         {
-                            DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
-                            if (child.getUserObject().equals(pathStrings[index]))
+                            Enumeration<TreeNode> children = currentNode.children();
+                            while (children.hasMoreElements())
                             {
-                                nodes[index] = child;
-                                currentNode = child;
-                                break;
+                                DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+                                if (child.getUserObject().equals(pathStrings[index]))
+                                {
+                                    nodes[index] = child;
+                                    currentNode = child;
+                                    break;
+                                }
                             }
                         }
+                        treePaths[treeIndex] = new TreePath(nodes);
                     }
-                    treePaths[treeIndex] = new TreePath(nodes);
+                    selectionModel.setSelectionPaths(treePaths);
                 }
-                selectionModel.setSelectionPaths(treePaths);
-            }
             }
         };
     }
