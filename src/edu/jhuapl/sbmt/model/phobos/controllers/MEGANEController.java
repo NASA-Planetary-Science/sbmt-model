@@ -540,7 +540,7 @@ public class MEGANEController implements PropertyChangeListener
 
 	private void initializeCalculatedPlateColorings()
 	{
-		LiveColorableManager.addICalculatedPlateValues("Time Per Facet", new IFootprintConfinedPlateValues()
+		LiveColorableManager.addICalculatedPlateValues("Time Per Facet (on the fly)", new IFootprintConfinedPlateValues()
 		{
 			private FacetColoringData[] facetColoring;
 			private PerspectiveImageFootprint footprint;
@@ -587,14 +587,14 @@ public class MEGANEController implements PropertyChangeListener
 				values.SetNumberOfTuples(numValues);
 			}
 		});
-		ICalculatedPlateValues timePerIndexCalculator = LiveColorableManager.getCalculatedPlateValuesFor("Time Per Facet");
+		ICalculatedPlateValues timePerIndexCalculator = LiveColorableManager.getCalculatedPlateValuesFor("Time Per Facet (on the fly)");
 		int numberElements = smallBodyModel.getCellNormals().GetNumberOfTuples();
 		timePerIndexCalculator.setNumberOfValues(numberElements);
 		timePerIndexCalculator.setNumberOfDimensions(1);
 		timePerIndexCalculator.getValues().FillComponent(0, 0);
 		vtkFloatArray timePerFacetArray = timePerIndexCalculator.getValues();
 		IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(timePerFacetArray);
-		ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
+		ColoringData coloringData = ColoringDataFactory.of("Time Per Facet (on the fly)", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
 		LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
 		try
 		{
@@ -629,7 +629,7 @@ public class MEGANEController implements PropertyChangeListener
 			{
 				vtkFloatArray valuesAtTime = ((ITimeCalculatedPlateValues)timePerIndexCalculator).getPlateValuesForTime(et);
 				IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(valuesAtTime);
-				ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
+				ColoringData coloringData = ColoringDataFactory.of("Time Per Facet (on the fly)", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
 				try
 				{
 					LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
@@ -641,7 +641,7 @@ public class MEGANEController implements PropertyChangeListener
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				coloringDataManager.replaceCustom("Time Per Facet", coloringData);
+				coloringDataManager.replaceCustom("Time Per Facet (on the fly)", coloringData);
 			}
 
 			@Override
