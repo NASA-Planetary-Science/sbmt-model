@@ -78,8 +78,11 @@ public class MEGANESearchModel
 	{
 		List<MEGANEFootprint> footprints = Lists.newArrayList();
 		List<Structure> structuresToSearch = getStructuresToSearch();
-		List<String> structuresMetadata = structuresToSearch.stream().map(struct -> { return struct.getName(); } ).toList();
-		metadata.put(" Structs ", structuresMetadata);
+		if (!structuresToSearch.isEmpty())
+		{
+			List<String> structuresMetadata = structuresToSearch.stream().map(struct -> { return struct.getName(); } ).toList();
+			metadata.put(" Structs ", structuresMetadata);
+		}
 		if (selectionModel.getNumItems() != 0)
 		{
 			Ellipse region = selectionModel.getItem(0);
@@ -199,7 +202,7 @@ public class MEGANESearchModel
 		List<Structure> structures = Lists.newArrayList();
 		for (FilterType filter : structureFilters)
 		{
-			if (filter.isEnabled())
+			if (filter.isEnabled() && ((Structure)filter.getSelectedRangeValue() != null))
 				structures.add((Structure)filter.getSelectedRangeValue());
 		}
 		return structures;
