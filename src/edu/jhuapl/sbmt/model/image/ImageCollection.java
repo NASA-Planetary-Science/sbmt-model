@@ -190,4 +190,9 @@ public class ImageCollection extends AbstractModel implements PropertyChangeList
     {
         return containsKey(key);
     }
+
+    public SmallBodyModel getSmallBodyModel()
+    {
+    	return smallBodyModel;
+    }
 }
