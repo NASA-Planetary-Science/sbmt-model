@@ -86,6 +86,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
     private Color boundaryColor;
     private boolean hasIntercept = false;
     private boolean showFootprint = false;
+    private boolean headless = Boolean.parseBoolean(System.getProperty("java.awt.headless", "false"));
 
 	PerspectiveImageFootprint(PerspectiveImage image)
 	{
@@ -110,7 +111,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprint[0] = new vtkPolyData();
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (!headless)
         {
 			boundaryActor = new vtkActor();
 			boundaryActor.VisibilityOn();
@@ -139,7 +140,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprint[0] = new vtkPolyData();
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (!headless)
         {
 			boundaryActor = new vtkActor();
 			boundaryActor.VisibilityOn();
@@ -170,7 +171,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprint[0] = new vtkPolyData();
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (!headless)
         {
 			boundaryActor = new vtkActor();
 			boundaryActor.VisibilityOn();
@@ -291,7 +292,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	private vtkPolyData updateBoundary()
 	{
-		if (System.getProperty("java.awt.headless").equals("true")) return boundary;
+		if (headless) return boundary;
 
 //		Logger.getAnonymousLogger().log(Level.INFO, "Getting edge extracter for footprint " + footprint[currentSlice].GetNumberOfCells());
 		vtkFeatureEdges edgeExtracter = new vtkFeatureEdges();
@@ -310,7 +311,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 			{
 		        boundaryMapper.SetInputData(boundary);
 		        boundaryMapper.Update();
-		        if (System.getProperty("java.awt.headless").equals("false"))
+		        if (!headless)
 		        {
 		        	boundaryActor.SetMapper(boundaryMapper);
 		        }
@@ -324,7 +325,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		{
 	        boundaryMapper.SetInputData(boundary);
 	        boundaryMapper.Update();
-	        if (System.getProperty("java.awt.headless").equals("false"))
+	        if (!headless)
 	        {
 	        	boundaryActor.SetMapper(boundaryMapper);
 	        }
@@ -593,7 +594,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
         footprintMapper.SetInputData(shiftedFootprint[0]);
 
         footprintMapper.Update();
-        if (System.getProperty("java.awt.headless").equals("false"))
+        if (!headless)
         {
 	        footprintActor.SetMapper(footprintMapper);
 	        footprintActor.SetTexture(imageTexture);
@@ -606,7 +607,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
         if (!staticFootprint)
         {
         	createOriginalStyleBoundary();
-        	if (System.getProperty("java.awt.headless").equals("false"))
+        	if (!headless)
             {
         		footprintActors.add(boundaryActor);
             }
@@ -616,7 +617,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	        boundaryMapper = new vtkPolyDataMapper();
 	        boundaryMapper.SetInputData(boundary);
 	        boundaryMapper.Update();
-	        if (System.getProperty("java.awt.headless").equals("false"))
+	        if (!headless)
 	        {
 		        boundaryActor.SetMapper(boundaryMapper);
 		        boundaryActor.GetProperty().SetLineWidth(3.0);
@@ -690,14 +691,14 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public void setBoundaryVisible(boolean isVisible)
 	{
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 		boundaryActor.SetVisibility(isVisible ? 1 : 0);
 		boundaryActor.Modified();
 	}
 
 	public void setBoundaryColor(Color color)
 	{
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 		boundaryColor = color;
 		boundaryActor.GetProperty().SetColor(new double[] {(double)color.getRed()/255.0,
 				(double)color.getGreen()/255.0,
@@ -771,7 +772,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public void setFootprintColor()
 	{
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 		if (footprintActor == null) getProps();
 		if (footprintActor.GetVisibility() == 0) return;
 
@@ -900,7 +901,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	private void createOriginalStyleBoundary()
 	{
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 //	    vtkActor actor;
 //	    vtkPolyData boundary;
 //	    vtkPolyDataMapper boundaryMapper;
@@ -1080,7 +1081,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	{
 		showFootprint = b;
 		isVisible = b;
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 		if (showFootprint && hasIntercept)
 		{
 			footprintActor.VisibilityOn();
@@ -1099,7 +1100,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	public void setHasIntercept(boolean intercept)
 	{
 		this.hasIntercept = intercept;
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 		if (showFootprint && hasIntercept)
 		{
 			footprintActor.VisibilityOn();

@@ -34,6 +34,7 @@ public class PerspectiveImageFrustum
     private String instrumentName;
     private Color frustumColor;
     private boolean hasIntercept = true;
+    private boolean headless = Boolean.parseBoolean(System.getProperty("java.awt.headless", "false"));
 
 	public PerspectiveImageFrustum(PerspectiveImage image)
 	{
@@ -52,7 +53,7 @@ public class PerspectiveImageFrustum
 		minFrustumDepth = new double[image.getImageDepth()];
 		frusta = new Frustum[nslices];
 
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (headless == false)
         {
 			frustumActor = new vtkActor();
 			frustumActor.VisibilityOff();
@@ -74,7 +75,7 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[1];
 		minFrustumDepth = new double[1];
 		frusta = new Frustum[1];
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (headless == false)
         {
 			frustumActor = new vtkActor();
 			frustumActor.VisibilityOff();
@@ -102,7 +103,7 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[1];
 		minFrustumDepth = new double[1];
 		frusta = new Frustum[1];
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (headless == false)
         {
 			frustumActor = new vtkActor();
 			frustumActor.VisibilityOff();
@@ -266,7 +267,7 @@ public class PerspectiveImageFrustum
 	{
 		showFrustum = b;
 
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 
 		if (showFrustum && hasIntercept)
 		{
@@ -281,7 +282,7 @@ public class PerspectiveImageFrustum
 	List<vtkProp> getProps()
 	{
 		calculateFrustum();
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (!headless)
         {
 			vtkProperty frustumProperty = frustumActor.GetProperty();
 			frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
@@ -293,7 +294,7 @@ public class PerspectiveImageFrustum
 
 	public void setColor(Color color)
 	{
-		if (System.getProperty("java.awt.headless").equals("false"))
+		if (!headless)
         {
 			this.frustumColor = color;
 			vtkProperty frustumProperty = frustumActor.GetProperty();
@@ -308,7 +309,7 @@ public class PerspectiveImageFrustum
 
 	public vtkActor getFrustumActor()
 	{
-		if (System.getProperty("java.awt.headless").equals("true")) return null;
+		if (headless) return null;
 
 		if (frustumActor == null && scPos[0] != null)
 		{
@@ -342,7 +343,7 @@ public class PerspectiveImageFrustum
 	public void setHasIntercept(boolean intercept)
 	{
 		this.hasIntercept = intercept;
-		if (System.getProperty("java.awt.headless").equals("true")) return;
+		if (headless) return;
 
 		if (showFrustum && hasIntercept)
 		{
