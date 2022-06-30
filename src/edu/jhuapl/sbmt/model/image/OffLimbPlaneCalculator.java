@@ -138,7 +138,7 @@ public class OffLimbPlaneCalculator
 //        int szMax=Math.max(resolution[0], resolution[1]);
         int szW=resolution[0];//szMax;//(int)(aspect*szMax);
         int szH=resolution[1];//szMax;
-        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: res is " + res);
+//        System.out.println("OffLimbPlaneCalculator: loadOffLimbPlane: res is " + res);
         // Step (2): Shoot rays from the camera position toward each macro-pixel & record which ones don't hit the body (these will comprise the off-limb geometry)
 
         // (2a) determine ray-cast depth; currently implemented as camera-to-origin distance plus body bounding-box diagonal length -- that way rays will always extend from the camera position past the entire body
