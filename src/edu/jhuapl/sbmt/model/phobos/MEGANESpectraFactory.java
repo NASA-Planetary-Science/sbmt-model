@@ -53,5 +53,4 @@ public class MEGANESpectraFactory
 		SbmtSpectrumModelFactory.registerModel("MEGANE", meganeSpectra, smallBodyModel);
 		SpectraTypeFactory.registerSpectraType("MEGANE", MEGANEQuery.getInstance(), MEGANESpectrumMath.getInstance(), "cm^-1", new MEGANE().getBandCenters());
 	}
-
 }

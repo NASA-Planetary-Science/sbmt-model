@@ -39,9 +39,6 @@ public class MEGANEDataModel
 		UTCEpoch endEpoch = UTCEpoch.fromString(dateFormatter.format(stopDate));
 		this.currentStartTime = DefaultTimeSystems.getTDB().getTime( DefaultTimeSystems.getUTC().getTSEpoch(startEpoch));
 		this.currentStopTime = DefaultTimeSystems.getTDB().getTime( DefaultTimeSystems.getUTC().getTSEpoch(endEpoch));
-
-//		this.currentStartTime = TimeUtil.str2et(startEpoch.toString());
-//		this.currentStopTime = TimeUtil.str2et(endEpoch.toString());
 	}
 
 	public Pair<Double, Double>[] getAltitudesForTimeWindowWithTimeStep(double startTime, double endTime, double timeStep)
@@ -55,9 +52,6 @@ public class MEGANEDataModel
 		for (int i=0; i< numEntries; i++)
 		{
 			double time = startTime + i*timeStep;
-//			UTCEpoch utcTime = getUTC(utcTimeString);
-//	        double time = DefaultTimeSystems.getTDB().getTime(DefaultTimeSystems.getUTC().getTSEpoch(utcTime));
-//			System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: time is " + TimeUtil.et2str(time) + " and time " + time);
 
 			InstrumentPointing pointing = pointingProvider.provide(time + timeStep/2);
 			try {
@@ -67,23 +61,15 @@ public class MEGANEDataModel
 				boresightDirection[0] = pointing.getBoresight().getI();
 				boresightDirection[1] = pointing.getBoresight().getJ();
 				boresightDirection[2] = pointing.getBoresight().getK();
-//				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: sc pos " + new Vector3D(spacecraftPosition));
 
 				double distance = pointing.getScPosition().getLength();
-//				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: distance " + distance);
 				smallBodyModel.computeRayIntersection(spacecraftPosition, boresightDirection, intercept);
 				double altitude = distance - new Vector3D(intercept).getNorm();
-//				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: sub s/c radius " + new Vector3D(intercept).getNorm());
-//				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: altitude " + altitude);
 				double normalizedAltitude = altitude/(new Vector3D(intercept).getNorm());
-//				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: normalzied alt " + normalizedAltitude);
 				values[i] = new Pair<Double, Double>(time, normalizedAltitude);
 			}
 			catch (LockableEphemerisLinkEvaluationException | LockableFrameLinkEvaluationException ex)
 			{
-//				System.out.println("MEGANEDataModel: NO DATA getAltitudesForTimeWindowWithTimeStep: time is " + TimeUtil.et2str(time));
-//
-//				System.out.println("MEGANEDataModel: getAltitudesForTimeWindowWithTimeStep: distance " + values[i-1].getSecond());
 				if (i - 1 == -1) values[i] = new Pair<Double, Double>(time, 0.0);
 				else values[i] = new Pair<Double, Double>(time, values[i-1].getSecond());
 			}

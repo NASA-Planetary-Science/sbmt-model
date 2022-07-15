@@ -170,9 +170,4 @@ public class MEGANEPlotPanel extends JPanel implements PropertyChangeListener
 	{
 		return timeBelowAltitudeHistogram;
 	}
-
-
-
-
-
 }

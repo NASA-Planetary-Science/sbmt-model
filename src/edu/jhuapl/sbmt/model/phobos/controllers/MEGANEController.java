@@ -1,31 +1,41 @@
 package edu.jhuapl.sbmt.model.phobos.controllers;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.swing.BoxLayout;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.SpinnerDateModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener; 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jfree.chart.axis.ValueAxis;
 
 import com.beust.jcommander.internal.Lists;
@@ -34,7 +44,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import vtk.vtkFloatArray;
-import vtk.vtkPolyData;
 
 import edu.jhuapl.saavtk.gui.dialog.CustomFileChooser;
 import edu.jhuapl.saavtk.model.ModelManager;
@@ -45,26 +54,28 @@ import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
 import edu.jhuapl.saavtk.model.plateColoring.CustomizableColoringDataManager;
 import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.LoadableColoringData;
-import edu.jhuapl.saavtk.model.structure.AbstractEllipsePolygonModel;
 import edu.jhuapl.saavtk.model.structure.CircleModel;
 import edu.jhuapl.saavtk.model.structure.EllipseModel;
-import edu.jhuapl.saavtk.model.structure.PlateUtil;
 import edu.jhuapl.saavtk.model.structure.PolygonModel;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.pick.PickManager.PickMode;
-import edu.jhuapl.saavtk.structure.Ellipse;
+import edu.jhuapl.saavtk.structure.Structure;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
+import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
+import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEDataModel;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
-import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
+import edu.jhuapl.sbmt.model.phobos.model.MEGANESearchModel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANEPlotPanel;
 import edu.jhuapl.sbmt.model.phobos.ui.MEGANESearchPanel;
-import edu.jhuapl.sbmt.model.phobos.ui.structureSearch.MEGANEStructureCollection;
 import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
+import edu.jhuapl.sbmt.query.filter.model.DynamicFilterValues;
+import edu.jhuapl.sbmt.query.filter.model.FilterType;
+import edu.jhuapl.sbmt.query.filter.model.FilterTypeUnit;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.ICalculatedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.IFootprintConfinedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.interfaces.ITimeCalculatedPlateValues;
@@ -72,10 +83,7 @@ import edu.jhuapl.sbmt.stateHistory.model.liveColoring.LiveColorableManager;
 import edu.jhuapl.sbmt.stateHistory.model.time.StateHistoryTimeModelChangedListener;
 import edu.jhuapl.sbmt.stateHistory.model.time.TimeWindow;
 
-import crucible.crust.logging.SimpleLogger;
 import glum.item.ItemEventType;
-import glum.task.SilentTask;
-import glum.task.Task;
 
 public class MEGANEController implements PropertyChangeListener
 {
@@ -86,34 +94,131 @@ public class MEGANEController implements PropertyChangeListener
 	private SmallBodyModel smallBodyModel;
 	private JTabbedPane tabbedPane;
 	private MEGANECollection collection;
+	private CumulativeMEGANECollection cumulativeCollection;
 	private MEGANEDatabaseConnection dbConnection;
-	private MEGANEStructureCollection structureCollection;
-	private PolygonModel polygons;
-	private CircleModel circles;
-	private EllipseModel ellipses;
-	private AbstractEllipsePolygonModel selectionModel;
 	private PickManager pickManager;
+	private MEGANESearchModel searchModel;
+	private MEGANEFootprintColoringOptionsController coloringController;
 
-	public MEGANEController(MEGANECollection collection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
+	public MEGANEController(MEGANECollection collection, CumulativeMEGANECollection cumulativeCollection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
 	{
 		this.smallBodyModel = smallBodyModel;
 		this.collection = collection;
+		this.cumulativeCollection = cumulativeCollection;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		this.pickManager = pickManager;
+		this.searchModel = new MEGANESearchModel(modelManager, smallBodyModel, dbConnection);
+		coloringController = new MEGANEFootprintColoringOptionsController(collection, cumulativeCollection);
 
-		polygons = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
-		circles = (CircleModel)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
-		ellipses = (EllipseModel)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
-        selectionModel = (AbstractEllipsePolygonModel)modelManager.getModel(ModelNames.CIRCLE_SELECTION);
+		DynamicFilterValues<Structure> dynamicValues = new DynamicFilterValues<Structure>()
+		{
+			@Override
+			public ArrayList<Structure> getCurrentValues()
+			{
+				PolygonModel polygonModel = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
+				CircleModel circleModel = (CircleModel)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
+				EllipseModel ellipseModel = (EllipseModel)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
 
+				ArrayList<Structure> structures = new ArrayList<Structure>();
+				structures.addAll(polygonModel.getAllItems());
+				structures.addAll(circleModel.getAllItems());
+				structures.addAll(ellipseModel.getAllItems());
+				Structure[] structuresArray = new Structure[structures.size()];
+				structures.toArray(structuresArray);
+				return structures;
+			}
+		};
 
-		this.structureCollection = new MEGANEStructureCollection(polygons, circles, ellipses);
+		//facetObs filters
+
+		FilterType.create("Incidence Angle", Optional.of(FilterTypeUnit.DEGREES), Double.class, Pair.of(0.0, 180.0), "incidence", true);
+		FilterType.create("Emission Angle",  Optional.of(FilterTypeUnit.DEGREES), Double.class, Pair.of(0.0, 180.0), "emission", true);
+		FilterType.create("SC Distance",  Optional.of(FilterTypeUnit.KM), Double.class, Pair.of(0.0, 1000.0), "range", true);
+//		FilterType.create("SC Altitude",  Optional.of(FilterTypeUnit.KM), Double.class, Pair.of(0.0, 1000.0), "altitude");
+//		FilterType.create("Limb", String.class, new String[] {"with only", "without only", "with or without"}, "limbType");
+		FilterType.create("Image Pointing", String.class, new String[] {"SPC Derived", "SPICE Derivied"}, "Pointing", true);
+		LocalDateTime startTime = LocalDateTime.of(2026, 6, 20, 0, 0);
+		LocalDateTime endTime = LocalDateTime.of(2026, 6, 21, 0, 0);
+		FilterType.create("Time Window", Optional.of(FilterTypeUnit.provide("Time Window")), LocalDateTime.class, Pair.of(startTime, endTime), "tdb", true);
+		FilterType.create("Integration Time", /*Optional.of(FilterTypeUnit.SECONDS),*/ String.class, new String[] {"60.0", "180.0"}, "integrationTime", true);
+		FilterType.create("cosE", Optional.of(FilterTypeUnit.NONE), Double.class, Pair.of(-1.0, 1.0), "cosE", true);
+		FilterType.create("Projected Area", Optional.of(FilterTypeUnit.NONE), Double.class, Pair.of(0.0, 1.0), "lat", true);
+
+		//observing geometry filters
+		FilterType.create("Latitude", Optional.of(FilterTypeUnit.DEGREES), Double.class, Pair.of(-90.0, 90.0), "lat", true);
+		FilterType.create("Longitude", Optional.of(FilterTypeUnit.DEGREES), Double.class, Pair.of(-180.0, 180.0), "lon", true);
+		FilterType.create("Altitude", Optional.of(FilterTypeUnit.KM), Double.class, Pair.of(0.0, 10000.0), "alt", true);
+		FilterType.create("Normalized Alt", Optional.of(FilterTypeUnit.NONE), Double.class, Pair.of(0.0, 1.0), "lat", true);
+
+		//other filters
+		FilterType.provideDynamic("Structures", Structure.class, dynamicValues, "Structure", false);
+		FilterType.create("Signal Contribution", Optional.of(FilterTypeUnit.NONE), Double.class, Pair.of(40.0, 60.0), "signal", true);
+
+		FilterType<String> integrationTimeFilter;
+		FilterType<LocalDateTime> initialTimeWindow;
+		FilterType<Double> signalContribution;
+		try
+		{
+			integrationTimeFilter = FilterType.createInstance("Integration Time");
+			integrationTimeFilter.setSelectedRangeValue("60.0");
+			integrationTimeFilter.setEnabled(true);
+			searchModel.getNonNumericFilterModel().addFilter(integrationTimeFilter);
+
+			initialTimeWindow = FilterType.createInstance("Time Window");
+			initialTimeWindow.setEnabled(false);
+			searchModel.getTimeWindowModel().addFilter(initialTimeWindow);
+
+			signalContribution = FilterType.createInstance("Signal Contribution");
+			signalContribution.setRangeMin(50.0);
+			signalContribution.setRangeMax(100.0);
+			signalContribution.setEnabled(false);
+			searchModel.getNumericFilterModel().addFilter(signalContribution);
+
+		}
+		catch (CloneNotSupportedException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 
 		collection.addListener((aSource, aEventType) -> {
 
-			if (aEventType != ItemEventType.ItemsSelected) return;
-			updateButtonState();
+			if (aEventType == ItemEventType.ItemsSelected)
+			{
+				updateButtonState();
+				searchPanel.setEnabled(collection.getAllItems().size() > 0);
+			}
+			else if (aEventType == ItemEventType.ItemsMutated)
+			{
+				boolean oneMapped = false;
+				for (MEGANEFootprint footprint : collection.getAllItems())
+				{
+					if (footprint.isMapped() == true)
+					{
+						oneMapped = true;
+						break;
+					}
+				}
+				coloringController.showColorBar(oneMapped);
+			}
+		});
 
+		cumulativeCollection.addListener((aSource, aEventType) -> {
+
+			if (aEventType == ItemEventType.ItemsMutated)
+			{
+				boolean oneMapped = false;
+				for (CumulativeMEGANEFootprint footprint : cumulativeCollection.getAllItems())
+				{
+					if (footprint.isMapped() == true)
+					{
+						oneMapped = true;
+						break;
+					}
+				}
+				coloringController.showColorBar(oneMapped);
+			}
 		});
 
 		collection.addPropertyChangeListener(new PropertyChangeListener()
@@ -129,6 +234,31 @@ public class MEGANEController implements PropertyChangeListener
 
 		setupPanel();
 		initializeCalculatedPlateColorings();
+		searchPanel.addAncestorListener(new AncestorListener()
+		{
+
+			@Override
+			public void ancestorRemoved(AncestorEvent event)
+			{
+				searchModel.getNonNumericFilterModel().setSelectedItems(List.of());
+				searchModel.getNumericFilterModel().setSelectedItems(List.of());
+				searchModel.getTimeWindowModel().setSelectedItems(List.of());
+			}
+
+			@Override
+			public void ancestorMoved(AncestorEvent event)
+			{
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void ancestorAdded(AncestorEvent event)
+			{
+				// TODO Auto-generated method stub
+
+			}
+		});
 	}
 
 	private void setupPanel()
@@ -143,10 +273,15 @@ public class MEGANEController implements PropertyChangeListener
 
 	private void setupSearchPanel()
 	{
-		searchPanel = new MEGANESearchPanel(collection, structureCollection);
+		searchPanel = new MEGANESearchPanel(collection, cumulativeCollection, searchModel);	//TODO fix the use of the model here
+		searchPanel.setEnabled(false);
 		searchPanel.getDatabaseLoadButton().addActionListener(e -> {
 			File file = CustomFileChooser.showOpenDialog(searchPanel, "Choose Database");
-			this.dbConnection = new MEGANEDatabaseConnection(file.getAbsolutePath());
+			this.dbConnection = new MEGANEDatabaseConnection(this, file.getAbsolutePath());
+			searchPanel.setEnabled(true);
+
+			searchModel.setDbConnection(dbConnection);
+			collection.setDbConnection(dbConnection);
 			this.dbConnection.openDatabase();
 			try
 			{
@@ -160,14 +295,66 @@ public class MEGANEController implements PropertyChangeListener
 				e1.printStackTrace();
 			}
 			searchPanel.getDatabaseNameLabel().setText(file.getName());
+			searchPanel.getDatabaseNameLabel().setForeground(Color.black);
 		});
 
 		searchPanel.getTableView().getLoadSpectrumButton().addActionListener(e -> {
-
+			File fileToOpen = CustomFileChooser.showOpenDialog(plotPanel, "Load CSV file...");
+			if (fileToOpen == null) return;
+			try
+			{
+				BufferedReader reader = new BufferedReader(new FileReader(fileToOpen));
+				Stream<String> lines = reader.lines();
+				List<MEGANEFootprint> fprints = Lists.newArrayList();
+				for (String line : lines.toList())
+				{
+					if (line.startsWith("#")) continue;
+					MEGANEFootprint footprint = new MEGANEFootprint(line);
+					fprints.add(footprint);
+				}
+				collection.setFootprints(fprints);
+				reader.close();
+			}
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		});
 
 		searchPanel.getTableView().getSaveSpectrumButton().addActionListener(e -> {
 
+			File filename = CustomFileChooser.showSaveDialog(plotPanel, "Save to...");
+			if (FilenameUtils.getExtension(filename.getAbsolutePath()).equals("")) filename = new File(filename + ".csv");
+			try
+			{
+				HashMap<String, List<String>> metadata = searchModel.getMetadata();
+				collection.saveSelectedToFile(filename, metadata);
+			}
+			catch (IOException e1)
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		});
+
+		searchPanel.getTableView().getAddSpectrumButton().addActionListener(e -> {
+
+			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
+			if (selectedFootprints.size() == 0) return;
+			CumulativeMEGANEFootprint cumulativeFootprint = new CumulativeMEGANEFootprint(selectedFootprints.asList());
+			cumulativeCollection.addCumulativeFootprint(cumulativeFootprint);
+			updateButtonState();
+		});
+
+		searchPanel.getUpdateColorsButton().addActionListener(e -> {
+
+			ImmutableSet<MEGANEFootprint> selectedFootprints = collection.getSelectedItems();
+			if (selectedFootprints.size() == 0) return;
+			JFrame frame = new JFrame("Adjust Color");
+			frame.getContentPane().add(coloringController.getView());
+			frame.setSize(new Dimension(300, 400));
+			frame.setVisible(true);
 		});
 
 		searchPanel.getTableView().getShowSpectrumButton().addActionListener(e -> {
@@ -175,6 +362,27 @@ public class MEGANEController implements PropertyChangeListener
 			if (selectedFootprints.size() == 0) return;
 			for (MEGANEFootprint fp : selectedFootprints)
 			{
+				if (fp.getCellIDs().isEmpty())
+				{
+					try
+					{
+						fp.setFacets(dbConnection.getFacets(fp.getDateTime(), new Function<String, Void>()
+						{
+
+							@Override
+							public Void apply(String t)
+							{
+								SwingUtilities.invokeLater(() -> {fp.setStatus(t);});
+								return null;
+							}
+						}));
+					}
+					catch (SQLException e1)
+					{
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
 				collection.setFootprintMapped(fp, true);
 			}
 			updateButtonState();
@@ -190,55 +398,78 @@ public class MEGANEController implements PropertyChangeListener
 			updateButtonState();
 		});
 
-		searchPanel.getFilterPanel().getSearchCirclePanel().getSelectRegionButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getSelectRegionButton().addActionListener(e -> {
 
-			if (searchPanel.getFilterPanel().getSearchCirclePanel().getSelectRegionButton().isSelected())
+			if (searchPanel.getFilterPanel().getSelectRegionButton().isSelected())
 	            pickManager.setPickMode(PickMode.CIRCLE_SELECTION);
 	        else
 	            pickManager.setPickMode(PickMode.DEFAULT);
 		});
 
-		searchPanel.getFilterPanel().getSearchCirclePanel().getClearRegionButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getClearRegionButton().addActionListener(e -> {
 
-	        selectionModel.removeAllStructures();
+	        searchModel.removeRegion();
 		});
 
-		searchPanel.getFilterPanel().getSearchCirclePanel().getSubmitButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getSubmitButton().addActionListener(e -> {
 
-			if (selectionModel.getNumItems() == 0) return;
-			Ellipse region = selectionModel.getItem(0);
-			Task tmpTask = new SilentTask();
-			vtkPolyData structureFacetInformation = PlateUtil.formUnifiedStructurePolyData(tmpTask, selectionModel, List.of(region));
-
-			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
-
-			try
+			Thread thread = new Thread(new Runnable()
 			{
-				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
-				collection.setFootprints(filteredFootprints);
-			}
-			catch (SQLException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+
+				@Override
+				public void run()
+				{
+					try
+					{
+						collection.setFootprints(searchModel.performSearch(new Function<String, Void>()
+						{
+
+							@Override
+							public Void apply(String t)
+							{
+								SwingUtilities.invokeLater(() -> {searchPanel.setStatus(t);});
+								return null;
+							}
+						}));
+						searchPanel.getTableView().getResultsLabel().setText(collection.getNumItems() + " Results");
+					}
+					catch (SQLException e1)
+					{
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
+				}
+			});
+			thread.start();
+
 		});
 
-		searchPanel.getFilterPanel().getSearchStructurePanel().getSubmitButton().addActionListener(e -> {
+		searchPanel.getFilterPanel().getFilterTables().getAddButton().addActionListener(e -> {
 
-			vtkPolyData structureFacetInformation = structureCollection.getStructureFacetInformation();
-			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
+			try {
+				FilterType selectedItem = (FilterType)searchPanel.getFilterPanel().getFilterTables().getFilterCombo().getSelectedItem();
+				FilterType filter = FilterType.createInstance(selectedItem.name());
+				if (filter.getType() == Double.class )
+					searchModel.getNumericFilterModel().addFilter(filter);	//need to put Integration time (which is a choice) into nonnumeric
+				else if (filter.getType() == LocalDateTime.class)
+					searchModel.getTimeWindowModel().addFilter(filter);
+				else
+					searchModel.getNonNumericFilterModel().addFilter(filter);
+			}
+			catch (CloneNotSupportedException cnse)
+			{
+				cnse.printStackTrace();
+			}
 
-			try
-			{
-				List<MEGANEFootprint> filteredFootprints = dbConnection.getFootprintsForFacets(cellIdList);
-				collection.setFootprints(filteredFootprints);
-			}
-			catch (SQLException e1)
-			{
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+		});
+
+		searchPanel.getFilterPanel().getFilterTables().getRemoveFilterButton().addActionListener(e -> {
+
+			searchModel.getNumericFilterModel().removeItems(searchModel.getNumericFilterModel().getSelectedItems());
+			searchModel.getNonNumericFilterModel().removeItems(searchModel.getNonNumericFilterModel().getSelectedItems());
+			searchModel.getTimeWindowModel().removeItems(searchModel.getTimeWindowModel().getSelectedItems());
+
 		});
 	}
 
@@ -291,8 +522,6 @@ public class MEGANEController implements PropertyChangeListener
 				plotPanel.getTimeVersusAltitude().getXYPlot().getDomainAxis().setRange(timeVersusAltitudeXAxis.getLowerBound(), model.getTDBForDate((Date)plotPanel.getStopTimeSpinner().getModel().getValue()));
 			}
 		});
-
-
 	}
 
 	private void updateButtonState()
@@ -306,11 +535,13 @@ public class MEGANEController implements PropertyChangeListener
 		}
 		searchPanel.getTableView().getHideSpectrumButton().setEnabled((selectedItems.size() > 0) && allMapped);
 		searchPanel.getTableView().getShowSpectrumButton().setEnabled((selectedItems.size() > 0) && !allMapped);
+		searchPanel.getTableView().getAddSpectrumButton().setEnabled(selectedItems.size() > 0);
+		searchPanel.getUpdateColorsButton().setEnabled(((selectedItems.size() > 0) && allMapped) || (cumulativeCollection.getAllItems().size() > 0));
 	}
 
 	private void initializeCalculatedPlateColorings()
 	{
-		LiveColorableManager.addICalculatedPlateValues("Time Per Facet", new IFootprintConfinedPlateValues()
+		LiveColorableManager.addICalculatedPlateValues("Time Per Facet (on the fly)", new IFootprintConfinedPlateValues()
 		{
 			private FacetColoringData[] facetColoring;
 			private PerspectiveImageFootprint footprint;
@@ -357,14 +588,14 @@ public class MEGANEController implements PropertyChangeListener
 				values.SetNumberOfTuples(numValues);
 			}
 		});
-		ICalculatedPlateValues timePerIndexCalculator = LiveColorableManager.getCalculatedPlateValuesFor("Time Per Facet");
+		ICalculatedPlateValues timePerIndexCalculator = LiveColorableManager.getCalculatedPlateValuesFor("Time Per Facet (on the fly)");
 		int numberElements = smallBodyModel.getCellNormals().GetNumberOfTuples();
 		timePerIndexCalculator.setNumberOfValues(numberElements);
 		timePerIndexCalculator.setNumberOfDimensions(1);
 		timePerIndexCalculator.getValues().FillComponent(0, 0);
 		vtkFloatArray timePerFacetArray = timePerIndexCalculator.getValues();
 		IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(timePerFacetArray);
-		ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
+		ColoringData coloringData = ColoringDataFactory.of("Time Per Facet (on the fly)", "sec", timePerFacetArray.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
 		LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
 		try
 		{
@@ -399,7 +630,7 @@ public class MEGANEController implements PropertyChangeListener
 			{
 				vtkFloatArray valuesAtTime = ((ITimeCalculatedPlateValues)timePerIndexCalculator).getPlateValuesForTime(et);
 				IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(valuesAtTime);
-				ColoringData coloringData = ColoringDataFactory.of("Time Per Facet", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
+				ColoringData coloringData = ColoringDataFactory.of("Time Per Facet (on the fly)", "sec", valuesAtTime.GetNumberOfTuples(), Arrays.asList("Time"), false, indexableTuple);
 				try
 				{
 					LoadableColoringData loadableColoringData = ColoringDataFactory.of(coloringData, "MEGANE-TimePerFacet");
@@ -411,7 +642,7 @@ public class MEGANEController implements PropertyChangeListener
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				coloringDataManager.replaceCustom("Time Per Facet", coloringData);
+				coloringDataManager.replaceCustom("Time Per Facet (on the fly)", coloringData);
 			}
 
 			@Override
@@ -423,8 +654,6 @@ public class MEGANEController implements PropertyChangeListener
 		});
 	}
 
-
-
 	public JPanel getPanel()
 	{
 		JPanel panel = new JPanel();
@@ -432,7 +661,6 @@ public class MEGANEController implements PropertyChangeListener
 		panel.add(tabbedPane);
 
 		return panel;
-
 	}
 
 	@Override
@@ -456,148 +684,11 @@ public class MEGANEController implements PropertyChangeListener
 
 	}
 
-	public class MEGANEDatabaseConnection {
-		private Connection database;
-		private final String dbName;
-		private SimpleLogger logger;
-
-		public MEGANEDatabaseConnection(String dbName) {
-			this.dbName = dbName;
-			logger = SimpleLogger.getInstance();
-		}
-
-		public void openDatabase() {
-			if (database != null)
-				return;
-
-			try {
-				database = DriverManager.getConnection("jdbc:sqlite:" + dbName);
-//				logger.log(Level.INFO, String.format("Opened %s", dbName));
-			} catch (SQLException e) {
-				logger.log(Level.WARNING, e.getLocalizedMessage());
-				e.printStackTrace();
-			}
-		}
-
-		public List<MEGANEFootprint> getFootprints() throws SQLException
-		{
-			List<MEGANEFootprint> footprints = Lists.newArrayList();
-			Statement st = null;
-	        ResultSet rs = null;
-	        Object o = null;
-	        String expression = "SELECT * FROM observingGeometry ORDER BY tdb";
-
-	        st = database.createStatement();         // statement objects can be reused with
-
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        rs = st.executeQuery(expression);    // run the query
-
-	        for (; rs.next(); )
-	        {
-	            List<Double> nextRow = new ArrayList<Double>();
-	            for (int i = 0; i < 5; ++i)
-	            {
-	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-	                nextRow.add((Double)o);
-	            }
-
-	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
-	            footprint.setFacets(getFacets(footprint.getDateTime()));
-	            footprints.add(footprint);
-
-	            //System.out.println(" ");
-	        }
-
-	        return footprints;
-		}
-
-		public List<MEGANEFootprint> getFootprintsForFacets(ImmutableList<Integer> cellIds) throws SQLException
-		{
-			List<MEGANEFootprint> footprints = Lists.newArrayList();
-
-			Statement st = null;
-	        ResultSet rs = null;
-	        Object o = null;
-	        String expression = "SELECT * FROM observingGeometry ORDER BY tdb";
-
-	        st = database.createStatement();         // statement objects can be reused with
-
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        rs = st.executeQuery(expression);    // run the query
-
-	        for (; rs.next(); )
-	        {
-	            List<Double> nextRow = new ArrayList<Double>();
-	            for (int i = 0; i < 5; ++i)
-	            {
-	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-	                nextRow.add((Double)o);
-	            }
-
-	            List<MEGANEFootprintFacet> facets = getFacets(nextRow.get(0));
-	            List<Integer> facetIds = facets.stream().map(facet -> facet.getFacetID()).toList();
-	            List<Integer> facetCopy = Lists.newArrayList(facetIds);
-	            boolean overlappingFacets = facetCopy.retainAll(cellIds);
-	            if (overlappingFacets == true && facetCopy.size() == 0) continue;
-
-
-	            MEGANEFootprint footprint = new MEGANEFootprint(nextRow.get(0), nextRow.get(1), nextRow.get(2), nextRow.get(3), nextRow.get(4));
-	            footprint.setFacets(getFacets(footprint.getDateTime()));
-	            footprints.add(footprint);
-	        }
-
-
-			return footprints;
-		}
-
-		public List<MEGANEFootprintFacet> getFacets(double time) throws SQLException
-		{
-			List<MEGANEFootprintFacet> facets = Lists.newArrayList();
-
-			Statement st = null;
-	        ResultSet rs = null;
-	        Object o = null;
-	        String expression = "SELECT * FROM facetObs WHERE tdb=" + time + " ORDER BY id";
-
-	        st = database.createStatement();         // statement objects can be reused with
-
-	        // repeated calls to execute but we
-	        // choose to make a new one each time
-	        rs = st.executeQuery(expression);    // run the query
-
-	        for (; rs.next(); )
-	        {
-	            List<Object> nextRow = new ArrayList<Object>();
-	            for (int i = 0; i < 5; ++i)
-	            {
-	                o = rs.getObject(i + 1);    // Is SQL the first column is indexed with 1 not 0
-	                nextRow.add(o);
-	            }
-
-	            if ((Double)nextRow.get(3) < 0) continue;
-	            MEGANEFootprintFacet facet = new MEGANEFootprintFacet(time, (Integer)nextRow.get(0), (Double)nextRow.get(2), (Double)nextRow.get(3), (Double)nextRow.get(4));
-	            facets.add(facet);
-	        }
-
-
-			return facets;
-		}
-
-		private void executeSQL(String sql) {
-			if (!sql.trim().endsWith(";"))
-				sql = String.format("%s;", sql.trim());
-			logger.log(Level.FINE, sql);
-			try (Statement stmt = database.createStatement()) {
-				stmt.execute(sql);
-			} catch (SQLException e) {
-				logger.log(Level.SEVERE, "Cannot execute query " + sql);
-				logger.log(Level.SEVERE, e.getLocalizedMessage());
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
+	/**
+	 * @return the searchModel
+	 */
+	public MEGANESearchModel getSearchModel()
+	{
+		return searchModel;
 	}
-
 }

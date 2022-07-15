@@ -1,26 +1,42 @@
 package edu.jhuapl.sbmt.model.phobos.model;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
+
+import edu.jhuapl.sbmt.util.TimeUtil;
 
 public class MEGANEFootprint
 {
 	private double dateTime;
-	private double latDegrees;
-	private double lonDegrees;
+	private double latRadians;
+	private double lonRadians;
 	private double altKm;
 	private double normalizedAlt;
-	private List<MEGANEFootprintFacet> facets;
+	protected List<MEGANEFootprintFacet> facets;
 	private boolean mapped;
 	private String status;
+	private double signalContribution = -1;
 
 	public MEGANEFootprint(double dateTime, double latDegrees, double lonDegrees, double altKm, double normalizedAlt)
 	{
 		this.dateTime = dateTime;
-		this.latDegrees = latDegrees;
-		this.lonDegrees = lonDegrees;
+		this.latRadians = latDegrees;
+		this.lonRadians = lonDegrees;
 		this.altKm = altKm;
 		this.normalizedAlt = normalizedAlt;
+		this.status = "Unloaded";
+	}
+
+	public MEGANEFootprint(String line)
+	{
+		String[] parts = line.split(",");
+		this.dateTime = Double.parseDouble(parts[0]);
+		this.latRadians = Double.parseDouble(parts[1]);
+		this.lonRadians = Double.parseDouble(parts[2]);
+		this.altKm = Double.parseDouble(parts[3]);
+		this.normalizedAlt = Double.parseDouble(parts[4]);
+		this.signalContribution = Double.parseDouble(parts[5]);
 		this.status = "Unloaded";
 	}
 
@@ -29,20 +45,26 @@ public class MEGANEFootprint
 		return dateTime;
 	}
 
+	public String getDateTimeString()
+	{
+		String timeString = TimeUtil.et2str(dateTime);
+		return timeString.substring(0, timeString.lastIndexOf("."));
+	}
+
 	/**
 	 * @return the latDegrees
 	 */
-	public double getLatDegrees()
+	public double getLatRadians()
 	{
-		return latDegrees;
+		return latRadians;
 	}
 
 	/**
 	 * @return the lonDegrees
 	 */
-	public double getLonDegrees()
+	public double getLonRadians()
 	{
-		return lonDegrees;
+		return lonRadians;
 	}
 
 	/**
@@ -88,6 +110,34 @@ public class MEGANEFootprint
 		return cellIDs;
 	}
 
+	public double getSummedValue()
+	{
+		double total = 0;
+		for (MEGANEFootprintFacet facet : facets)
+		{
+			total += facet.getComputedValue();
+		}
+		return total;
+	}
+
+	public void setSignalContribution(double contribution)
+	{
+		this.signalContribution = contribution;
+	}
+
+	public double getSignalContribution()
+	{
+		return signalContribution;
+	}
+
+	public double getComputedValueAtFacet(Integer index)
+	{
+		double value = 0;
+		Optional<MEGANEFootprintFacet> match = facets.stream().filter(facet ->  facet.getFacetID() == index ).findFirst();
+		if (match.isPresent()) value = match.get().getComputedValue();
+		return value;
+	}
+
 	/**
 	 * @return the mapped
 	 */
@@ -118,5 +168,18 @@ public class MEGANEFootprint
 	public void setStatus(String status)
 	{
 		this.status = status;
+	}
+
+	public String toCSV()
+	{
+		return String.format("%s, %s, %s, %s, %s, %s",
+				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt, signalContribution);
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.format("MEGANEFootprint [dateTime=%s, latDegrees=%s, lonDegrees=%s, altKm=%s, normalizedAlt=%s, signalContribution=%s]",
+				dateTime, Math.toDegrees(latRadians), Math.toDegrees(lonRadians), altKm, normalizedAlt, signalContribution);
 	}
 }

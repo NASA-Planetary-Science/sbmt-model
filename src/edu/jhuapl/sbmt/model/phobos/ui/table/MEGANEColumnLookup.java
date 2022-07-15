@@ -8,5 +8,6 @@ public enum MEGANEColumnLookup
 	Longitude,
 	Altitude,
 	NormalizedAlt,
-	Status;
+	Status,
+	Signal;
 }

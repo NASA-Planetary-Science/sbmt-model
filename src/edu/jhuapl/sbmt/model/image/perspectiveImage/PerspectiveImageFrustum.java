@@ -34,6 +34,7 @@ public class PerspectiveImageFrustum
     private String instrumentName;
     private Color frustumColor;
     private boolean hasIntercept = true;
+    private boolean headless = Boolean.parseBoolean(System.getProperty("java.awt.headless", "false"));
 
 	public PerspectiveImageFrustum(PerspectiveImage image)
 	{
@@ -51,8 +52,12 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[image.getImageDepth()];
 		minFrustumDepth = new double[image.getImageDepth()];
 		frusta = new Frustum[nslices];
-		frustumActor = new vtkActor();
-		frustumActor.VisibilityOff();
+
+		if (headless == false)
+        {
+			frustumActor = new vtkActor();
+			frustumActor.VisibilityOff();
+        }
 	}
 
 	public PerspectiveImageFrustum(int numSlices, int currentSlice, int defaultSlice, boolean useDefaultFootprint, double diagonalLength)
@@ -70,8 +75,11 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[1];
 		minFrustumDepth = new double[1];
 		frusta = new Frustum[1];
-		frustumActor = new vtkActor();
-		frustumActor.VisibilityOff();
+		if (headless == false)
+        {
+			frustumActor = new vtkActor();
+			frustumActor.VisibilityOff();
+        }
 	}
 
 	public PerspectiveImageFrustum(int numSlices, int currentSlice, int defaultSlice, boolean useDefaultFootprint,
@@ -95,8 +103,11 @@ public class PerspectiveImageFrustum
 		maxFrustumDepth = new double[1];
 		minFrustumDepth = new double[1];
 		frusta = new Frustum[1];
-		frustumActor = new vtkActor();
-		frustumActor.VisibilityOff();
+		if (headless == false)
+        {
+			frustumActor = new vtkActor();
+			frustumActor.VisibilityOff();
+        }
 	}
 
 	public void updatePointing(PerspectiveImage image)
@@ -256,6 +267,8 @@ public class PerspectiveImageFrustum
 	{
 		showFrustum = b;
 
+		if (headless) return;
+
 		if (showFrustum && hasIntercept)
 		{
 			frustumActor.VisibilityOn();
@@ -269,18 +282,24 @@ public class PerspectiveImageFrustum
 	List<vtkProp> getProps()
 	{
 		calculateFrustum();
-		vtkProperty frustumProperty = frustumActor.GetProperty();
-		frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
-		frustumProperty.SetLineWidth(2.0);
-		frustumActors.add(frustumActor);
+		if (!headless)
+        {
+			vtkProperty frustumProperty = frustumActor.GetProperty();
+			frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
+			frustumProperty.SetLineWidth(2.0);
+			frustumActors.add(frustumActor);
+        }
 		return frustumActors;
 	}
 
 	public void setColor(Color color)
 	{
-		this.frustumColor = color;
-		vtkProperty frustumProperty = frustumActor.GetProperty();
-		frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
+		if (!headless)
+        {
+			this.frustumColor = color;
+			vtkProperty frustumProperty = frustumActor.GetProperty();
+			frustumProperty.SetColor((double)frustumColor.getRed()/255.0, (double)frustumColor.getGreen()/255.0, (double)frustumColor.getBlue()/255.0);
+        }
 	}
 
 	public Color getColor()
@@ -290,6 +309,8 @@ public class PerspectiveImageFrustum
 
 	public vtkActor getFrustumActor()
 	{
+		if (headless) return null;
+
 		if (frustumActor == null && scPos[0] != null)
 		{
 			getProps();
@@ -322,6 +343,8 @@ public class PerspectiveImageFrustum
 	public void setHasIntercept(boolean intercept)
 	{
 		this.hasIntercept = intercept;
+		if (headless) return;
+
 		if (showFrustum && hasIntercept)
 		{
 			frustumActor.VisibilityOn();

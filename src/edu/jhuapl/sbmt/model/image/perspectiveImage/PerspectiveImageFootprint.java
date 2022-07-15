@@ -83,10 +83,10 @@ public class PerspectiveImageFootprint implements PlannedDataActor
     private double time;
     private boolean staticFootprint = false;
     private boolean staticFootprintSet = false;
-    private vtkActor frustumActor;
     private Color boundaryColor;
     private boolean hasIntercept = false;
     private boolean showFootprint = false;
+    private boolean headless = Boolean.parseBoolean(System.getProperty("java.awt.headless", "false"));
 
 	PerspectiveImageFootprint(PerspectiveImage image)
 	{
@@ -111,10 +111,13 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprint[0] = new vtkPolyData();
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
-		boundaryActor = new vtkActor();
-		boundaryActor.VisibilityOn();
-		footprintActor = new vtkActor();
-		footprintActor.VisibilityOff();
+		if (!headless)
+        {
+			boundaryActor = new vtkActor();
+			boundaryActor.VisibilityOn();
+			footprintActor = new vtkActor();
+			footprintActor.VisibilityOff();
+        }
 	}
 
 	public PerspectiveImageFootprint()
@@ -137,10 +140,13 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprint[0] = new vtkPolyData();
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
-		boundaryActor = new vtkActor();
-		boundaryActor.VisibilityOn();
-		footprintActor = new vtkActor();
-		footprintActor.VisibilityOff();
+		if (!headless)
+        {
+			boundaryActor = new vtkActor();
+			boundaryActor.VisibilityOn();
+			footprintActor = new vtkActor();
+			footprintActor.VisibilityOff();
+        }
 	}
 
 	PerspectiveImageFootprint(PerspectiveImageFrustum frustum, SmallBodyModel smallBodyModel, int numSlices,
@@ -165,10 +171,13 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		footprint[0] = new vtkPolyData();
 		footprintGenerated = new boolean[nslices];
 		shiftedFootprint[0] = new vtkPolyData();
-		boundaryActor = new vtkActor();
-		boundaryActor.VisibilityOn();
-		footprintActor = new vtkActor();
-		footprintActor.VisibilityOff();
+		if (!headless)
+        {
+			boundaryActor = new vtkActor();
+			boundaryActor.VisibilityOn();
+			footprintActor = new vtkActor();
+			footprintActor.VisibilityOff();
+        }
 	}
 
 	public void initialize()
@@ -283,6 +292,8 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	private vtkPolyData updateBoundary()
 	{
+		if (headless) return boundary;
+
 //		Logger.getAnonymousLogger().log(Level.INFO, "Getting edge extracter for footprint " + footprint[currentSlice].GetNumberOfCells());
 		vtkFeatureEdges edgeExtracter = new vtkFeatureEdges();
 		edgeExtracter.SetInputData(footprint[currentSlice]);
@@ -300,7 +311,10 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 			{
 		        boundaryMapper.SetInputData(boundary);
 		        boundaryMapper.Update();
-		        boundaryActor.SetMapper(boundaryMapper);
+		        if (!headless)
+		        {
+		        	boundaryActor.SetMapper(boundaryMapper);
+		        }
 			}
 			return boundary;
 		}
@@ -311,7 +325,10 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 		{
 	        boundaryMapper.SetInputData(boundary);
 	        boundaryMapper.Update();
-	        boundaryActor.SetMapper(boundaryMapper);
+	        if (!headless)
+	        {
+	        	boundaryActor.SetMapper(boundaryMapper);
+	        }
 		}
 		return boundary;
 	}
@@ -577,27 +594,36 @@ public class PerspectiveImageFootprint implements PlannedDataActor
         footprintMapper.SetInputData(shiftedFootprint[0]);
 
         footprintMapper.Update();
-        footprintActor.SetMapper(footprintMapper);
-        footprintActor.SetTexture(imageTexture);
-        vtkProperty footprintProperty = footprintActor.GetProperty();
-        footprintProperty.LightingOff();
+        if (!headless)
+        {
+	        footprintActor.SetMapper(footprintMapper);
+	        footprintActor.SetTexture(imageTexture);
+	        vtkProperty footprintProperty = footprintActor.GetProperty();
+	        footprintProperty.LightingOff();
+        }
 
         updateBoundary();
 
         if (!staticFootprint)
         {
         	createOriginalStyleBoundary();
-        	footprintActors.add(boundaryActor);
+        	if (!headless)
+            {
+        		footprintActors.add(boundaryActor);
+            }
         }
         else
         {
 	        boundaryMapper = new vtkPolyDataMapper();
 	        boundaryMapper.SetInputData(boundary);
 	        boundaryMapper.Update();
-	        boundaryActor.SetMapper(boundaryMapper);
-	        boundaryActor.GetProperty().SetLineWidth(3.0);
-	        boundaryActor.VisibilityOff();
-	        footprintActors.add(boundaryActor);
+	        if (!headless)
+	        {
+		        boundaryActor.SetMapper(boundaryMapper);
+		        boundaryActor.GetProperty().SetLineWidth(3.0);
+		        boundaryActor.VisibilityOff();
+		        footprintActors.add(boundaryActor);
+	        }
         }
         footprintActors.add(footprintActor);
 
@@ -665,12 +691,14 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public void setBoundaryVisible(boolean isVisible)
 	{
+		if (headless) return;
 		boundaryActor.SetVisibility(isVisible ? 1 : 0);
 		boundaryActor.Modified();
 	}
 
 	public void setBoundaryColor(Color color)
 	{
+		if (headless) return;
 		boundaryColor = color;
 		boundaryActor.GetProperty().SetColor(new double[] {(double)color.getRed()/255.0,
 				(double)color.getGreen()/255.0,
@@ -744,6 +772,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	public void setFootprintColor()
 	{
+		if (headless) return;
 		if (footprintActor == null) getProps();
 		if (footprintActor.GetVisibility() == 0) return;
 
@@ -872,6 +901,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 
 	private void createOriginalStyleBoundary()
 	{
+		if (headless) return;
 //	    vtkActor actor;
 //	    vtkPolyData boundary;
 //	    vtkPolyDataMapper boundaryMapper;
@@ -1051,6 +1081,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	{
 		showFootprint = b;
 		isVisible = b;
+		if (headless) return;
 		if (showFootprint && hasIntercept)
 		{
 			footprintActor.VisibilityOn();
@@ -1069,6 +1100,7 @@ public class PerspectiveImageFootprint implements PlannedDataActor
 	public void setHasIntercept(boolean intercept)
 	{
 		this.hasIntercept = intercept;
+		if (headless) return;
 		if (showFootprint && hasIntercept)
 		{
 			footprintActor.VisibilityOn();
