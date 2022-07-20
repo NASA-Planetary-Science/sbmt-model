@@ -28,7 +28,9 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.core.image.Chromatism;
+import edu.jhuapl.sbmt.core.image.NoOverlapException;
+import edu.jhuapl.sbmt.model.image.keys.ImageKey;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
@@ -71,15 +73,15 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
 
 
 
-    static public class NoOverlapException extends RuntimeException
-    {
-        public NoOverlapException()
-        {
-            super("No overlap in 3 images");
-        }
-    }
-
-    public static enum Chromatism { POLY, MONO_RED, MONO_GREEN, MONO_BLUE };
+//    static public class NoOverlapException extends RuntimeException
+//    {
+//        public NoOverlapException()
+//        {
+//            super("No overlap in 3 images");
+//        }
+//    }
+//
+//    public static enum Chromatism { POLY, MONO_RED, MONO_GREEN, MONO_BLUE };
 
     public static class ImageCubeKey<T extends ImageKeyInterface> extends ImageKey
     {
@@ -324,7 +326,16 @@ public class ImageCube<T extends ImageKeyInterface> extends PerspectiveImage imp
 
         updateImageMask();
 
-        vtkImageData rawImage = computeFootprintAndImageCube();
+        vtkImageData rawImage = null;
+		try
+		{
+			rawImage = computeFootprintAndImageCube();
+		}
+		catch (NoOverlapException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         return rawImage;
 
 //        return colorImage;

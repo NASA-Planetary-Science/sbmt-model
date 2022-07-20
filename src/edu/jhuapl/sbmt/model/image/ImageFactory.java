@@ -5,8 +5,10 @@ import java.io.File;
 import com.google.common.base.Preconditions;
 
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.gui.image.model.custom.CustomCylindricalImageKey;
+import edu.jhuapl.sbmt.core.image.Image;
+import edu.jhuapl.sbmt.core.image.ImageType;
 import edu.jhuapl.sbmt.model.image.ColorImage.ColorImageKey;
+import edu.jhuapl.sbmt.model.image.keys.CustomCylindricalImageKey;
 
 import crucible.crust.metadata.api.Key;
 import crucible.crust.metadata.api.Metadata;

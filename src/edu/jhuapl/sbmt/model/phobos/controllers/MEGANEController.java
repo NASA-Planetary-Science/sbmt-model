@@ -30,7 +30,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.SpinnerDateModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener; 
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -40,7 +40,6 @@ import org.jfree.chart.axis.ValueAxis;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import vtk.vtkFloatArray;

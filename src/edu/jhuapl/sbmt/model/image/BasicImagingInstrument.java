@@ -1,7 +1,11 @@
 package edu.jhuapl.sbmt.model.image;
 
 import edu.jhuapl.saavtk.config.TypedLookup;
+import edu.jhuapl.sbmt.config.Instrument;
 import edu.jhuapl.sbmt.config.SessionConfiguration;
+import edu.jhuapl.sbmt.core.image.ImageSource;
+import edu.jhuapl.sbmt.core.image.ImageType;
+import edu.jhuapl.sbmt.core.image.ImagingInstrument;
 import edu.jhuapl.sbmt.imaging.instruments.ImagingInstrumentConfiguration;
 import edu.jhuapl.sbmt.query.QueryBase;
 

@@ -16,7 +16,7 @@ import org.joda.time.DateTime;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
-import edu.jhuapl.sbmt.model.image.InfoFileReader;
+import edu.jhuapl.sbmt.core.image.InfoFileReader;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;

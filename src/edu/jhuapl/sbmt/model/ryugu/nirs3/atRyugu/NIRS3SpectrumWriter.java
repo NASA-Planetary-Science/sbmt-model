@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.model.image.BasicFileWriter;
+import edu.jhuapl.sbmt.util.BasicFileWriter;
 
 /**
  * Writes the NIRS3 spectrum out to a human readable form for sharing.

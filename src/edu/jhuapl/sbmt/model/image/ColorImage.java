@@ -34,7 +34,11 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.client.SbmtModelFactory;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.gui.image.model.ImageKey;
+import edu.jhuapl.sbmt.core.image.Chromatism;
+import edu.jhuapl.sbmt.core.image.Image;
+import edu.jhuapl.sbmt.core.image.ImageSource;
+import edu.jhuapl.sbmt.core.image.NoOverlapException;
+import edu.jhuapl.sbmt.model.image.keys.ImageKey;
 import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
 
 import nom.tam.fits.FitsException;
@@ -74,15 +78,15 @@ public class ColorImage extends Image implements PropertyChangeListener
 
 
 
-    static public class NoOverlapException extends Exception
-    {
-        public NoOverlapException()
-        {
-            super("No overlap in 3 images");
-        }
-    }
-
-    public static enum Chromatism { POLY, MONO_RED, MONO_GREEN, MONO_BLUE };
+//    static public class NoOverlapException extends Exception
+//    {
+//        public NoOverlapException()
+//        {
+//            super("No overlap in 3 images");
+//        }
+//    }
+//
+//    public static enum Chromatism { POLY, MONO_RED, MONO_GREEN, MONO_BLUE };
 
     public static class ColorImageKey<T extends ImageKeyInterface> extends ImageKey
     {

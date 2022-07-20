@@ -1,11 +1,10 @@
 package edu.jhuapl.sbmt.model.eros.lidar;
 
-import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.model.ShapeModelBody;
+import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
 import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.lidar.old.LidarCubesGenerator;
-import edu.jhuapl.sbmt.lidar.old.LidarCubesGenerator.LidarDataType;
 import edu.jhuapl.sbmt.model.eros.Eros;
 
 /**

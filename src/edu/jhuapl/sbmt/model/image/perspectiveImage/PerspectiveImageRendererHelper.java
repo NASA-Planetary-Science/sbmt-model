@@ -32,7 +32,7 @@ import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.model.image.IImagingInstrument;
+import edu.jhuapl.sbmt.core.image.IImagingInstrument;
 import edu.jhuapl.sbmt.model.image.ImageKeyInterface;
 
 class PerspectiveImageRendererHelper

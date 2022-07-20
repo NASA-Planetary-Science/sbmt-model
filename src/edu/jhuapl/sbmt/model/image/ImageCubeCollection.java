@@ -17,6 +17,8 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.core.image.Image;
+import edu.jhuapl.sbmt.core.image.NoOverlapException;
 import edu.jhuapl.sbmt.model.image.ImageCube.ImageCubeKey;
 
 import nom.tam.fits.FitsException;
@@ -41,7 +43,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
     }
 
     protected ImageCube createImage(ImageCubeKey key,
-            SmallBodyModel smallBodyModel) throws FitsException, IOException, ImageCube.NoOverlapException
+            SmallBodyModel smallBodyModel) throws FitsException, IOException, NoOverlapException
     {
         return new ImageCube(key, smallBodyModel, modelManager);
     }
@@ -68,7 +70,7 @@ public class ImageCubeCollection extends AbstractModel implements PropertyChange
         return null;
     }
 
-    public void addImage(ImageCubeKey key) throws IOException, FitsException, ImageCube.NoOverlapException
+    public void addImage(ImageCubeKey key) throws IOException, FitsException, NoOverlapException
     {
         if (containsKey(key))
             return;

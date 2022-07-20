@@ -1,6 +1,9 @@
 package edu.jhuapl.sbmt.model.image;
 
 import edu.jhuapl.saavtk.model.FileType;
+import edu.jhuapl.sbmt.core.image.IImagingInstrument;
+import edu.jhuapl.sbmt.core.image.ImageSource;
+import edu.jhuapl.sbmt.core.image.ImageType;
 
 import crucible.crust.metadata.api.Metadata;
 

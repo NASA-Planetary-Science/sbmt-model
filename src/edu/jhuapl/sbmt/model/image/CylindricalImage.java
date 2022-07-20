@@ -36,9 +36,11 @@ import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.gui.image.model.CustomImageKeyInterface;
-import edu.jhuapl.sbmt.gui.image.model.custom.CustomCylindricalImageKey;
-import edu.jhuapl.sbmt.gui.image.model.custom.CustomPerspectiveImageKey;
+import edu.jhuapl.sbmt.core.image.Image;
+import edu.jhuapl.sbmt.core.image.ImageSource;
+import edu.jhuapl.sbmt.model.image.keys.CustomCylindricalImageKey;
+import edu.jhuapl.sbmt.model.image.keys.CustomImageKeyInterface;
+import edu.jhuapl.sbmt.model.image.keys.CustomPerspectiveImageKey;
 import edu.jhuapl.sbmt.util.VtkENVIReader;
 
 import crucible.crust.metadata.api.Key;

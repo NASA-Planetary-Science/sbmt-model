@@ -17,8 +17,9 @@ import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.core.image.Image;
+import edu.jhuapl.sbmt.core.image.NoOverlapException;
 import edu.jhuapl.sbmt.model.image.ColorImage.ColorImageKey;
-import edu.jhuapl.sbmt.model.image.ColorImage.NoOverlapException;
 
 import nom.tam.fits.FitsException;
 

@@ -23,7 +23,7 @@ import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.model.image.InfoFileReader;
+import edu.jhuapl.sbmt.core.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
