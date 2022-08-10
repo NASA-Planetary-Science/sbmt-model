@@ -31,7 +31,7 @@ import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.saavtk2.polydata.select.PolyDataRemoveSelectedCells;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
+import edu.jhuapl.sbmt.common.client.SmallBodyModel;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
 
