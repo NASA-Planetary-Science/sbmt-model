@@ -66,7 +66,7 @@ public class VectorField extends AbstractModel implements PropertyChangeListener
         idList.SetNumberOfIds(1);
 
         double[] center = new double[3];
-        int numberOfCells = smallBodyPolyData.GetNumberOfCells();
+        int numberOfCells = (int)smallBodyPolyData.GetNumberOfCells();
         for (int i=0; i<numberOfCells; ++i)
         {
             vtkTriangle cell = (vtkTriangle) smallBodyPolyData.GetCell(i);

@@ -297,7 +297,7 @@ public class LineamentModel extends AbstractModel
     {
         if (lineamentActors.isEmpty())
             initialize();
-        lineamentActor.GetProperty().SetLineWidth(value);
+        lineamentActor.GetProperty().SetLineWidth((float)value);
         this.pcs.firePropertyChange(Properties.MODEL_CHANGED, null, null);
     }
 }

@@ -213,14 +213,14 @@ public class MEGANEFootprintRenderer
 				double value = facet.getComputedValue();
 				minValue = Math.min(minValue, value);
 				maxValue = Math.max(maxValue, value);
-				footprintValues.InsertValue(cellId, value);
+				footprintValues.InsertValue((int)cellId, (float)value);
 			}
 		}
 
 		IndexableTuple indexableTuple = ColoringDataUtils.createIndexableFromVtkArray(footprintValues);
 
 		//this needs to have a name for each coloring set
-		ColoringData data = ColoringDataFactory.of("Projected Area/Range^2", "units", smallBodyPolyData.GetNumberOfCells(), List.of("Projected Area/Range^2"), false, indexableTuple);
+		ColoringData data = ColoringDataFactory.of("Projected Area/Range^2", "units", (int)smallBodyPolyData.GetNumberOfCells(), List.of("Projected Area/Range^2"), false, indexableTuple);
 
 		coloringData.add(data);
 
