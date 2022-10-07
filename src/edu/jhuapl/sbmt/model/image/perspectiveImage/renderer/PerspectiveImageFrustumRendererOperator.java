@@ -9,7 +9,7 @@ import vtk.vtkPolyDataMapper;
 
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
-import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.core.rendering.PerspectiveImage;
 
 public class PerspectiveImageFrustumRendererOperator
 {

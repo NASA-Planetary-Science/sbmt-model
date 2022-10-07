@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.image.perspectiveImage.renderer;
 
-import com.github.davidmoten.guavamini.Preconditions;
+import com.google.common.base.Preconditions;
 
 import vtk.vtkImageCanvasSource2D;
 import vtk.vtkImageData;
@@ -11,7 +11,7 @@ import vtk.vtkLookupTable;
 
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.core.rendering.PerspectiveImage;
 
 public class PerspectiveImageIntensityOperator
 {

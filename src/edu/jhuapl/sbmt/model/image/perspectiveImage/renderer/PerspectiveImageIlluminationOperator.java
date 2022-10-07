@@ -11,7 +11,7 @@ import vtk.vtkPolyDataNormals;
 
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImage;
+import edu.jhuapl.sbmt.core.rendering.PerspectiveImage;
 
 public class PerspectiveImageIlluminationOperator
 {
