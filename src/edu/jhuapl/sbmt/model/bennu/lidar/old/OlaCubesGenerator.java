@@ -12,14 +12,14 @@ import java.util.TreeSet;
 
 import org.apache.commons.io.FilenameUtils;
 
-import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.model.ShapeModelBody;
+import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.common.client.SmallBodyModel;
+import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.lidar.TrackFileType;
 import edu.jhuapl.sbmt.model.bennu.shapeModel.Bennu;
 import edu.jhuapl.sbmt.util.TimeUtil;

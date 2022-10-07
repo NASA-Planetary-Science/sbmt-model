@@ -1,3 +1,4 @@
+package edu.jhuapl.sbmt.model.rosetta;
 //package edu.jhuapl.sbmt.model.rosetta;
 //
 //import java.awt.BorderLayout;

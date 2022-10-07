@@ -2,8 +2,8 @@ package edu.jhuapl.sbmt.model.phobos;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.client.SbmtSpectrumModelFactory;
+import edu.jhuapl.sbmt.common.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.common.client.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
@@ -53,5 +53,4 @@ public class MEGANESpectraFactory
 		SbmtSpectrumModelFactory.registerModel("MEGANE", meganeSpectra, smallBodyModel);
 		SpectraTypeFactory.registerSpectraType("MEGANE", MEGANEQuery.getInstance(), MEGANESpectrumMath.getInstance(), "cm^-1", new MEGANE().getBandCenters());
 	}
-
 }

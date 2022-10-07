@@ -7,8 +7,8 @@ import java.io.IOException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-import edu.jhuapl.sbmt.model.image.BasicFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
+import edu.jhuapl.sbmt.util.BasicFileReader;
 
 /**
  * Reads in OVIRS files from O-REx, so those values can be stored in a OVIRSSpectrum object
