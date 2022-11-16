@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
 import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.util.Configuration;
-import edu.jhuapl.sbmt.client.SbmtSpectrumModelFactory;
+import edu.jhuapl.sbmt.common.client.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.query.ISearchResultsMetadata;
 import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.database.DatabaseQueryBase;
@@ -87,14 +87,14 @@ public final class NisQuery extends DatabaseQueryBase
     }
 
     @Override
-    public NisQuery clone()
+    public NisQuery copy()
     {
         return getInstance();
     }
 
     private NisQuery()
     {
-        super(null);
+        super(null, null);
     }
 
     @Override

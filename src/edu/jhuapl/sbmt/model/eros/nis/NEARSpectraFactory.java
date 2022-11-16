@@ -2,8 +2,8 @@ package edu.jhuapl.sbmt.model.eros.nis;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.client.SbmtSpectrumModelFactory;
+import edu.jhuapl.sbmt.common.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.common.client.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
@@ -61,16 +61,16 @@ public class NEARSpectraFactory
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(BasicSpectrum spectrum, ISmallBodyModel smallBodyModel, boolean headless) throws IOException
 			{
-				return new BasicSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new BasicSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 
 			@Override
-			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument) throws IOException
+			public IBasicSpectrumRenderer buildSpectrumRenderer(String path, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean headless) throws IOException
 			{
 				NISSpectrum spectrum = new NISSpectrum(path, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel, instrument);
-				return new BasicSpectrumRenderer(spectrum, smallBodyModel, false);
+				return new BasicSpectrumRenderer(spectrum, smallBodyModel, headless);
 			}
 
 

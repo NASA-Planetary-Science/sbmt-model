@@ -22,8 +22,8 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.model.image.InfoFileReader;
+import edu.jhuapl.sbmt.common.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.core.image.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
@@ -103,10 +103,10 @@ public class NISSpectrum extends BasicSpectrum
         }
         else
         {
-            String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf("/"));
-            return "/NIS/infofiles" + spectrumPath + "/" + FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO";
+            String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf(File.separator));
+            return File.separator + "NIS" + File.separator + "/infofiles" + spectrumPath + File.separator + FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO";
         }
-    }
+    } 
 
     public String getSpectrumPathOnServer()
     {

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import edu.jhuapl.sbmt.model.image.BasicFileReader;
+import edu.jhuapl.sbmt.util.BasicFileReader;
 
 /**
  * Reads in NIRS3 files from Hayabusa2, so those values can be stored in a NIRS3Spectrum object

@@ -9,7 +9,7 @@ import javax.swing.event.AncestorListener;
 import edu.jhuapl.saavtk.gui.render.Renderer;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.pick.PickManager;
-import edu.jhuapl.sbmt.client.SbmtInfoWindowManager;
+import edu.jhuapl.sbmt.common.client.SbmtInfoWindowManager;
 import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumColoringController;
 import edu.jhuapl.sbmt.spectrum.controllers.standard.SpectrumResultsTableController;
@@ -38,7 +38,9 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
     private BasicSpectrumInstrument instrument;
 
     public OREXSpectrumSearchController(Date imageSearchDefaultStartDate, Date imageSearchDefaultEndDate,
-    		boolean hasHierarchicalSpectraSearch, double imageSearchDefaultMaxSpacecraftDistance,
+    		boolean hasHierarchicalSpectraSearch, boolean hasHypertreeSpectralSearch,
+    		double imageSearchDefaultMaxSpacecraftDistance,
+    		String[] dataTypes,
     		SpectraHierarchicalSearchSpecification spectraSpec,
     		ModelManager modelManager,
             SbmtInfoWindowManager infoPanelManager,
@@ -51,7 +53,8 @@ public class OREXSpectrumSearchController<S extends BasicSpectrum>
         this.spectrumResultsTableController = new SpectrumResultsTableController<S>(instrument, spectrumCollection, modelManager, boundaryCollection, model, renderer, infoPanelManager);
         this.spectrumResultsTableController.setSpectrumResultsPanel();
 
-        this.searchParametersController = new SpectrumSearchParametersController<S>(imageSearchDefaultStartDate, imageSearchDefaultEndDate, hasHierarchicalSpectraSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
+        this.searchParametersController = new SpectrumSearchParametersController<S>(imageSearchDefaultStartDate, imageSearchDefaultEndDate, dataTypes, hasHierarchicalSpectraSearch, hasHypertreeSpectralSearch, imageSearchDefaultMaxSpacecraftDistance, spectraSpec, model, pickManager, modelManager);
+//        this.searchParametersController.setDataTypes(new String[] {"L2", "L3"});
         if (instrument.getQueryBase() instanceof FixedListQuery && !(hasHierarchicalSpectraSearch))
         	this.searchParametersController.setFixedListSearch(true);
         this.searchParametersController.setupSearchParametersPanel();

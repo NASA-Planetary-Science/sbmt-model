@@ -4,11 +4,11 @@ import java.io.File;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
-import edu.jhuapl.saavtk.camera.CameraUtil;
+import edu.jhuapl.saavtk.model.PolyModelUtil;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.common.client.SmallBodyModel;
+import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.dtm.model.DEM;
 
 public class CustomShapeModel extends SmallBodyModel
@@ -82,7 +82,7 @@ public class CustomShapeModel extends SmallBodyModel
 		// rather than a polyhedral model
 		cAverageSurfaceNormal = Vector3D.ZERO;
 		if (isPolyhedron() == false)
-			cAverageSurfaceNormal = CameraUtil.calcSurfaceNormal(this);
+			cAverageSurfaceNormal = PolyModelUtil.calcSurfaceNormal(this);
 
 		return cAverageSurfaceNormal;
 	}
@@ -98,22 +98,19 @@ public class CustomShapeModel extends SmallBodyModel
 		// rather than a polyhedral model
 		cGeometricCenterPoint = Vector3D.ZERO;
 		if (isPolyhedron() == false)
-			cGeometricCenterPoint = CameraUtil.calcCenterPoint(this);
+			cGeometricCenterPoint = PolyModelUtil.calcCenterPoint(this);
 
 		return cGeometricCenterPoint;
 	}
 
-	/**
-	 * Helper method that return if this is a true polyhedron (rather than just
-	 * a polygonal surface).
-	 */
+	@Override
 	public boolean isPolyhedron()
 	{
 		// Return the cached value
 		if (cIsPolyhedron != null)
 			return cIsPolyhedron;
 
-		cIsPolyhedron = CameraUtil.isPolyhedron(this);
+		cIsPolyhedron = PolyModelUtil.calcIsPolyhedron(this);
 		return cIsPolyhedron;
 	}
 
