@@ -186,7 +186,7 @@ public class HierarchicalSearchSpecification
         public String toString()
         {
             return "Camera " + cameraCheckbox + ", filter " + filterCheckbox;
-        }
+    }
     }
 
     public class Selection
@@ -295,7 +295,7 @@ public class HierarchicalSearchSpecification
 
                 if (selectionModel != null)
                 {
-                    List<String[]> pathStringList = source.get(TREE_PATH_KEY);
+                	List<String[]> pathStringList = source.get(TREE_PATH_KEY);
                     TreePath[] treePaths = new TreePath[pathStringList.size()];
 
                     for (int treeIndex = 0; treeIndex < pathStringList.size(); ++treeIndex)
