@@ -39,7 +39,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jfree.chart.axis.ValueAxis;
 
 import com.beust.jcommander.internal.Lists;
-import com.github.davidmoten.guavamini.Preconditions;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import vtk.vtkFloatArray;
@@ -60,8 +60,8 @@ import edu.jhuapl.saavtk.structure.Structure;
 import edu.jhuapl.saavtk.structure.StructureManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
-import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.model.image.perspectiveImage.PerspectiveImageFootprint;
+import edu.jhuapl.sbmt.common.client.SmallBodyModel;
+import edu.jhuapl.sbmt.core.rendering.PerspectiveFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
@@ -542,7 +542,7 @@ public class MEGANEController implements PropertyChangeListener
 		LiveColorableManager.addICalculatedPlateValues("Time Per Facet (on the fly)", new IFootprintConfinedPlateValues()
 		{
 			private FacetColoringData[] facetColoring;
-			private PerspectiveImageFootprint footprint;
+			private PerspectiveFootprint footprint;
 			private vtkFloatArray values = new vtkFloatArray();
 
 			@Override
@@ -568,7 +568,7 @@ public class MEGANEController implements PropertyChangeListener
 			}
 
 			@Override
-			public void setFacetColoringDataForFootprint(PerspectiveImageFootprint footprint)
+			public void setFacetColoringDataForFootprint(PerspectiveFootprint footprint)
 			{
 				this.footprint = footprint;
 				facetColoring = footprint.getFacetColoringDataForFootprint();

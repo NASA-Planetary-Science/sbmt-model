@@ -1,7 +1,7 @@
 package edu.jhuapl.sbmt.model.simple;
 
-import edu.jhuapl.sbmt.client.SmallBodyModel;
-import edu.jhuapl.sbmt.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.common.client.SmallBodyModel;
+import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
 
 public class Sbmt2SimpleSmallBody extends SmallBodyModel
 {

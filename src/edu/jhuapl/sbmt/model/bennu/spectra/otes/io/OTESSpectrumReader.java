@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.model.image.BasicFileReader;
+import edu.jhuapl.sbmt.util.BasicFileReader;
 
 /**
  * Reads in OTES files from O-REx, so those values can be stored in a OTESSpectrum object
