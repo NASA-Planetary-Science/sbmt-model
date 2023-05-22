@@ -42,7 +42,7 @@ public class PerspectiveImagePixelScaleOperator
 //	        if (footprintGenerated[currentSlice] == false)
 //	            loadFootprint();
 
-	        int numberOfPoints = footprints[currentSlice].GetNumberOfPoints();
+	        int numberOfPoints = (int)footprints[currentSlice].GetNumberOfPoints();
 	        vtkPoints points = footprints[currentSlice].GetPoints();
 
 	        double horizScaleFactor = 2.0 * Math.tan(MathUtil.vsep(image.getFrustum1Adjusted()[0], image.getFrustum3Adjusted()[0]) / 2.0) / image.getImageHeight();

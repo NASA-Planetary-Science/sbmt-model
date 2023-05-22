@@ -107,7 +107,7 @@ public class PerspectiveImageIlluminationOperator
 
     	for (int currentSlice = 0; currentSlice<footprints.length; currentSlice++)
     	{
-	        int numberOfCells = footprints[currentSlice].GetNumberOfCells();
+	        int numberOfCells = (int)footprints[currentSlice].GetNumberOfCells();
 
 	        vtkPoints points = footprints[currentSlice].GetPoints();
 	        vtkCellData footprintCellData = footprints[currentSlice].GetCellData();

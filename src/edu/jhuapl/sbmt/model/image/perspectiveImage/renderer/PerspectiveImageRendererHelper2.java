@@ -131,7 +131,7 @@ public class PerspectiveImageRendererHelper2
 
             vtkProperty frustumProperty = frustumActor.GetProperty();
             frustumProperty.SetColor(0.0, 1.0, 0.0);
-            frustumProperty.SetLineWidth(2.0);
+            frustumProperty.SetLineWidth(2.0f);
             frustumActor.VisibilityOff();
 
             footprintActors.add(frustumActor);
