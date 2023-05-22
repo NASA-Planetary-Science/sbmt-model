@@ -19,9 +19,7 @@ import vtk.vtkPolyData;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.model.structure.AbstractEllipsePolygonModel;
-import edu.jhuapl.saavtk.model.structure.CircleModel;
 import edu.jhuapl.saavtk.model.structure.CircleSelectionModel;
-import edu.jhuapl.saavtk.model.structure.EllipseModel;
 import edu.jhuapl.saavtk.model.structure.PlateUtil;
 import edu.jhuapl.saavtk.model.structure.PolygonModel;
 import edu.jhuapl.saavtk.structure.Ellipse;
@@ -41,8 +39,8 @@ import glum.task.Task;
 public class MEGANESearchModel
 {
 	PolygonModel polygonModel;
-	CircleModel circleModel;
-	EllipseModel ellipseModel;
+	StructureManager<?> circleModel;
+	StructureManager<?> ellipseModel;
 	SmallBodyModel smallBodyModel;
 	MEGANEDatabaseConnection dbConnection;
 	FilterModel<Double> numericFilterModel;
@@ -58,8 +56,8 @@ public class MEGANESearchModel
 		this.smallBodyModel = smallBodyModel;
 		this.dbConnection = dbConnection;
 		this.polygonModel = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
-		this.circleModel = (CircleModel)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
-		this.ellipseModel = (EllipseModel)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
+		this.circleModel = (StructureManager<?>)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
+		this.ellipseModel = (StructureManager<?>)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
 		this.selectionModel = (CircleSelectionModel)modelManager.getModel(ModelNames.CIRCLE_SELECTION);
 
 		this.numericFilterModel = new RangeFilterModel();

@@ -53,12 +53,11 @@ import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
 import edu.jhuapl.saavtk.model.plateColoring.CustomizableColoringDataManager;
 import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.LoadableColoringData;
-import edu.jhuapl.saavtk.model.structure.CircleModel;
-import edu.jhuapl.saavtk.model.structure.EllipseModel;
 import edu.jhuapl.saavtk.model.structure.PolygonModel;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.pick.PickManager.PickMode;
 import edu.jhuapl.saavtk.structure.Structure;
+import edu.jhuapl.saavtk.structure.StructureManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.sbmt.common.client.SmallBodyModel;
@@ -115,8 +114,8 @@ public class MEGANEController implements PropertyChangeListener
 			public ArrayList<Structure> getCurrentValues()
 			{
 				PolygonModel polygonModel = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
-				CircleModel circleModel = (CircleModel)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
-				EllipseModel ellipseModel = (EllipseModel)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
+				var circleModel = (StructureManager<?>)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
+				var ellipseModel = (StructureManager<?>)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
 
 				ArrayList<Structure> structures = new ArrayList<Structure>();
 				structures.addAll(polygonModel.getAllItems());
