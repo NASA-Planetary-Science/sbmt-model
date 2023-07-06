@@ -88,7 +88,6 @@ public class SmallBodyControlPanel extends PolyhedralModelControlPanel implement
         List<IFeatureConfig> basemapConfigs = ((List<IFeatureConfig>)config.getFeatureConfigs().get(BasemapImageConfig.class));
         if (basemapConfigs != null)
         {
-        	System.out.println("SmallBodyControlPanel: SmallBodyControlPanel: parsing");
 	        BasemapImageConfig basemapConfig = (BasemapImageConfig)basemapConfigs.get(0);
 	        basemapConfig.setConfig((BodyViewConfig)config);
 	        imageMapKeys = basemapConfig.getImageMapKeys();
@@ -98,7 +97,6 @@ public class SmallBodyControlPanel extends PolyhedralModelControlPanel implement
         //try the new basemap version first; if that fails, look for older basemap config; otherwise don't present the UI
         if ((basemapImages != null) && !basemapImages.isEmpty())
         {
-        	System.out.println("SmallBodyControlPanel: SmallBodyControlPanel: got basemaps");
             imageMapCheckBox = configureImageMapCheckBox(smallBodyModel);
             imageMapComboBox = configureImageMapComboBox(smallBodyModel);
             opacityLabel = new JLabel("Image opacity");
