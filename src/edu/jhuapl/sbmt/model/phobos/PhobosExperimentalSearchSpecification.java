@@ -1,5 +1,7 @@
 package edu.jhuapl.sbmt.model.phobos;
 
+import edu.jhuapl.sbmt.core.search.HierarchicalSearchSpecification;
+
 public class PhobosExperimentalSearchSpecification extends HierarchicalSearchSpecification
 {
     public enum Mission

@@ -20,7 +20,7 @@ import vtk.vtkTriangle;
 import edu.jhuapl.saavtk.model.AbstractModel;
 import edu.jhuapl.saavtk.model.PolyhedralModel;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 /**
  * Model for showing gravity vector field. Currently only used for testing,

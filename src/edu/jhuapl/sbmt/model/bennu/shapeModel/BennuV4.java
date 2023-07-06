@@ -1,8 +1,8 @@
 package edu.jhuapl.sbmt.model.bennu.shapeModel;
 
-import edu.jhuapl.sbmt.common.client.BodyViewConfig;
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.core.body.BodyViewConfig;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class BennuV4 extends SmallBodyModel
 {
@@ -59,7 +59,7 @@ public class BennuV4 extends SmallBodyModel
                 coloringNames,
                 coloringUnits,
                 null,
-                imageMap,
+//                imageMap,
                 ColoringValueType.CELLDATA,
                 false);
     }

@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import edu.jhuapl.sbmt.util.BackplaneInfo;
+import edu.jhuapl.sbmt.core.util.BackplaneInfo;
 
 import altwg.Fits.HeaderTag;
 import altwg.util.FitsHeader;

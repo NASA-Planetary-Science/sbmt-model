@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.ryugu;
 
-import edu.jhuapl.sbmt.model.phobos.HierarchicalSearchSpecification;
+import edu.jhuapl.sbmt.core.search.HierarchicalSearchSpecification;
 
 public class RyuguExperimentalSearchSpecification extends HierarchicalSearchSpecification
 {

@@ -2,9 +2,9 @@ package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.common.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SbmtSpectrumModelFactory;
+import edu.jhuapl.sbmt.core.body.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu.NIRS3Spectrum;
+import edu.jhuapl.sbmt.spectrum.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;

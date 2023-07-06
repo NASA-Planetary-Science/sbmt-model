@@ -1,7 +1,7 @@
 package edu.jhuapl.sbmt.model.rosetta;
 
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class Lutetia extends SmallBodyModel
 {
@@ -43,7 +43,7 @@ public class Lutetia extends SmallBodyModel
                 coloringNames,
                 coloringUnits,
                 null,
-                null,
+//                null,
                 ColoringValueType.CELLDATA,
                 false);
     }

@@ -1,0 +1,105 @@
+package edu.jhuapl.sbmt.model.bennu.imaging;
+
+import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
+import vtk.vtkImageData;
+import vtk.vtkProp;
+
+import edu.jhuapl.saavtk.util.ImageDataUtil;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
+import edu.jhuapl.sbmt.core.pointing.PointingSource;
+import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
+import edu.jhuapl.sbmt.image.model.ImageType;
+import edu.jhuapl.sbmt.image.old.BasicPerspectiveImage;
+
+import nom.tam.fits.FitsException;
+
+public class OcamsFlightImage extends BasicPerspectiveImage
+{
+    public static OcamsFlightImage of(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+            boolean loadPointingOnly) throws FitsException, IOException
+    {
+        return new OcamsFlightImage(key, smallBodyModel, loadPointingOnly);
+    }
+
+    protected OcamsFlightImage(ImageKeyInterface key, SmallBodyModel smallBodyModel,
+            boolean loadPointingOnly) throws FitsException, IOException
+    {
+        super(key, smallBodyModel, loadPointingOnly);
+    }
+
+    @Override
+    protected void processRawImage(vtkImageData rawImage)
+    {
+        // For some reason we need to do
+        // this so the image is displayed properly.
+        if (key.getSource() == PointingSource.SPICE || key.getSource() == PointingSource.LOCAL_PERSPECTIVE)
+        {
+        	if (key.getImageType() != ImageType.NAVCAM_FLIGHT_IMAGE)
+        	{
+        		ImageDataUtil.flipImageYAxis(rawImage);
+        		ImageDataUtil.rotateImage(rawImage, 90);
+        	}
+        	else
+        	{
+        		ImageDataUtil.flipImageYAxis(rawImage);
+        	}
+        }
+        else
+        {
+            ImageDataUtil.flipImageXAxis(rawImage);
+            ImageDataUtil.rotateImage(rawImage, 180);
+        }
+    }
+
+    @Override
+    public String getClickStatusBarText(vtkProp prop, int cellId, double[] pickPosition)
+    {
+        // Number format
+        DecimalFormat df = new DecimalFormat("#.0");
+        df.setRoundingMode(RoundingMode.HALF_UP);
+
+        // Construct status message
+        String status = "Pixel Coordinate = (";
+        if ((key.getSource() != PointingSource.SPICE) && (key.getSource() != PointingSource.LOCAL_PERSPECTIVE))
+        {
+	        status += df.format(pickPosition[1]);
+	        status += ", ";
+	        status += df.format(getImageWidth() - pickPosition[0]);
+	        status += ")";
+        }
+        else
+        {
+        	status += df.format(pickPosition[0]);
+ 	        status += ", ";
+ 	        status += df.format(pickPosition[1]);
+ 	        status += ")";
+        }
+
+     // Append raw pixel value information
+        status += ", Raw Value = ";
+        if(getRawImage() == null)
+        {
+            status += "Unavailable";
+        }
+        else
+        {
+            int ip0 = (int)Math.round(pickPosition[0]);
+            int ip1 = (int)Math.round(pickPosition[1]);
+            if (!getRawImage().GetScalarTypeAsString().contains("char"))
+            {
+                float[] pixelColumn = ImageDataUtil.vtkImageDataToArray1D(getRawImage(), imageHeight-1-ip0, ip1);
+                status += pixelColumn[currentSlice];
+            }
+            else
+            {
+                status += "N/A";
+            }
+        }
+
+        return status;
+    }
+
+}

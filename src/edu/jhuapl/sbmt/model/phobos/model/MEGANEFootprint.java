@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
 
-import edu.jhuapl.sbmt.util.TimeUtil;
+import edu.jhuapl.sbmt.core.util.TimeUtil;
 
 public class MEGANEFootprint
 {

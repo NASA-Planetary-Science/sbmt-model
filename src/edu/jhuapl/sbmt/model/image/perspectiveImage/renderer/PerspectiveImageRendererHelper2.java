@@ -21,10 +21,10 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.core.image.IImagingInstrument;
-import edu.jhuapl.sbmt.core.image.ImageKeyInterface;
-import edu.jhuapl.sbmt.core.rendering.PerspectiveImage;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
+import edu.jhuapl.sbmt.image.interfaces.IImagingInstrument;
+import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
+import edu.jhuapl.sbmt.image.model.PerspectiveImage;
 
 public class PerspectiveImageRendererHelper2
 {
