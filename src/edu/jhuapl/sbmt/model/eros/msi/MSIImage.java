@@ -23,11 +23,10 @@ import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.PerspectiveImage;
-import edu.jhuapl.sbmt.util.BackPlanesXml;
-import edu.jhuapl.sbmt.util.BackPlanesXmlMeta;
-import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.BPMetaBuilder;
-import edu.jhuapl.sbmt.util.BackPlanesXmlMeta.MetaField;
-import edu.jhuapl.sbmt.util.BackplanesFileFormat;
+import edu.jhuapl.sbmt.image.util.BackPlanesXml;
+import edu.jhuapl.sbmt.image.util.BackPlanesXmlMeta;
+import edu.jhuapl.sbmt.image.util.BackPlanesXmlMeta.BPMetaBuilder;
+import edu.jhuapl.sbmt.image.util.BackPlanesXmlMeta.MetaField;
 
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
