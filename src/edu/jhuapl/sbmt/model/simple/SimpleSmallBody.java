@@ -2,8 +2,8 @@ package edu.jhuapl.sbmt.model.simple;
 
 import java.io.File;
 
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class SimpleSmallBody extends SmallBodyModel
 {
@@ -41,7 +41,7 @@ public class SimpleSmallBody extends SmallBodyModel
                 config.hasColoringData ? coloringNames : null,
                 config.hasColoringData ? coloringUnits : null,
                 null,
-                config.hasImageMap ? getImageMap(config) : null,
+//                config.hasImageMap ? getImageMap(config) : null,
                 ColoringValueType.CELLDATA,
                 false);
     }
@@ -54,7 +54,7 @@ public class SimpleSmallBody extends SmallBodyModel
                 config.hasColoringData ? coloringNames : null,
                 config.hasColoringData ? coloringUnits : null,
                 null,
-                config.hasImageMap ? getImageMap(config) : null,
+//                config.hasImageMap ? getImageMap(config) : null,
                 ColoringValueType.CELLDATA,
                 false);
     }

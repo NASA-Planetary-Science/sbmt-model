@@ -2,8 +2,8 @@ package edu.jhuapl.sbmt.model.eros.nis;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.common.client.ISmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SbmtSpectrumModelFactory;
+import edu.jhuapl.sbmt.core.body.ISmallBodyModel;
+import edu.jhuapl.sbmt.spectrum.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;

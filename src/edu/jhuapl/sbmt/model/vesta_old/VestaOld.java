@@ -1,7 +1,7 @@
 package edu.jhuapl.sbmt.model.vesta_old;
 
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class VestaOld extends SmallBodyModel
 {
@@ -40,7 +40,7 @@ public class VestaOld extends SmallBodyModel
                 coloringNames,
                 coloringUnits,
                 coloringHasNulls,
-                null,
+//                null,
                 ColoringValueType.CELLDATA,
                 false);
     }

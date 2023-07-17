@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Scanner;
 
+import edu.jhuapl.sbmt.core.io.BasicFileReader;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.NIRS3;
-import edu.jhuapl.sbmt.util.BasicFileReader;
 
 public class NIRS3SpectrumReader extends BasicFileReader
 {

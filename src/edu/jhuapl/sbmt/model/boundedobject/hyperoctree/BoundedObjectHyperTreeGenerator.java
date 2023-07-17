@@ -23,13 +23,13 @@ import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.util.BoundingBox;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
-import edu.jhuapl.sbmt.client2.SbmtModelFactory;
 import edu.jhuapl.sbmt.client2.SbmtMultiMissionTool;
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
+import edu.jhuapl.sbmt.core.io.DataOutputStreamPool;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperBox;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperException;
-import edu.jhuapl.sbmt.lidar.misc.DataOutputStreamPool;
+import edu.jhuapl.sbmt.model.SbmtModelFactory;
 import edu.jhuapl.sbmt.spectrum.model.hypertree.SpectrumHypertreeGenerator;
 
 public class BoundedObjectHyperTreeGenerator

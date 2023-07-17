@@ -17,12 +17,12 @@ import javax.swing.JOptionPane;
 import org.joda.time.DateTime;
 
 import edu.jhuapl.saavtk.util.Configuration;
-import edu.jhuapl.sbmt.common.client.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.query.ISearchResultsMetadata;
 import edu.jhuapl.sbmt.query.SearchMetadata;
 import edu.jhuapl.sbmt.query.database.DatabaseQueryBase;
 import edu.jhuapl.sbmt.query.database.DatabaseSearchMetadata;
 import edu.jhuapl.sbmt.query.database.SpectraDatabaseSearchMetadata;
+import edu.jhuapl.sbmt.spectrum.SbmtSpectrumModelFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
 

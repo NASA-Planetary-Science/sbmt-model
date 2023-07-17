@@ -9,10 +9,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import edu.jhuapl.sbmt.core.io.DataOutputStreamPool;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperBox;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperException;
 import edu.jhuapl.sbmt.lidar.hyperoctree.HyperException.HyperDimensionMismatchException;
-import edu.jhuapl.sbmt.lidar.misc.DataOutputStreamPool;
 
 public class BoundedObjectHyperTreeNode
 {

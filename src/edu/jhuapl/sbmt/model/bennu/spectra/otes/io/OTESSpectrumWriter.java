@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import edu.jhuapl.sbmt.core.io.BasicFileWriter;
 import edu.jhuapl.sbmt.model.bennu.spectra.otes.OTESSpectrum;
-import edu.jhuapl.sbmt.util.BasicFileWriter;
 
 /**
  * Writes the OTES spectrum out to a human readable form for sharing.

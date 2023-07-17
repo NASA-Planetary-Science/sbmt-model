@@ -9,8 +9,8 @@ import vtk.vtkPolyData;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.PolyDataUtil;
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.core.rendering.PerspectiveImage;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
+import edu.jhuapl.sbmt.image.model.PerspectiveImage;
 
 public class PerspectiveImageFootprintRendererOperator
 {

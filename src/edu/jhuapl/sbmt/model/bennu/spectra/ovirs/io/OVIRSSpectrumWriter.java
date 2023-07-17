@@ -5,9 +5,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import edu.jhuapl.sbmt.core.io.BasicFileWriter;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRS;
 import edu.jhuapl.sbmt.model.bennu.spectra.ovirs.OVIRSSpectrum;
-import edu.jhuapl.sbmt.util.BasicFileWriter;
 
 /**
  * Writes the OVIRS spectrum out to a human readable form for sharing.

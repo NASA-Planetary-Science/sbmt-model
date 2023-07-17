@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.bennu.spectra.ovirs;
 
 import java.io.IOException;
 
-import edu.jhuapl.sbmt.common.client.ISmallBodyModel;
+import edu.jhuapl.sbmt.core.body.ISmallBodyModel;
 import edu.jhuapl.sbmt.query.QueryBase;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraType;

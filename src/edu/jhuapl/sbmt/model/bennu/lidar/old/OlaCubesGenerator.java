@@ -18,11 +18,11 @@ import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.NativeLibraryLoader;
-import edu.jhuapl.sbmt.common.client.SmallBodyModel;
-import edu.jhuapl.sbmt.common.client.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
+import edu.jhuapl.sbmt.core.util.TimeUtil;
 import edu.jhuapl.sbmt.lidar.TrackFileType;
 import edu.jhuapl.sbmt.model.bennu.shapeModel.Bennu;
-import edu.jhuapl.sbmt.util.TimeUtil;
 
 /**
  * This divides an OLA L2 file into cubes and saves each cube

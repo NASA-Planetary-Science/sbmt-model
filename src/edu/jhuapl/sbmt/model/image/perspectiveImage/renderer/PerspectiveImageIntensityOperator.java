@@ -11,7 +11,7 @@ import vtk.vtkLookupTable;
 
 import edu.jhuapl.saavtk.util.IntensityRange;
 import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.core.rendering.PerspectiveImage;
+import edu.jhuapl.sbmt.image.model.PerspectiveImage;
 
 public class PerspectiveImageIntensityOperator
 {
