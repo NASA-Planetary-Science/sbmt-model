@@ -5,9 +5,7 @@ import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import edu.jhuapl.saavtk.util.LinearSpace;
-import edu.jhuapl.sbmt.util.nis.Histogram2D;
 import edu.jhuapl.sbmt.util.nis.RegularHistogram2D;
-import edu.jhuapl.sbmt.util.nis.Histogram2D.HistogramValueOutOfBoundsException;
 
 public class NisIncidenceHistogram extends RegularHistogram2D
 {
