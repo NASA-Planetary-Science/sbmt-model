@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.rosetta;
 
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class CG extends SmallBodyModel
@@ -30,7 +30,7 @@ public class CG extends SmallBodyModel
             SlopeUnitsStr, ElevUnitsStr, GravAccUnitsStr, GravPotUnitsStr
     };
 */
-    public CG(SmallBodyViewConfig config)
+    public CG(IBodyViewConfig config)
     {
         super(config,
                 modelNames,

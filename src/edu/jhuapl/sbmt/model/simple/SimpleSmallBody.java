@@ -2,7 +2,7 @@ package edu.jhuapl.sbmt.model.simple;
 
 import java.io.File;
 
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class SimpleSmallBody extends SmallBodyModel
@@ -17,10 +17,10 @@ public class SimpleSmallBody extends SmallBodyModel
         };
     }
 
-    static private String[] getImageMap(SmallBodyViewConfig config)
+    static private String[] getImageMap(IBodyViewConfig config)
     {
-        System.out.println((new File(config.rootDirOnServer)).getParent() + "/image_map.png");
-        return new String[] {(new File(config.rootDirOnServer)).getParent() + "/image_map.png"};
+        System.out.println((new File(config.getRootDirOnServer())).getParent() + "/image_map.png");
+        return new String[] {(new File(config.getRootDirOnServer())).getParent() + "/image_map.png"};
     }
 
     static private final String[] coloringNames = {
@@ -32,29 +32,27 @@ public class SimpleSmallBody extends SmallBodyModel
     };
 
     public SimpleSmallBody(
-            SmallBodyViewConfig config,
+            IBodyViewConfig config,
             String[] modelNames)
     {
         super(config,
                 modelNames,
-                config.hasColoringData ? getColoringFiles(config.getShapeModelFileNames()[0]) : null,
-                config.hasColoringData ? coloringNames : null,
-                config.hasColoringData ? coloringUnits : null,
+                config.hasColoringData() ? getColoringFiles(config.getShapeModelFileNames()[0]) : null,
+                config.hasColoringData() ? coloringNames : null,
+                config.hasColoringData() ? coloringUnits : null,
                 null,
-//                config.hasImageMap ? getImageMap(config) : null,
                 ColoringValueType.CELLDATA,
                 false);
     }
 
-    public SimpleSmallBody(SmallBodyViewConfig config)
+    public SimpleSmallBody(IBodyViewConfig config)
     {
         super(config,
-                new String[] {config.body.toString()},
-                config.hasColoringData ? getColoringFiles(config.rootDirOnServer) : null,
-                config.hasColoringData ? coloringNames : null,
-                config.hasColoringData ? coloringUnits : null,
+                new String[] {config.getBody().toString()},
+                config.hasColoringData() ? getColoringFiles(config.getRootDirOnServer()) : null,
+                config.hasColoringData() ? coloringNames : null,
+                config.hasColoringData() ? coloringUnits : null,
                 null,
-//                config.hasImageMap ? getImageMap(config) : null,
                 ColoringValueType.CELLDATA,
                 false);
     }
@@ -62,12 +60,12 @@ public class SimpleSmallBody extends SmallBodyModel
     @Override
     public double getDensity()
     {
-        return ((SmallBodyViewConfig)getSmallBodyConfig()).density;
+    	return getConfig().getDensity();
     }
 
     @Override
     public double getRotationRate()
     {
-    	return ((SmallBodyViewConfig)getSmallBodyConfig()).rotationRate;
+    	return getConfig().getRotationRate();
     }
 }

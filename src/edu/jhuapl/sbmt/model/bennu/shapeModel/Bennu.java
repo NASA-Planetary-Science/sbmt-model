@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.shapeModel;
 
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class Bennu extends SmallBodyModel
@@ -43,11 +43,11 @@ public class Bennu extends SmallBodyModel
             "km" // Maximum Relative Height
     };
 
-    public Bennu(SmallBodyViewConfig config)
+    public Bennu(IBodyViewConfig config)
     {
         super(config,
                 modelNames,
-                getColoringFiles(config.rootDirOnServer),
+                getColoringFiles(config.getRootDirOnServer()),
                 coloringNames,
                 coloringUnits,
                 null,
@@ -78,13 +78,13 @@ public class Bennu extends SmallBodyModel
     @Override
     public double getDensity()
     {
-        return ((SmallBodyViewConfig)getSmallBodyConfig()).density;
+        return getConfig().getDensity();
     }
 
     @Override
     public double getRotationRate()
     {
-        return ((SmallBodyViewConfig)getSmallBodyConfig()).rotationRate;
+        return getConfig().getRotationRate();
     }
 
     @Override

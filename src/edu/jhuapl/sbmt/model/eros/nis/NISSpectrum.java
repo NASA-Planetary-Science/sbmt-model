@@ -22,7 +22,6 @@ import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.LatLon;
 import edu.jhuapl.saavtk.util.MathUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.core.body.ISmallBodyModel;
 import edu.jhuapl.sbmt.pointing.io.InfoFileReader;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrum;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
@@ -62,25 +61,25 @@ public class NISSpectrum extends BasicSpectrum
 
     double[] spectrumErrors=new double[NIS.bandCentersLength];
 
-    ISmallBodyModel smallBodyModel;
+//    ISmallBodyModel smallBodyModel;
 
-    public NISSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, ISmallBodyModel smallBodyModel,
+    public NISSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double diagonalLength,
     		BasicSpectrumInstrument instrument) throws IOException
     {
-        this(filename, specIO, smallBodyModel, instrument, false);
+        this(filename, specIO, diagonalLength, instrument, false);
 
     }
 
-    public NISSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, ISmallBodyModel smallBodyModel, BasicSpectrumInstrument instrument, boolean isCustom) throws IOException
+    public NISSpectrum(String filename, SpectrumInstrumentMetadataIO specIO, double diagonalLength, BasicSpectrumInstrument instrument, boolean isCustom) throws IOException
     {
         super(filename, instrument, isCustom);
-        this.smallBodyModel = smallBodyModel;
+//        this.smallBodyModel = smallBodyModel;
         xData = getBandCenters();
         extension = FilenameUtils.getExtension(serverpath.toString());
         this.specIO = specIO;
         instrumentMetadata = specIO.getInstrumentMetadata("NIS");
         spec = instrumentMetadata.getSpecs().get(0);
-        double dx = MathUtil.vnorm(spacecraftPosition) + smallBodyModel.getBoundingBoxDiagonalLength();
+        double dx = MathUtil.vnorm(spacecraftPosition) + diagonalLength;
         toSunVectorLength=dx;
     }
 
@@ -106,7 +105,7 @@ public class NISSpectrum extends BasicSpectrum
             String spectrumPath = getSpectrumPathOnServer().substring(0, getSpectrumPathOnServer().lastIndexOf(File.separator));
             return File.separator + "NIS" + File.separator + "/infofiles" + spectrumPath + File.separator + FilenameUtils.getBaseName(getSpectrumPathOnServer()) + ".INFO";
         }
-    } 
+    }
 
     public String getSpectrumPathOnServer()
     {

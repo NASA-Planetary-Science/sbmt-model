@@ -2,9 +2,9 @@ package edu.jhuapl.sbmt.model;
 
 import java.io.IOException;
 
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.dtm.model.DEM;
@@ -87,8 +87,6 @@ public class SbmtModelFactoryV1
             SmallBodyModel smallBodyModel,
             boolean loadPointingOnly) throws FitsException, IOException
     {
-        SmallBodyViewConfig config = (SmallBodyViewConfig)smallBodyModel.getSmallBodyConfig();
-
         if (PointingSource.SPICE.equals(key.getSource()) ||
                 PointingSource.GASKELL.equals(key.getSource()) ||
                 PointingSource.GASKELL_UPDATED.equals(key.getSource()) ||
@@ -241,11 +239,11 @@ public class SbmtModelFactoryV1
         return new BasicPerspectiveImage(key, smallBodyModel, loadPointingOnly);
     }
 
-    static public SmallBodyModel createSmallBodyModel(SmallBodyViewConfig config)
+    static public SmallBodyModel createSmallBodyModel(IBodyViewConfig config)
     {
         SmallBodyModel result = null;
-        ShapeModelBody name = config.body;
-        ShapeModelType author = config.author;
+        ShapeModelBody name = config.getBody();
+        ShapeModelType author = config.getAuthor();
 
         if (ShapeModelType.GASKELL == author || ((ShapeModelType.EXPERIMENTAL == author || ShapeModelType.BLENDER == author) && ShapeModelBody.DEIMOS != name))
         {
@@ -267,7 +265,7 @@ public class SbmtModelFactoryV1
 //            }
             else if (ShapeModelBody.RQ36 == name)
             {
-                if (config.version.equals("V4"))
+                if (config.getVersion().equals("V4"))
                 {
                     result = new BennuV4(config);
                 }
@@ -278,7 +276,7 @@ public class SbmtModelFactoryV1
             }
             else
             {
-                if (config.rootDirOnServer.toLowerCase().equals(config.rootDirOnServer))
+                if (config.getRootDirOnServer().toLowerCase().equals(config.getRootDirOnServer()))
                 {
                     result = new Sbmt2SimpleSmallBody(config);
                 }
@@ -291,10 +289,10 @@ public class SbmtModelFactoryV1
                             name + " very high"
                     };
                     String[] paths = {
-                            config.rootDirOnServer + "/ver64q.vtk.gz",
-                            config.rootDirOnServer + "/ver128q.vtk.gz",
-                            config.rootDirOnServer + "/ver256q.vtk.gz",
-                            config.rootDirOnServer + "/ver512q.vtk.gz"
+                    		config.getRootDirOnServer() + "/ver64q.vtk.gz",
+                            config.getRootDirOnServer() + "/ver128q.vtk.gz",
+                            config.getRootDirOnServer() + "/ver256q.vtk.gz",
+                            config.getRootDirOnServer() + "/ver512q.vtk.gz"
                     };
 
                     result = new SimpleSmallBody(config, names);
@@ -325,7 +323,7 @@ public class SbmtModelFactoryV1
 
         if (result == null)
         {
-            if (config.rootDirOnServer.toLowerCase().equals(config.rootDirOnServer))
+        	if (config.getRootDirOnServer().toLowerCase().equals(config.getRootDirOnServer()))
             {
                 result = new Sbmt2SimpleSmallBody(config);
             }

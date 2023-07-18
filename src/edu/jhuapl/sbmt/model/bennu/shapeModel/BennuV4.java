@@ -1,7 +1,6 @@
 package edu.jhuapl.sbmt.model.bennu.shapeModel;
 
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
-import edu.jhuapl.sbmt.core.body.BodyViewConfig;
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class BennuV4 extends SmallBodyModel
@@ -51,7 +50,7 @@ public class BennuV4 extends SmallBodyModel
             SlopeUnitsStr, // Tilt Standard Deviation
     };
 
-    public BennuV4(BodyViewConfig config)
+    public BennuV4(IBodyViewConfig config)
     {
         super(config,
                 modelNames,
@@ -64,7 +63,7 @@ public class BennuV4 extends SmallBodyModel
                 false);
     }
 
-    private static final String[] getColoringFiles(BodyViewConfig config)
+    private static final String[] getColoringFiles(IBodyViewConfig config)
     {
         return new String[] {
                 config.serverPath("coloring/Slope"),
@@ -89,13 +88,13 @@ public class BennuV4 extends SmallBodyModel
     @Override
     public double getDensity()
     {
-        return ((SmallBodyViewConfig)getSmallBodyConfig()).density;
+        return getConfig().getDensity();
     }
 
     @Override
     public double getRotationRate()
     {
-    	return ((SmallBodyViewConfig)getSmallBodyConfig()).rotationRate;
+    	return getConfig().getRotationRate();
     }
 
     @Override

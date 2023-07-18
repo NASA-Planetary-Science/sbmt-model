@@ -123,8 +123,6 @@ public class SmallBodyControlPanel extends PolyhedralModelControlPanel implement
     @Override
 	protected void addCustomControls(JPanel panel)
     {
-        SmallBodyModel smallBodyModel = (SmallBodyModel) getModelManager().getPolyhedralModel();
-
         if (!basemapImages.isEmpty())
         {
         	if (basemaps.size() > 0)

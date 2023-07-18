@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.itokawa;
 
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class Itokawa extends SmallBodyModel
@@ -42,7 +42,7 @@ public class Itokawa extends SmallBodyModel
     };
 
 
-    public Itokawa(SmallBodyViewConfig config)
+    public Itokawa(IBodyViewConfig config)
     {
         super(config,
                 modelNames,

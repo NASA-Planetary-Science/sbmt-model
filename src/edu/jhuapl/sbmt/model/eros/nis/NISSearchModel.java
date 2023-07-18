@@ -9,7 +9,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import com.google.common.collect.Maps;
 
-import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.search.BaseSpectrumSearchModel;
@@ -52,9 +51,9 @@ public class NISSearchModel extends BaseSpectrumSearchModel<NISSpectrum>
         }
     }
 
-    public NISSearchModel(ModelManager modelManager, BasicSpectrumInstrument instrument)
+    public NISSearchModel(BasicSpectrumInstrument instrument)
     {
-    	 super(modelManager, instrument);
+    	 super(instrument);
 
         try
         {

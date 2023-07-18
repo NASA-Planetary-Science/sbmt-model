@@ -1,11 +1,14 @@
 package edu.jhuapl.sbmt.model.phobos;
 
-import edu.jhuapl.sbmt.query.ISearchResultsMetadata;
-import edu.jhuapl.sbmt.query.SearchMetadata;
-import edu.jhuapl.sbmt.query.fixedlist.FixedListQuery;
+import edu.jhuapl.sbmt.core.pointing.PointingSource;
+import edu.jhuapl.sbmt.query.v2.DataQuerySourcesMetadata;
+import edu.jhuapl.sbmt.query.v2.FetchedResults;
+import edu.jhuapl.sbmt.query.v2.ISearchMetadata;
+import edu.jhuapl.sbmt.query.v2.QueryException;
+import edu.jhuapl.sbmt.spectrum.query.SpectrumDataQuery;
 
 // This must be final because it is a singleton with a clone() method.
-public final class MEGANEQuery extends FixedListQuery
+public final class MEGANEQuery extends SpectrumDataQuery
 {
     private static MEGANEQuery instance=new MEGANEQuery();
 
@@ -17,7 +20,8 @@ public final class MEGANEQuery extends FixedListQuery
 
     private MEGANEQuery()
     {
-        super(/*"/earth/osirisrex/otes"*/);
+        super(DataQuerySourcesMetadata.of("/phobos/shared/megane", "/phobos/shared/megane/spectra",
+        		"", "", "", PointingSource.SPICE, "spectrumlist.txt"));
     }
 
     @Override
@@ -25,18 +29,26 @@ public final class MEGANEQuery extends FixedListQuery
         return getInstance();
     }
 
-    @Override
-    public String getDataPath()
-    {
-        return rootPath + "/spectra";   //see constructor above for rootPath
-    }
+//    @Override
+//    public String getDataPath()
+//    {
+//        return rootPath + "/spectra";   //see constructor above for rootPath
+//    }
 
     @Override
-    public ISearchResultsMetadata runQuery(SearchMetadata queryMetadata)
+    public FetchedResults runQuery(ISearchMetadata queryMetadata) throws QueryException
     {
-        // TODO Auto-generated method stub
-        return super.runQuery(queryMetadata);
+    	return null;
+//        // TODO Auto-generated method stub
+//        return super.runQuery(queryMetadata);
     }
+
+	@Override
+	public String getRootPath()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 
 //    public List<List<String>> runQuery(

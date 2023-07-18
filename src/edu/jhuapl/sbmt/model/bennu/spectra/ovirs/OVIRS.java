@@ -3,11 +3,12 @@ package edu.jhuapl.sbmt.model.bennu.spectra.ovirs;
 import java.io.IOException;
 
 import edu.jhuapl.sbmt.core.body.ISmallBodyModel;
-import edu.jhuapl.sbmt.query.QueryBase;
+import edu.jhuapl.sbmt.query.v2.IDataQuery;
 import edu.jhuapl.sbmt.spectrum.model.core.BasicSpectrumInstrument;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraType;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectraTypeFactory;
 import edu.jhuapl.sbmt.spectrum.model.core.SpectrumInstrumentFactory;
+import edu.jhuapl.sbmt.spectrum.model.core.search.SpectraHierarchicalSearchSpecification;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.Spectrum;
 import edu.jhuapl.sbmt.spectrum.model.sbmtCore.spectra.math.SpectrumMath;
@@ -34,10 +35,10 @@ public class OVIRS extends BasicSpectrumInstrument
 
     @Override
     public Spectrum getSpectrumInstance(String filename,
-            ISmallBodyModel smallBodyModel)
+            ISmallBodyModel smallBodyModel, SpectraHierarchicalSearchSpecification searchSpec)
             throws IOException
     {
-        return new OVIRSSpectrum(filename, (SpectrumInstrumentMetadataIO)smallBodyModel.getSmallBodyConfig().getHierarchicalSpectraSearchSpecification(), smallBodyModel.getBoundingBoxDiagonalLength(), this);
+        return new OVIRSSpectrum(filename, (SpectrumInstrumentMetadataIO)searchSpec, smallBodyModel.getBoundingBoxDiagonalLength(), this);
     }
 
     @Override
@@ -1470,7 +1471,7 @@ public class OVIRS extends BasicSpectrumInstrument
 			String displayName = metadata.get(spectraNameKey);
 			SpectraType spectraType = SpectraTypeFactory.findSpectraTypeForDisplayName(displayName);
 
-			QueryBase queryBase = spectraType.getQueryBase();
+			IDataQuery queryBase = spectraType.getQueryBase();
 			SpectrumMath spectrumMath = spectraType.getSpectrumMath();
 			Double[] bandCenters = spectraType.getBandCenters();
 			String bandCenterUnit = spectraType.getBandCenterUnit();

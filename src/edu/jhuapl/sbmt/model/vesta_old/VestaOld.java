@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.vesta_old;
 
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class VestaOld extends SmallBodyModel
@@ -32,7 +32,7 @@ public class VestaOld extends SmallBodyModel
             false, false, false, false, true, true, true, true
     };
 
-    public VestaOld(SmallBodyViewConfig config)
+    public VestaOld(IBodyViewConfig config)
     {
         super(config,
                 modelNames,

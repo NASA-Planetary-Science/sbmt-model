@@ -4,10 +4,10 @@ import java.io.File;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.saavtk.model.PolyModelUtil;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.dtm.model.DEM;
 
@@ -18,10 +18,10 @@ public class CustomShapeModel extends SmallBodyModel
     private Vector3D cAverageSurfaceNormal;
     private Vector3D cGeometricCenterPoint;
 
-    public CustomShapeModel(SmallBodyViewConfig config)
+    public CustomShapeModel(IBodyViewConfig config)
     {
         super(config,
-                new String[] { config.modelLabel },
+                new String[] { config.getModelLabel() },
                 null,
                 null,
                 null,
@@ -36,7 +36,7 @@ public class CustomShapeModel extends SmallBodyModel
 
         // Check to see if this is an altwg FITs file, if so then extract the color and set it as well
         String fitsPath = Configuration.getImportedShapeModelsDir() +
-                File.separator + config.modelLabel + File.separator + "model.fit";
+                File.separator + config.getModelLabel() + File.separator + "model.fit";
         File fitsFile = new File(fitsPath);
         if(fitsFile.exists())
         {
@@ -58,16 +58,16 @@ public class CustomShapeModel extends SmallBodyModel
         return false;
     }
 
-    public static String getModelFilename(SmallBodyViewConfig config)
+    public static String getModelFilename(IBodyViewConfig config)
     {
     	SafeURLPaths safeUrlPaths = SafeURLPaths.instance();
-        if (config.customTemporary)
+        if (config.isCustomTemporary())
         {
-            return safeUrlPaths.getUrl(config.modelLabel);
+            return safeUrlPaths.getUrl(config.getModelLabel());
         }
         else
         {
-            return safeUrlPaths.getUrl(safeUrlPaths.getString(Configuration.getImportedShapeModelsDir(), config.modelLabel, "model.vtk"));
+            return safeUrlPaths.getUrl(safeUrlPaths.getString(Configuration.getImportedShapeModelsDir(), config.getModelLabel(), "model.vtk"));
         }
     }
 

@@ -1,6 +1,6 @@
 package edu.jhuapl.sbmt.model.eros;
 
-import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
+import edu.jhuapl.saavtk.config.IBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 public class Eros extends SmallBodyModel
@@ -45,7 +45,7 @@ public class Eros extends SmallBodyModel
             SlopeUnitsStr, ElevUnitsStr, GravAccUnitsStr, GravPotUnitsStr
     };
 
-    public Eros(SmallBodyViewConfig config)
+    public Eros(IBodyViewConfig config)
     {
         super(config,
                 modelNames,
