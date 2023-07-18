@@ -9,8 +9,6 @@ import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
-import edu.jhuapl.sbmt.dtm.model.DEM;
-import edu.jhuapl.sbmt.dtm.model.DEMKey;
 import edu.jhuapl.sbmt.model.bennu.shapeModel.Bennu;
 import edu.jhuapl.sbmt.model.bennu.shapeModel.BennuV4;
 import edu.jhuapl.sbmt.model.custom.CustomShapeModel;
@@ -158,11 +156,11 @@ public class SbmtModelFactory
 //        return models;
 //    }
 
-    static public DEM createDEM(
-            DEMKey key,
-            SmallBodyModel smallBodyModel) //throws IOException, FitsException
-    {
-        return new DEM(key);
-    }
+//    static public DEM createDEM(
+//            DEMKey key,
+//            SmallBodyModel smallBodyModel) //throws IOException, FitsException
+//    {
+//        return new DEM(key);
+//    }
 
 }

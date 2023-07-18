@@ -20,14 +20,8 @@ import javax.swing.JTabbedPane;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import crucible.crust.metadata.api.Key;
-import crucible.crust.metadata.api.Metadata;
-import crucible.crust.metadata.api.MetadataManager;
-import crucible.crust.metadata.api.Version;
-import crucible.crust.metadata.impl.EmptyMetadata;
-import crucible.crust.metadata.impl.SettableMetadata;
-import crucible.crust.metadata.impl.TrackedMetadataManager;
-import crucible.crust.metadata.impl.Utilities;
+import vtk.vtkCamera;
+
 import edu.jhuapl.saavtk.gui.View;
 import edu.jhuapl.saavtk.gui.render.ConfigurableSceneNotifier;
 import edu.jhuapl.saavtk.gui.render.RenderPanel;
@@ -61,9 +55,6 @@ import edu.jhuapl.sbmt.core.config.IFeatureConfig;
 import edu.jhuapl.sbmt.core.listeners.PositionOrientationManagerListener;
 import edu.jhuapl.sbmt.core.util.TimeUtil;
 import edu.jhuapl.sbmt.dem.gui.DemMainPanel;
-import edu.jhuapl.sbmt.dtm.model.DEMBoundaryCollection;
-import edu.jhuapl.sbmt.dtm.model.DEMCollection;
-import edu.jhuapl.sbmt.dtm.ui.menu.MapletBoundaryPopupMenu;
 import edu.jhuapl.sbmt.image.config.ImagingInstrumentConfig;
 import edu.jhuapl.sbmt.image.controllers.ImageSearchController;
 import edu.jhuapl.sbmt.image.model.BasemapImageCollection;
@@ -99,7 +90,15 @@ import edu.jhuapl.sbmt.stateHistory.config.StateHistoryConfig;
 import edu.jhuapl.sbmt.stateHistory.controllers.ObservationPlanningController;
 import edu.jhuapl.sbmt.stateHistory.model.stateHistory.StateHistoryCollection;
 import edu.jhuapl.sbmt.stateHistory.rendering.model.StateHistoryRendererManager;
-import vtk.vtkCamera;
+
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.MetadataManager;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.EmptyMetadata;
+import crucible.crust.metadata.impl.SettableMetadata;
+import crucible.crust.metadata.impl.TrackedMetadataManager;
+import crucible.crust.metadata.impl.Utilities;
 
 public abstract class BaseView extends View implements PropertyChangeListener
 {
@@ -388,13 +387,13 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 	protected void setupDEMModels()
 	{
-		SmallBodyModel smallBodyModel = smallBodyModels.get(0);
-		DEMCollection demCollection = new DEMCollection(smallBodyModel, getModelManager());
-		allModels.put(ModelNames.DEM, List.of(demCollection));
-		DEMBoundaryCollection demBoundaryCollection = new DEMBoundaryCollection(smallBodyModel, getModelManager());
-		allModels.put(ModelNames.DEM_BOUNDARY, List.of(demBoundaryCollection));
-		demCollection.setModelManager(getModelManager());
-		demBoundaryCollection.setModelManager(getModelManager());
+//		SmallBodyModel smallBodyModel = smallBodyModels.get(0);
+//		DEMCollection demCollection = new DEMCollection(smallBodyModel, getModelManager());
+//		allModels.put(ModelNames.DEM, List.of(demCollection));
+//		DEMBoundaryCollection demBoundaryCollection = new DEMBoundaryCollection(smallBodyModel, getModelManager());
+//		allModels.put(ModelNames.DEM_BOUNDARY, List.of(demBoundaryCollection));
+//		demCollection.setModelManager(getModelManager());
+//		demBoundaryCollection.setModelManager(getModelManager());
 	}
 
 	protected void setStateHistoryModels()
@@ -457,11 +456,11 @@ public abstract class BaseView extends View implements PropertyChangeListener
 			registerPopup(getModel(ModelNames.LINEAMENT), popupMenu);
 		}
 
-		if (getPolyhedralModelConfig().hasMapmaker || getPolyhedralModelConfig().hasBigmap)
-		{
-			PopupMenu popupMenu = new MapletBoundaryPopupMenu(getModelManager(), getRenderer());
-			registerPopup(getModel(ModelNames.DEM_BOUNDARY), popupMenu);
-		}
+//		if (getPolyhedralModelConfig().hasMapmaker || getPolyhedralModelConfig().hasBigmap)
+//		{
+//			PopupMenu popupMenu = new MapletBoundaryPopupMenu(getModelManager(), getRenderer());
+//			registerPopup(getModel(ModelNames.DEM_BOUNDARY), popupMenu);
+//		}
 	}
 
 	protected void setupImagerPopupManager()
@@ -595,7 +594,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 		}
 	}
-	
+
 	protected void setupLineamentTab()
 	{
         if (getPolyhedralModelConfig().hasLineamentData)
@@ -609,12 +608,12 @@ public abstract class BaseView extends View implements PropertyChangeListener
 	{
 		List<IFeatureConfig> spectrumConfigs = getPolyhedralModelConfig()
 				.getConfigsForClass(SpectrumInstrumentConfig.class);
-		
+
 		ImagingInstrumentConfig imagingConfig = (ImagingInstrumentConfig)getPolyhedralModelConfig()
 				.getConfigForClass(ImagingInstrumentConfig.class);
 
 		if (spectrumConfigs == null) return;
-		
+
 		for (IFeatureConfig instrumentConfig : spectrumConfigs)
 		{
 			SpectrumInstrumentConfig config = (SpectrumInstrumentConfig) instrumentConfig;
@@ -649,7 +648,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 				addTab(instrument.getDisplayName(), component);
 			}
 		}
-		
+
 	}
 
 	protected void setupLidarTabs()

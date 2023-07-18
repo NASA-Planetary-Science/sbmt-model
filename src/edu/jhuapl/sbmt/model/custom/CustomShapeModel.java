@@ -9,7 +9,7 @@ import edu.jhuapl.saavtk.model.PolyModelUtil;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
-import edu.jhuapl.sbmt.dtm.model.DEM;
+import edu.jhuapl.sbmt.dem.vtk.VtkDemLoadUtil;
 
 public class CustomShapeModel extends SmallBodyModel
 {
@@ -43,7 +43,7 @@ public class CustomShapeModel extends SmallBodyModel
             // Load in the file's plate colorings
             try
             {
-                DEM.colorDEM(fitsPath, this);
+            	VtkDemLoadUtil.colorDEM(fitsPath, this);
             }
             catch (Exception e)
             {

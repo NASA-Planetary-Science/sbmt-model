@@ -7,8 +7,6 @@ import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
-import edu.jhuapl.sbmt.dtm.model.DEM;
-import edu.jhuapl.sbmt.dtm.model.DEMKey;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.keys.CustomCylindricalImageKey;
 import edu.jhuapl.sbmt.image.model.Image;
@@ -354,11 +352,11 @@ public class SbmtModelFactoryV1
 //        return models;
 //    }
 
-    static public DEM createDEM(
-            DEMKey key,
-            SmallBodyModel smallBodyModel) //throws IOException, FitsException
-    {
-        return new DEM(key);
-    }
+//    static public DEM createDEM(
+//            DEMKey key,
+//            SmallBodyModel smallBodyModel) //throws IOException, FitsException
+//    {
+//        return new DEM(key);
+//    }
 
 }
