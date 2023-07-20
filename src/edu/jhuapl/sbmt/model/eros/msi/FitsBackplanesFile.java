@@ -5,11 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import altwg.Fits.HeaderTag;
 import edu.jhuapl.sbmt.core.util.BackplaneInfo;
 import edu.jhuapl.sbmt.model.eros.MSIFits;
 import edu.jhuapl.sbmt.util.BackplanesFile;
-
-import altwg.Fits.HeaderTag;
 import nom.tam.fits.HeaderCard;
 
 public class FitsBackplanesFile implements BackplanesFile

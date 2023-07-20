@@ -15,7 +15,6 @@ import javax.swing.event.ChangeListener;
 import edu.jhuapl.saavtk.gui.RadialOffsetChanger;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
-
 import net.miginfocom.swing.MigLayout;
 
 public class LineamentControlPanel extends JPanel implements ItemListener, ChangeListener

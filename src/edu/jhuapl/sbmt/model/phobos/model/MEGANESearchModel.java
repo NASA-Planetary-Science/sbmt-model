@@ -11,10 +11,8 @@ import java.util.function.Function;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.ImmutableList;
-
-import vtk.vtkPolyData;
+import com.google.common.collect.Lists;
 
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
@@ -32,9 +30,9 @@ import edu.jhuapl.sbmt.query.filter.model.FilterModel;
 import edu.jhuapl.sbmt.query.filter.model.FilterType;
 import edu.jhuapl.sbmt.query.filter.model.RangeFilterModel;
 import edu.jhuapl.sbmt.query.filter.model.TimeWindowFilterModel;
-
 import glum.task.SilentTask;
 import glum.task.Task;
+import vtk.vtkPolyData;
 
 public class MEGANESearchModel
 {

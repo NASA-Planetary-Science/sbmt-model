@@ -14,9 +14,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import vtk.vtkImageData;
-import vtk.vtkImageReslice;
-
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.FileUtil;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
@@ -27,10 +24,11 @@ import edu.jhuapl.sbmt.image.util.BackPlanesXml;
 import edu.jhuapl.sbmt.image.util.BackPlanesXmlMeta;
 import edu.jhuapl.sbmt.image.util.BackPlanesXmlMeta.BPMetaBuilder;
 import edu.jhuapl.sbmt.image.util.BackPlanesXmlMeta.MetaField;
-
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
+import vtk.vtkImageData;
+import vtk.vtkImageReslice;
 
 
 public class MSIImage extends PerspectiveImage

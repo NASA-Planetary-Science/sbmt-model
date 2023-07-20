@@ -13,12 +13,10 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
-import vtk.vtkDoubleArray;
-import vtk.vtkProp;
-
+import crucible.crust.logging.SimpleLogger;
 import edu.jhuapl.saavtk.color.provider.ColorProvider;
 import edu.jhuapl.saavtk.color.provider.GroupColorProvider;
 import edu.jhuapl.saavtk.color.provider.SimpleColorProvider;
@@ -31,9 +29,9 @@ import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEDatabaseConnection;
 import edu.jhuapl.sbmt.model.phobos.render.MEGANEFootprintRenderer;
-
-import crucible.crust.logging.SimpleLogger;
 import glum.item.ItemEventType;
+import vtk.vtkDoubleArray;
+import vtk.vtkProp;
 
 public class CumulativeMEGANECollection extends SaavtkItemManager<CumulativeMEGANEFootprint> implements PropertyChangeListener
 {

@@ -19,7 +19,6 @@ import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
-
 import glum.item.ItemEventListener;
 import glum.item.ItemEventType;
 

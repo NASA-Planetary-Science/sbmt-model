@@ -16,13 +16,12 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.ImmutableList;
-
-import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
-import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
+import com.google.common.collect.Lists;
 
 import crucible.crust.logging.SimpleLogger;
+import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
+import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
 
 public class MEGANEDatabaseConnection
 {

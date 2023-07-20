@@ -13,6 +13,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.joda.time.DateTime;
 
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.ProvidesGenericObjectFromMetadata;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.InstanceGetter;
+import crucible.crust.metadata.impl.SettableMetadata;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Frustum;
 import edu.jhuapl.saavtk.util.MathUtil;
@@ -24,12 +29,6 @@ import edu.jhuapl.sbmt.spectrum.model.core.SpectrumIOException;
 import edu.jhuapl.sbmt.spectrum.model.core.interfaces.InstrumentMetadata;
 import edu.jhuapl.sbmt.spectrum.model.core.search.SpectrumSearchSpec;
 import edu.jhuapl.sbmt.spectrum.model.io.SpectrumInstrumentMetadataIO;
-
-import crucible.crust.metadata.api.Key;
-import crucible.crust.metadata.api.ProvidesGenericObjectFromMetadata;
-import crucible.crust.metadata.api.Version;
-import crucible.crust.metadata.impl.InstanceGetter;
-import crucible.crust.metadata.impl.SettableMetadata;
 
 /**
  * Represents the data that makes up an NIRS3 Spectrum.  Includes ability to read spectrum and pointing information, as

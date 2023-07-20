@@ -3,17 +3,15 @@ package edu.jhuapl.sbmt.model.rosetta;
 import java.io.File;
 import java.io.IOException;
 
-import vtk.vtkImageConstantPad;
-import vtk.vtkImageData;
-import vtk.vtkImageTranslateExtent;
-
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.PerspectiveImage;
-
 import nom.tam.fits.FitsException;
+import vtk.vtkImageConstantPad;
+import vtk.vtkImageData;
+import vtk.vtkImageTranslateExtent;
 
 public class OsirisImage extends PerspectiveImage
 {

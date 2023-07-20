@@ -5,6 +5,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.saavtk.model.PolyhedralModel;
+import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import vtk.vtkActor;
 import vtk.vtkArrowSource;
 import vtk.vtkCellArray;
@@ -16,11 +20,6 @@ import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkTriangle;
-
-import edu.jhuapl.saavtk.model.AbstractModel;
-import edu.jhuapl.saavtk.model.PolyhedralModel;
-import edu.jhuapl.saavtk.util.Properties;
-import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 
 /**
  * Model for showing gravity vector field. Currently only used for testing,

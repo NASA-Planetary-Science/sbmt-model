@@ -9,18 +9,11 @@ import java.util.Vector;
 
 import javax.swing.SwingUtilities;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
-import vtk.vtkActor;
-import vtk.vtkFloatArray;
-import vtk.vtkLookupTable;
-import vtk.vtkPolyData;
-import vtk.vtkPolyDataMapper;
-import vtk.vtkProp;
-import vtk.vtkStringArray;
-import vtk.vtkUnsignedCharArray;
-
+import crucible.core.data.list.indexable.Indexable;
+import crucible.crust.logging.SimpleLogger;
 import edu.jhuapl.saavtk.color.provider.ColorProvider;
 import edu.jhuapl.saavtk.colormap.Colormap;
 import edu.jhuapl.saavtk.colormap.Colormaps;
@@ -34,9 +27,14 @@ import edu.jhuapl.saavtk2.polydata.select.PolyDataRemoveSelectedCells;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
-
-import crucible.core.data.list.indexable.Indexable;
-import crucible.crust.logging.SimpleLogger;
+import vtk.vtkActor;
+import vtk.vtkFloatArray;
+import vtk.vtkLookupTable;
+import vtk.vtkPolyData;
+import vtk.vtkPolyDataMapper;
+import vtk.vtkProp;
+import vtk.vtkStringArray;
+import vtk.vtkUnsignedCharArray;
 
 public class MEGANEFootprintRenderer
 {

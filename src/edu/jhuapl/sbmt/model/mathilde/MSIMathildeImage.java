@@ -7,7 +7,6 @@ import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.model.eros.msi.MSIImage;
-
 import nom.tam.fits.FitsException;
 
 public class MSIMathildeImage extends MSIImage

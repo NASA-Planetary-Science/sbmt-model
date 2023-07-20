@@ -3,15 +3,13 @@ package edu.jhuapl.sbmt.model.ryugu;
 import java.io.File;
 import java.io.IOException;
 
-import vtk.vtkImageData;
-
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.PerspectiveImage;
-
 import nom.tam.fits.FitsException;
+import vtk.vtkImageData;
 
 public class TIRImage extends PerspectiveImage
 {

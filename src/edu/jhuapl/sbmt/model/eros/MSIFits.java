@@ -9,12 +9,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import edu.jhuapl.sbmt.core.util.BackplaneInfo;
-
 import altwg.Fits.HeaderTag;
 import altwg.util.FitsHeader;
 import altwg.util.FitsHeader.FitsHeaderBuilder;
 import altwg.util.FitsUtil;
+import edu.jhuapl.sbmt.core.util.BackplaneInfo;
 import nom.tam.fits.FitsException;
 import nom.tam.fits.HeaderCard;
 import nom.tam.fits.HeaderCardException;

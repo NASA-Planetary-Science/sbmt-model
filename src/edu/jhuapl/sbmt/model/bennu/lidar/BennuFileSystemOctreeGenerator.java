@@ -14,9 +14,6 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 
-import vtk.vtkUnstructuredGrid;
-import vtk.vtkUnstructuredGridWriter;
-
 import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
 import edu.jhuapl.saavtk.util.BoundingBox;
@@ -25,6 +22,8 @@ import edu.jhuapl.saavtk.util.NativeLibraryLoader;
 import edu.jhuapl.sbmt.config.SmallBodyViewConfig;
 import edu.jhuapl.sbmt.lidar.misc.FileSystemOctreeGenerator;
 import edu.jhuapl.sbmt.model.bennu.shapeModel.Bennu;
+import vtk.vtkUnstructuredGrid;
+import vtk.vtkUnstructuredGridWriter;
 
 public class BennuFileSystemOctreeGenerator
 {

@@ -4,17 +4,15 @@ import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
-import vtk.vtkImageData;
-import vtk.vtkProp;
-
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.ImageType;
 import edu.jhuapl.sbmt.image.old.BasicPerspectiveImage;
-
 import nom.tam.fits.FitsException;
+import vtk.vtkImageData;
+import vtk.vtkProp;
 
 public class OcamsFlightImage extends BasicPerspectiveImage
 {

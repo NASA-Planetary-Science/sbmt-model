@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
-import com.beust.jcommander.internal.Lists;
+import com.google.common.collect.Lists;
 
 public class CumulativeMEGANEFootprint extends MEGANEFootprint
 {

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import edu.jhuapl.saavtk.model.AbstractModel;
+import edu.jhuapl.saavtk.util.Properties;
 import vtk.vtkActor;
 import vtk.vtkCellArray;
 import vtk.vtkDataArray;
@@ -17,9 +19,6 @@ import vtk.vtkPolyData;
 import vtk.vtkPolyDataMapper;
 import vtk.vtkProp;
 import vtk.vtkUnsignedCharArray;
-
-import edu.jhuapl.saavtk.model.AbstractModel;
-import edu.jhuapl.saavtk.util.Properties;
 
 public class LineamentModel extends AbstractModel
 {

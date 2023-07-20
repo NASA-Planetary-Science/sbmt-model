@@ -38,11 +38,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jfree.chart.axis.ValueAxis;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
-
-import vtk.vtkFloatArray;
+import com.google.common.collect.Lists;
 
 import edu.jhuapl.saavtk.gui.dialog.CustomFileChooser;
 import edu.jhuapl.saavtk.model.ModelManager;
@@ -80,8 +78,8 @@ import edu.jhuapl.sbmt.stateHistory.model.interfaces.ITimeCalculatedPlateValues;
 import edu.jhuapl.sbmt.stateHistory.model.liveColoring.LiveColorableManager;
 import edu.jhuapl.sbmt.stateHistory.model.time.StateHistoryTimeModelChangedListener;
 import edu.jhuapl.sbmt.stateHistory.model.time.TimeWindow;
-
 import glum.item.ItemEventType;
+import vtk.vtkFloatArray;
 
 public class MEGANEController implements PropertyChangeListener
 {

@@ -20,8 +20,14 @@ import javax.swing.JTabbedPane;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import vtk.vtkCamera;
-
+import crucible.crust.metadata.api.Key;
+import crucible.crust.metadata.api.Metadata;
+import crucible.crust.metadata.api.MetadataManager;
+import crucible.crust.metadata.api.Version;
+import crucible.crust.metadata.impl.EmptyMetadata;
+import crucible.crust.metadata.impl.SettableMetadata;
+import crucible.crust.metadata.impl.TrackedMetadataManager;
+import crucible.crust.metadata.impl.Utilities;
 import edu.jhuapl.saavtk.gui.View;
 import edu.jhuapl.saavtk.gui.render.ConfigurableSceneNotifier;
 import edu.jhuapl.saavtk.gui.render.RenderPanel;
@@ -90,15 +96,7 @@ import edu.jhuapl.sbmt.stateHistory.config.StateHistoryConfig;
 import edu.jhuapl.sbmt.stateHistory.controllers.ObservationPlanningController;
 import edu.jhuapl.sbmt.stateHistory.model.stateHistory.StateHistoryCollection;
 import edu.jhuapl.sbmt.stateHistory.rendering.model.StateHistoryRendererManager;
-
-import crucible.crust.metadata.api.Key;
-import crucible.crust.metadata.api.Metadata;
-import crucible.crust.metadata.api.MetadataManager;
-import crucible.crust.metadata.api.Version;
-import crucible.crust.metadata.impl.EmptyMetadata;
-import crucible.crust.metadata.impl.SettableMetadata;
-import crucible.crust.metadata.impl.TrackedMetadataManager;
-import crucible.crust.metadata.impl.Utilities;
+import vtk.vtkCamera;
 
 public abstract class BaseView extends View implements PropertyChangeListener
 {

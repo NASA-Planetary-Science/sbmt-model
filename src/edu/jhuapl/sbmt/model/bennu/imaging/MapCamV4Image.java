@@ -2,13 +2,11 @@ package edu.jhuapl.sbmt.model.bennu.imaging;
 
 import java.io.IOException;
 
-import vtk.vtkImageData;
-
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
-
 import nom.tam.fits.FitsException;
+import vtk.vtkImageData;
 
 public class MapCamV4Image extends MapCamImage
 {

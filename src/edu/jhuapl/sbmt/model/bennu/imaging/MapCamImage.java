@@ -8,7 +8,6 @@ import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.PerspectiveImage;
-
 import nom.tam.fits.FitsException;
 
 public class MapCamImage extends PerspectiveImage

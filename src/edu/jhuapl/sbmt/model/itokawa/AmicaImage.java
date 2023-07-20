@@ -10,22 +10,20 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import vtk.vtkImageConstantPad;
-import vtk.vtkImageData;
-import vtk.vtkImageMathematics;
-import vtk.vtkImageReslice;
-import vtk.vtkImageTranslateExtent;
-
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.VtkDataTypes;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.PerspectiveImage;
-
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
+import vtk.vtkImageConstantPad;
+import vtk.vtkImageData;
+import vtk.vtkImageMathematics;
+import vtk.vtkImageReslice;
+import vtk.vtkImageTranslateExtent;
 
 public class AmicaImage extends PerspectiveImage
 {

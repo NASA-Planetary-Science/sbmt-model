@@ -3,8 +3,6 @@ package edu.jhuapl.sbmt.model.plutoSystem;
 import java.io.File;
 import java.io.IOException;
 
-import vtk.vtkImageData;
-
 import edu.jhuapl.saavtk.model.FileType;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
@@ -13,10 +11,10 @@ import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.PerspectiveImage;
 import edu.jhuapl.sbmt.image.old.ImageKey;
-
 import nom.tam.fits.BasicHDU;
 import nom.tam.fits.Fits;
 import nom.tam.fits.FitsException;
+import vtk.vtkImageData;
 
 public class LEISAJupiterImage extends PerspectiveImage
 {

@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
-
 import glum.gui.panel.itemList.BasicItemHandler;
 import glum.gui.panel.itemList.query.QueryComposer;
 

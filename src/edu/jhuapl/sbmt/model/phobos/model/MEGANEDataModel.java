@@ -12,14 +12,13 @@ import org.apache.commons.math3.util.Pair;
 import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.data.statistics.HistogramType;
 
-import edu.jhuapl.sbmt.core.body.SmallBodyModel;
-import edu.jhuapl.sbmt.pointing.InstrumentPointing;
-import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
-
 import crucible.core.mechanics.providers.lockable.LockableEphemerisLinkEvaluationException;
 import crucible.core.mechanics.providers.lockable.LockableFrameLinkEvaluationException;
 import crucible.core.time.TimeSystems;
 import crucible.core.time.UTCEpoch;
+import edu.jhuapl.sbmt.core.body.SmallBodyModel;
+import edu.jhuapl.sbmt.pointing.InstrumentPointing;
+import edu.jhuapl.sbmt.pointing.spice.SpicePointingProvider;
 
 public class MEGANEDataModel
 {

@@ -21,7 +21,6 @@ import edu.jhuapl.saavtk.gui.util.IconUtil;
 import edu.jhuapl.saavtk.gui.util.ToolTipUtil;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANEFootprint;
-
 import glum.gui.GuiUtil;
 import glum.gui.misc.BooleanCellEditor;
 import glum.gui.misc.BooleanCellRenderer;

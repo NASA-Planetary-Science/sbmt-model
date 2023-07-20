@@ -8,12 +8,11 @@ import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 
-import vtk.vtkProp;
-
 import edu.jhuapl.saavtk.gui.dialog.ColorChooser;
 import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.popup.PopupMenu;
+import vtk.vtkProp;
 
 public class LineamentPopupMenu extends PopupMenu
 {

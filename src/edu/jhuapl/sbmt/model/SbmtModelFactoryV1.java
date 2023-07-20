@@ -51,7 +51,6 @@ import edu.jhuapl.sbmt.model.simple.Sbmt2SimpleSmallBody;
 import edu.jhuapl.sbmt.model.simple.SimpleSmallBody;
 import edu.jhuapl.sbmt.model.vesta.FcImage;
 import edu.jhuapl.sbmt.model.vesta_old.VestaOld;
-
 import nom.tam.fits.FitsException;
 
 //This is deprecated as we are going to more streamlined factory classes

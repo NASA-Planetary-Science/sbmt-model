@@ -14,7 +14,6 @@ import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANESearchModel;
 import edu.jhuapl.sbmt.model.phobos.ui.table.CumulativeMEGANEFootprintTableView;
 import edu.jhuapl.sbmt.model.phobos.ui.table.MEGANEResultsTableView;
-
 import glum.gui.GuiUtil;
 
 public class MEGANESearchPanel extends JPanel

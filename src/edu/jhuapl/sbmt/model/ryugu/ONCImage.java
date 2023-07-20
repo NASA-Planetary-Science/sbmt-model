@@ -10,9 +10,6 @@ import java.text.ParseException;
 
 import com.google.common.collect.ImmutableMap;
 
-import vtk.vtkImageData;
-import vtk.vtkProp;
-
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.ImageDataUtil;
 import edu.jhuapl.saavtk.util.SafeURLPaths;
@@ -20,8 +17,9 @@ import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.PerspectiveImage;
-
 import nom.tam.fits.FitsException;
+import vtk.vtkImageData;
+import vtk.vtkProp;
 
 public class ONCImage extends PerspectiveImage
 {

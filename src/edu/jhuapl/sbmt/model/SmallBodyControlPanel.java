@@ -29,7 +29,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
-import com.beust.jcommander.internal.Lists;
+import com.google.common.collect.Lists;
 
 import edu.jhuapl.saavtk.gui.panel.PolyhedralModelControlPanel;
 import edu.jhuapl.saavtk.gui.render.Renderer;
@@ -52,7 +52,6 @@ import edu.jhuapl.sbmt.image.interfaces.ImageKeyInterface;
 import edu.jhuapl.sbmt.image.model.BasemapImage;
 import edu.jhuapl.sbmt.image.model.BasemapImageCollection;
 import edu.jhuapl.sbmt.image.model.Image;
-
 import glum.gui.GuiUtil;
 import net.miginfocom.swing.MigLayout;
 

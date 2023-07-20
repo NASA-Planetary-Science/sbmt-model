@@ -18,7 +18,6 @@ import edu.jhuapl.saavtk.colormap.Colormaps;
 import edu.jhuapl.saavtk.feature.FeatureType;
 import edu.jhuapl.sbmt.model.phobos.model.CumulativeMEGANECollection;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANECollection;
-
 import glum.gui.GuiExeUtil;
 import glum.gui.component.GComboBox;
 import glum.gui.panel.CardPanel;
