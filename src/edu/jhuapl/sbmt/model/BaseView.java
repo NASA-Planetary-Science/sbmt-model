@@ -425,27 +425,30 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 		List<IFeatureConfig> spectrumConfigs = getPolyhedralModelConfig()
 				.getConfigsForClass(SpectrumInstrumentConfig.class);
-		for (IFeatureConfig instrumentConfig : spectrumConfigs)
+		if (spectrumConfigs != null)
 		{
-
-			SpectrumInstrumentConfig config = (SpectrumInstrumentConfig) instrumentConfig;
-//			BasicSpectrumInstrument instrument = config.spectralInstruments.get(0);
-			if (config.hasSpectralData)
+			for (IFeatureConfig instrumentConfig : spectrumConfigs)
 			{
-				// This needs to be updated to handle the multiple Spectral Instruments that can
-				// exist on screen at the same time....
-				// for (SpectralInstrument instrument :
-				// getPolyhedralModelConfig().spectralInstruments)
+	
+				SpectrumInstrumentConfig config = (SpectrumInstrumentConfig) instrumentConfig;
+	//			BasicSpectrumInstrument instrument = config.spectralInstruments.get(0);
+				if (config.hasSpectralData)
 				{
-					SpectraCollection spectrumCollection = (SpectraCollection) getModel(ModelNames.SPECTRA);
-					SpectrumBoundaryCollection spectrumBoundaryCollection = (SpectrumBoundaryCollection) getModel(
-							ModelNames.SPECTRA_BOUNDARIES);
-					PopupMenu popupMenu = new SpectrumPopupMenu(spectrumCollection, spectrumBoundaryCollection,
-							getModelManager(), (SbmtSpectrumWindowManager) getInfoPanelManager(), getRenderer());
-					registerPopup(getModel(ModelNames.SPECTRA), popupMenu);
+					// This needs to be updated to handle the multiple Spectral Instruments that can
+					// exist on screen at the same time....
+					// for (SpectralInstrument instrument :
+					// getPolyhedralModelConfig().spectralInstruments)
+					{
+						SpectraCollection spectrumCollection = (SpectraCollection) getModel(ModelNames.SPECTRA);
+						SpectrumBoundaryCollection spectrumBoundaryCollection = (SpectrumBoundaryCollection) getModel(
+								ModelNames.SPECTRA_BOUNDARIES);
+						PopupMenu popupMenu = new SpectrumPopupMenu(spectrumCollection, spectrumBoundaryCollection,
+								getModelManager(), (SbmtSpectrumWindowManager) getInfoPanelManager(), getRenderer());
+						registerPopup(getModel(ModelNames.SPECTRA), popupMenu);
+					}
 				}
+	
 			}
-
 		}
 
 		if (getPolyhedralModelConfig().hasLineamentData)
@@ -738,7 +741,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 	{
 		StateHistoryConfig stateHistoryConfig = (StateHistoryConfig) getPolyhedralModelConfig()
 				.getConfigForClass(StateHistoryConfig.class);
-
+		if (stateHistoryConfig == null) return;
 		ObservationPlanningController planningController = new ObservationPlanningController(getModelManager(),
 				smallBodyModels.get(0), rendererManager, stateHistoryConfig,
 				smallBodyModels.get(0).getColoringDataManager(), getStatusNotifier());
