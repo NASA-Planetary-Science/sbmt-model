@@ -558,14 +558,21 @@ public abstract class BaseView extends View implements PropertyChangeListener
 		List<IFeatureConfig> imagingConfigs = getPolyhedralModelConfig()
 				.getConfigsForClass(ImagingInstrumentConfig.class);
 		if (imagingConfigs == null)
+		{
+			ImageSearchController cont = new ImageSearchController(null, collection,
+					Optional.ofNullable(null), getModelManager(), getPopupManager(), getRenderer(),
+					getPickManager(), (SbmtInfoWindowManager) getInfoPanelManager(),
+					(SbmtSpectralImageWindowManager) getSpectrumPanelManager(), getLegacyStatusHandler());
+			addTab("Images", cont.getView());
 			return;
+		}
 
 		for (IFeatureConfig instrumentConfig : imagingConfigs)
 		{
 			ImagingInstrumentConfig config = (ImagingInstrumentConfig) instrumentConfig;
 			if (config.imagingInstruments.size() == 0)
 			{
-				ImageSearchController cont = cont = new ImageSearchController(config, collection,
+				ImageSearchController cont = new ImageSearchController(config, collection,
 						Optional.ofNullable(null), getModelManager(), getPopupManager(), getRenderer(),
 						getPickManager(), (SbmtInfoWindowManager) getInfoPanelManager(),
 						(SbmtSpectralImageWindowManager) getSpectrumPanelManager(), getLegacyStatusHandler());
