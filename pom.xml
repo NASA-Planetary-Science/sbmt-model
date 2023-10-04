@@ -35,7 +35,7 @@
 	<dependency>
 		<groupId>edu.jhuapl.ses.srn.sbmt</groupId>
 		<artifactId>sbmt-stateHistory</artifactId>
-		<version>1.0.1-b0-SNAPSHOT</version>
+		<version>1.0.2-b1-SNAPSHOT</version>
 	</dependency>
   </dependencies>
   <build>
