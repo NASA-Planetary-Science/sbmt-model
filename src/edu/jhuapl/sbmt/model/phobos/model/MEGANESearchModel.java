@@ -15,15 +15,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import edu.jhuapl.saavtk.model.ModelManager;
-import edu.jhuapl.saavtk.model.ModelNames;
-import edu.jhuapl.saavtk.model.structure.AbstractEllipsePolygonModel;
-import edu.jhuapl.saavtk.model.structure.CircleSelectionModel;
 import edu.jhuapl.saavtk.model.structure.PlateUtil;
-import edu.jhuapl.saavtk.model.structure.PolygonModel;
-import edu.jhuapl.saavtk.structure.Ellipse;
-import edu.jhuapl.saavtk.structure.Polygon;
+import edu.jhuapl.saavtk.pick.PickManager;
+import edu.jhuapl.saavtk.structure.AnyStructureManager;
 import edu.jhuapl.saavtk.structure.Structure;
-import edu.jhuapl.saavtk.structure.StructureManager;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
 import edu.jhuapl.sbmt.model.phobos.controllers.MEGANEDatabaseConnection;
 import edu.jhuapl.sbmt.query.filter.model.FilterModel;
@@ -36,27 +31,23 @@ import vtk.vtkPolyData;
 
 public class MEGANESearchModel
 {
-	PolygonModel polygonModel;
-	StructureManager<?> circleModel;
-	StructureManager<?> ellipseModel;
 	SmallBodyModel smallBodyModel;
+	PickManager refPickManager;
+	AnyStructureManager refStructureManager;
 	MEGANEDatabaseConnection dbConnection;
 	FilterModel<Double> numericFilterModel;
 	FilterModel<Object> nonNumericFilterModel;
 	FilterModel<LocalDateTime> timeWindowModel;
-	private AbstractEllipsePolygonModel selectionModel;
 	private HashMap<String, List<String>> parameterTableMap = new HashMap<String, List<String>>();
 	private String queryString = "";
 	private HashMap<String, List<String>> metadata = new HashMap<String, List<String>>();
 
-	public MEGANESearchModel(ModelManager modelManager, SmallBodyModel smallBodyModel, MEGANEDatabaseConnection dbConnection)
+	public MEGANESearchModel(ModelManager modelManager, SmallBodyModel smallBodyModel, MEGANEDatabaseConnection dbConnection, PickManager aPickManager, AnyStructureManager aStructureManager)
 	{
 		this.smallBodyModel = smallBodyModel;
 		this.dbConnection = dbConnection;
-		this.polygonModel = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
-		this.circleModel = (StructureManager<?>)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
-		this.ellipseModel = (StructureManager<?>)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
-		this.selectionModel = (CircleSelectionModel)modelManager.getModel(ModelNames.CIRCLE_SELECTION);
+		this.refPickManager = aPickManager;
+		this.refStructureManager = aStructureManager;
 
 		this.numericFilterModel = new RangeFilterModel();
 		this.nonNumericFilterModel = new FilterModel();
@@ -67,13 +58,14 @@ public class MEGANESearchModel
 
 	public void removeRegion()
 	{
-		selectionModel.removeAllStructures();
+		refPickManager.getSelectionPicker().clearSelection();
 	}
 
 	public List<MEGANEFootprint> performSearch(Function<String, Void> statusUpdater) throws SQLException
 	{
 		List<MEGANEFootprint> footprints = Lists.newArrayList();
 		List<Structure> structuresToSearch = getStructuresToSearch();
+		var selectionModel = refPickManager.getSelectionPicker().getSelectionManager();
 		if (!structuresToSearch.isEmpty())
 		{
 			List<String> structuresMetadata = structuresToSearch.stream().map(struct -> { return struct.getName(); } ).toList();
@@ -81,7 +73,7 @@ public class MEGANESearchModel
 		}
 		if (selectionModel.getNumItems() != 0)
 		{
-			Ellipse region = selectionModel.getItem(0);
+			Structure region = selectionModel.getItem(0);
 			structuresToSearch.add(region);
 			metadata.put(" Region ", List.of(region.toString()));
 		}
@@ -93,10 +85,10 @@ public class MEGANESearchModel
 		return footprints;
 	}
 
-	private vtkPolyData getStructureFacetInformation(Structure structure, StructureManager refManager)
+	private vtkPolyData getStructureFacetInformation(Structure structure, AnyStructureManager aStructureManager)
 	{
 		Task tmpTask = new SilentTask();
-		vtkPolyData tmpPolyData = PlateUtil.formUnifiedStructurePolyData(tmpTask, refManager, List.of(structure));
+		vtkPolyData tmpPolyData = PlateUtil.formUnifiedStructurePolyData(tmpTask, aStructureManager, List.of(structure));
 		return tmpPolyData;
 	}
 
@@ -111,10 +103,7 @@ public class MEGANESearchModel
 		HashSet<Integer> indices = new HashSet<Integer>();
 		for (Structure structure : structureFilters)
 		{
-			StructureManager refManager = null;
-			if (structure instanceof Polygon) refManager = polygonModel;
-			else if (structure instanceof Ellipse) refManager = ellipseModel;
-			vtkPolyData structureFacetInformation = getStructureFacetInformation(structure, refManager);
+			vtkPolyData structureFacetInformation = getStructureFacetInformation(structure, refStructureManager);
 			ImmutableList<Integer> cellIdList = smallBodyModel.getClosestCellList(structureFacetInformation);
 			indices.addAll(cellIdList);
 		}

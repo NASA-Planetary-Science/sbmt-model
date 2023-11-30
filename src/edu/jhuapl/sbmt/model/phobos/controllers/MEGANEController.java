@@ -44,18 +44,16 @@ import com.google.common.collect.Lists;
 
 import edu.jhuapl.saavtk.gui.dialog.CustomFileChooser;
 import edu.jhuapl.saavtk.model.ModelManager;
-import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringDataFactory;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
 import edu.jhuapl.saavtk.model.plateColoring.CustomizableColoringDataManager;
 import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.model.plateColoring.LoadableColoringData;
-import edu.jhuapl.saavtk.model.structure.PolygonModel;
 import edu.jhuapl.saavtk.pick.PickManager;
-import edu.jhuapl.saavtk.pick.PickManager.PickMode;
+import edu.jhuapl.saavtk.structure.AnyStructureManager;
+import edu.jhuapl.saavtk.structure.ClosedShape;
 import edu.jhuapl.saavtk.structure.Structure;
-import edu.jhuapl.saavtk.structure.StructureManager;
 import edu.jhuapl.saavtk.util.Properties;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
@@ -93,17 +91,19 @@ public class MEGANEController implements PropertyChangeListener
 	private CumulativeMEGANECollection cumulativeCollection;
 	private MEGANEDatabaseConnection dbConnection;
 	private PickManager pickManager;
+	private AnyStructureManager refStructureManager;
 	private MEGANESearchModel searchModel;
 	private MEGANEFootprintColoringOptionsController coloringController;
 
-	public MEGANEController(MEGANECollection collection, CumulativeMEGANECollection cumulativeCollection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager)
+	public MEGANEController(MEGANECollection collection, CumulativeMEGANECollection cumulativeCollection, SmallBodyModel smallBodyModel, ModelManager modelManager, PickManager pickManager, AnyStructureManager aStructureManager)
 	{
 		this.smallBodyModel = smallBodyModel;
 		this.collection = collection;
 		this.cumulativeCollection = cumulativeCollection;
 		this.coloringDataManager = (CustomizableColoringDataManager)smallBodyModel.getColoringDataManager();
 		this.pickManager = pickManager;
-		this.searchModel = new MEGANESearchModel(modelManager, smallBodyModel, dbConnection);
+		this.refStructureManager = aStructureManager;
+		this.searchModel = new MEGANESearchModel(modelManager, smallBodyModel, dbConnection, pickManager, aStructureManager);
 		coloringController = new MEGANEFootprintColoringOptionsController(collection, cumulativeCollection);
 
 		DynamicFilterValues<Structure> dynamicValues = new DynamicFilterValues<Structure>()
@@ -111,14 +111,12 @@ public class MEGANEController implements PropertyChangeListener
 			@Override
 			public ArrayList<Structure> getCurrentValues()
 			{
-				PolygonModel polygonModel = (PolygonModel)modelManager.getModel(ModelNames.POLYGON_STRUCTURES);
-				var circleModel = (StructureManager<?>)modelManager.getModel(ModelNames.CIRCLE_STRUCTURES);
-				var ellipseModel = (StructureManager<?>)modelManager.getModel(ModelNames.ELLIPSE_STRUCTURES);
-
 				ArrayList<Structure> structures = new ArrayList<Structure>();
-				structures.addAll(polygonModel.getAllItems());
-				structures.addAll(circleModel.getAllItems());
-				structures.addAll(ellipseModel.getAllItems());
+				for (var aStructure : refStructureManager.getAllItems())
+				{
+					if (aStructure instanceof ClosedShape)
+						structures.add(aStructure);
+				}
 				Structure[] structuresArray = new Structure[structures.size()];
 				structures.toArray(structuresArray);
 				return structures;
@@ -397,9 +395,9 @@ public class MEGANEController implements PropertyChangeListener
 		searchPanel.getFilterPanel().getSelectRegionButton().addActionListener(e -> {
 
 			if (searchPanel.getFilterPanel().getSelectRegionButton().isSelected())
-	            pickManager.setPickMode(PickMode.CIRCLE_SELECTION);
+	            pickManager.setActivePicker(pickManager.getSelectionPicker());
 	        else
-	            pickManager.setPickMode(PickMode.DEFAULT);
+	            pickManager.setActivePicker(null);
 		});
 
 		searchPanel.getFilterPanel().getClearRegionButton().addActionListener(e -> {

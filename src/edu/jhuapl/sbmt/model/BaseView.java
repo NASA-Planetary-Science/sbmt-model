@@ -32,6 +32,7 @@ import edu.jhuapl.saavtk.gui.View;
 import edu.jhuapl.saavtk.gui.render.ConfigurableSceneNotifier;
 import edu.jhuapl.saavtk.gui.render.RenderPanel;
 import edu.jhuapl.saavtk.gui.render.Renderer;
+import edu.jhuapl.saavtk.gui.render.SceneChangeNotifier;
 import edu.jhuapl.saavtk.model.Graticule;
 import edu.jhuapl.saavtk.model.IPositionOrientationManager;
 import edu.jhuapl.saavtk.model.Model;
@@ -39,15 +40,11 @@ import edu.jhuapl.saavtk.model.ModelManager;
 import edu.jhuapl.saavtk.model.ModelNames;
 import edu.jhuapl.saavtk.model.ShapeModelBody;
 import edu.jhuapl.saavtk.model.ShapeModelType;
-import edu.jhuapl.saavtk.model.structure.AbstractEllipsePolygonModel.Mode;
-import edu.jhuapl.saavtk.model.structure.CircleSelectionModel;
-import edu.jhuapl.saavtk.model.structure.LineModel;
-import edu.jhuapl.saavtk.model.structure.PolygonModel;
 import edu.jhuapl.saavtk.pick.PickManager;
 import edu.jhuapl.saavtk.popup.PopupMenu;
 import edu.jhuapl.saavtk.status.StatusNotifier;
+import edu.jhuapl.saavtk.structure.AnyStructureManager;
 import edu.jhuapl.saavtk.structure.gui.StructureMainPanel;
-import edu.jhuapl.saavtk.structure.io.StructureLegacyUtil;
 import edu.jhuapl.saavtk.util.Configuration;
 import edu.jhuapl.saavtk.util.FileCache;
 import edu.jhuapl.saavtk.util.Properties;
@@ -315,26 +312,10 @@ public abstract class BaseView extends View implements PropertyChangeListener
 		allModels.put(ModelNames.SMALL_BODY, allBodies);
 	}
 
-	protected void setupStructureModels(ConfigurableSceneNotifier tmpSceneChangeNotifier,
-			StatusNotifier tmpStatusNotifier)
+	protected void setupStructureModels(SceneChangeNotifier aSceneChangeNotifier, StatusNotifier aStatusNotifier)
 	{
 		SmallBodyModel smallBodyModel = smallBodyModels.get(0);
-		// ConfigurableSceneNotifier tmpSceneChangeNotifier = new
-		// ConfigurableSceneNotifier();
-		// StatusNotifier tmpStatusNotifier = getStatusNotifier();
-		allModels.put(ModelNames.LINE_STRUCTURES,
-				List.of(new LineModel<>(tmpSceneChangeNotifier, tmpStatusNotifier, smallBodyModel)));
-		allModels.put(ModelNames.POLYGON_STRUCTURES,
-				List.of(new PolygonModel(tmpSceneChangeNotifier, tmpStatusNotifier, smallBodyModel)));
-		allModels.put(ModelNames.CIRCLE_STRUCTURES, List.of(StructureLegacyUtil.createManager(tmpSceneChangeNotifier,
-				tmpStatusNotifier, smallBodyModel, Mode.CIRCLE_MODE)));
-		allModels.put(ModelNames.ELLIPSE_STRUCTURES, List.of(StructureLegacyUtil.createManager(tmpSceneChangeNotifier,
-				tmpStatusNotifier, smallBodyModel, Mode.ELLIPSE_MODE)));
-		allModels.put(ModelNames.POINT_STRUCTURES, List.of(StructureLegacyUtil.createManager(tmpSceneChangeNotifier,
-				tmpStatusNotifier, smallBodyModel, Mode.POINT_MODE)));
-		allModels.put(ModelNames.CIRCLE_SELECTION,
-				List.of(new CircleSelectionModel(tmpSceneChangeNotifier, tmpStatusNotifier, smallBodyModel)));
-		// tmpSceneChangeNotifier.setTarget(getModelManager());
+		structureManager = new AnyStructureManager(aSceneChangeNotifier, aStatusNotifier, smallBodyModel);
 	}
 
 	protected void setupSpectraModels(ConfigurableSceneNotifier tmpSceneChangeNotifier)
@@ -697,8 +678,8 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 	protected void setupStructuresTab()
 	{
-		addTab("Structures",
-				new StructureMainPanel(getPickManager(), getRenderer(), getStatusNotifier(), getModelManager()));
+		addTab("Structures", new StructureMainPanel(getRenderer(), getModelManager().getPolyhedralModel(),
+				getStatusNotifier(), getPickManager(), structureManager));
 	}
 
 	protected void setupCustomDataTab()
@@ -789,7 +770,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 	@Override
 	protected void setupPickManager()
 	{
-		PickManager tmpPickManager = new PickManager(getRenderer(), getModelManager());
+		PickManager tmpPickManager = new PickManager(getRenderer(), getStatusNotifier(), getModelManager().getPolyhedralModel(), getModelManager());
 		setPickManager(tmpPickManager);
 
 		// Manually register the Renderer with the DefaultPicker
