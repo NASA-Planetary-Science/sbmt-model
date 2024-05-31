@@ -2,10 +2,10 @@ package edu.jhuapl.sbmt.model.ryugu.nirs3;
 
 import java.io.IOException;
 
-import crucible.crust.metadata.api.Key;
-import crucible.crust.metadata.api.Version;
-import crucible.crust.metadata.impl.InstanceGetter;
-import crucible.crust.metadata.impl.SettableMetadata;
+import edu.jhuapl.ses.jsqrl.api.Key;
+import edu.jhuapl.ses.jsqrl.api.Version;
+import edu.jhuapl.ses.jsqrl.impl.InstanceGetter;
+import edu.jhuapl.ses.jsqrl.impl.SettableMetadata;
 import edu.jhuapl.sbmt.core.body.ISmallBodyModel;
 import edu.jhuapl.sbmt.model.ryugu.nirs3.atRyugu.NIRS3Spectrum;
 import edu.jhuapl.sbmt.query.v2.IDataQuery;

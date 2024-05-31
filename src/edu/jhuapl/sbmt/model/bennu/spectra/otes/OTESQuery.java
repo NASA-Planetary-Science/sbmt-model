@@ -2,10 +2,10 @@ package edu.jhuapl.sbmt.model.bennu.spectra.otes;
 
 import java.util.List;
 
-import crucible.crust.metadata.api.Key;
-import crucible.crust.metadata.api.Version;
-import crucible.crust.metadata.impl.InstanceGetter;
-import crucible.crust.metadata.impl.SettableMetadata;
+import edu.jhuapl.ses.jsqrl.api.Key;
+import edu.jhuapl.ses.jsqrl.api.Version;
+import edu.jhuapl.ses.jsqrl.impl.InstanceGetter;
+import edu.jhuapl.ses.jsqrl.impl.SettableMetadata;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.query.v2.DataQuerySourcesMetadata;
 import edu.jhuapl.sbmt.query.v2.FetchedResults;
