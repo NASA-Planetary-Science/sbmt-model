@@ -4,11 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
 
-import edu.jhuapl.ses.jsqrl.api.Key;
-import edu.jhuapl.ses.jsqrl.api.Version;
-import edu.jhuapl.ses.jsqrl.impl.FixedMetadata;
-import edu.jhuapl.ses.jsqrl.impl.InstanceGetter;
-import edu.jhuapl.ses.jsqrl.impl.SettableMetadata;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.query.database.DatabaseSearchMetadata;
 import edu.jhuapl.sbmt.query.database.SpectraDatabaseSearchMetadata;
@@ -20,6 +15,11 @@ import edu.jhuapl.sbmt.query.v2.QueryException;
 import edu.jhuapl.sbmt.query.v2.QueryException.QueryExceptionReason;
 import edu.jhuapl.sbmt.query.v2.QueryException.Severity;
 import edu.jhuapl.sbmt.spectrum.query.SpectrumDataQuery;
+import edu.jhuapl.ses.jsqrl.api.Key;
+import edu.jhuapl.ses.jsqrl.api.Version;
+import edu.jhuapl.ses.jsqrl.impl.FixedMetadata;
+import edu.jhuapl.ses.jsqrl.impl.InstanceGetter;
+import edu.jhuapl.ses.jsqrl.impl.SettableMetadata;
 
 
 /**

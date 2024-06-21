@@ -18,7 +18,6 @@ import javax.swing.SwingUtilities;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
-import crucible.crust.logging.SimpleLogger;
 import edu.jhuapl.saavtk.color.provider.ColorProvider;
 import edu.jhuapl.saavtk.color.provider.GroupColorProvider;
 import edu.jhuapl.saavtk.color.provider.SimpleColorProvider;
@@ -41,13 +40,13 @@ public class MEGANECollection extends SaavtkItemManager<MEGANEFootprint> impleme
 	private SmallBodyModel smallBodyModel;
 	private HashMap<MEGANEFootprint, MEGANEFootprintRenderer> footprintRenderers;
 	private MEGANEDatabaseConnection dbConnection;
-	private SimpleLogger logger = SimpleLogger.getInstance();
+//	private SimpleLogger logger = SimpleLogger.getInstance();
 	private Map<MEGANEFootprint, MEGANEFootprintRenderProperties> propM;
 	private Renderer renderer;
 
 	public MEGANECollection(SmallBodyModel smallBodyModel)
 	{
-		logger.setLogFormat("%1$tF %1$tT.%1$tL %4$-7s %2$s %5$s%6$s%n");
+//		logger.setLogFormat("%1$tF %1$tT.%1$tL %4$-7s %2$s %5$s%6$s%n");
 		this.smallBodyModel = smallBodyModel;
 		this.footprintRenderers = new HashMap<MEGANEFootprint, MEGANEFootprintRenderer>();
 		propM = new HashMap<>();
