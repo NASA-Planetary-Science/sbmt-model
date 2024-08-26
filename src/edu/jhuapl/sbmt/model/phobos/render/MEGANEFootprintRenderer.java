@@ -12,8 +12,6 @@ import javax.swing.SwingUtilities;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import crucible.core.data.list.indexable.Indexable;
-import crucible.crust.logging.SimpleLogger;
 import edu.jhuapl.saavtk.color.provider.ColorProvider;
 import edu.jhuapl.saavtk.colormap.Colormap;
 import edu.jhuapl.saavtk.colormap.Colormaps;
@@ -22,6 +20,7 @@ import edu.jhuapl.saavtk.model.plateColoring.ColoringDataFactory;
 import edu.jhuapl.saavtk.model.plateColoring.ColoringDataUtils;
 import edu.jhuapl.saavtk.model.plateColoring.FacetColoringData;
 import edu.jhuapl.saavtk.util.Properties;
+import edu.jhuapl.saavtk.util.file.Indexable;
 import edu.jhuapl.saavtk.util.file.IndexableTuple;
 import edu.jhuapl.saavtk2.polydata.select.PolyDataRemoveSelectedCells;
 import edu.jhuapl.sbmt.core.body.SmallBodyModel;
@@ -43,7 +42,7 @@ public class MEGANEFootprintRenderer
 	private MEGANEFootprint footprint;
 	private vtkActor footprintActor;
 	private vtkPolyData footprintPolyData = new vtkPolyData();
-	private SimpleLogger logger = SimpleLogger.getInstance();
+//	private SimpleLogger logger = SimpleLogger.getInstance();
 	private ImmutableList<ColoringData> allColoringData;
 	private double minValue = Double.MAX_VALUE, maxValue = Double.MIN_VALUE;
 	private PropertyChangeSupport pcs;
@@ -63,7 +62,7 @@ public class MEGANEFootprintRenderer
 		this.smallBodyPolyData = new vtkPolyData();
 		this.pcs = pcs;
 		smallBodyPolyData.DeepCopy(smallBodyModel.getSmallBodyPolyData());
-		logger.setLogFormat("%1$tF %1$tT.%1$tL %4$-7s %2$s %5$s%6$s%n");
+//		logger.setLogFormat("%1$tF %1$tT.%1$tL %4$-7s %2$s %5$s%6$s%n");
 		PolyDataRemoveSelectedCells removeCells = new PolyDataRemoveSelectedCells();
 		removeCells.setIndicesToRemove(footprint.getCellIDs());
 		footprintPolyData = removeCells.apply(smallBodyPolyData);

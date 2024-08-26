@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
 
@@ -19,7 +18,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import crucible.crust.logging.SimpleLogger;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprint;
 import edu.jhuapl.sbmt.model.phobos.model.MEGANEFootprintFacet;
 
@@ -31,14 +29,14 @@ public class MEGANEDatabaseConnection
 	private final MEGANEController meganeController;
 	private Connection database;
 	private final String dbName;
-	private SimpleLogger logger;
+//	private SimpleLogger logger;
 	private int index = 1;
 
 	public MEGANEDatabaseConnection(MEGANEController meganeController, String dbName)
 	{
 		this.meganeController = meganeController;
 		this.dbName = dbName;
-		logger = SimpleLogger.getInstance();
+//		logger = SimpleLogger.getInstance();
 	}
 
 	public void openDatabase()
@@ -51,7 +49,7 @@ public class MEGANEDatabaseConnection
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.WARNING, e.getLocalizedMessage());
+//			logger.log(Level.WARNING, e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -277,15 +275,15 @@ public class MEGANEDatabaseConnection
 	{
 		if (!sql.trim().endsWith(";"))
 			sql = String.format("%s;", sql.trim());
-		logger.log(Level.FINE, sql);
+//		logger.log(Level.FINE, sql);
 		try (Statement stmt = database.createStatement())
 		{
 			stmt.execute(sql);
 		}
 		catch (SQLException e)
 		{
-			logger.log(Level.SEVERE, "Cannot execute query " + sql);
-			logger.log(Level.SEVERE, e.getLocalizedMessage());
+//			logger.log(Level.SEVERE, "Cannot execute query " + sql);
+//			logger.log(Level.SEVERE, e.getLocalizedMessage());
 			e.printStackTrace();
 			System.exit(1);
 		}
