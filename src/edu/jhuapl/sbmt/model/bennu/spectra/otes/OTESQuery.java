@@ -2,16 +2,16 @@ package edu.jhuapl.sbmt.model.bennu.spectra.otes;
 
 import java.util.List;
 
-import edu.jhuapl.ses.jsqrl.api.Key;
-import edu.jhuapl.ses.jsqrl.api.Version;
-import edu.jhuapl.ses.jsqrl.impl.InstanceGetter;
-import edu.jhuapl.ses.jsqrl.impl.SettableMetadata;
 import edu.jhuapl.sbmt.core.pointing.PointingSource;
 import edu.jhuapl.sbmt.query.v2.DataQuerySourcesMetadata;
 import edu.jhuapl.sbmt.query.v2.FetchedResults;
 import edu.jhuapl.sbmt.query.v2.ISearchMetadata;
 import edu.jhuapl.sbmt.query.v2.QueryException;
 import edu.jhuapl.sbmt.spectrum.query.SpectrumDataQuery;
+import edu.jhuapl.ses.jsqrl.api.Key;
+import edu.jhuapl.ses.jsqrl.api.Version;
+import edu.jhuapl.ses.jsqrl.impl.InstanceGetter;
+import edu.jhuapl.ses.jsqrl.impl.SettableMetadata;
 
 
 /**
