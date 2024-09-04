@@ -353,7 +353,7 @@ public class SmallBodyControlPanel extends PolyhedralModelControlPanel implement
 
     private <G1 extends IPerspectiveImage & IPerspectiveImageTableRepresentable> void showBasemap(BasemapImage image, boolean show)
     {
-    	BasemapImageCollection<G1> imageCollection = (BasemapImageCollection<G1>) getModelManager().getModel(ModelNames.BASEMAPS);
+    	BasemapImageCollection<G1> imageCollection = (BasemapImageCollection<G1>) getModelManager().getModel(ModelNames.provide("BASEMAPS"));
     	clearBasemaps();
     	G1 perImage = imageCollection.addImage(image);
     	imageCollection.setImageMapped(perImage, show);
@@ -361,7 +361,7 @@ public class SmallBodyControlPanel extends PolyhedralModelControlPanel implement
 
     private <G1 extends IPerspectiveImage & IPerspectiveImageTableRepresentable> void clearBasemaps()
     {
-    	BasemapImageCollection<G1> imageCollection = (BasemapImageCollection<G1>) getModelManager().getModel(ModelNames.BASEMAPS);
+    	BasemapImageCollection<G1> imageCollection = (BasemapImageCollection<G1>) getModelManager().getModel(ModelNames.provide("BASEMAPS"));
     	for (G1 image : imageCollection.getAllItems())
     		imageCollection.setImageMapped(image, false);
     }
@@ -469,7 +469,7 @@ public class SmallBodyControlPanel extends PolyhedralModelControlPanel implement
         @Override
         public void stateChanged(@SuppressWarnings("unused") ChangeEvent e)
         {
-            BasemapImageCollection<G1> imageCollection = (BasemapImageCollection<G1>) getModelManager().getModel(ModelNames.BASEMAPS);
+            BasemapImageCollection<G1> imageCollection = (BasemapImageCollection<G1>) getModelManager().getModel(ModelNames.provide("BASEMAPS"));
             double val = (Double)getImageMapOpacitySpinner().getValue();
             imageCollection.setOpacity(val);
         }
