@@ -568,7 +568,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 							getModelManager(), getPopupManager(), getRenderer(), getPickManager(),
 							(SbmtInfoWindowManager) getInfoPanelManager(),
 							(SbmtSpectralImageWindowManager) getSpectrumPanelManager(), getLegacyStatusHandler());
-					addTab(instrument.instrumentName.toString(), cont.getView());
+					addTab(instrument.getLabel(), cont.getView());
 
 					pomListeners.add(new PositionOrientationManagerListener()
 					{
