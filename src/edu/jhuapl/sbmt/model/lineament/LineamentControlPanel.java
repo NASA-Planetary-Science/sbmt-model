@@ -31,7 +31,7 @@ public class LineamentControlPanel extends JPanel implements ItemListener, Chang
                 "",
                 ""));
 
-        lineamentModel = (LineamentModel)modelManager.getModel(ModelNames.provide("LINEAMENT"));
+        lineamentModel = (LineamentModel)modelManager.getModel(ModelNames.LINEAMENT);
 
         lineamentCheckBox = new JCheckBox();
         lineamentCheckBox.setText("Show Lineaments");

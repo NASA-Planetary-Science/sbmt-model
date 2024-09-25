@@ -305,7 +305,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 		smallBodyModels = SbmtModelFactory.createSmallBodyModels(getPolyhedralModelConfig());
 		List<Model> allBodies = Lists.newArrayList();
 		allBodies.addAll(smallBodyModels);
-		allModels.put(ModelNames.provide("SMALL_BODY"), allBodies);
+		allModels.put(ModelNames.SMALL_BODY, allBodies);
 	}
 
 	protected void setupStructureModels(SceneChangeNotifier aSceneChangeNotifier, StatusNotifier aStatusNotifier)
@@ -329,18 +329,18 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 		SpectraCollection<S> collection = new SpectraCollection<S>(tmpSceneChangeNotifier, smallBodyModel);
 
-		models.put(ModelNames.provide("SPECTRA"), List.of(collection));
+		models.put(ModelNames.SPECTRA, List.of(collection));
 
 		allModels.putAll(models);
-		allModels.put(ModelNames.provide("SPECTRA_BOUNDARIES"), List.of(new SpectrumBoundaryCollection<S>(smallBodyModel,
-				(SpectraCollection<S>) allModels.get(ModelNames.provide("SPECTRA")).get(0))));
+		allModels.put(ModelNames.SPECTRA_BOUNDARIES, List.of(new SpectrumBoundaryCollection<S>(smallBodyModel,
+				(SpectraCollection<S>) allModels.get(ModelNames.SPECTRA).get(0))));
 		// if (getPolyhedralModelConfig().body == ShapeModelBody.EROS)
-		allModels.put(ModelNames.provide("STATISTICS"), List.of(new SpectrumStatisticsCollection()));
+		allModels.put(ModelNames.STATISTICS, List.of(new SpectrumStatisticsCollection()));
 
 		SpectraCollection<S> customCollection = new SpectraCollection<S>(tmpSceneChangeNotifier, smallBodyModel);
-		allModels.put(ModelNames.provide("CUSTOM_SPECTRA"), List.of(customCollection));
-		allModels.put(ModelNames.provide("CUSTOM_SPECTRA_BOUNDARIES"), List.of(new SpectrumBoundaryCollection<S>(smallBodyModel,
-				(SpectraCollection<S>) allModels.get(ModelNames.provide("CUSTOM_SPECTRA")).get(0))));
+		allModels.put(ModelNames.CUSTOM_SPECTRA, List.of(customCollection));
+		allModels.put(ModelNames.CUSTOM_SPECTRA_BOUNDARIES, List.of(new SpectrumBoundaryCollection<S>(smallBodyModel,
+				(SpectraCollection<S>) allModels.get(ModelNames.CUSTOM_SPECTRA).get(0))));
 
 		// TODO add this to phobox/megane setup
 		// if (!getPolyhedralModelConfig().spectralInstruments.stream().filter(inst ->
@@ -356,8 +356,8 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 	protected <G1 extends IPerspectiveImage & IPerspectiveImageTableRepresentable> void setupImagerModel()
 	{
-		allModels.put(ModelNames.provide("IMAGES_V2"), List.of(new PerspectiveImageCollection<G1>(smallBodyModels)));
-		allModels.put(ModelNames.provide("BASEMAPS"), List.of(new BasemapImageCollection<>(smallBodyModels)));
+		allModels.put(ModelNames.IMAGES_V2, List.of(new PerspectiveImageCollection<G1>(smallBodyModels)));
+		allModels.put(ModelNames.BASEMAPS, List.of(new BasemapImageCollection<>(smallBodyModels)));
 	}
 
 	protected void setupDEMModels()
@@ -377,12 +377,12 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 		rendererManager = new StateHistoryRendererManager(smallBodyModel, new StateHistoryCollection(smallBodyModel),
 				getRenderer());
-		allModels.put(ModelNames.provide("STATE_HISTORY_COLLECTION_ELEMENTS"), List.of(rendererManager));
+		allModels.put(ModelNames.STATE_HISTORY_COLLECTION_ELEMENTS, List.of(rendererManager));
 	}
 
 	protected void setLineamentModel()
 	{
-		allModels.put(ModelNames.provide("LINEAMENT"), List.of(createLineament()));
+		allModels.put(ModelNames.LINEAMENT, List.of(createLineament()));
 	}
 
 	static public LineamentModel createLineament()
@@ -416,12 +416,12 @@ public abstract class BaseView extends View implements PropertyChangeListener
 					// for (SpectralInstrument instrument :
 					// getPolyhedralModelConfig().spectralInstruments)
 					{
-						SpectraCollection spectrumCollection = (SpectraCollection) getModel(ModelNames.provide("SPECTRA"));
+						SpectraCollection spectrumCollection = (SpectraCollection) getModel(ModelNames.SPECTRA);
 						SpectrumBoundaryCollection spectrumBoundaryCollection = (SpectrumBoundaryCollection) getModel(
-								ModelNames.provide("SPECTRA_BOUNDARIES"));
+								ModelNames.SPECTRA_BOUNDARIES);
 						PopupMenu popupMenu = new SpectrumPopupMenu(spectrumCollection, spectrumBoundaryCollection,
 								getModelManager(), (SbmtSpectrumWindowManager) getInfoPanelManager(), getRenderer());
-						registerPopup(getModel(ModelNames.provide("SPECTRA")), popupMenu);
+						registerPopup(getModel(ModelNames.SPECTRA), popupMenu);
 					}
 				}
 	
@@ -431,7 +431,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 		if (getPolyhedralModelConfig().hasLineamentData)
 		{
 			PopupMenu popupMenu = new LineamentPopupMenu(getModelManager());
-			registerPopup(getModel(ModelNames.provide("LINEAMENT")), popupMenu);
+			registerPopup(getModel(ModelNames.LINEAMENT), popupMenu);
 		}
 
 //		if (getPolyhedralModelConfig().hasMapmaker || getPolyhedralModelConfig().hasBigmap)
@@ -530,7 +530,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 	protected <G1 extends IPerspectiveImage & IPerspectiveImageTableRepresentable> void setupNormalImagingTabs()
 	{
 		PerspectiveImageCollection<G1> collection = (PerspectiveImageCollection<G1>) getModelManager()
-				.getModel(ModelNames.provide("IMAGES_V2"));
+				.getModel(ModelNames.IMAGES_V2);
 
 		List<IFeatureConfig> imagingConfigs = getPolyhedralModelConfig()
 				.getConfigsForClass(ImagingInstrumentConfig.class);
@@ -675,9 +675,9 @@ public abstract class BaseView extends View implements PropertyChangeListener
 									(SbmtSpectrumWindowManager) getInfoPanelManager(), getPickManager(), getRenderer(),
 									config.hierarchicalSpectraSearchSpecification, i, config).getPanel());
 					//
-					SpectraCollection<S> spectrumCollection = (SpectraCollection<S>) getModel(ModelNames.provide("CUSTOM_SPECTRA"));
+					SpectraCollection<S> spectrumCollection = (SpectraCollection<S>) getModel(ModelNames.CUSTOM_SPECTRA);
 					SpectrumBoundaryCollection<S> boundaryCollection = (SpectrumBoundaryCollection<S>) getModel(
-							ModelNames.provide("CUSTOM_SPECTRA_BOUNDARIES"));
+							ModelNames.CUSTOM_SPECTRA_BOUNDARIES);
 					PopupMenu popupMenu = new SpectrumPopupMenu<S>(spectrumCollection, boundaryCollection,
 							getModelManager(), (SbmtSpectrumWindowManager) getInfoPanelManager(), getRenderer());
 					registerPopup(spectrumCollection, popupMenu);
