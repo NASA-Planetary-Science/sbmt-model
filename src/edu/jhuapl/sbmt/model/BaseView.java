@@ -52,6 +52,8 @@ import edu.jhuapl.sbmt.core.util.TimeUtil;
 import edu.jhuapl.sbmt.dem.gui.DemMainPanel;
 import edu.jhuapl.sbmt.image.config.ImagingInstrumentConfig;
 import edu.jhuapl.sbmt.image.controllers.ImageSearchController;
+import edu.jhuapl.sbmt.image.interfaces.IPerspectiveImage;
+import edu.jhuapl.sbmt.image.interfaces.IPerspectiveImageTableRepresentable;
 import edu.jhuapl.sbmt.image.model.BasemapImageCollection;
 import edu.jhuapl.sbmt.image.model.ImagingInstrument;
 import edu.jhuapl.sbmt.image.model.PerspectiveImageCollection;
@@ -100,14 +102,13 @@ public abstract class BaseView extends View implements PropertyChangeListener
 	private static final long serialVersionUID = 1L;
 	protected final TrackedMetadataManager stateManager;
 	protected final Map<String, MetadataManager> metadataManagers;
-	// protected Colorbar smallBodyColorbar;
 	protected BasicConfigInfo configInfo;
 	private List<SmallBodyModel> smallBodyModels;
 	protected HashMap<ModelNames, List<Model>> allModels = new HashMap<>();
 	private StateHistoryRendererManager rendererManager;
 	private List<PositionOrientationManagerListener> pomListeners;
 
-	// need to move to phobos/megane
+	// TODO need to move to phobos/megane (model layer)
 	private MEGANECollection meganeCollection;
 	private CumulativeMEGANECollection cumulativeMeganeCollection;
 
@@ -151,7 +152,6 @@ public abstract class BaseView extends View implements PropertyChangeListener
 			setConfig(SmallBodyViewConfig.getSmallBodyConfig(configInfo));
 		}
 
-		// TODO Auto-generated method stub
 		super.initialize();
 	}
 
@@ -297,16 +297,12 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 		getModelManager().addPropertyChangeListener(this);
 
-//		SBMTInfoWindowManagerFactory.initializeModels(getModelManager(), getLegacyStatusHandler());
-
 		tmpSceneChangeNotifier.setTarget(getModelManager());
-
 	}
 
 	protected void setupBodyModels()
 	{
 		smallBodyModels = SbmtModelFactory.createSmallBodyModels(getPolyhedralModelConfig());
-		// allModels.put(ModelNames.SMALL_BODY, smallBodyModel);
 		List<Model> allBodies = Lists.newArrayList();
 		allBodies.addAll(smallBodyModels);
 		allModels.put(ModelNames.SMALL_BODY, allBodies);
@@ -318,33 +314,33 @@ public abstract class BaseView extends View implements PropertyChangeListener
 		structureManager = new AnyStructureManager(aSceneChangeNotifier, aStatusNotifier, smallBodyModel);
 	}
 
-	protected void setupSpectraModels(ConfigurableSceneNotifier tmpSceneChangeNotifier)
+	protected <S extends BasicSpectrum> void setupSpectraModels(ConfigurableSceneNotifier tmpSceneChangeNotifier)
 	{
 		SmallBodyModel smallBodyModel = smallBodyModels.get(0);
 		HashMap<ModelNames, List<Model>> models = new HashMap<ModelNames, List<Model>>();
 
-		ShapeModelBody body = ((SmallBodyViewConfig) smallBodyModel.getConfig()).body;
-		ShapeModelType author = ((SmallBodyViewConfig) smallBodyModel.getConfig()).author;
-		String version = ((SmallBodyViewConfig) smallBodyModel.getConfig()).version;
+//		ShapeModelBody body = ((SmallBodyViewConfig) smallBodyModel.getConfig()).body;
+//		ShapeModelType author = ((SmallBodyViewConfig) smallBodyModel.getConfig()).author;
+//		String version = ((SmallBodyViewConfig) smallBodyModel.getConfig()).version;
 
 		// TODO FIX THIS
 		// models.put(ModelNames.SPECTRA_HYPERTREE_SEARCH, new
 		// SpectraSearchDataCollection(smallBodyModel));
 
-		SpectraCollection collection = new SpectraCollection(tmpSceneChangeNotifier, smallBodyModel);
+		SpectraCollection<S> collection = new SpectraCollection<S>(tmpSceneChangeNotifier, smallBodyModel);
 
 		models.put(ModelNames.SPECTRA, List.of(collection));
 
 		allModels.putAll(models);
-		allModels.put(ModelNames.SPECTRA_BOUNDARIES, List.of(new SpectrumBoundaryCollection(smallBodyModel,
-				(SpectraCollection) allModels.get(ModelNames.SPECTRA).get(0))));
+		allModels.put(ModelNames.SPECTRA_BOUNDARIES, List.of(new SpectrumBoundaryCollection<S>(smallBodyModel,
+				(SpectraCollection<S>) allModels.get(ModelNames.SPECTRA).get(0))));
 		// if (getPolyhedralModelConfig().body == ShapeModelBody.EROS)
 		allModels.put(ModelNames.STATISTICS, List.of(new SpectrumStatisticsCollection()));
 
-		SpectraCollection customCollection = new SpectraCollection(tmpSceneChangeNotifier, smallBodyModel);
+		SpectraCollection<S> customCollection = new SpectraCollection<S>(tmpSceneChangeNotifier, smallBodyModel);
 		allModels.put(ModelNames.CUSTOM_SPECTRA, List.of(customCollection));
-		allModels.put(ModelNames.CUSTOM_SPECTRA_BOUNDARIES, List.of(new SpectrumBoundaryCollection(smallBodyModel,
-				(SpectraCollection) allModels.get(ModelNames.CUSTOM_SPECTRA).get(0))));
+		allModels.put(ModelNames.CUSTOM_SPECTRA_BOUNDARIES, List.of(new SpectrumBoundaryCollection<S>(smallBodyModel,
+				(SpectraCollection<S>) allModels.get(ModelNames.CUSTOM_SPECTRA).get(0))));
 
 		// TODO add this to phobox/megane setup
 		// if (!getPolyhedralModelConfig().spectralInstruments.stream().filter(inst ->
@@ -358,9 +354,9 @@ public abstract class BaseView extends View implements PropertyChangeListener
 		// }
 	}
 
-	protected void setupImagerModel()
+	protected <G1 extends IPerspectiveImage & IPerspectiveImageTableRepresentable> void setupImagerModel()
 	{
-		allModels.put(ModelNames.IMAGES_V2, List.of(new PerspectiveImageCollection(smallBodyModels)));
+		allModels.put(ModelNames.IMAGES_V2, List.of(new PerspectiveImageCollection<G1>(smallBodyModels)));
 		allModels.put(ModelNames.BASEMAPS, List.of(new BasemapImageCollection<>(smallBodyModels)));
 	}
 
@@ -531,16 +527,16 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 	}
 
-	protected void setupNormalImagingTabs()
+	protected <G1 extends IPerspectiveImage & IPerspectiveImageTableRepresentable> void setupNormalImagingTabs()
 	{
-		PerspectiveImageCollection collection = (PerspectiveImageCollection) getModelManager()
+		PerspectiveImageCollection<G1> collection = (PerspectiveImageCollection<G1>) getModelManager()
 				.getModel(ModelNames.IMAGES_V2);
 
 		List<IFeatureConfig> imagingConfigs = getPolyhedralModelConfig()
 				.getConfigsForClass(ImagingInstrumentConfig.class);
 		if (imagingConfigs == null)
 		{
-			ImageSearchController cont = new ImageSearchController(null, collection,
+			ImageSearchController<G1> cont = new ImageSearchController<G1>(null, collection,
 					Optional.ofNullable(null), getModelManager(), getPopupManager(), getRenderer(),
 					getPickManager(), (SbmtInfoWindowManager) getInfoPanelManager(),
 					(SbmtSpectralImageWindowManager) getSpectrumPanelManager(), getLegacyStatusHandler());
@@ -553,7 +549,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 			ImagingInstrumentConfig config = (ImagingInstrumentConfig) instrumentConfig;
 			if (config.imagingInstruments.size() == 0)
 			{
-				ImageSearchController cont = new ImageSearchController(config, collection,
+				ImageSearchController<G1> cont = new ImageSearchController<G1>(config, collection,
 						Optional.ofNullable(null), getModelManager(), getPopupManager(), getRenderer(),
 						getPickManager(), (SbmtInfoWindowManager) getInfoPanelManager(),
 						(SbmtSpectralImageWindowManager) getSpectrumPanelManager(), getLegacyStatusHandler());
@@ -564,7 +560,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 			{
 				for (ImagingInstrument instrument : config.imagingInstruments)
 				{
-					ImageSearchController cont = new ImageSearchController(config, collection, Optional.of(instrument),
+					ImageSearchController<G1> cont = new ImageSearchController<G1>(config, collection, Optional.of(instrument),
 							getModelManager(), getPopupManager(), getRenderer(), getPickManager(),
 							(SbmtInfoWindowManager) getInfoPanelManager(),
 							(SbmtSpectralImageWindowManager) getSpectrumPanelManager(), getLegacyStatusHandler());
@@ -593,7 +589,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
         }
 	}
 
-	protected void setupSpectrumTabs()
+	protected <S extends BasicSpectrum> void setupSpectrumTabs()
 	{
 		List<IFeatureConfig> spectrumConfigs = getPolyhedralModelConfig()
 				.getConfigsForClass(SpectrumInstrumentConfig.class);
@@ -608,7 +604,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 			SpectrumInstrumentConfig config = (SpectrumInstrumentConfig) instrumentConfig;
 			for (BasicSpectrumInstrument instrument : config.spectralInstruments)
 			{
-				BaseSpectrumSearchModel model = (BaseSpectrumSearchModel) SBMTSpectraFactory.getModelFor(
+				BaseSpectrumSearchModel<S> model = (BaseSpectrumSearchModel<S>) SBMTSpectraFactory.getModelFor(
 						instrument.getDisplayName(),
 						getModelManager().getPolyhedralModel().getBoundingBoxDiagonalLength());
 				JComponent component = null;
@@ -642,37 +638,14 @@ public abstract class BaseView extends View implements PropertyChangeListener
 
 	protected void setupLidarTabs()
 	{
-		// // Lidar tab
-		// SmallBodyViewConfig tmpSmallBodyConfig = getPolyhedralModelConfig();
-		// String lidarInstrName = "Tracks";
-		// if (tmpSmallBodyConfig.hasLidarData == true)
-		// lidarInstrName = tmpSmallBodyConfig.lidarInstrumentName.toString();
-		//
-		// try
-		// {
-		// JComponent lidarPanel = new LidarPanel(getRenderer(), getStatusNotifier(),
-		// getPickManager(), tmpSmallBodyConfig, getModelManager().getPolyhedralModel(),
-		// getModelManager());
-		// addTab(lidarInstrName, lidarPanel);
-		// } catch (Exception e)
-		// {
-		// e.printStackTrace();
-		// }
 		LidarInstrumentConfig config = (LidarInstrumentConfig) getPolyhedralModelConfig()
 				.getConfigForClass(LidarInstrumentConfig.class);
 		if (config != null)
 		{
-			// for (IInstrumentConfig instrumentConfig :
-			// getPolyhedralModelConfig().getInstrumentConfigs().get(LidarInstrumentConfig.class))
-			// {
-			// LidarInstrumentConfig config = (LidarInstrumentConfig)instrumentConfig;
-			// JComponent component = new LidarPanel(config, getModelManager(),
-			// getPickManager(), getRenderer());
 			JComponent component = new LidarPanel(getRenderer(), getStatusNotifier(), getPickManager(), config,
 					smallBodyModels.get(0), getModelManager());
 
 			addTab(config.lidarInstrumentName.toString(), component);
-			// }
 		}
 	}
 
@@ -682,7 +655,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 				getStatusNotifier(), getPickManager(), structureManager));
 	}
 
-	protected void setupCustomDataTab()
+	protected <S extends BasicSpectrum> void setupCustomDataTab()
 	{
 		JTabbedPane customDataPane = new JTabbedPane();
 		customDataPane.setBorder(BorderFactory.createEmptyBorder());
@@ -697,18 +670,15 @@ public abstract class BaseView extends View implements PropertyChangeListener
 				SpectrumInstrumentConfig config = (SpectrumInstrumentConfig) instrumentConfig;
 				for (BasicSpectrumInstrument i : config.spectralInstruments)
 				{
-					// if (i.getDisplayName().equals("NIS"))
-					// continue; //we can't properly handle NIS custom data for now without info
-					// files, which we don't have.
 					customDataPane.addTab(i.getDisplayName() + " Spectra",
-							new CustomSpectraSearchController(getModelManager(),
+							new CustomSpectraSearchController<S>(getModelManager(),
 									(SbmtSpectrumWindowManager) getInfoPanelManager(), getPickManager(), getRenderer(),
 									config.hierarchicalSpectraSearchSpecification, i, config).getPanel());
 					//
-					SpectraCollection spectrumCollection = (SpectraCollection) getModel(ModelNames.CUSTOM_SPECTRA);
-					SpectrumBoundaryCollection boundaryCollection = (SpectrumBoundaryCollection) getModel(
+					SpectraCollection<S> spectrumCollection = (SpectraCollection<S>) getModel(ModelNames.CUSTOM_SPECTRA);
+					SpectrumBoundaryCollection<S> boundaryCollection = (SpectrumBoundaryCollection<S>) getModel(
 							ModelNames.CUSTOM_SPECTRA_BOUNDARIES);
-					PopupMenu popupMenu = new SpectrumPopupMenu(spectrumCollection, boundaryCollection,
+					PopupMenu popupMenu = new SpectrumPopupMenu<S>(spectrumCollection, boundaryCollection,
 							getModelManager(), (SbmtSpectrumWindowManager) getInfoPanelManager(), getRenderer());
 					registerPopup(spectrumCollection, popupMenu);
 				}
@@ -738,7 +708,7 @@ public abstract class BaseView extends View implements PropertyChangeListener
 		pomListeners.add(new PositionOrientationManagerListener()
 		{
 			@Override
-			public void managerUpdated(IPositionOrientationManager manager)
+			public void managerUpdated(IPositionOrientationManager<SmallBodyModel> manager)
 			{
 				planningController.setPositionOrientationManager(manager);
 			}
@@ -1086,10 +1056,10 @@ public abstract class BaseView extends View implements PropertyChangeListener
 						double time = TimeUtil.str2et(dateTimeString);
 						positionOrientationManager = new PositionOrientationManager(bodies, arg0, firstSpiceInfo,
 								firstSpiceInfo.getInstrumentNamesToBind()[0], spiceInfo.getBodyName(), time);
-						HashMap<ModelNames, List<Model>> allModels = new HashMap(getModelManager().getAllModels());
-						allModels.put(ModelNames.SMALL_BODY, positionOrientationManager.getUpdatedBodies());
+						HashMap<ModelNames, List<Model>> allModels = new HashMap<ModelNames, List<Model>>(getModelManager().getAllModels());
+						allModels.put(ModelNames.SMALL_BODY, (List<Model>) positionOrientationManager.getUpdatedBodies());
 						setModelManager(new ModelManager(bodies.get(0), allModels));
-						pomListeners.forEach(listener -> listener.managerUpdated(positionOrientationManager));
+						pomListeners.forEach(listener -> listener.managerUpdated((IPositionOrientationManager<SmallBodyModel>) positionOrientationManager));
 						return null;
 					}
 				});
